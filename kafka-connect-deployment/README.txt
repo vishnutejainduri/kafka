@@ -1,0 +1,71 @@
+This folder contains K8s yaml files and scripts to deploy the Kafka Connect host.
+
+Use the following command to create a secret in the cluster for the credentials and config. Remember to replace <user>
+and <password> below with those from the service credentials for Event Streams. Also update the bootstrap servers if necessary.
+TODO: Change this to a script
+
+kubectl create secret generic eventstreams-kafka-connect \
+  --from-literal=CONNECT_BOOTSTRAP_SERVERS="kafka01-prod02.messagehub.services.us-south.bluemix.net:9093,kafka04-prod02.messagehub.services.us-south.bluemix.net:9093,kafka02-prod02.messagehub.services.us-south.bluemix.net:9093,kafka05-prod02.messagehub.services.us-south.bluemix.net:9093,kafka03-prod02.messagehub.services.us-south.bluemix.net:9093"   \
+  --from-literal=CONNECT_REST_PORT=28083   \
+  --from-literal=CONNECT_GROUP_ID="product"   \
+  --from-literal=CONNECT_CONFIG_STORAGE_TOPIC="product-connect-config"   \
+  --from-literal=CONNECT_OFFSET_STORAGE_TOPIC="product-connect-offsets"   \
+  --from-literal=CONNECT_STATUS_STORAGE_TOPIC="product-connect-status"   \
+  --from-literal=CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=3   \
+  --from-literal=CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=3   \
+  --from-literal=CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=3   \
+  --from-literal=CONNECT_KEY_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
+  --from-literal=CONNECT_VALUE_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
+  --from-literal=CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE=false  \
+  --from-literal=CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE=false  \
+  --from-literal=CONNECT_INTERNAL_KEY_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
+  --from-literal=CONNECT_INTERNAL_VALUE_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
+  --from-literal=CONNECT_LOG4J_ROOT_LOGLEVEL=DEBUG   \
+  --from-literal=CONNECT_PLUGIN_PATH=/usr/share/java,/etc/kafka-connect/jars \
+  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>" password="<password>";'  \
+  --from-literal=CONNECT_SECURITY_PROTOCOL=SASL_SSL  \
+  --from-literal=CONNECT_SASL_MECHANISM=PLAIN  \
+  --from-literal=CONNECT_SSL_PROTOCOL=TLSv1.2  \
+  --from-literal=CONNECT_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
+  --from-literal=CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS  \
+  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>" password="<password>";'  \
+  --from-literal=CONNECT_PRODUCER_SECURITY_PROTOCOL=SASL_SSL  \
+  --from-literal=CONNECT_PRODUCER_SASL_MECHANISM=PLAIN  \
+  --from-literal=CONNECT_PRODUCER_SSL_PROTOCOL=TLSv1.2  \
+  --from-literal=CONNECT_PRODUCER_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
+  --from-literal=CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS \
+  --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=5
+
+Create the image (see /kafka-connect-image) and deploy a workload with it
+kubectl apply -f kafka-connect-deployment/kafka-connect-deployment.yaml
+
+Open a NodePort ingress to the Connect host's REST API: https://console.bluemix.net/docs/containers/cs_nodeport.html#nodeport
+VERY IMPORTANT - Delete the NodePort ingress when setup is complete!
+
+# IRO_POS_STYLES connector
+Create a connector by using the REST API
+CONNECT_HOST=<public ip for a node in the cluster>
+CONNECT_PORT=<port set when creating NodePort ingress above>
+curl -X POST   -H "Content-Type: application/json" \
+  --data '{ "name": "jesta-merch-iro-pos-styles-jdbc-source", "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector", "tasks.max": 1, "connection.url": "jdbc:oracle:thin:myplanet/M1P12n3t@//142.215.51.103:1521/MTST", "schema.pattern": "MERCH", "table.whitelist": "IRO_POS_STYLES", "table.poll.interval.ms": 3600000, "mode": "timestamp", "incrementing.column.name": "", "timestamp.column.name": "PROCESS_DATE_CREATED", "topic.prefix": "product-connect-jdbc-", "poll.interval.ms": 120000, "offset.flush.timeout.ms": 60000 } }' \
+  http://$CONNECT_HOST:$CONNECT_PORT/connectors
+
+# ELCAT.CATALOG connector
+curl -X POST   -H "Content-Type: application/json" \
+  --data '{ "name": "elcat-catalog-jdbc-source",
+  "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+  "tasks.max": 1,
+  "connection.url": "jdbc:oracle:thin:myplanet/m1pl2n3t@//142.215.51.80:1521/beantstl",
+  "schema.pattern": "ELCAT",
+  "table.whitelist": "CATALOG",
+  "table.poll.interval.ms": 3600000,
+  "mode": "timestamp",
+  "incrementing.column.name": "",
+  "timestamp.column.name": "EFFECTIVE_DATE",
+  "topic.prefix": "product-connect-jdbc-",
+  "validate.non.null": "false",
+  "poll.interval.ms": 120000, "offset.flush.timeout.ms": 60000 } }' \
+  http://$CONNECT_HOST:$CONNECT_PORT/connectors
+
+
+VERY IMPORTANT - Delete the NodePort ingress when setup is complete!
