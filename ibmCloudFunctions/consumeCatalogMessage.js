@@ -35,7 +35,8 @@ const mongoConnect = util.promisify(MongoClient.connect)
 async function main(params) {
     const reused = client != null;
     if (client == null) {
-        client = await mongoConnect(uri);
+        const connectionString = params.mongoUri || uri;
+        client = await mongoConnect(connectionString);
 
         if (err) {
             throw new Error('Couldn\'t connect to Mongo' + err);
@@ -46,7 +47,8 @@ async function main(params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const styles = client.db(dbName).collection(collectionName);
+    const db = params.dbName || dbName;
+    const styles = client.db(db).collection(collectionName);
     const updateOne = util.promisify(styles.updateOne);
     const promise = new Promise().resolve();
     params.messages.forEach((msg) => {
