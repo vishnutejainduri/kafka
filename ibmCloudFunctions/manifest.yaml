@@ -1,0 +1,19 @@
+packages:
+  product-consumers:
+    actions:
+      consume-catalog-message:
+        location: ./consumeCatalogMessage.js
+        runtime: nodejs:10
+        inputs:
+          mongoUri: $MONGO_URI
+          dbName: $DB_NAME
+    triggers:
+      catalog-trigger:
+        feed: ${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: string
+          topic: product-connect-jdbc-CATALOG
+    rules:
+      catalog-rule:
+        action: consume-catalog-message
+        trigger: catalog-trigger
