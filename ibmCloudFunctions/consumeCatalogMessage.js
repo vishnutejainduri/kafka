@@ -12,17 +12,14 @@ async function main(params) {
 
     const updateStyles = await getDatabaseUpdateFunction(params);
     const promise = new Promise().resolve();
-    params.messages.forEach((msg) => {
-        if (msg.topic !== params.topicName) {
-            return;
-        }
-
-        const styleData = parseCatalogMessage(msg);
-
-        // perform updates serially to avoid opening too many connections
-        promise.then(() => updateStyles({ id: styleData.id }, styleData));
-        // TODO error handling - this MUST report errors and which offests must be retried
-    });
+    params.messages
+        .filter((msg) => msg.topic === params.topicName)
+        .map((msg) => parseCatalogMessage(msg))
+        .forEach((styleData) => {
+            // perform updates serially to avoid opening too many connections
+            promise.then(() => updateStyles({ id: styleData.id }, styleData));
+            // TODO error handling - this MUST report errors and which offests must be retried
+        });
 
     return promise;
 }

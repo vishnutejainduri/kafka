@@ -24,29 +24,30 @@ async function main(params) {
 
     const updateInventory = getDatabaseUpdateFunction(params);
     const promise = new Promise().resolve();
-    params.messages.forEach((msg) => {
-        if (msg.topic !== params.topicName) {
-            return;
-        }
+    params.messages
+        .filter((msg) => msg.topic === params.topicName)
+        .map((msg) => {
+            // Re-map atttributes
+            const inventoryData = {};
+            for (let sourceAttributeName in attributeMap) {
+                inventoryData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
+            }
 
-        // Re-map atttributes
-        const inventoryData = {};
-        for (let sourceAttributeName in attributeMap) {
-            inventoryData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
-        }
-
-        // perform updates serially to avoid opening too many connections
-        promise.then(() => {
-            return updateInventory(
-                {
-                    styleId: inventoryData.styleId,
-                    skuId: inventoryData.skuId
-                },
-                inventoryData
-            );
+            return inventoryData;
+        })
+        .forEach((inventoryData) => {
+            // perform updates serially to avoid opening too many connections
+            promise.then(() => {
+                return updateInventory(
+                    {
+                        styleId: inventoryData.styleId,
+                        skuId: inventoryData.skuId
+                    },
+                    inventoryData
+                );
+            });
+            // TODO error handling - this MUST report errors and which offests must be retried
         });
-        // TODO error handling - this MUST report errors and which offests must be retried
-    });
 
     return promise;
 }
