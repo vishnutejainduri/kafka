@@ -1,5 +1,15 @@
 This folder contains K8s yaml files and scripts to deploy the Kafka Connect host.
 
+You must create the following topics in the target Event Streams:
+- inventory-connect-jdbc-config
+- inventory-connect-jdbc-status
+- inventory-connect-jdbc-offsets
+- inventory-connect-jdbc-SKUINVENTORY
+- product-connect-config
+- product-connect-offsets
+- product-connect-status
+- product-connect-jdbc-CATALOG
+
 Use the following command to create a secret in the cluster for the credentials and config. Remember to replace <user>
 and <password> below with those from the service credentials for Event Streams. Also update the bootstrap servers if necessary.
 TODO: Change this to a script
