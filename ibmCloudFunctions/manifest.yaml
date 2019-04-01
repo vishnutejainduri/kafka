@@ -7,12 +7,16 @@ packages:
         inputs:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
+          collectionName: styles
+          topicName: product-connect-jdbc-CATALOG
       consume-sku-inventory-message:
         location: ./consumeSkuInventoryMessage.js
         runtime: nodejs:10
         inputs:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
+          collectionName: inventory
+          topicName: inventory-connect-jdbc-SKUINVENTORY
     triggers:
       catalog-trigger:
         feed: ${FEED_BASE}/messageHubFeed
