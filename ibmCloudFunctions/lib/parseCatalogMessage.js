@@ -13,14 +13,14 @@ const translatableAttributeMap = {
     'CAREINSTRUCTIONS': 'careInstructions',
     'ADVICE': 'advice',
     'COLOUR_DESC': 'colour',
-    'COLOURGROUP': 'colourGroup'
+    'COLOURGROUP': 'colourGroup',
+    'CATAGORY': 'level1Category',
+    'CATAGORY_LEVEL_1A': 'level2Category',
+    'CATAGORY_LEVEL_2A': 'level3Category'
 };
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
     'STYLEID': 'styleId',
-    'CATAGORY': 'level1Category',
-    'CATAGORY_LEVEL_1A': 'level2Category',
-    'CATAGORY_LEVEL_2A': 'level3Category',
     'WEBSTATUS': 'webStatus',
     'SEASON_CD': 'season',
     'COLORID': 'colourId',
@@ -30,15 +30,16 @@ const attributeMap = {
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.
 export default function parseCatalogMessage(msg) {
     if (msg.topic !== TOPIC_NAME) {
-        throw new Error('Can only parse Catalog update messages/');
+        throw new Error('Can only parse Catalog update messages');
     }
 
     // Re-map atttributes
     const styleData = {};
     for (let sourceAttributeName in translatableAttributeMap) {
         styleData[translatableAttributeMap[sourceAttributeName]] = {
-            'en': msg.value[sourceAttributeName + '_EN'] || msg.value[sourceAttributeName + '_ENG'],
-            'fr': msg.value[sourceAttributeName + '_FR']
+            // We don't have all the translated columns, most notably the categories. TODO to figure that out
+            'en': msg.value[sourceAttributeName + '_EN'] || msg.value[sourceAttributeName + '_ENG'] || msg.value[sourceAttributeName],
+            'fr': msg.value[sourceAttributeName + '_FR'] || null
         }
     }
     for (let sourceAttributeName in attributeMap) {
