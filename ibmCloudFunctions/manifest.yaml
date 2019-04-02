@@ -18,7 +18,7 @@ packages:
           collectionName: inventory
           topicName: inventory-connect-jdbc-SKUINVENTORY
       update-algolia-style:
-        location: TODO after build
+        location: ./updateAlgoliaStyle/dist/bundle.js
         runtime: nodejs:10
         inputs:
           topicName: product-connect-jdbc-CATALOG
