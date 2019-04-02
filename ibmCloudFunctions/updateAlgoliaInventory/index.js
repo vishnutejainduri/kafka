@@ -31,15 +31,15 @@ async function main(params) {
         .map((msg) => parseSkuInventoryMessage(msg))
         .map((inventory) => { return { ...inventory , objectID: inventory.styleId }; });
 
-    const promise = new Promise();
-    index.partialUpdateObjects(updatedRecords, true, (err) => {
-        if (err) {
-            throw new Error('Failed to update Algolia records: ' + err)
-        }
+    return new Promise((resolve) => {
+        index.partialUpdateObjects(updatedRecords, true, (err) => {
+            if (err) {
+                throw new Error('Failed to update Algolia records: ' + err)
+            }
 
-        promise.resolve();
+            resolve();
+        });
     });
-    return promise;
 }
 
 exports.main = main;

@@ -11,7 +11,7 @@ async function main(params) {
     }
 
     const updateInventory = getDatabaseUpdateFunction(params);
-    const promise = new Promise().resolve();
+    const promise = Promise.resolve();
     params.messages
         .filter((msg) => msg.topic === params.topicName)
         .map((msg) => parseSkuInventoryMessage(msg))
@@ -26,7 +26,7 @@ async function main(params) {
                     inventoryData
                 );
             });
-            // TODO error handling - this MUST report errors and which offests must be retried
+            // TODO error handling - this MUST report errors and which offsets must be retried
         });
 
     return promise;
