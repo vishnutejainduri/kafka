@@ -1,17 +1,5 @@
 const getDatabaseUpdateFunction = require('./lib/getDatabaseUpdateFunction');
-
-// Map of source attribute names to mapped name. Non-translatable attribute names
-const attributeMap = {
-    'INV_FKSTYLENO': 'styleId',
-    'FKSKU': 'skuId',
-    'FKSTORENO': 'locationId',
-    'QOH': 'quantityOnHand',
-    'QOO': 'quantityOnOrder',
-    'QBO': 'quantityBackOrder',
-    'QIT': 'quantityInTransit',
-    'QOHSELLABLE': 'quantityOnHandSellable',
-    'QOHNOTSELLABLE': 'quantityOnHandNotSellable',
-};
+const parseSkuInventoryMessage = require('./lib/parseSkuInventoryMessage');
 
 async function main(params) {
     if (!params.topicName) {
@@ -26,15 +14,7 @@ async function main(params) {
     const promise = new Promise().resolve();
     params.messages
         .filter((msg) => msg.topic === params.topicName)
-        .map((msg) => {
-            // Re-map atttributes
-            const inventoryData = {};
-            for (let sourceAttributeName in attributeMap) {
-                inventoryData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
-            }
-
-            return inventoryData;
-        })
+        .map((msg) => parseSkuInventoryMessage(msg))
         .forEach((inventoryData) => {
             // perform updates serially to avoid opening too many connections
             promise.then(() => {
