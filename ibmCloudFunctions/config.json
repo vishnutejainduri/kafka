@@ -1,4 +1,0 @@
-{
-  "mongoUri": "<mongo db connection string>",
-  "dbName": "<mongo db name>"
-}
