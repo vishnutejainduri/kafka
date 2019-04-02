@@ -1,7 +1,7 @@
 const algoliasearch = require('algoliasearch');
 const parseCatalogMessage = require('../lib/parseCatalogMessage');
 
-const client = algoliasearch('CDROBE4GID', 'e46042a457cfc6131bed30aa16aa6c48');
+let client = null;
 let index = null;
 
 async function main(params) {
@@ -13,11 +13,16 @@ async function main(params) {
         throw new Error('Requires an API key for writing to Algolia.');
     }
 
+    if (!params.algoliaAppId) {
+        throw new Error('Requires an App ID for writing to Algolia.');
+    }
+
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
     }
 
     if (index === null) {
+        client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
         index = client.initIndex(params.algoliaIndexName);
     }
 
@@ -27,7 +32,7 @@ async function main(params) {
         .map((style) => { return { ...style , objectID: style.styleId }; });
 
     const promise = new Promise();
-    index.partialUpdateObjects(updatedRecords, true, (err, content) => {
+    index.partialUpdateObjects(updatedRecords, true, (err) => {
         if (err) {
             throw new Error('Failed to update Algolia records: ' + err)
         }

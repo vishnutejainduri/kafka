@@ -23,7 +23,8 @@ packages:
         inputs:
           topicName: product-connect-jdbc-CATALOG
           algoliaApiKey: $ALGOLIA_API_KEY
-          algoliaIndexName: newest
+          algoliaIndexName: $ALGOLIA_INDEX_NAME
+          algoliaAppId: $ALGOLIA_APP_ID
     triggers:
       catalog-trigger:
         feed: ${FEED_BASE}/messageHubFeed

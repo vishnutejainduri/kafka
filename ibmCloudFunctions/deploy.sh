@@ -22,5 +22,11 @@ bx wsk trigger list
 echo ">>> Currently Deployed Rules:"
 bx wsk rule list
 echo ">>> Deploying Actions Using WhiskDeploy…"
-ALGOLIA_API_KEY=$ALGOLIA_API_KEY FEED_BASE=$FEED_BASE MONGO_URI=$MONGO_URI DB_NAME=$DB_NAME ./openwhisk/wskdeploy -p .
+ALGOLIA_APP_ID=$ALGOLIA_APP_ID \
+  ALGOLIA_API_KEY=$ALGOLIA_API_KEY \
+  ALGOLIA_INDEX_NAME=$ALGOLIA_INDEX_NAME \
+  FEED_BASE=$FEED_BASE \
+  MONGO_URI=$MONGO_URI \
+  DB_NAME=$DB_NAME \
+  ./openwhisk/wskdeploy -p .
 echo ">>> Successfully Deployed Actions Using WhiskDeploy."
