@@ -25,6 +25,14 @@ packages:
           algoliaApiKey: $ALGOLIA_API_KEY
           algoliaIndexName: $ALGOLIA_INDEX_NAME
           algoliaAppId: $ALGOLIA_APP_ID
+      update-algolia-inventory:
+        location: ./updateAlgoliaInventory/dist/bundle.js
+        runtime: nodejs:10
+        inputs:
+          topicName: inventory-connect-jdbc-SKUINVENTORY
+          algoliaApiKey: $ALGOLIA_API_KEY
+          algoliaIndexName: $ALGOLIA_INDEX_NAME
+          algoliaAppId: $ALGOLIA_APP_ID
     triggers:
       catalog-trigger:
         feed: ${FEED_BASE}/messageHubFeed
@@ -45,4 +53,7 @@ packages:
         trigger: catalog-trigger
       sku-inventory-rule:
         action: consume-sku-inventory-message
+        trigger: sku-inventory-trigger
+      algolia-inventory-rule:
+        action: update-algolia-inventory
         trigger: sku-inventory-trigger
