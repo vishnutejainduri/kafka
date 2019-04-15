@@ -21,6 +21,8 @@ echo ">>> Currently Deployed Triggers:"
 bx wsk trigger list
 echo ">>> Currently Deployed Rules:"
 bx wsk rule list
+echo ">>> Building Actions packaged as modules:"
+./build.sh
 echo ">>> Deploying Actions Using WhiskDeploy…"
 ALGOLIA_APP_ID=$ALGOLIA_APP_ID \
   ALGOLIA_API_KEY=$ALGOLIA_API_KEY \
