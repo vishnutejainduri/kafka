@@ -52,25 +52,9 @@ kubectl apply -f kafka-connect-deployment/kafka-connect-deployment.yaml
 Open a NodePort ingress to the Connect host's REST API: https://console.bluemix.net/docs/containers/cs_nodeport.html#nodeport
 VERY IMPORTANT - Delete the NodePort ingress when setup is complete!
 
-# IRO_POS_STYLES connector, do not use
 Create a connector by using the REST API
 CONNECT_HOST=<public ip for a node in the cluster>
 CONNECT_PORT=<port set when creating NodePort ingress above>
-curl -X POST   -H "Content-Type: application/json" \
-  --data '{ "name": "jesta-merch-iro-pos-styles-jdbc-source",
-    "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
-    "tasks.max": 1,
-    "connection.url": "jdbc:oracle:thin:myplanet/M1P12n3t@//142.215.51.103:1521/MTST",
-    "schema.pattern": "MERCH",
-    "table.whitelist": "IRO_POS_STYLES",
-    "table.poll.interval.ms": 3600000,
-    "mode": "timestamp",
-    "incrementing.column.name": "",
-    "timestamp.column.name": "PROCESS_DATE_CREATED",
-    "topic.prefix": "product-connect-jdbc-",
-    "poll.interval.ms": 120000,
-    "offset.flush.timeout.ms": 60000 } }' \
-  http://$CONNECT_HOST:$CONNECT_PORT/connectors
 
 # ELCAT.CATALOG connector
 curl -X POST   -H "Content-Type: application/json" \
@@ -97,13 +81,30 @@ curl -X POST   -H "Content-Type: application/json" \
   "connection.url": "jdbc:oracle:thin:myplanet/M1P12n3t@//142.215.51.103:1521/MTST",
   "schema.pattern": "VSTORE",
   "table.whitelist": "SKUINVENTORY",
-  "table.poll.interval.ms": 300000,
+  "table.poll.interval.ms": 3600000,
   "mode": "timestamp",
   "incrementing.column.name": "",
   "timestamp.column.name": "LASTMODIFIEDDATE",
   "topic.prefix": "inventory-connect-jdbc-",
   "validate.non.null": "false",
   "poll.interval.ms": 120000, "offset.flush.timeout.ms": 60000 } }' \
+  http://$CONNECT_HOST:$CONNECT_PORT/connectors
+
+# VSTORE.SKU connector
+curl -X POST   -H "Content-Type: application/json" \
+  --data '{ "name": "vstore-sku-jdbc-source",
+  "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+  "tasks.max": 1,
+  "connection.url": "jdbc:oracle:thin:myplanet/M1P12n3t@//142.215.51.103:1521/MTST",
+  "schema.pattern": "VSTORE",
+  "table.whitelist": "SKU",
+  "table.poll.interval.ms": 3600000,
+  "mode": "timestamp",
+  "incrementing.column.name": "",
+  "timestamp.column.name": "LASTMODIFIEDDATE",
+  "topic.prefix": "sku-connect-jdbc-",
+  "validate.non.null": "false",
+  "poll.interval.ms": 600000, "offset.flush.timeout.ms": 60000 } }' \
   http://$CONNECT_HOST:$CONNECT_PORT/connectors
 
 
