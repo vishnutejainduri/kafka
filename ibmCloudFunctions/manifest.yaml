@@ -8,7 +8,7 @@ packages:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
           collectionName: styles
-          topicName: product-connect-jdbc-CATALOG
+          topicName: styles-connect-jdbc-CATALOG
       consume-sku-inventory-message:
         location: ./consumeSkuInventoryMessage.js
         runtime: nodejs:10
@@ -21,7 +21,7 @@ packages:
         location: ./updateAlgoliaStyle/dist/bundle.js
         runtime: nodejs:10
         inputs:
-          topicName: product-connect-jdbc-CATALOG
+          topicName: styles-connect-jdbc-CATALOG
           algoliaApiKey: $ALGOLIA_API_KEY
           algoliaIndexName: $ALGOLIA_INDEX_NAME
           algoliaAppId: $ALGOLIA_APP_ID
@@ -38,7 +38,7 @@ packages:
         feed: ${FEED_BASE}/messageHubFeed
         inputs:
           isJSONData: string
-          topic: product-connect-jdbc-CATALOG
+          topic: styles-connect-jdbc-CATALOG
       sku-inventory-trigger:
         feed: ${FEED_BASE}/messageHubFeed
         inputs:

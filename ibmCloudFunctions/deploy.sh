@@ -8,19 +8,19 @@ rm -rd ./openwhisk_wskdeploy-latest-linux-amd64.tgz
 echo ">>> Checking installed version of Whisk Deploy…"
 ./openwhisk/wskdeploy version
 echo ">>> Checking installed version of IBM Cloud CLI…"
-bx –version
+ibmcloud –-version
 echo ">>> Logging into IBM Cloud…"
-bx login –apikey $DEPLOYER_API_KEY -a api.ng.bluemix.net -o "$ORG" -s "$SPACE"
+ibmcloud login --apikey $DEPLOYER_API_KEY -a api.ng.bluemix.net -o "Myplanet Harry Rosen" -s "Harry Rosen Dev Dallas"
 echo ">>> Contents Of Manifest File:"
 cat manifest.yaml
 echo ">>> Currently Deployed Packages:"
-bx wsk package list
+ibmcloud wsk package list
 echo ">>> Currently Deployed Actions:"
-bx wsk action list
+ibmcloud wsk action list
 echo ">>> Currently Deployed Triggers:"
-bx wsk trigger list
+ibmcloud wsk trigger list
 echo ">>> Currently Deployed Rules:"
-bx wsk rule list
+ibmcloud wsk rule list
 echo ">>> Building Actions packaged as modules:"
 ./build.sh
 echo ">>> Deploying Actions Using WhiskDeploy…"

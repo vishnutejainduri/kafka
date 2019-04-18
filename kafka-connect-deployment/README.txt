@@ -17,13 +17,13 @@ TODO: Change this to a script
 kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_BOOTSTRAP_SERVERS="kafka01-prod02.messagehub.services.us-south.bluemix.net:9093,kafka04-prod02.messagehub.services.us-south.bluemix.net:9093,kafka02-prod02.messagehub.services.us-south.bluemix.net:9093,kafka05-prod02.messagehub.services.us-south.bluemix.net:9093,kafka03-prod02.messagehub.services.us-south.bluemix.net:9093"   \
   --from-literal=CONNECT_REST_PORT=28083   \
-  --from-literal=CONNECT_GROUP_ID="product"   \
-  --from-literal=CONNECT_CONFIG_STORAGE_TOPIC="product-connect-config"   \
-  --from-literal=CONNECT_OFFSET_STORAGE_TOPIC="product-connect-offsets"   \
-  --from-literal=CONNECT_STATUS_STORAGE_TOPIC="product-connect-status"   \
-  --from-literal=CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=3   \
-  --from-literal=CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=3   \
-  --from-literal=CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=3   \
+  --from-literal=CONNECT_GROUP_ID="platform"   \
+  --from-literal=CONNECT_CONFIG_STORAGE_TOPIC="platform-connect-config"   \
+  --from-literal=CONNECT_OFFSET_STORAGE_TOPIC="platform-connect-offsets"   \
+  --from-literal=CONNECT_STATUS_STORAGE_TOPIC="platform-connect-status"   \
+  --from-literal=CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=1   \
+  --from-literal=CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=1   \
+  --from-literal=CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=1   \
   --from-literal=CONNECT_KEY_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
   --from-literal=CONNECT_VALUE_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
   --from-literal=CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE=false  \
@@ -44,12 +44,12 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_PRODUCER_SSL_PROTOCOL=TLSv1.2  \
   --from-literal=CONNECT_PRODUCER_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
   --from-literal=CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS \
-  --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=5
+  --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=1
 
 Create the image (see /kafka-connect-image) and deploy a workload with it
 kubectl apply -f kafka-connect-deployment/kafka-connect-deployment.yaml
 
-Open a NodePort ingress to the Connect host's REST API: https://console.bluemix.net/docs/containers/cs_nodeport.html#nodeport
+Open a NodePort ingress to the Connect host's REST API: https://cloud.ibm.com/docs/containers?topic=containers-nodeport#nodeport
 VERY IMPORTANT - Delete the NodePort ingress when setup is complete!
 
 Create a connector by using the REST API
@@ -66,11 +66,11 @@ curl -X POST   -H "Content-Type: application/json" \
   "table.whitelist": "CATALOG",
   "table.poll.interval.ms": 3600000,
   "mode": "timestamp",
-  "incrementing.column.name": "",
+  "batch.max.rows": 100,
   "timestamp.column.name": "EFFECTIVE_DATE",
-  "topic.prefix": "product-connect-jdbc-",
+  "topic.prefix": "styles-connect-jdbc-",
   "validate.non.null": "false",
-  "poll.interval.ms": 120000, "offset.flush.timeout.ms": 60000 } }' \
+  "poll.interval.ms": 120000, "offset.flush.timeout.ms": 120000 } }' \
   http://$CONNECT_HOST:$CONNECT_PORT/connectors
 
 # VSTORE.SKUINVENTORY connector
