@@ -37,12 +37,19 @@ packages:
       catalog-trigger:
         feed: ${FEED_BASE}/messageHubFeed
         inputs:
-          isJSONData: string
+          kafka_brokers_sasl: ${KAFKA_BROKERS_SASL}
+          user: ${KAFKA_USERNAME}
+          password: ${KAFKA_PASSWORD}
+          isJSONData: true
           topic: styles-connect-jdbc-CATALOG
       sku-inventory-trigger:
         feed: ${FEED_BASE}/messageHubFeed
         inputs:
-          isJSONData: string
+          kafka_brokers_sasl: ${KAFKA_BROKERS_SASL}
+          user: ${KAFKA_USERNAME}
+          password: ${KAFKA_PASSWORD}
+          isJSONData: true
+          topic: styles-connect-jdbc-CATALOG
           topic: inventory-connect-jdbc-SKUINVENTORY
     rules:
       catalog-rule:
