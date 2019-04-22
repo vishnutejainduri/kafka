@@ -33,3 +33,21 @@ packages:
           algoliaApiKey: $ALGOLIA_API_KEY
           algoliaIndexName: $ALGOLIA_INDEX_NAME
           algoliaAppId: $ALGOLIA_APP_ID
+    triggers:
+      catalog-trigger:
+        feed: /messaging/messageHubFeed
+        inputs:
+          kafka_brokers_sasl: ${KAFKA_BROKERS_SASL}
+          user: ${KAFKA_USERNAME}
+          password: ${KAFKA_PASSWORD}
+          isJSONData: true
+          topic: styles-connect-jdbc-CATALOG
+      sku-inventory-trigger:
+        feed: /messaging/messageHubFeed
+        inputs:
+          kafka_brokers_sasl: ${KAFKA_BROKERS_SASL}
+          user: ${KAFKA_USERNAME}
+          password: ${KAFKA_PASSWORD}
+          isJSONData: true
+          topic: inventory-connect-jdbc-SKUINVENTORY
+
