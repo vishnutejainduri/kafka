@@ -4,9 +4,9 @@ packages:
       openwhisk-messagehub:
         location: /whisk.system/messaging
         inputs:
-          kafka_brokers_sasl: ["kafka01-prod02.messagehub.services.us-south.bluemix.net:9093", "kafka04-prod02.messagehub.services.us-south.bluemix.net:9093", "kafka02-prod02.messagehub.services.us-south.bluemix.net:9093", "kafka05-prod02.messagehub.services.us-south.bluemix.net:9093", "kafka03-prod02.messagehub.services.us-south.bluemix.net:9093"]
-          user: Hs7rsuaFVFVfBCNk
-          password: c8TYtULHsD8BpaBdQ5Iqi0gbSZfNauXD
+          kafka_brokers_sasl: $KAFKA_BROKERS_SASL
+          user: $KAFKA_USERNAME
+          password: $KAFKA_PASSWORD
           kafka_admin_url: https://kafka-admin-prod01.messagehub.services.us-south.bluemix.net:443
     actions:
       consume-catalog-message:
