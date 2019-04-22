@@ -49,7 +49,6 @@ packages:
           user: ${KAFKA_USERNAME}
           password: ${KAFKA_PASSWORD}
           isJSONData: true
-          topic: styles-connect-jdbc-CATALOG
           topic: inventory-connect-jdbc-SKUINVENTORY
     rules:
       catalog-rule:

@@ -21,9 +21,9 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_CONFIG_STORAGE_TOPIC="platform-connect-config"   \
   --from-literal=CONNECT_OFFSET_STORAGE_TOPIC="platform-connect-offsets"   \
   --from-literal=CONNECT_STATUS_STORAGE_TOPIC="platform-connect-status"   \
-  --from-literal=CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=1   \
-  --from-literal=CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=1   \
-  --from-literal=CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=1   \
+  --from-literal=CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=3   \
+  --from-literal=CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=3   \
+  --from-literal=CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=3   \
   --from-literal=CONNECT_KEY_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
   --from-literal=CONNECT_VALUE_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
   --from-literal=CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE=false  \
