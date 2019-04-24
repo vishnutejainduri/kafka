@@ -46,14 +46,14 @@ packages:
           topic: inventory-connect-jdbc-SKUINVENTORY
     rules:
       catalog-rule:
-        action: consume-catalog-message
+        action: product-consumers/consume-catalog-message
         trigger: catalog-trigger
       algolia-catalog-rule:
-        action: update-algolia-style
+        action: product-consumers/update-algolia-style
         trigger: catalog-trigger
       sku-inventory-rule:
-        action: consume-sku-inventory-message
+        action: product-consumers/consume-sku-inventory-message
         trigger: sku-inventory-trigger
       algolia-inventory-rule:
-        action: update-algolia-inventory
+        action: product-consumers/update-algolia-inventory
         trigger: sku-inventory-trigger
