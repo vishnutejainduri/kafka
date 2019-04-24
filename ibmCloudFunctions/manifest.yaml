@@ -2,7 +2,7 @@ packages:
   product-consumers:
     actions:
       consume-catalog-message:
-        location: ./consumeCatalogMessage.js
+        location: ./consumeCatalogMessage/dist/bundle.js
         runtime: nodejs:10
         inputs:
           mongoUri: $MONGO_URI
@@ -10,7 +10,7 @@ packages:
           collectionName: styles
           topicName: styles-connect-jdbc-CATALOG
       consume-sku-inventory-message:
-        location: ./consumeSkuInventoryMessage.js
+        location: ./consumeSkuInventoryMessage/dist/bundle.js
         runtime: nodejs:10
         inputs:
           mongoUri: $MONGO_URI
