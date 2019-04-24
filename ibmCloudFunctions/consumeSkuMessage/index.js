@@ -1,5 +1,5 @@
-const parseSkuMessage = require('./lib/parseSkuMessage');
-const getDatabaseUpdateFunction = require('./lib/getDatabaseUpdateFunction');
+const parseSkuMessage = require('../lib/parseSkuMessage');
+const getDatabaseUpdateFunction = require('../lib/getDatabaseUpdateFunction');
 
 async function main(params) {
     if (!params.topicName) {

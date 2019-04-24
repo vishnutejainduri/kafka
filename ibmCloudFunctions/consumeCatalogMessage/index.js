@@ -1,5 +1,5 @@
-const parseCatalogMessage = require('./lib/parseCatalogMessage');
-const getDatabaseUpdateFunction = require('./lib/getDatabaseUpdateFunction');
+const parseCatalogMessage = require('../lib/parseCatalogMessage');
+const getDatabaseUpdateFunction = require('../lib/getDatabaseUpdateFunction');
 
 async function main(params) {
     if (!params.topicName) {
