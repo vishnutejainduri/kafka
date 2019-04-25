@@ -14,17 +14,15 @@ const mongoConnect = util.promisify(MongoClient.connect);
  * @param {String} params.collectionName Name of the collection to use
  * @returns {Promise<function>} update function that upserts data.
  */
-export default async function getUpdateFunction(params) {
+async function getUpdateFunction(params) {
     if (client == null) {
         if (!params.mongoUri || !params.dbName || !params.collectionName) {
             throw new Error('mongoUri, dbName, and collectionName are required action params. See manifest.yaml.')
         }
 
-        client = await mongoConnect(params.mongoUri);
-
-        if (err) {
-            throw new Error('Couldn\'t connect to Mongo' + err);
-        }
+        client = await mongoConnect(params.mongoUri).catch((err) => {
+            throw new Error('Couldn\'t connect to Mongo: ' + err);
+        });
     }
 
     const collection = client.db(params.dbName).collection(params.collectionName);
@@ -33,3 +31,5 @@ export default async function getUpdateFunction(params) {
         return updateOne(id, data, { upsert: true });
     };
 }
+
+module.exports = getUpdateFunction;

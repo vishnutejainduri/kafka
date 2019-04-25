@@ -1,6 +1,6 @@
 'use strict';
 
-const TOPIC_NAME = 'product-connect-jdbc-CATALOG';
+const TOPIC_NAME = 'styles-connect-jdbc-CATALOG';
 
 // Map of source attribute names to mapped name. Translatable attributes are suffixed with _EN, _ENG, or _FR.
 const translatableAttributeMap = {
@@ -28,7 +28,7 @@ const attributeMap = {
 };
 
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.
-export default function parseCatalogMessage(msg) {
+function parseCatalogMessage(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Catalog update messages');
     }
@@ -48,3 +48,5 @@ export default function parseCatalogMessage(msg) {
 
     return styleData;
 }
+
+module.exports = parseCatalogMessage;

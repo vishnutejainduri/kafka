@@ -4,7 +4,7 @@ const parseSkuInventoryMessage = require('../lib/parseSkuInventoryMessage');
 let client = null;
 let index = null;
 
-async function main(params) {
+global.main = function (params) {
     if (!params.algoliaIndexName) {
         throw new Error('Requires an Algolia index.');
     }
@@ -42,4 +42,4 @@ async function main(params) {
     });
 }
 
-exports.main = main;
+module.exports = global.main;

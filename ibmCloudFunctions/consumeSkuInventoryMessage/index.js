@@ -1,7 +1,7 @@
-const getDatabaseUpdateFunction = require('../lib/getDatabaseUpdateFunction');
+const getUpdateFunction = require('../lib/getDatabaseUpdateFunction');
 const parseSkuInventoryMessage = require('../lib/parseSkuInventoryMessage');
 
-async function main(params) {
+global.main = async function (params) {
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
     }
@@ -10,7 +10,7 @@ async function main(params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const updateInventory = getDatabaseUpdateFunction(params);
+    const updateInventory = getUpdateFunction(params);
     const promise = Promise.resolve();
     params.messages
         .filter((msg) => msg.topic === params.topicName)
@@ -32,4 +32,4 @@ async function main(params) {
     return promise;
 }
 
-exports.main = main;
+module.exports = global.main;

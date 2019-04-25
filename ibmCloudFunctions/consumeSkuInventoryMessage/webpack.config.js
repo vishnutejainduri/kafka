@@ -10,5 +10,8 @@ module.exports = {
     target: 'node',
     externals: [
         'mongodb'
-    ]
+    ],
+    optimization: {
+        minimize: false
+    }
 };
