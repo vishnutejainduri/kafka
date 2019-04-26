@@ -30,7 +30,7 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE=false  \
   --from-literal=CONNECT_INTERNAL_KEY_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
   --from-literal=CONNECT_INTERNAL_VALUE_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
-  --from-literal=CONNECT_LOG4J_ROOT_LOGLEVEL=DEBUG   \
+  --from-literal=CONNECT_LOG4J_ROOT_LOGLEVEL=INFO   \
   --from-literal=CONNECT_PLUGIN_PATH=/usr/share/java,/etc/kafka-connect/jars \
   --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>" password="<password>";'  \
   --from-literal=CONNECT_SECURITY_PROTOCOL=SASL_SSL  \
