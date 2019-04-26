@@ -18,7 +18,11 @@ global.main = async function (params) {
             .then((existingDocument) => existingDocument
                 ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lt: styleData.effectiveDate } }, { $set: styleData })
                 : styles.insertOne(styleData)
-            ).then(() => "Updated/inserted document " + styleData._id)
+            ).then(() => console.log("Updated/inserted document " + styleData._id))
+            .catch((err) => {
+                err.attemptedDocument = styleData;
+                throw err;
+            })
         )
     ).then((results) => { results });
     // TODO error handling - this MUST report errors and which offsets must be retried

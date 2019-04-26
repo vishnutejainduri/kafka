@@ -18,7 +18,7 @@ async function getCollection(params) {
             throw new Error('mongoUri, dbName, and collectionName are required action params. See manifest.yaml.')
         }
 
-        client = await MongoClient.connect(params.mongoUri).catch((err) => {
+        client = await MongoClient.connect(params.mongoUri, { useNewUrlParser: true }).catch((err) => {
             throw new Error('Couldn\'t connect to Mongo: ' + err);
         });
     }
