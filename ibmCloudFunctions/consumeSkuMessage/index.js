@@ -1,5 +1,5 @@
 const parseSkuMessage = require('../lib/parseSkuMessage');
-const getDatabaseUpdateFunction = require('../lib/getDatabaseUpdateFunction');
+const getCollection = require('../lib/getCollection');
 
 async function main(params) {
     if (!params.topicName) {
@@ -10,19 +10,20 @@ async function main(params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const updateSkus = await getDatabaseUpdateFunction(params);
-    const promise = Promise.resolve();
-    params.messages
+
+    const skus = await getCollection(params);
+    return Promise.all(params.messages
         .filter((msg) => msg.topic === params.topicName)
         .map((msg) => parseSkuMessage(msg))
         // TODO MUST FILTER BY ORG!!!
-        .forEach((skuData) => {
-            // perform updates serially to avoid opening too many connections
-            promise.then(() => updateSkus({ id: skuData.id }, skuData));
-            // TODO error handling - this MUST report errors and which offsets must be retried
-        });
-
-    return promise;
+        .map((skuData) => skus.findOne({ _id: skuData._id })
+            .then((existingDocument) => existingDocument
+                ? skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, { $set: skuData })
+                : skus.insertOne(skuData)
+            ).then(() => "Updated/inserted document " + skuData._id)
+        )
+    ).then((results) => { results });
+    // TODO error handling - this MUST report errors and which offsets must be retried
 }
 
 exports.main = main;

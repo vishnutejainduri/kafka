@@ -9,6 +9,7 @@ const attributeMap = {
     'SKUCOLOR': 'colorId',
     'SKUSIZE': 'sizeId',
     'SKUDIMENSION': 'dimensionId',
+    'LASTMODIFIEDDATE': 'lastModifiedDate'
 };
 
 // Parse a message from the VSTORE.SKU table and return a new object with filtered and re-mapped attributes.
