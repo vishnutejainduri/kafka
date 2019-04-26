@@ -1,5 +1,5 @@
 const parseCatalogMessage = require('../lib/parseCatalogMessage');
-const getUpdateFunction = require('../lib/getDatabaseUpdateFunction');
+const getCollection = require('../lib/getCollection');
 
 global.main = async function (params) {
     if (!params.topicName) {
@@ -10,18 +10,18 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const updateStyles = await getUpdateFunction(params);
-    const promise = Promise.resolve();
-    params.messages
+    const styles = await getCollection(params);
+    return Promise.all(params.messages
         .filter((msg) => msg.topic === params.topicName)
         .map((msg) => parseCatalogMessage(msg))
-        .forEach((styleData) => {
-            // perform updates serially to avoid opening too many connections
-            promise.then(() => updateStyles({ id: styleData.id }, styleData));
-            // TODO error handling - this MUST report errors and which offsets must be retried
-        });
-
-    return promise;
+        .map((styleData) => styles.findOne({ _id: styleData._id })
+            .then((existingDocument) => existingDocument
+                ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lt: styleData.effectiveDate } }, { $set: styleData })
+                : styles.insertOne(styleData)
+            ).then(() => "Updated/inserted document " + styleData._id)
+        )
+    ).then((results) => { results });
+    // TODO error handling - this MUST report errors and which offsets must be retried
 }
 
 module.exports = global.main;
