@@ -13,6 +13,7 @@ const attributeMap = {
     'QIT': 'quantityInTransit',
     'QOHSELLABLE': 'quantityOnHandSellable',
     'QOHNOTSELLABLE': 'quantityOnHandNotSellable',
+    'LASTMODIFIEDDATE': 'lastModifiedDate'
 };
 
 // Parse a message from the VSTORE.SKUINVENTORY table and return a new object with filtered and re-mapped attributes.

@@ -1,4 +1,4 @@
-const getUpdateFunction = require('../lib/getDatabaseUpdateFunction');
+const getCollection = require('../lib/getCollection');
 const parseSkuInventoryMessage = require('../lib/parseSkuInventoryMessage');
 
 global.main = async function (params) {
@@ -10,26 +10,18 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const updateInventory = getUpdateFunction(params);
-    const promise = Promise.resolve();
-    params.messages
+    const inventory = await getCollection(params);
+    return Promise.all(params.messages
         .filter((msg) => msg.topic === params.topicName)
         .map((msg) => parseSkuInventoryMessage(msg))
-        .forEach((inventoryData) => {
-            // perform updates serially to avoid opening too many connections
-            promise.then(() => {
-                return updateInventory(
-                    {
-                        styleId: inventoryData.styleId,
-                        skuId: inventoryData.skuId
-                    },
-                    inventoryData
-                );
-            });
-            // TODO error handling - this MUST report errors and which offsets must be retried
-        });
-
-    return promise;
+        .map((inventoryData) => inventory.findOne({ _id: inventoryData._id })
+            .then((existingDocument) => existingDocument
+                ? inventory.updateOne({ _id: inventoryData._id, lastModifiedDate: { $lt: inventoryData.lastModifiedDate } }, { $set: inventoryData })
+                : inventory.insertOne(inventoryData)
+            ).then(() => "Updated/inserted document " + inventoryData._id)
+        )
+    ).then((results) => { results });
+    // TODO error handling - this MUST report errors and which offsets must be retried
 }
 
 module.exports = global.main;
