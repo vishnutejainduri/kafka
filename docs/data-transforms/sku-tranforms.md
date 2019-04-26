@@ -1,6 +1,8 @@
 # SKU Queries and Transforms
 
 ## SKU Query
+> **IMPORTANT!** This query does not have the timestamp fields
+
 > Please note that the ID for the SKU is not the primary key (`pksku`) of the `vstore.sku` table
 > but the field `pkproductno` of the `vstore.skuxref` table
 

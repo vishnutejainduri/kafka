@@ -1,6 +1,8 @@
 # Style Queries and Transforms
 
 ## Style Query
+> **IMPORTANT!** This query does not have the timestamp fields
+
 ```sql
 select
   STYLEID as id,
