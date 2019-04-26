@@ -28,6 +28,10 @@ const attributeMap = {
     'EFFECTIVE_DATE': 'effectiveDate'
 };
 
+const transforms = {
+    'id': (id) => substr(0, id.length - 3) // strip "-00"
+};
+
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.
 function parseCatalogMessage(msg) {
     if (msg.topic !== TOPIC_NAME) {
@@ -45,6 +49,10 @@ function parseCatalogMessage(msg) {
     }
     for (let sourceAttributeName in attributeMap) {
         styleData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
+    }
+
+    for (let transformField in transforms) {
+        styleData[transformField] = transforms[transformField](styleData[transformField]);
     }
 
     // Add _id for mongo
