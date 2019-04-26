@@ -1,4 +1,4 @@
-const parseSkuMessage = require('../lib/parseSkuMessage');
+const parseStyleMessage = require('../lib/parseStyleMessage');
 const getCollection = require('../lib/getCollection');
 
 global.main = async function (params) {
@@ -13,7 +13,7 @@ global.main = async function (params) {
     const styles = await getCollection(params);
     return Promise.all(params.messages
         .filter((msg) => msg.topic === params.topicName)
-        .map((msg) => parseSkuMessage(msg))
+        .map((msg) => parseStyleMessage(msg))
         .map((styleData) => styles.findOne({ _id: styleData._id })
             .then((existingDocument) => existingDocument
                 ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lt: styleData.effectiveDate } }, { $set: styleData })
