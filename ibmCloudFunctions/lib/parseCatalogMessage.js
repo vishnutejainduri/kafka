@@ -20,11 +20,12 @@ const translatableAttributeMap = {
 };
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
-    'STYLEID': 'styleId',
+    'STYLEID': 'id',
     'WEBSTATUS': 'webStatus',
     'SEASON_CD': 'season',
     'COLORID': 'colourId',
     'APPROVED_FOR_WEB': 'approvedForWeb',
+    'EFFECTIVE_DATE': 'effectiveDate'
 };
 
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.
@@ -45,6 +46,9 @@ function parseCatalogMessage(msg) {
     for (let sourceAttributeName in attributeMap) {
         styleData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
     }
+
+    // Add _id for mongo
+    styleData._id = styleData.id;
 
     return styleData;
 }

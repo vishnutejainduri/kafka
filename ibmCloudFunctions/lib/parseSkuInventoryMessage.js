@@ -27,6 +27,10 @@ function parseSkuInventoryMessage(msg) {
         inventoryData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
     }
 
+    // Add _id for mongo
+    inventoryData.id = `${inventoryData.styleId}-${inventoryData.skuId}-${inventoryData.locationId}`;
+    inventoryData._id = inventoryData.id;
+
     return inventoryData;
 }
 
