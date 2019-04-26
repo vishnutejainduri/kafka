@@ -13,7 +13,7 @@ const attributeMap = {
 };
 
 // Parse a message from the VSTORE.SKU table and return a new object with filtered and re-mapped attributes.
-export default function parseSkuMessage(msg) {
+function parseSkuMessage(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse SKU update messages');
     }
@@ -29,3 +29,5 @@ export default function parseSkuMessage(msg) {
 
     return inventoryData;
 }
+
+module.exports = parseSkuMessage;
