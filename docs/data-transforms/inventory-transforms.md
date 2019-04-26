@@ -25,7 +25,7 @@ No special transforms needed (aside from field renaming)
 
 > The tool I used to export the query capitalized all the field names, that's why they're in all caps here
 
-```sql
+```js
 return DB_ENTITY.map(i => ({
   "styleId": i.STYLEID,
   "skuId": i.SKUID,

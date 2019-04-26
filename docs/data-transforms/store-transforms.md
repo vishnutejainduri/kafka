@@ -30,7 +30,7 @@ No special transforms needed (aside from field renaming)
 
 > The tool I used to export the query capitalized all the field names, that's why they're in all caps here
 
-```sql
+```js
 return DB_STORE.map(s => ({
   id: s.SITE_ID,
   businessUnitId: s.BUSINESS_UNIT_ID,
