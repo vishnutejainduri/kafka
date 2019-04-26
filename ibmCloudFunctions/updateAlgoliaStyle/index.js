@@ -1,5 +1,5 @@
 const algoliasearch = require('algoliasearch');
-const parseCatalogMessage = require('../lib/parseCatalogMessage');
+const parseSkuMessage = require('../lib/parseSkuMessage');
 
 let client = null;
 let index = null;
@@ -28,7 +28,7 @@ global.main = async function (params) {
 
     const updatedRecords = params.messages
         .filter((msg) => msg.topic === params.topicName)
-        .map((msg) => parseCatalogMessage(msg))
+        .map((msg) => parseSkuMessage(msg))
         .map((style) => { return { ...style , objectID: style.styleId }; });
 
     return new Promise((resolve) => {

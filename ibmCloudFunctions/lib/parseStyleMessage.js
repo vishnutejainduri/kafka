@@ -29,11 +29,11 @@ const attributeMap = {
 };
 
 const transforms = {
-    'id': (id) => substr(0, id.length - 3) // strip "-00"
+    'id': (id) => id.substr(0, id.length - 3) // strip "-00"
 };
 
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.
-function parseCatalogMessage(msg) {
+function parseStyleMessage(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Catalog update messages');
     }
@@ -61,4 +61,4 @@ function parseCatalogMessage(msg) {
     return styleData;
 }
 
-module.exports = parseCatalogMessage;
+module.exports = parseStyleMessage;
