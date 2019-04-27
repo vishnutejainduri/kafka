@@ -20,12 +20,19 @@ global.main = async function (params) {
                 : styles.insertOne(styleData)
             ).then(() => console.log("Updated/inserted document " + styleData._id))
             .catch((err) => {
+                if (!(err instanceof Error)) {
+                    const e = new Error();
+                    e.originalError = err;
+                    e.attemptedDocument = styleData;
+                    return e;
+                }
+
                 err.attemptedDocument = styleData;
                 return err;
             })
         )
     ).then((results) => {
-        const errors = results.filter((res) => res instanceOf Error);
+        const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
             const e = new Error('Some updates failed. See `results`.');
             e.results = results;
