@@ -29,7 +29,7 @@ const attributeMap = {
 };
 
 const transforms = {
-    'id': (id) => id.substr(0, id.length - 3) // strip "-00"
+    'id': (id) => id.match(/\d+/)[0] // strip "-00" if it exists
 };
 
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.

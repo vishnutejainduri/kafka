@@ -18,8 +18,10 @@ global.main = async function (params) {
             .then((existingDocument) => existingDocument
                 ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lt: styleData.effectiveDate } }, { $set: styleData })
                 : styles.insertOne(styleData)
-            ).then(() => console.log("Updated/inserted document " + styleData._id))
+            ).then(() => console.log('Updated/inserted document ' + styleData._id))
             .catch((err) => {
+                console.error('Problem with document ' + styleData._id);
+                console.error(err);
                 if (!(err instanceof Error)) {
                     const e = new Error();
                     e.originalError = err;
