@@ -21,11 +21,17 @@ global.main = async function (params) {
             ).then(() => console.log("Updated/inserted document " + styleData._id))
             .catch((err) => {
                 err.attemptedDocument = styleData;
-                throw err;
+                return err;
             })
         )
-    ).then((results) => { results });
-    // TODO error handling - this MUST report errors and which offsets must be retried
+    ).then((results) => {
+        const errors = results.filter((res) => res instanceOf Error);
+        if (errors.length > 0) {
+            const e = new Error('Some updates failed. See `results`.');
+            e.results = results;
+            throw e;
+        }
+    });
 }
 
 module.exports = global.main;
