@@ -7,7 +7,7 @@ packages:
         inputs:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
-          collectionName: styles
+          collectionName: stylestest
           topicName: styles-connect-jdbc-CATALOG
       consume-sku-inventory-message:
         location: ./consumeSkuInventoryMessage/dist/bundle.js
