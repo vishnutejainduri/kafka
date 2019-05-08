@@ -61,6 +61,7 @@ function parseStyleMessage(msg) {
     // See the custom query for the ELCAT.CATALOG connector for more details
     // Current known facet names: Category, Fabric, Length, Fit, Sleeve, Pattern, Cuff
     // The facet "Sleeve" is displayed as "Collar" on the site, so it's renamed here as well
+    // The facet "Category" is displayed as "Style" on the site, so it's renamed here as well
     const facetNameValuePattern = /^([^:]+):(.+)$/;
     if (msg.value['FACETS_ENG']) {
         msg.value['FACETS_ENG'].split(',').forEach((facetNameValue) => {
@@ -79,6 +80,11 @@ function parseStyleMessage(msg) {
     if (styleData.sleeve) {
         styleData.collar = styleData.sleeve;
         delete styleData.sleeve;
+    }
+
+    if (styleData.category) {
+        styleData.style = styleData.category;
+        delete styleData.category;
     }
 
     // Add _id for mongo
