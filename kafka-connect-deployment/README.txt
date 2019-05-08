@@ -67,6 +67,24 @@ curl -X POST   -H "Content-Type: application/json" \
   "poll.interval.ms": 120000, "offset.flush.timeout.ms": 120000 } }' \
   http://$CONNECT_HOST:$CONNECT_PORT/connectors
 
+# ELCAT.CATALOG with facet data connector
+curl -X POST   -H "Content-Type: application/json" \
+  --data '{ "name": "elcat-catalog-jdbc-source",
+  "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+  "tasks.max": 1,
+  "connection.url": "jdbc:oracle:thin:myplanet/m1pl2n3t@//142.215.51.80:1521/beantstl",
+  "schema.pattern": "ELCAT",
+  "table.whitelist": "CATALOG",
+  "table.poll.interval.ms": 3600000,
+  "mode": "timestamp",
+  "batch.max.rows": 100,
+  "timestamp.column.name": "EFFECTIVE_DATE",
+  "topic.prefix": "styles-connect-jdbc-CATALOG",
+  "validate.non.null": "false",
+  "query": "SELECT * FROM ELCAT.CATALOG LEFT JOIN ( SELECT STYLEID AS FACET_STYLEID, LISTAGG(CATEGORY || ':' || DESC_ENG, ',') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_ENG, LISTAGG(CATEGORY || ':' || DESC_FR, ',') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_FR FROM ELCAT.STYLE_ITEM_CHARACTERISTICS_ECA GROUP BY STYLEID ) FACETS ON CATALOG.STYLEID LIKE FACETS.FACET_STYLEID || '%'"
+  "poll.interval.ms": 120000, "offset.flush.timeout.ms": 120000 } }' \
+  http://$CONNECT_HOST:$CONNECT_PORT/connectors
+
 # VSTORE.SKUINVENTORY connector
 curl -X POST   -H "Content-Type: application/json" \
   --data '{ "name": "vstore-skuinventory-jdbc-source",
