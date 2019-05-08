@@ -18,6 +18,7 @@ const translatableAttributeMap = {
     'CATAGORY_LEVEL_1A': 'level2Category',
     'CATAGORY_LEVEL_2A': 'level3Category'
 };
+
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
     'STYLEID': 'id',
@@ -26,10 +27,6 @@ const attributeMap = {
     'COLORID': 'colourId',
     'APPROVED_FOR_WEB': 'approvedForWeb',
     'EFFECTIVE_DATE': 'effectiveDate'
-};
-
-const transforms = {
-    'id': (id) => id.match(/\d+/)[0] // strip "-00" if it exists
 };
 
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.
@@ -51,8 +48,22 @@ function parseStyleMessage(msg) {
         styleData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
     }
 
-    for (let transformField in transforms) {
-        styleData[transformField] = transforms[transformField](styleData[transformField]);
+    // Custom logic for facets from DPM
+    // This data comes in the format "CategoryName:categoryValue,CategoryName:categoryValue"
+    // See the custom query for the ELCAT.CATALOG connector for more details
+    const facetNameValuePattern = /^([^:]+):(.+)$/;
+    if (msg.value['FACETS_ENG']) {
+        msg.value['FACETS_ENG'].split(',').forEach((facetNameValue) => {
+            const [, facetName, facetValue] = facetNameValuePattern.exec(facetNameValue);
+            styleData[facetName] = { 'en': facetValue };
+        })
+    }
+
+    if (msg.value['FACETS_FR']) {
+        msg.value['FACETS_FR'].split(',').forEach((facetNameValue) => {
+            const [, facetName, facetValue] = facetNameValuePattern.exec(facetNameValue);
+            styleData[facetName].fr = facetValue;
+        })
     }
 
     // Add _id for mongo
