@@ -29,6 +29,14 @@ const attributeMap = {
     'EFFECTIVE_DATE': 'effectiveDate'
 };
 
+// https://stackoverflow.com/a/2970667/10777917
+function camelCase(str) {
+    return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
+        if (+match === 0) return ""; // or if (/\s+/.test(match)) for white spaces
+        return index == 0 ? match.toLowerCase() : match.toUpperCase();
+    });
+}
+
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.
 function parseStyleMessage(msg) {
     if (msg.topic !== TOPIC_NAME) {
@@ -51,19 +59,26 @@ function parseStyleMessage(msg) {
     // Custom logic for facets from DPM
     // This data comes in the format "CategoryName:categoryValue,CategoryName:categoryValue"
     // See the custom query for the ELCAT.CATALOG connector for more details
+    // Current known facet names: Category, Fabric, Length, Fit, Sleeve, Pattern, Cuff
+    // The facet "Sleeve" is displayed as "Collar" on the site, so it's renamed here as well
     const facetNameValuePattern = /^([^:]+):(.+)$/;
     if (msg.value['FACETS_ENG']) {
         msg.value['FACETS_ENG'].split(',').forEach((facetNameValue) => {
             const [, facetName, facetValue] = facetNameValuePattern.exec(facetNameValue);
-            styleData[facetName] = { 'en': facetValue };
+            styleData[camelCase(facetName)] = { 'en': facetValue };
         })
     }
 
     if (msg.value['FACETS_FR']) {
         msg.value['FACETS_FR'].split(',').forEach((facetNameValue) => {
             const [, facetName, facetValue] = facetNameValuePattern.exec(facetNameValue);
-            styleData[facetName].fr = facetValue;
+            styleData[camelCase(facetName)].fr = facetValue;
         })
+    }
+
+    if (styleData.sleeve) {
+        styleData.collar = styleData.sleeve;
+        delete styleData.sleeve;
     }
 
     // Add _id for mongo
