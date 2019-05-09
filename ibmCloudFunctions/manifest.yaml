@@ -21,6 +21,9 @@ packages:
         location: ./updateAlgoliaStyle/dist/bundle.js
         runtime: nodejs:10
         inputs:
+          mongoUri: $MONGO_URI
+          dbName: $DB_NAME
+          collectionName: stylestest
           topicName: styles-connect-jdbc-CATALOG
           algoliaApiKey: $ALGOLIA_API_KEY
           algoliaIndexName: $ALGOLIA_INDEX_NAME

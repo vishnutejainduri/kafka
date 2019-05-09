@@ -1,5 +1,6 @@
 const algoliasearch = require('algoliasearch');
 const parseStyleMessage = require('../lib/parseStyleMessage');
+const getCollection = require('../lib/getCollection');
 
 let client = null;
 let index = null;
@@ -26,19 +27,26 @@ global.main = async function (params) {
         index = client.initIndex(params.algoliaIndexName);
     }
 
-    const updatedRecords = params.messages
+    const styles = await getCollection(params);
+    return Promise.all(params.messages
         .filter((msg) => msg.topic === params.topicName)
         .map((msg) => parseStyleMessage(msg))
-        .map((style) => { return { ...style , objectID: style.styleId }; });
-
-    return new Promise((resolve) => {
-        index.partialUpdateObjects(updatedRecords, true, (err) => {
-            if (err) {
-                throw new Error('Failed to update Algolia records: ' + err)
-            }
-
-            resolve();
-        });
+        // Add Algolia object ID
+        .map((styleData) => {
+            styleData.objectID = style.styleId;
+            return styleData;
+        })
+        .map((styleData) => styles.findOne({ _id: styleData._id })
+            // We should run the update if there's no existing doc or the update is newer than existing
+            .then((existingDocument) => !existingDocument || (existingDocument.effectiveDate < styleData.effectiveDate) ? styleData : null)
+        )
+    ).then((recordsToUpdate) => {
+        recordsToUpdate = recordsToUpdate.filter((record) => record);
+        return index.saveObjects(recordsToUpdate);
+    }).catch((error) => {
+        console.error('Failed to send styles to Algolia.');
+        console.error(params.messages);
+        throw error;
     });
 }
 
