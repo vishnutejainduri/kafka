@@ -62,16 +62,17 @@ function parseStyleMessage(msg) {
     // Current known facet names: Category, Fabric, Length, Fit, Sleeve, Pattern, Cuff
     // The facet "Sleeve" is displayed as "Collar" on the site, so it's renamed here as well
     // The facet "Category" is displayed as "Style" on the site, so it's renamed here as well
+    // There is some weirdness with the subquery for facets generating ":" for null rows.
     const facetNameValuePattern = /^([^:]+):(.+)$/;
     console.log(msg.value)
-    if (msg.value['FACETS_ENG']) {
+    if (msg.value['FACETS_ENG'] && msg.value['FACETS_ENG'] !== ':') {
         msg.value['FACETS_ENG'].split(',').forEach((facetNameValue) => {
             const [, facetName, facetValue] = facetNameValuePattern.exec(facetNameValue);
             styleData[camelCase(facetName)] = { 'en': facetValue };
         })
     }
 
-    if (msg.value['FACETS_FR']) {
+    if (msg.value['FACETS_FR'] && msg.value['FACETS_FR'] !== ':') {
         msg.value['FACETS_FR'].split(',').forEach((facetNameValue) => {
             const [, facetName, facetValue] = facetNameValuePattern.exec(facetNameValue);
             styleData[camelCase(facetName)].fr = facetValue;
