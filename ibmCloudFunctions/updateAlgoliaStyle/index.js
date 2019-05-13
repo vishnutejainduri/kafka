@@ -33,7 +33,7 @@ global.main = async function (params) {
         .map((msg) => parseStyleMessage(msg))
         // Add Algolia object ID
         .map((styleData) => {
-            styleData.objectID = style.styleId;
+            styleData.objectID = styleData.styleId;
             return styleData;
         })
         .map((styleData) => styles.findOne({ _id: styleData._id })

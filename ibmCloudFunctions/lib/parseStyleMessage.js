@@ -64,7 +64,6 @@ function parseStyleMessage(msg) {
     // The facet "Category" is displayed as "Style" on the site, so it's renamed here as well
     // There is some weirdness with the subquery for facets generating ":" for null rows.
     const facetNameValuePattern = /^([^:]+):(.+)$/;
-    console.log(msg.value)
     if (msg.value['FACETS_ENG'] && msg.value['FACETS_ENG'] !== ':') {
         msg.value['FACETS_ENG'].split(',').forEach((facetNameValue) => {
             const [, facetName, facetValue] = facetNameValuePattern.exec(facetNameValue);
