@@ -172,3 +172,13 @@ spec:
                 secretKeyRef:
                   name: eventstreams-kafka-connect
                   key: CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM
+            - name: CONNECT_PRODUCER_BUFFER_MEMORY
+              valueFrom:
+                secretKeyRef:
+                  name: eventstreams-kafka-connect
+                  key: CONNECT_PRODUCER_BUFFER_MEMORY
+            - name: CONNECT_BUFFER_MEMORY
+              valueFrom:
+                secretKeyRef:
+                  name: eventstreams-kafka-connect
+                  key: CONNECT_BUFFER_MEMORY

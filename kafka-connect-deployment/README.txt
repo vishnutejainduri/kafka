@@ -25,6 +25,8 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_INTERNAL_KEY_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
   --from-literal=CONNECT_INTERNAL_VALUE_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
   --from-literal=CONNECT_LOG4J_ROOT_LOGLEVEL=INFO   \
+  --from-literal=CONNECT_KAFKA_LOG4J_ROOT_LOGLEVEL=INFO \
+  --from-literal=CONNECT_CONNECT_LOG4J_ROOT_LOGLEVEL=DEBUG   \
   --from-literal=CONNECT_PLUGIN_PATH=/usr/share/java,/etc/kafka-connect/jars \
   --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="<username>" password="<password>";'  \
   --from-literal=CONNECT_SECURITY_PROTOCOL=SASL_SSL  \
@@ -38,6 +40,8 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_PRODUCER_SSL_PROTOCOL=TLSv1.2  \
   --from-literal=CONNECT_PRODUCER_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
   --from-literal=CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS \
+  --from-literal=CONNECT_PRODUCER_BUFFER_MEMORY=4000000 \
+  --from-literal=CONNECT_BUFFER_MEMORY=4000000 \
   --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=1
 
 Create the image (see /kafka-connect-image) and deploy a workload with it
@@ -73,16 +77,16 @@ curl -X POST   -H "Content-Type: application/json" \
   "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
   "tasks.max": 1,
   "connection.url": "jdbc:oracle:thin:myplanet/m1pl2n3t@//142.215.51.80:1521/beantstl",
-  "schema.pattern": "ELCAT",
-  "table.whitelist": "CATALOG",
-  "table.poll.interval.ms": 3600000,
   "mode": "timestamp",
   "batch.max.rows": 100,
   "timestamp.column.name": "EFFECTIVE_DATE",
   "topic.prefix": "styles-connect-jdbc-CATALOG",
   "validate.non.null": "false",
-  "query": "SELECT * FROM ELCAT.CATALOG LEFT JOIN ( SELECT STYLEID AS FACET_STYLEID, LISTAGG(CATEGORY || ':' || DESC_ENG, ',') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_ENG, LISTAGG(CATEGORY || ':' || DESC_FR, ',') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_FR FROM ELCAT.STYLE_ITEM_CHARACTERISTICS_ECA GROUP BY STYLEID ) FACETS ON CATALOG.STYLEID LIKE FACETS.FACET_STYLEID || '%'"
-  "poll.interval.ms": 120000, "offset.flush.timeout.ms": 120000 } }' \
+  "errors.log.enable": true,
+  "query": "SELECT * FROM ELCAT.CATALOG LEFT JOIN ( SELECT STYLEID AS FACET_STYLEID, LISTAGG(CATEGORY || '\'':'\'' || DESC_ENG, '\'','\'') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_ENG, LISTAGG(CATEGORY || '\'':'\'' || DESC_FR, '\'','\'') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_FR FROM ELCAT.STYLE_ITEM_CHARACTERISTICS_ECA GROUP BY STYLEID ) FACETS ON CATALOG.STYLEID LIKE FACETS.FACET_STYLEID || '\''%'\''",
+  "poll.interval.ms": 120000,
+  "offset.flush.timeout.ms": 120000
+  } }' \
   http://$CONNECT_HOST:$CONNECT_PORT/connectors
 
 # VSTORE.SKUINVENTORY connector
