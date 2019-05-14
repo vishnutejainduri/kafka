@@ -1,6 +1,6 @@
 const expect = require('chai').expect;
 
-const parseStyleMessage = require('../lib/parseStyleMessage');
+const { parseStyleMessage, filterStyleMessages } = require('../lib/parseStyleMessage');
 
 const testData = {
     "key": null,
@@ -153,12 +153,16 @@ describe('parseStyleMessage', () => {
         const actual = parseStyleMessage(testData);
         expect(actual.construction).to.deep.equal({ en: null, fr: null });
     });
-
-    it('should filter out "pseudo styles"', () => {
-       const actual1 = parseStyleMessage({ topic: 'styles-connect-jdbc-CATALOG', value: { STYLEID: '1234-01' } });
-       const actual2 = parseStyleMessage({ topic: 'styles-connect-jdbc-CATALOG', value: { STYLEID: '1234-11' } });
-
-       expect(actual1).to.be.null;
-       expect(actual2).to.be.null;
-    });
 });
+
+describe('filterStyleMessages', () => {
+    it('should filter out "pseudo styles"', () => {
+        const actual1 = [{ topic: 'styles-connect-jdbc-CATALOG', value: { STYLEID: '1234-01' } }].filter(filterStyleMessages);
+        const actual2 = [{ topic: 'styles-connect-jdbc-CATALOG', value: { STYLEID: '1234-11' } }].filter(filterStyleMessages);
+        const actual3 = [{ topic: 'styles-connect-jdbc-CATALOG', value: { STYLEID: '1234-00' } }].filter(filterStyleMessages);
+
+        expect(actual1).to.be.empty;
+        expect(actual2).to.be.empty;
+        expect(actual3).to.have.length(1);
+    });
+})

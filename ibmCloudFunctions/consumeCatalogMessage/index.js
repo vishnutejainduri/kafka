@@ -1,4 +1,4 @@
-const parseStyleMessage = require('../lib/parseStyleMessage');
+const { parseStyleMessage, filterStyleMessages } = require('../lib/parseStyleMessage');
 const getCollection = require('../lib/getCollection');
 
 global.main = async function (params) {

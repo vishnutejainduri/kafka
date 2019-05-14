@@ -29,6 +29,16 @@ const attributeMap = {
     'EFFECTIVE_DATE': 'effectiveDate'
 };
 
+function filterStyleMessages(msg) {
+    if (msg.topic !== TOPIC_NAME) {
+        throw new Error('Can only parse Catalog update messages');
+    }
+
+    // We want to filter out any "pseudo styles" until a later release. That is, any style with a suffix greater than -00. eg. -10 or -05
+    const hasStyleSuffixGreaterThan00 = /^\d+-(1\d|0[1-9])$/;
+    return !msg.value.STYLEID.match(hasStyleSuffixGreaterThan00);
+}
+
 // https://stackoverflow.com/a/2970667/10777917
 function camelCase(str) {
     return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
@@ -41,12 +51,6 @@ function camelCase(str) {
 function parseStyleMessage(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Catalog update messages');
-    }
-
-    // We want to filter out any "pseudo styles" until a later release. That is, any style with a suffix greater than -00. eg. -10 or -05
-    const hasStyleSuffixGreaterThan00 = /^\d+-(1\d|0[1-9])$/;
-    if (msg.value.STYLEID.match(hasStyleSuffixGreaterThan00)) {
-        return null;
     }
 
     // Re-map atttributes
@@ -100,4 +104,7 @@ function parseStyleMessage(msg) {
     return styleData;
 }
 
-module.exports = parseStyleMessage;
+module.exports = {
+    parseStyleMessage,
+    filterStyleMessages
+};
