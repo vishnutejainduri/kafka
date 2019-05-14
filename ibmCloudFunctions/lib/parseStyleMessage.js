@@ -43,6 +43,12 @@ function parseStyleMessage(msg) {
         throw new Error('Can only parse Catalog update messages');
     }
 
+    // We want to filter out any "pseudo styles" until a later release. That is, any style with a suffix greater than -00. eg. -10 or -05
+    const hasStyleSuffixGreaterThan00 = /^\d+-(1\d|0[1-9])$/;
+    if (msg.value.STYLEID.match(hasStyleSuffixGreaterThan00)) {
+        return null;
+    }
+
     // Re-map atttributes
     const styleData = {};
     for (let sourceAttributeName in translatableAttributeMap) {

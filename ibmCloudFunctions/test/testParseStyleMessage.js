@@ -153,4 +153,12 @@ describe('parseStyleMessage', () => {
         const actual = parseStyleMessage(testData);
         expect(actual.construction).to.deep.equal({ en: null, fr: null });
     });
+
+    it('should filter out "pseudo styles"', () => {
+       const actual1 = parseStyleMessage({ topic: 'styles-connect-jdbc-CATALOG', value: { STYLEID: '1234-01' } });
+       const actual2 = parseStyleMessage({ topic: 'styles-connect-jdbc-CATALOG', value: { STYLEID: '1234-11' } });
+
+       expect(actual1).to.be.null;
+       expect(actual2).to.be.null;
+    });
 });
