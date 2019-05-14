@@ -48,7 +48,7 @@ function parseStyleMessage(msg) {
     for (let sourceAttributeName in translatableAttributeMap) {
         styleData[translatableAttributeMap[sourceAttributeName]] = {
             // We don't have all the translated columns, most notably the categories. TODO to figure that out
-            'en': msg.value[sourceAttributeName + '_EN'] || msg.value[sourceAttributeName + '_ENG'] || msg.value[sourceAttributeName],
+            'en': msg.value[sourceAttributeName + '_EN'] || msg.value[sourceAttributeName + '_ENG'] || msg.value[sourceAttributeName] || null,
             'fr': msg.value[sourceAttributeName + '_FR'] || null
         }
     }
