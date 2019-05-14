@@ -13,7 +13,8 @@ global.main = async function (params) {
     const styles = await getCollection(params);
     return Promise.all(params.messages
         .filter((msg) => msg.topic === params.topicName)
-        .map((msg) => parseStyleMessage(msg))
+        .filter(filterStyleMessages)
+        .map(parseStyleMessage)
         .map((styleData) => styles.findOne({ _id: styleData._id })
             .then((existingDocument) => existingDocument
                 ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lt: styleData.effectiveDate } }, { $set: styleData })

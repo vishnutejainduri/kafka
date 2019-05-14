@@ -30,7 +30,8 @@ global.main = async function (params) {
     const styles = await getCollection(params);
     return Promise.all(params.messages
         .filter((msg) => msg.topic === params.topicName)
-        .map((msg) => parseStyleMessage(msg))
+        .filter(filterStyleMessages)
+        .map(parseStyleMessage)
         // Add Algolia object ID
         .map((styleData) => {
             styleData.objectID = styleData.id;
