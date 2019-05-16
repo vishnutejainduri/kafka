@@ -94,6 +94,7 @@ const testData = {
         "MARKET_DESC_FR2": null,
         "MARKET_DESC_WORDLINK_ENG": null,
         "MARKET_DESC_WORDLINK_FR": null,
+        "ORIGINAL_PRICE": "50.00",
         "PRMOTIONPRICE": null,
         "PRODUCTINDEXID": null,
         "PROMOTIONQTY": null,
@@ -152,6 +153,16 @@ describe('parseStyleMessage', () => {
     it('should generate `{en: null, fr: null}` for translatable fields that are not populated', () => {
         const actual = parseStyleMessage(testData);
         expect(actual.construction).to.deep.equal({ en: null, fr: null });
+    });
+
+    it('should remove the dashes from style IDs', () => {
+        const actual = parseStyleMessage(testData);
+        expect(actual.id).to.match(/^\d+$/);
+    });
+
+    it('should should parse UNIT_PRICE as a float', () => {
+        const actual = parseStyleMessage(testData);
+        expect(actual.originalPrice).to.be.a('number');
     });
 });
 

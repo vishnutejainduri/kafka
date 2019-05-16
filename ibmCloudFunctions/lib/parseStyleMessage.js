@@ -26,7 +26,13 @@ const attributeMap = {
     'SEASON_CD': 'season',
     'COLORID': 'colourId',
     'APPROVED_FOR_WEB': 'approvedForWeb',
-    'EFFECTIVE_DATE': 'effectiveDate'
+    'EFFECTIVE_DATE': 'effectiveDate',
+    'ORIGINAL_PRICE': 'originalPrice'
+};
+
+const transforms = {
+    'id': (id) => id.match(/\d+/)[0], // strip "-00" if it exists
+    'originalPrice': (originalPrice) => parseFloat(originalPrice)
 };
 
 function filterStyleMessages(msg) {
@@ -57,13 +63,16 @@ function parseStyleMessage(msg) {
     const styleData = {};
     for (let sourceAttributeName in translatableAttributeMap) {
         styleData[translatableAttributeMap[sourceAttributeName]] = {
-            // We don't have all the translated columns, most notably the categories. TODO to figure that out
             'en': msg.value[sourceAttributeName + '_EN'] || msg.value[sourceAttributeName + '_ENG'] || msg.value[sourceAttributeName] || null,
             'fr': msg.value[sourceAttributeName + '_FR'] || null
         }
     }
     for (let sourceAttributeName in attributeMap) {
         styleData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
+    }
+
+    for (let transformField in transforms) {
+        styleData[transformField] = transforms[transformField](styleData[transformField]);
     }
 
     // Custom logic for facets from DPM

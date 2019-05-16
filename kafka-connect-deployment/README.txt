@@ -54,21 +54,22 @@ Create a connector by using the REST API
 CONNECT_HOST=<public ip for a node in the cluster>
 CONNECT_PORT=<port set when creating NodePort ingress above>
 
-# ELCAT.CATALOG connector
+# ELCAT.CATALOG with facet data connector
 curl -X POST   -H "Content-Type: application/json" \
   --data '{ "name": "elcat-catalog-jdbc-source",
   "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
   "tasks.max": 1,
   "connection.url": "jdbc:oracle:thin:myplanet/m1pl2n3t@//142.215.51.80:1521/beantstl",
-  "schema.pattern": "ELCAT",
-  "table.whitelist": "CATALOG",
-  "table.poll.interval.ms": 3600000,
   "mode": "timestamp",
   "batch.max.rows": 100,
   "timestamp.column.name": "EFFECTIVE_DATE",
-  "topic.prefix": "styles-connect-jdbc-",
+  "topic.prefix": "styles-connect-jdbc-CATALOG",
   "validate.non.null": "false",
-  "poll.interval.ms": 120000, "offset.flush.timeout.ms": 120000 } }' \
+  "errors.log.enable": true,
+  "query": "SELECT *, PRICING_HARRYROSEN.UNIT_PRICE as ORIGINAL_PRICE FROM ELCAT.CATALOG LEFT JOIN PRICING_HARRYROSEN ON CATALOG.STYLEID LIKE PRICING_HARRYROSEN.STYLEID  || '\''-%'\'' LEFT JOIN ( SELECT STYLEID AS FACET_STYLEID, LISTAGG(CATEGORY || '\'':'\'' || DESC_ENG, '\'','\'') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_ENG, LISTAGG(CATEGORY || '\'':'\'' || DESC_FR, '\'','\'') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_FR FROM ELCAT.STYLE_ITEM_CHARACTERISTICS_ECA GROUP BY STYLEID ) FACETS ON CATALOG.STYLEID LIKE FACETS.FACET_STYLEID || '\''%'\''",
+  "poll.interval.ms": 120000,
+  "offset.flush.timeout.ms": 120000
+  } }' \
   http://$CONNECT_HOST:$CONNECT_PORT/connectors
 
 # ELCAT.CATALOG with facet data connector
