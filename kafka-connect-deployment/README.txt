@@ -41,6 +41,7 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_PRODUCER_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
   --from-literal=CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS \
   --from-literal=CONNECT_PRODUCER_BUFFER_MEMORY=4000000 \
+  --from-literal=CONNECT_PRODUCER_REQUEST_TIMEOUT_MS=900000 \
   --from-literal=CONNECT_BUFFER_MEMORY=4000000 \
   --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=1
 
@@ -66,6 +67,7 @@ curl -X POST   -H "Content-Type: application/json" \
   "topic.prefix": "styles-connect-jdbc-CATALOG",
   "validate.non.null": "false",
   "errors.log.enable": true,
+  "numeric.mapping": "best_fit",
   "query": "SELECT *, PRICING_HARRYROSEN.UNIT_PRICE as ORIGINAL_PRICE FROM ELCAT.CATALOG LEFT JOIN PRICING_HARRYROSEN ON CATALOG.STYLEID LIKE PRICING_HARRYROSEN.STYLEID  || '\''-%'\'' LEFT JOIN ( SELECT STYLEID AS FACET_STYLEID, LISTAGG(CATEGORY || '\'':'\'' || DESC_ENG, '\'','\'') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_ENG, LISTAGG(CATEGORY || '\'':'\'' || DESC_FR, '\'','\'') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_FR FROM ELCAT.STYLE_ITEM_CHARACTERISTICS_ECA GROUP BY STYLEID ) FACETS ON CATALOG.STYLEID LIKE FACETS.FACET_STYLEID || '\''%'\''",
   "poll.interval.ms": 120000,
   "offset.flush.timeout.ms": 120000

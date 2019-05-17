@@ -31,8 +31,7 @@ const attributeMap = {
 };
 
 const transforms = {
-    'id': (id) => id.match(/\d+/)[0], // strip "-00" if it exists
-    'originalPrice': (originalPrice) => parseFloat(originalPrice)
+    'id': (id) => id.match(/\d+/)[0] // strip "-00" if it exists
 };
 
 function filterStyleMessages(msg) {
