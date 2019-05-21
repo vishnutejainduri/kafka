@@ -2,9 +2,27 @@
  * Listens for messages from Event Streams about the original price of a style.
  */
 const getCollection = require('../lib/getCollection');
+const { filterPriceMessages, parsePriceMessage } = require('../lib/parsePriceMessage');
 
 const ONLINE_SITE_ID = '00990';
 const IN_STORE_SITE_ID = '00011';
+
+function generateUpdateFromParsedMessage(priceData) {
+    const updateToProcess = {
+        _id: priceData.styleId,
+        id: priceData.styleId
+    };
+    switch (priceData.siteId) {
+        case ONLINE_SITE_ID:
+            updateToProcess.onlineSalePrice = priceData.newRetailPrice;
+            break;
+        case IN_STORE_SITE_ID:
+        default:
+            updateToProcess.inStoreSalePrice = priceData.newRetailPrice;
+            break;
+    }
+    return updateToProcess;
+}
 
 global.main = async function (params) {
     if (!params.topicName) {
@@ -17,31 +35,20 @@ global.main = async function (params) {
 
     const styles = await getCollection(params);
     return Promise.all(params.messages
-        .filter((msg) => msg.topic === params.topicName)
-        .map((msg) => {
-                const updateToProcess = {
-                    _id: msg.value.STYLE_ID,
-                    id: msg.value.STYLE_ID
-                };
-                switch (msg.value.SITE_ID) {
-                    case ONLINE_SITE_ID:
-                        updateToProcess.onlineSalePrice = msg.value.NEW_RETAIL_PRICE;
-                        break;
-                    case IN_STORE_SITE_ID:
-                    default:
-                        updateToProcess.inStoreSalePrice = msg.value.NEW_RETAIL_PRICE;
-                        break;
-                }
+        .filter(filterPriceMessages)
+        .map(parsePriceMessage)
+        .map(generateUpdateFromParsedMessage)
+        .map((update) => {
                 styles.updateOne(
-                    { _id: msg.value.STYLE_ID },
-                    { $set: updateToProcess },
+                    { _id: update._id },
+                    { $set: update },
                     { upsert: true }
                 ).catch((err) => {
-                    console.error('Problem with sale price price ' + msg.value.STYLE_ID, updateToProcess);
+                    console.error('Problem with sale price price ' + update.styleId, update);
                     if (!(err instanceof Error)) {
                         const e = new Error();
                         e.originalError = err;
-                        e.attemptedUpdate = msg.value;
+                        e.attemptedUpdate = update;
                         return e;
                     }
                     return err;
