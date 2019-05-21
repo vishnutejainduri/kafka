@@ -15,7 +15,7 @@ npm run build
 cd ../consumeSkuMessage
 npm install
 npm run build
-cd ././updateOriginalPrice/
+cd ../updateSalePrice/
 npm install
 npm run build
 cd ..
