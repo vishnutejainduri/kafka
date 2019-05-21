@@ -15,5 +15,8 @@ npm run build
 cd ../consumeSkuMessage
 npm install
 npm run build
+cd ././updateOriginalPrice/
+npm install
+npm run build
 cd ..
 echo ">>> Built Action packages"
