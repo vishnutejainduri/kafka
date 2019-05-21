@@ -21,7 +21,8 @@ WHERE i.inv_fkorganizationno = 1
 ```
 
 ## Inventory Transforms
-No special transforms needed (aside from field renaming)
+We need to left-pad the storeId with `0`s (5 characters total) to match the format on the `sites` table
+(source of the stores information).
 
 > The tool I used to export the query capitalized all the field names, that's why they're in all caps here
 
@@ -29,7 +30,7 @@ No special transforms needed (aside from field renaming)
 return DB_ENTITY.map(i => ({
   "styleId": i.STYLEID,
   "skuId": i.SKUID,
-  "storeId": i.STOREID,
+  "storeId": i.STOREID && `${i.STOREID}`.padStart(5, '0'),
   "quantityOnHand": i.QUANTITYONHAND,
   "quantityOnHandSellable": i.QUANTITYONHANDSELLABLE,
   "quantityOnHandNotSellable": i.QUANTITYONHANDNOTSELLABLE,
