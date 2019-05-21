@@ -74,23 +74,43 @@ curl -X POST   -H "Content-Type: application/json" \
   } }' \
   http://$CONNECT_HOST:$CONNECT_PORT/connectors
 
-# ELCAT.CATALOG with facet data connector
+# MERCH.IRO_POS_PRICES - current day in-store sale price connector
 curl -X POST   -H "Content-Type: application/json" \
-  --data '{ "name": "elcat-catalog-jdbc-source",
+  --data '{ "name": "merch-iro-pos-prices-jdbc-source",
   "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
   "tasks.max": 1,
-  "connection.url": "jdbc:oracle:thin:myplanet/m1pl2n3t@//142.215.51.80:1521/beantstl",
-  "mode": "timestamp",
-  "batch.max.rows": 100,
-  "timestamp.column.name": "EFFECTIVE_DATE",
-  "topic.prefix": "styles-connect-jdbc-CATALOG",
+  "connection.url": "jdbc:oracle:thin:myplanet/M1P12n3t@//142.215.51.103:1521/MTST",
+  "mode": "bulk",
+  "batch.max.rows": 1000,
+  "topic.prefix": "prices-connect-jdbc",
   "validate.non.null": "false",
   "errors.log.enable": true,
-  "query": "SELECT * FROM ELCAT.CATALOG LEFT JOIN ( SELECT STYLEID AS FACET_STYLEID, LISTAGG(CATEGORY || '\'':'\'' || DESC_ENG, '\'','\'') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_ENG, LISTAGG(CATEGORY || '\'':'\'' || DESC_FR, '\'','\'') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_FR FROM ELCAT.STYLE_ITEM_CHARACTERISTICS_ECA GROUP BY STYLEID ) FACETS ON CATALOG.STYLEID LIKE FACETS.FACET_STYLEID || '\''%'\''",
-  "poll.interval.ms": 120000,
+  "numeric.mapping": "best_fit",
+  "query": "SELECT IRO_POS_STYLES.STYLE_ID, NEW_RETAIL_PRICE, START_DATE, SITE_ID FROM MERCH.IRO_POS_STYLES LEFT JOIN ( SELECT ipp.STYLE_ID, ipp.NEW_RETAIL_PRICE, ipp.START_DATE, ipp.SITE_ID FROM (SELECT STYLE_ID, MAX(START_DATE) AS START_DATE FROM MERCH.IRO_POS_PRICES WHERE SITE_ID = '\''00011'\'' AND BUSINESS_UNIT_ID = 1 AND TRUNC(SYSDATE) BETWEEN START_DATE AND NVL(END_DATE, '\''01-jan-2525'\'') GROUP BY STYLE_ID) currentpricespan INNER JOIN MERCH.IRO_POS_PRICES ipp ON currentpricespan.STYLE_ID = ipp.STYLE_ID AND currentpricespan.START_DATE = ipp.START_DATE WHERE SUBSTR(ipp.NEW_RETAIL_PRICE, -1) = '\''9'\'' GROUP BY ipp.STYLE_ID, ipp.NEW_RETAIL_PRICE, ipp.START_DATE, ipp.SITE_ID ) instoresales ON instoresales.STYLE_ID = IRO_POS_STYLES.STYLE_ID",
+  "poll.interval.ms": 10800000,
   "offset.flush.timeout.ms": 120000
   } }' \
   http://$CONNECT_HOST:$CONNECT_PORT/connectors
+
+# MERCH.IRO_POS_PRICES - current day online sale price connector
+curl -X POST   -H "Content-Type: application/json" \
+  --data '{ "name": "merch-iro-pos-prices-jdbc-source",
+  "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+  "tasks.max": 1,
+  "connection.url": "jdbc:oracle:thin:myplanet/M1P12n3t@//142.215.51.103:1521/MTST",
+  "mode": "bulk",
+  "batch.max.rows": 1000,
+  "topic.prefix": "prices-connect-jdbc",
+  "validate.non.null": "false",
+  "errors.log.enable": true,
+  "numeric.mapping": "best_fit",
+  "query": "SELECT IRO_POS_STYLES.STYLE_ID, NEW_RETAIL_PRICE, START_DATE, SITE_ID FROM MERCH.IRO_POS_STYLES LEFT JOIN ( SELECT ipp.STYLE_ID, ipp.NEW_RETAIL_PRICE, ipp.START_DATE, ipp.SITE_ID FROM (SELECT STYLE_ID, MAX(START_DATE) AS START_DATE FROM MERCH.IRO_POS_PRICES WHERE SITE_ID = '\''00990'\'' AND BUSINESS_UNIT_ID = 1 AND TRUNC(SYSDATE) BETWEEN START_DATE AND NVL(END_DATE, '\''01-jan-2525'\'') GROUP BY STYLE_ID) currentpricespan INNER JOIN MERCH.IRO_POS_PRICES ipp ON currentpricespan.STYLE_ID = ipp.STYLE_ID AND currentpricespan.START_DATE = ipp.START_DATE WHERE SUBSTR(ipp.NEW_RETAIL_PRICE, -1) = '\''9'\'' GROUP BY ipp.STYLE_ID, ipp.NEW_RETAIL_PRICE, ipp.START_DATE, ipp.SITE_ID ) instoresales ON instoresales.STYLE_ID = IRO_POS_STYLES.STYLE_ID",
+  "poll.interval.ms": 10800000,
+  "offset.flush.timeout.ms": 120000
+  } }' \
+  http://$CONNECT_HOST:$CONNECT_PORT/connectors
+
+#86400000, 24 hours
 
 # VSTORE.SKUINVENTORY connector
 curl -X POST   -H "Content-Type: application/json" \
@@ -102,11 +122,11 @@ curl -X POST   -H "Content-Type: application/json" \
   "table.whitelist": "SKUINVENTORY",
   "table.poll.interval.ms": 3600000,
   "mode": "timestamp",
-  "incrementing.column.name": "",
+  "batch.max.rows": 1000,
   "timestamp.column.name": "LASTMODIFIEDDATE",
   "topic.prefix": "inventory-connect-jdbc-",
   "validate.non.null": "false",
-  "poll.interval.ms": 120000, "offset.flush.timeout.ms": 60000 } }' \
+  "poll.interval.ms": 60000, "offset.flush.timeout.ms": 60000 } }' \
   http://$CONNECT_HOST:$CONNECT_PORT/connectors
 
 # VSTORE.SKU connector
