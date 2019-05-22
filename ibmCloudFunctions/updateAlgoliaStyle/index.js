@@ -43,7 +43,7 @@ global.main = async function (params) {
         )
     ).then((recordsToUpdate) => {
         recordsToUpdate = recordsToUpdate.filter((record) => record);
-        return index.saveObjects(recordsToUpdate);
+        return index.partialUpdateObjects(recordsToUpdate, true);
     }).catch((error) => {
         console.error('Failed to send styles to Algolia.');
         console.error(params.messages);
