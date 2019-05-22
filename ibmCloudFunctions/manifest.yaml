@@ -46,7 +46,7 @@ packages:
           algoliaAppId: $ALGOLIA_APP_ID
     triggers:
       catalog-trigger:
-        feed: ${FEED_BASE}/messageHubFeed
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
           isJSONData: true
           topic: styles-connect-jdbc-CATALOG
@@ -56,23 +56,23 @@ packages:
           isJSONData: true
           topic: prices-connect-jdbc
       sku-inventory-trigger:
-        feed: ${FEED_BASE}/messageHubFeed
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
           isJSONData: true
           topic: inventory-connect-jdbc-SKUINVENTORY
     rules:
       catalog-rule:
-        action: product-consumers/consume-catalog-message
+        action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message
         trigger: catalog-trigger
       sale-price-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-sale-price
         trigger: /${ORG}_${SPACE}/sale-price-trigger
       algolia-catalog-rule:
-        action: product-consumers/update-algolia-style
-        trigger: catalog-trigger
+        action: /${ORG}_${SPACE}/product-consumers/update-algolia-style
+        trigger: /${ORG}_${SPACE}/catalog-trigger
       sku-inventory-rule:
-        action: product-consumers/consume-sku-inventory-message
-        trigger: sku-inventory-trigger
+        action: /${ORG}_${SPACE}/product-consumers/consume-sku-inventory-message
+        trigger: /${ORG}_${SPACE}/sku-inventory-trigger
       algolia-inventory-rule:
-        action: product-consumers/update-algolia-inventory
-        trigger: sku-inventory-trigger
+        action: /${ORG}_${SPACE}/product-consumers/update-algolia-inventory
+        trigger: /${ORG}_${SPACE}/sku-inventory-trigger
