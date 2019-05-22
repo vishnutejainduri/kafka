@@ -1,6 +1,7 @@
 /***
  * Listens for messages from Event Streams about the sale price of a style.
  */
+const algoliasearch = require('algoliasearch');
 const {
     filterPriceMessages,
     parsePriceMessage,
