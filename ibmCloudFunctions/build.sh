@@ -18,5 +18,8 @@ npm run build
 cd ../updateSalePrice/
 npm install
 npm run build
+cd ../updateAlgoliaPrice/
+npm install
+npm run build
 cd ..
 echo ">>> Built Action packages"
