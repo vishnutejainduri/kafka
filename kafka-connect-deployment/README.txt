@@ -76,7 +76,7 @@ curl -X POST   -H "Content-Type: application/json" \
 
 # MERCH.IRO_POS_PRICES - current day in-store sale price connector
 curl -X POST   -H "Content-Type: application/json" \
-  --data '{ "name": "merch-iro-pos-prices-jdbc-source",
+  --data '{ "name": "in-store-prices-jdbc-source",
   "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
   "tasks.max": 1,
   "connection.url": "jdbc:oracle:thin:myplanet/M1P12n3t@//142.215.51.103:1521/MTST",
@@ -94,7 +94,7 @@ curl -X POST   -H "Content-Type: application/json" \
 
 # MERCH.IRO_POS_PRICES - current day online sale price connector
 curl -X POST   -H "Content-Type: application/json" \
-  --data '{ "name": "merch-iro-pos-prices-jdbc-source",
+  --data '{ "name": "online-prices-jdbc-source",
   "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
   "tasks.max": 1,
   "connection.url": "jdbc:oracle:thin:myplanet/M1P12n3t@//142.215.51.103:1521/MTST",
