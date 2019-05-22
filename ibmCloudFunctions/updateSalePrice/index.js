@@ -1,11 +1,13 @@
 /***
- * Listens for messages from Event Streams about the original price of a style.
+ * Listens for messages from Event Streams about the sale price of a style.
  */
 const getCollection = require('../lib/getCollection');
-const { filterPriceMessages, parsePriceMessage } = require('../lib/parsePriceMessage');
-
-const ONLINE_SITE_ID = '00990';
-const IN_STORE_SITE_ID = '00011';
+const {
+    filterPriceMessages,
+    parsePriceMessage,
+    IN_STORE_SITE_ID,
+    ONLINE_SITE_ID
+} = require('../lib/parsePriceMessage');
 
 function generateUpdateFromParsedMessage(priceData) {
     const updateToProcess = {

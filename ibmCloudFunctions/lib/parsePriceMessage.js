@@ -2,6 +2,9 @@
 
 const TOPIC_NAME = 'prices-connect-jdbc';
 
+const ONLINE_SITE_ID = '00990';
+const IN_STORE_SITE_ID = '00011';
+
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
     STYLE_ID: 'styleId',
@@ -30,5 +33,7 @@ function parsePriceMessage(msg) {
 
 module.exports = {
     parsePriceMessage,
-    filterPriceMessages
+    filterPriceMessages,
+    IN_STORE_SITE_ID,
+    ONLINE_SITE_ID
 };
