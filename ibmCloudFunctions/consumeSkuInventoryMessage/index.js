@@ -18,9 +18,29 @@ global.main = async function (params) {
             .then((existingDocument) => existingDocument
                 ? inventory.updateOne({ _id: inventoryData._id, lastModifiedDate: { $lt: inventoryData.lastModifiedDate } }, { $set: inventoryData })
                 : inventory.insertOne(inventoryData)
-            ).then(() => "Updated/inserted document " + inventoryData._id)
+            ).then(() => console.log("Updated/inserted document " + inventoryData._id))
+            .catch((err) => {
+                console.error('Problem with document ' + inventoryData._id);
+                console.error(err);
+                if (!(err instanceof Error)) {
+                    const e = new Error();
+                    e.originalError = err;
+                    e.attemptedDocument = inventoryData;
+                    return e;
+                }
+
+                err.attemptedDocument = inventoryData;
+                return err;
+            })
         )
-    ).then((results) => { results });
+    ).then((results) => {
+        const errors = results.filter((res) => res instanceof Error);
+        if (errors.length > 0) {
+            const e = new Error('Some updates failed. See `results`.');
+            e.results = results;
+            throw e;
+        }
+    });
     // TODO error handling - this MUST report errors and which offsets must be retried
 };
 
