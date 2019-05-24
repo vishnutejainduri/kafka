@@ -12,6 +12,10 @@ const attributeMap = {
     NEW_RETAIL_PRICE: 'newRetailPrice'
 };
 
+const transforms = {
+    styleId: (styleId) => styleId + '-00'
+};
+
 function filterPriceMessages(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Price update messages');
@@ -26,6 +30,10 @@ function parsePriceMessage(msg) {
     const priceData = {};
     for (let sourceAttributeName in attributeMap) {
         priceData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
+    }
+
+    for (let transformField in transforms) {
+        priceData[transformField] = transforms[transformField](priceData[transformField]);
     }
 
     return priceData;
