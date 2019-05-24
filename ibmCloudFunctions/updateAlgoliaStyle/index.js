@@ -1,6 +1,7 @@
 const algoliasearch = require('algoliasearch');
 const { parseStyleMessage, filterStyleMessages } = require('../lib/parseStyleMessage');
 const getCollection = require('../lib/getCollection');
+const { productApiRequest } = requre('../lib/productApi');
 
 let client = null;
 let index = null;
@@ -37,14 +38,26 @@ global.main = async function (params) {
             styleData.objectID = styleData.id;
             return styleData;
         })
-        .map((styleData) => styles.findOne({ _id: styleData._id })
-            // We should run the update if there's no existing doc or the update is newer than existing
-            .then((existingDocument) => !existingDocument || (existingDocument.effectiveDate < styleData.effectiveDate) ? styleData : null)
-        )
-    ).then((recordsToUpdate) => {
-        recordsToUpdate = recordsToUpdate.filter((record) => record);
-        return index.partialUpdateObjects(recordsToUpdate, true);
-    }).catch((error) => {
+        // We should run the update if there's no existing doc or the update is newer than existing
+        .map(async (styleData) => {
+            const existingDoc = await styles.findOne({_id: styleData._id});
+            return !existingDoc || (existingDoc.effectiveDate < styleData.effectiveDate)
+                ? styleData
+                : null;
+        })
+        .filter((styleData) => styleData)
+        .map(async (styleData) => {
+            const imageMedia = await productApiRequest(params, { path: `/media/${styleData._id}/main`});
+            if (imageMedia && imageMedia.data) {
+                const thumbnail = imageMedia.data[0].images.find((image) => image.qualifier === 'HRSTORE');
+                if (thumbnail) {
+                    styleData.image = thumbnail.url;
+                }
+            }
+            return styleData;
+        })
+    ).then((recordsToUpdate) => index.partialUpdateObjects(recordsToUpdate, true))
+    .catch((error) => {
         console.error('Failed to send styles to Algolia.');
         console.error(params.messages);
         throw error;

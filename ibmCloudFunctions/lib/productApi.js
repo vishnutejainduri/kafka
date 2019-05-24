@@ -1,7 +1,9 @@
 /**
  * This module facilitates calling the product API.
  */
+const https = require('https');
 
+// https://stackoverflow.com/a/38543075/10777917
 function productApiRequest(openwhiskParams, params = {}, postData) {
     if (!openwhiskParams.productApiClientId || !openwhiskParams.productApiHost) {
         throw new Error('productApiClientId and productApiHost are required action params. See manifest.yaml.')
@@ -14,12 +16,11 @@ function productApiRequest(openwhiskParams, params = {}, postData) {
     params.host = openwhiskParams.productApiHost;
 
     return new Promise(function(resolve, reject) {
-        var req = http.request(params, function(res) {
+        var req = https.request(params, function(res) {
             // reject on bad status
             if (res.statusCode < 200 || res.statusCode >= 300) {
                 return reject(new Error('statusCode=' + res.statusCode));
             }
-            // cumulate data
             var body = [];
             res.on('data', function(chunk) {
                 body.push(chunk);
