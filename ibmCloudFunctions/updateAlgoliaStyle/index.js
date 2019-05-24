@@ -1,7 +1,7 @@
 const algoliasearch = require('algoliasearch');
 const { parseStyleMessage, filterStyleMessages } = require('../lib/parseStyleMessage');
 const getCollection = require('../lib/getCollection');
-const { productApiRequest } = requre('../lib/productApi');
+const { productApiRequest } = require('../lib/productApi');
 
 let client = null;
 let index = null;
