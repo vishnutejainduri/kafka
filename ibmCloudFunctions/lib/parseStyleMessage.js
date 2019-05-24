@@ -27,7 +27,7 @@ const attributeMap = {
     'COLORID': 'colourId',
     'APPROVED_FOR_WEB': 'approvedForWeb',
     'EFFECTIVE_DATE': 'effectiveDate',
-    'ORIGINAL_PRICE': 'originalPrice'
+    'UNIT_PRICE': 'originalPrice'
 };
 
 const transforms = {
