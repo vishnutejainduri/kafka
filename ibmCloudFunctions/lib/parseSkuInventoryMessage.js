@@ -21,7 +21,7 @@ function filterSkuInventoryMessage(msg) {
         throw new Error('Can only parse SKUINVENTORY update messages');
     }
 
-    return msg.INV_FKORGANIZATIONNO === 1;
+    return msg.value.INV_FKORGANIZATIONNO === '1';
 }
 
 // Parse a message from the VSTORE.SKUINVENTORY table and return a new object with filtered and re-mapped attributes.
