@@ -16,6 +16,14 @@ const attributeMap = {
     'LASTMODIFIEDDATE': 'lastModifiedDate'
 };
 
+function filterSkuInventoryMessage(msg) {
+    if (msg.topic !== TOPIC_NAME) {
+        throw new Error('Can only parse SKUINVENTORY update messages');
+    }
+
+    return msg.INV_FKORGANIZATIONNO === 1;
+}
+
 // Parse a message from the VSTORE.SKUINVENTORY table and return a new object with filtered and re-mapped attributes.
 function parseSkuInventoryMessage(msg) {
     if (msg.topic !== TOPIC_NAME) {
@@ -35,4 +43,7 @@ function parseSkuInventoryMessage(msg) {
     return inventoryData;
 }
 
-module.exports = parseSkuInventoryMessage;
+module.exports = {
+    parseSkuInventoryMessage,
+    filterSkuInventoryMessage
+};

@@ -23,7 +23,7 @@ packages:
         inputs:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
-          collectionName: inventory
+          collectionName: inventorytest
           topicName: inventory-connect-jdbc-SKUINVENTORY
       update-algolia-style:
         location: ./updateAlgoliaStyle/dist/bundle.js

@@ -1,5 +1,5 @@
 const getCollection = require('../lib/getCollection');
-const parseSkuInventoryMessage = require('../lib/parseSkuInventoryMessage');
+const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../lib/parseSkuInventoryMessage');
 
 global.main = async function (params) {
     if (!params.topicName) {
@@ -12,8 +12,8 @@ global.main = async function (params) {
 
     const inventory = await getCollection(params);
     return Promise.all(params.messages
-        .filter((msg) => msg.topic === params.topicName)
-        .map((msg) => parseSkuInventoryMessage(msg))
+        .filter(filterSkuInventoryMessage)
+        .map(parseSkuInventoryMessage)
         .map((inventoryData) => inventory.findOne({ _id: inventoryData._id })
             .then((existingDocument) => existingDocument
                 ? inventory.updateOne({ _id: inventoryData._id, lastModifiedDate: { $lt: inventoryData.lastModifiedDate } }, { $set: inventoryData })
@@ -22,6 +22,6 @@ global.main = async function (params) {
         )
     ).then((results) => { results });
     // TODO error handling - this MUST report errors and which offsets must be retried
-}
+};
 
 module.exports = global.main;

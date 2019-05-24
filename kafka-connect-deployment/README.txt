@@ -124,6 +124,7 @@ curl -X POST   -H "Content-Type: application/json" \
   "mode": "timestamp",
   "batch.max.rows": 1000,
   "timestamp.column.name": "LASTMODIFIEDDATE",
+  "numeric.mapping": "best_fit",
   "topic.prefix": "inventory-connect-jdbc-",
   "validate.non.null": "false",
   "poll.interval.ms": 60000, "offset.flush.timeout.ms": 60000 } }' \
@@ -143,7 +144,8 @@ curl -X POST   -H "Content-Type: application/json" \
   "timestamp.column.name": "LASTMODIFIEDDATE",
   "topic.prefix": "sku-connect-jdbc-",
   "validate.non.null": "false",
-  "poll.interval.ms": 600000, "offset.flush.timeout.ms": 60000 } }' \
+  "numeric.mapping": "best_fit",
+  "poll.interval.ms": 60000, "offset.flush.timeout.ms": 60000 } }' \
   http://$CONNECT_HOST:$CONNECT_PORT/connectors
 
 
