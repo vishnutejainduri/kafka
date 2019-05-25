@@ -1,0 +1,147 @@
+const algoliasearch = require('algoliasearch');
+const { parseStyleMessage, filterStyleMessages } = require('../lib/parseStyleMessage');
+const getCollection = require('../lib/getCollection');
+const { DateTime } = require('luxon');
+
+const request = require('request-promise-native')
+    , JSONStream = require('JSONStream')
+    , fs = require('fs')
+    , es = require('event-stream');
+
+let client = null;
+let index = null;
+
+const params = {
+    algoliaIndexName: 'dev_testsync',
+    algoliaApiKey: 'b9b26d2f0d3fd0c87227a7aedb497245',
+    algoliaAppId: 'CDROBE4GID',
+    productApiClientId: '4fc13095-72ac-405a-ad4d-ea443d1686f0',
+    productApiHost: 'hr-platform-api-dev.mybluemix.net',
+    mongoUri: 'mongodb://admin:LADZABDYIEAMEVCV@portal-ssl1084-2.bmix-wdc-yp-1410c9d4-631d-4225-8112-258dd1209402.1648250576.composedb.com:17867,portal-ssl1028-0.bmix-wdc-yp-1410c9d4-631d-4225-8112-258dd1209402.1648250576.composedb.com:17867/compose?authSource=admin&ssl=true',
+    dbName: 'compose',
+    collectionName: 'stylestest'
+};
+
+const productApiParams = {
+    baseUrl: 'https://hr-platform-api-dev.mybluemix.net/',
+    headers: {
+        'X-IBM-Client-Id': params.productApiClientId,
+        accept: 'application/json'
+    },
+    json: true
+};
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function chunk(array, size) {
+    const chunked_arr = [];
+    let index = 0;
+    while (index < array.length) {
+        chunked_arr.push(array.slice(index, size + index));
+        index += size;
+    }
+    return chunked_arr;
+}
+
+/*
+ * serial executes Promises sequentially.
+ * @param {funcs} An array of funcs that return promises.
+ * @example
+ * const urls = ['/url1', '/url2', '/url3']
+ * serial(urls.map(url => () => $.ajax(url)))
+ *     .then(console.log.bind(console))
+ */
+const serial = funcs =>
+    funcs.reduce((promise, func) =>
+        promise.then(result => func().then(Array.prototype.concat.bind(result))), Promise.resolve([]))
+
+global.main = async function () {
+    var stream = fs.createWriteStream("new.json", {flags:'a'});
+    function write(data, cb) {
+        if (!stream.write(data)) {
+            stream.once('drain', cb);
+        } else {
+            process.nextTick(cb);
+        }
+    }
+    stream.write('[');
+    if (index === null) {
+        client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+        index = client.initIndex(params.algoliaIndexName);
+    }
+
+    const styles = await getCollection(params);
+    /*fs.createReadStream('./styles-2019-05-24.json')
+        .pipe(JSONStream.parse('*'))
+        .pipe(es.mapSync(function (styleData) {
+            console.log(styleData);
+            styleData.objectID = styleData.id;
+
+            console.error(data)
+            return data
+        }))*/
+
+    console.log('reading file')
+    let rawdata = fs.readFileSync('xaa'); //'./test.json');
+    console.log('parsing data');
+    let stylesData = JSON.parse(rawdata);
+    console.log('parsed stylesdata')
+
+    const chunks = chunk(stylesData, 20);
+    let i = 0;
+    serial(chunks.map(chunk => () => {
+        return new Promise(resolve => {
+            console.log('init ' + i)
+            i+= chunk.length;
+
+            const mapped = chunk.filter(filterStyleMessages)
+                .map(parseStyleMessage)
+                // Add Algolia object ID
+                .map((styleData) => {
+                    styleData.objectID = styleData.id;
+                    return styleData;
+                })
+                .map((styleData) => {
+                    return styles.findOne({_id: styleData._id}).then(async (existingDoc) => {
+                        if (existingDoc) {
+                            const newEffectiveDate = DateTime.fromSQL(styleData.effectiveDate);
+                            const effectiveDateDate = DateTime.fromMillis(existingDoc.effectiveDate);
+                            if (effectiveDateDate > newEffectiveDate)
+                                return Promise.resolve(null);
+                        }
+
+                        const requestParams = Object.assign({}, productApiParams, {uri: `/media/${styleData._id}/main`});
+                        const imageMedia = await request(requestParams).catch((err) => {
+                            console.log('request error', styleData._id, err.message);
+                            return null;
+                        });
+                        styleData.image = null;
+                        if (imageMedia && imageMedia.data && imageMedia.data.length) {
+                            const thumbnail = imageMedia.data[0].images.find((image) => image.qualifier === 'HRSTORE');
+                            if (thumbnail) {
+                                styleData.image = thumbnail.url;
+                            }
+                        }
+
+                        //console.log('generated style data')
+                        return Promise.resolve(JSON.stringify(styleData));
+                    });
+                });
+
+            Promise.all(mapped).then((jsonStrings) => {
+                const jsonString = jsonStrings
+                    .filter((string) => string)
+                    .reduce((acc, jsonString) => acc += jsonString + ",\n", '')
+                write(jsonString, () => {
+                    console.log('done');
+                    resolve();
+                })
+            });
+        })
+    }));
+
+}
+
+global.main();
