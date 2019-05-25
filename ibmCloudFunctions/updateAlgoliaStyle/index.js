@@ -30,7 +30,6 @@ global.main = async function (params) {
 
     const styles = await getCollection(params);
     return Promise.all(params.messages
-        .filter((msg) => msg.topic === params.topicName)
         .filter(filterStyleMessages)
         .map(parseStyleMessage)
         // Add Algolia object ID
@@ -47,7 +46,7 @@ global.main = async function (params) {
         })
         .filter((styleData) => styleData)
         .map(async (styleData) => {
-            const imageMedia = await productApiRequest(params, { path: `/media/${styleData._id}/main`});
+            const imageMedia = await productApiRequest(params, `/media/${styleData._id}/main`);
             if (imageMedia && imageMedia.data) {
                 const thumbnail = imageMedia.data[0].images.find((image) => image.qualifier === 'HRSTORE');
                 if (thumbnail) {
