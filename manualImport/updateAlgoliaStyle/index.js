@@ -1,3 +1,9 @@
+/**
+ * This module takes in a JSON file with styles exported from the ELCAT.CATALOG table and generates a new JSON file
+ * that has properly translated entities with image and inventory data attached using our fundamental data API.
+ * The output is intended to be uploaded to Algolia.
+ */
+
 const algoliasearch = require('algoliasearch');
 const { parseStyleMessage, filterStyleMessages } = require('../lib/parseStyleMessage');
 const getCollection = require('../lib/getCollection');
@@ -23,7 +29,7 @@ const params = {
 };
 
 const productApiParams = {
-    baseUrl: 'https://hr-platform-api-dev.mybluemix.net/',
+    baseUrl: 'https://myplanet-hr-product-api.mybluemix.net/',
     headers: {
         'X-IBM-Client-Id': params.productApiClientId,
         accept: 'application/json'
@@ -73,18 +79,9 @@ global.main = async function () {
     }
 
     const styles = await getCollection(params);
-    /*fs.createReadStream('./styles-2019-05-24.json')
-        .pipe(JSONStream.parse('*'))
-        .pipe(es.mapSync(function (styleData) {
-            console.log(styleData);
-            styleData.objectID = styleData.id;
-
-            console.error(data)
-            return data
-        }))*/
 
     console.log('reading file')
-    let rawdata = fs.readFileSync('xaa'); //'./test.json');
+    let rawdata = fs.readFileSync('xae'); //'./test.json');
     console.log('parsing data');
     let stylesData = JSON.parse(rawdata);
     console.log('parsed stylesdata')
@@ -112,7 +109,8 @@ global.main = async function () {
                                 return Promise.resolve(null);
                         }
 
-                        const requestParams = Object.assign({}, productApiParams, {uri: `/media/${styleData._id}/main`});
+                        // image
+                        let requestParams = Object.assign({}, productApiParams, {uri: `/media/${styleData._id}/main`});
                         const imageMedia = await request(requestParams).catch((err) => {
                             console.log('request error', styleData._id, err.message);
                             return null;
@@ -123,6 +121,40 @@ global.main = async function () {
                             if (thumbnail) {
                                 styleData.image = thumbnail.url;
                             }
+                        }
+
+                        // inventory
+                        requestParams = Object.assign({}, productApiParams, {uri: `/inventory/${styleData._id}`});
+                        const inventoryData = await request(requestParams).catch((err) => {
+                            console.log('request error', styleData._id, err.message);
+                            return null;
+                        });
+                        styleData.isSellable = false;
+                        styleData.sizes = [];
+                        if (inventoryData && inventoryData.data && inventoryData.data.length) {
+                            const hasInventory = !!inventoryData.data.find((inventory) => inventory.quantityOnHandSellable > 0);
+                            styleData.isSellable = hasInventory;
+                            if (hasInventory) {
+                                const skuSizes = await Promise.all(inventoryData.data
+                                    .filter((inventory) => inventory.quantityOnHandSellable > 0)
+                                    .map((inventory) => inventory.skuId)
+                                    .map((skuId) => {
+                                        requestParams = Object.assign({}, productApiParams, {uri: `/sku/${skuId}`});
+                                        return request(requestParams)
+                                            .then((skuData) => {
+                                                if (skuData && skuData.data && skuData.data.length) {
+                                                    return skuData.data[0].sizeId;
+                                                }
+                                            })
+                                            .catch((err) => {
+                                                console.log('request error', skuId, err.message);
+                                                return null;
+                                            });
+                                    })
+                                );
+                                styleData.sizes = skuSizes.filter((skuSize) => skuSize);
+                            }
+
                         }
 
                         //console.log('generated style data')
@@ -136,7 +168,7 @@ global.main = async function () {
                     .reduce((acc, jsonString) => acc += jsonString + ",\n", '')
                 write(jsonString, () => {
                     console.log('done');
-                    resolve();
+                    sleep(1000).then(resolve);
                 })
             });
         })
