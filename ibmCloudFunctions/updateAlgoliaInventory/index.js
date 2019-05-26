@@ -1,5 +1,5 @@
 const algoliasearch = require('algoliasearch');
-const parseSkuInventoryMessage = require('../lib/parseSkuInventoryMessage');
+const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../lib/parseSkuInventoryMessage');
 
 let client = null;
 let index = null;
