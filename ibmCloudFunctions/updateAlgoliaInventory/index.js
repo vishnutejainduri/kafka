@@ -27,8 +27,8 @@ global.main = function (params) {
     }
 
     const updatedRecords = params.messages
-        .filter((msg) => msg.topic === params.topicName)
-        .map((msg) => parseSkuInventoryMessage(msg))
+        .filter(filterSkuInventoryMessage)
+        .map(parseSkuInventoryMessage)
         .map((inventory) => { return { ...inventory , objectID: inventory.styleId }; });
 
     return new Promise((resolve) => {

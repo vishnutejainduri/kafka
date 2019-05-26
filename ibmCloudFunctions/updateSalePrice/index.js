@@ -19,8 +19,9 @@ function generateUpdateFromParsedMessage(priceData) {
             updateToProcess.onlineSalePrice = priceData.newRetailPrice;
             break;
         case IN_STORE_SITE_ID:
-        default:
             updateToProcess.inStoreSalePrice = priceData.newRetailPrice;
+            break;
+        default:
             break;
     }
     return updateToProcess;
@@ -35,13 +36,13 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const styles = await getCollection(params);
+    const prices = await getCollection(params);
     return Promise.all(params.messages
         .filter(filterPriceMessages)
         .map(parsePriceMessage)
         .map(generateUpdateFromParsedMessage)
         .map((update) => {
-                styles.updateOne(
+                prices.updateOne(
                     { _id: update._id },
                     { $set: update },
                     { upsert: true }

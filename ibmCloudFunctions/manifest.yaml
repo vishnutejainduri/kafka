@@ -15,7 +15,7 @@ packages:
         inputs:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
-          collectionName: stylestest
+          collectionName: pricestest
           topicName: prices-connect-jdbc
       consume-sku-inventory-message:
         location: ./consumeSkuInventoryMessage/dist/bundle.js
