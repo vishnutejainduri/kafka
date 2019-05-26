@@ -12,7 +12,7 @@ let client = null;
  * @param {String} params.collectionName Name of the collection to use
  * @returns {MongoCollection}
  */
-async function getCollection(params) {
+async function getCollection(params, collectionName = null) {
     if (client == null) {
         if (!params.mongoUri || !params.dbName || !params.collectionName) {
             throw new Error('mongoUri, dbName, and collectionName are required action params. See manifest.yaml.')
@@ -23,7 +23,8 @@ async function getCollection(params) {
         });
     }
 
-    return client.db(params.dbName).collection(params.collectionName);
+    const collection = collectionName || params.collectionName;
+    return client.db(params.dbName).collection(collection);
 }
 
 module.exports = getCollection;
