@@ -4,7 +4,8 @@ packages:
       consume-catalog-message:
         location: ./consumeCatalogMessage/dist/bundle.js
         runtime: nodejs:10
-        memorySize: 128
+        limits:
+          memorySize: 128 MB
         inputs:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
@@ -14,7 +15,8 @@ packages:
       update-sale-price:
         location: ./updateSalePrice/dist/bundle.js
         runtime: nodejs:10
-        memorySize: 128
+        limits:
+          memorySize: 128 MB
         inputs:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
@@ -23,7 +25,8 @@ packages:
       consume-sku-inventory-message:
         location: ./consumeSkuInventoryMessage/dist/bundle.js
         runtime: nodejs:10
-        memorySize: 128
+        limits:
+          memorySize: 128 MB
         inputs:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
@@ -32,7 +35,8 @@ packages:
       update-algolia-style:
         location: ./updateAlgoliaStyle/dist/bundle.js
         runtime: nodejs:10
-        memorySize: 128
+        limits:
+          memorySize: 128 MB
         inputs:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
@@ -46,7 +50,8 @@ packages:
       update-algolia-price:
         location: ./updateAlgoliaPrice/dist/bundle.js
         runtime: nodejs:10
-        memorySize: 128
+        limits:
+          memorySize: 128 MB
         inputs:
           topicName: prices-connect-jdbc
           algoliaApiKey: $ALGOLIA_API_KEY
@@ -55,7 +60,8 @@ packages:
       update-algolia-inventory:
         location: ./updateAlgoliaInventory/dist/bundle.js
         runtime: nodejs:10
-        memorySize: 128
+        limits:
+          memorySize: 128 MB
         inputs:
           topicName: inventory-connect-jdbc-SKUINVENTORY
           algoliaApiKey: $ALGOLIA_API_KEY
