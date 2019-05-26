@@ -100,6 +100,7 @@ function parseStyleMessage(row) {
     }
 
     styleData.inStoreSalePrice = styleData.onlineSalePrice;
+    styleData.currentPrice = styleData.inStoreSalePrice ? styleData.inStoreSalePrice : styleData.originalPrice;
 
     // Add _id for mongo
     styleData._id = styleData.id;
