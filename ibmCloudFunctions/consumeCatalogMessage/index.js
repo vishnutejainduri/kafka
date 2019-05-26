@@ -11,6 +11,7 @@ global.main = async function (params) {
     }
 
     const styles = await getCollection(params);
+    const prices = await getCollection(params, params.pricesCollectionName);
     return Promise.all(params.messages
         .filter((msg) => msg.topic === params.topicName)
         .filter(filterStyleMessages)
@@ -18,6 +19,10 @@ global.main = async function (params) {
         .map((styleData) => styles.findOne({ _id: styleData._id })
             .then((existingDocument) => existingDocument
                 ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lt: styleData.effectiveDate } }, { $set: styleData })
+                    .then((result) => result.modifiedCount > 0
+                        ? prices.updateOne({ styleId: styleData._id }, { originalPrice: styleData.originalPrice })
+                        : null
+                    )
                 : styles.insertOne(styleData)
             ).then(() => console.log('Updated/inserted document ' + styleData._id))
             .catch((err) => {

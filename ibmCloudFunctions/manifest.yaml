@@ -8,6 +8,7 @@ packages:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
           collectionName: stylestest
+          pricesCollectionName: prices
           topicName: styles-connect-jdbc-CATALOG
       update-sale-price:
         location: ./updateSalePrice/dist/bundle.js
