@@ -96,6 +96,7 @@ function parseStyleMessage(msg) {
         })
     }
 
+    // remap certain facet names
     if (styleData.sleeve) {
         styleData.collar = styleData.sleeve;
         delete styleData.sleeve;
@@ -105,6 +106,15 @@ function parseStyleMessage(msg) {
         styleData.style = styleData.category;
         delete styleData.category;
     }
+
+    // init the rest of the known facets to help with data consistency
+    styleData.style = styleData.style || {en: null, fr: null};
+    styleData.fabric = styleData.fabric || {en: null, fr: null};
+    styleData.length = styleData.length || {en: null, fr: null};
+    styleData.fit = styleData.fit || {en: null, fr: null};
+    styleData.collar = styleData.collar || {en: null, fr: null};
+    styleData.pattern = styleData.pattern || {en: null, fr: null};
+    styleData.cuff = styleData.cuff || {en: null, fr: null};
 
     // Add _id for mongo
     styleData._id = styleData.id;
