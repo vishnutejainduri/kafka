@@ -126,8 +126,9 @@ curl -X POST   -H "Content-Type: application/json" \
   "mode": "timestamp",
   "batch.max.rows": 1000,
   "timestamp.column.name": "LASTMODIFIEDDATE",
+  "query": "SELECT sx.PKPRODUCTNO as SKU_ID, i.INV_FKSTYLENO as STYLE_ID, i.FKSTORENO as STORE_ID, i.QOH, i.QOHSELLABLE, i.QOHNOTSELLABLE, i.QOO, i.QBO, i.QIT, i.LASTMODIFIEDDATE FROM VSTORE.SKUINVENTORY i LEFT JOIN VSTORE.SKUXREF sx ON i.FKSKU = sx.FKSKU AND i.INV_FKORGANIZATIONNO = sx.FKORGANIZATIONNO",
   "numeric.mapping": "best_fit",
-  "topic.prefix": "inventory-connect-jdbc-",
+  "topic.prefix": "inventory-connect-jdbc-SKUINVENTORY",
   "validate.non.null": "false",
   "poll.interval.ms": 60000, "offset.flush.timeout.ms": 60000 } }' \
   http://$CONNECT_HOST:$CONNECT_PORT/connectors

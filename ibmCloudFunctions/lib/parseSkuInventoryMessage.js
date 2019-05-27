@@ -4,9 +4,9 @@ const TOPIC_NAME = 'inventory-connect-jdbc-SKUINVENTORY';
 
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
-    'INV_FKSTYLENO': 'styleId',
-    'FKSKU': 'skuId',
-    'FKSTORENO': 'locationId',
+    'STYLE_ID': 'styleId',
+    'SKU_ID': 'skuId',
+    'STORE_ID': 'storeId',
     'QOH': 'quantityOnHand',
     'QOO': 'quantityOnOrder',
     'QBO': 'quantityBackOrder',
@@ -14,6 +14,10 @@ const attributeMap = {
     'QOHSELLABLE': 'quantityOnHandSellable',
     'QOHNOTSELLABLE': 'quantityOnHandNotSellable',
     'LASTMODIFIEDDATE': 'lastModifiedDate'
+};
+
+const transforms = {
+    storeId: (storeId) => storeId.padStart(5, '0')
 };
 
 function filterSkuInventoryMessage(msg) {
@@ -34,6 +38,10 @@ function parseSkuInventoryMessage(msg) {
     const inventoryData = {};
     for (let sourceAttributeName in attributeMap) {
         inventoryData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
+    }
+
+    for (let transformField in transforms) {
+        styleData[transformField] = transforms[transformField](styleData[transformField]);
     }
 
     // Add _id for mongo
