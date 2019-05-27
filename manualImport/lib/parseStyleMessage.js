@@ -13,7 +13,7 @@ const translatableAttributeMap = {
     'CAREINSTRUCTIONS': 'careInstructions',
     'ADVICE': 'advice',
     'COLOUR_DESC': 'colour',
-    'COLOURGROUP': 'colourGroup',
+    'TRUE_COLOURGROUP': 'colourGroup',
     'CATAGORY': 'level1Category',
     'CATAGORY_LEVEL_1A': 'level2Category',
     'CATAGORY_LEVEL_2A': 'level3Category'
@@ -98,6 +98,14 @@ function parseStyleMessage(row) {
         styleData.style = styleData.category;
         delete styleData.category;
     }
+
+    styleData.style = styleData.style || {en: null, fr: null};
+    styleData.fabric = styleData.fabric || {en: null, fr: null};
+    styleData.length = styleData.length || {en: null, fr: null};
+    styleData.fit = styleData.fit || {en: null, fr: null};
+    styleData.collar = styleData.collar || {en: null, fr: null};
+    styleData.pattern = styleData.pattern || {en: null, fr: null};
+    styleData.cuff = styleData.cuff || {en: null, fr: null};
 
     styleData.inStoreSalePrice = styleData.onlineSalePrice;
     styleData.currentPrice = styleData.inStoreSalePrice ? styleData.inStoreSalePrice : styleData.originalPrice;

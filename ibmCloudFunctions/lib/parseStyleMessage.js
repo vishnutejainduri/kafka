@@ -13,7 +13,7 @@ const translatableAttributeMap = {
     'CAREINSTRUCTIONS': 'careInstructions',
     'ADVICE': 'advice',
     'COLOUR_DESC': 'colour',
-    'COLOURGROUP': 'colourGroup',
+    'TRUE_COLOURGROUP': 'colourGroup',
     'CATAGORY': 'level1Category',
     'CATAGORY_LEVEL_1A': 'level2Category',
     'CATAGORY_LEVEL_2A': 'level3Category'
