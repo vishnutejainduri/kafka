@@ -90,15 +90,15 @@ packages:
       sale-price-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-sale-price
         trigger: /${ORG}_${SPACE}/sale-price-trigger
-      algolia-catalog-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-algolia-style
-        trigger: /${ORG}_${SPACE}/catalog-trigger
-      algolia-price-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-algolia-price
-        trigger: /${ORG}_${SPACE}/sale-price-trigger
+      #algolia-catalog-rule:
+      #  action: /${ORG}_${SPACE}/product-consumers/update-algolia-style
+      #  trigger: /${ORG}_${SPACE}/catalog-trigger
+      #algolia-price-rule:
+       # action: /${ORG}_${SPACE}/product-consumers/update-algolia-price
+       # trigger: /${ORG}_${SPACE}/sale-price-trigger
       sku-inventory-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-sku-inventory-message
         trigger: /${ORG}_${SPACE}/sku-inventory-trigger
-      algolia-inventory-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-algolia-inventory
-        trigger: /${ORG}_${SPACE}/sku-inventory-trigger
+      #algolia-inventory-rule:
+       # action: /${ORG}_${SPACE}/product-consumers/update-algolia-inventory
+       # trigger: /${ORG}_${SPACE}/sku-inventory-trigger
