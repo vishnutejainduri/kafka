@@ -9,8 +9,8 @@ packages:
         inputs:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
-          collectionName: stylestest
-          pricesCollectionName: prices
+          collectionName: $STYLES_COLLECTION_NAME
+          pricesCollectionName: $PRICES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
       update-sale-price:
         location: ./updateSalePrice/dist/bundle.js
@@ -20,7 +20,7 @@ packages:
         inputs:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
-          collectionName: pricestest
+          collectionName: $PRICES_COLLECTION_NAME
           topicName: prices-connect-jdbc
       consume-sku-inventory-message:
         location: ./consumeSkuInventoryMessage/dist/bundle.js
@@ -30,7 +30,7 @@ packages:
         inputs:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
-          collectionName: inventorytest
+          collectionName: $INVENTORY_COLLECTION_NAME
           topicName: inventory-connect-jdbc-SKUINVENTORY
       update-algolia-style:
         location: ./updateAlgoliaStyle/dist/bundle.js
@@ -40,7 +40,7 @@ packages:
         inputs:
           mongoUri: $MONGO_URI
           dbName: $DB_NAME
-          collectionName: stylestest
+          collectionName: $STYLES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
           algoliaApiKey: $ALGOLIA_API_KEY
           algoliaIndexName: $ALGOLIA_INDEX_NAME
