@@ -10,3 +10,8 @@ and example code here: https://github.com/jkwong888/k8s-add-static-routes. Our r
                                                                                                                    [
                                                                                                                      "142.215.50.0/23"
                                                                                                                    ]'```
+
+You can validate that the access is working by creating a busybox, SSHing in, and pinging an
+on-prem resource:
+1. `kubectl run -i --tty --rm debug --image=busybox --restart=Never -- sh`
+2. `ping <IP address of Jesta or DPM>`
