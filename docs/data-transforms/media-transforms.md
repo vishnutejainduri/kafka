@@ -76,7 +76,7 @@ products have `#1`.
 The code below does not take that new information into account, it just throws away
 anything that is not only composed by digits, and asumes the first one is the main one.
 
-> **Note:** The query they gave me initially, used a substring function to extract
+> **Note 1:** The query they gave me initially, used a substring function to extract
 > the main image as the first result (so picking the first should be enough).
 >
 > `JOIN harp.medias m on substr(p.p_galleryimages,7,13) = m.p_mediacontainer`
@@ -90,13 +90,20 @@ anything that is not only composed by digits, and asumes the first one is the ma
 > I think that, for now, it's safer to ignore the `#1` and just use the snippet
 > below.
 
+> **Note 2:** Turns out that in production, the `P_GALLERYIMAGES` looks like this:
+>
+> `'\\,#1\\,8809530622002\\,8809530654770\\,'`
+>
+> It has double backslash before each comma. That's probably the reason the `substr` call mentioned above.
+> To work around that, we've added `.replace(/\\,/g, ',')` to the script below. This change should still work
+> on both cases (prod and dev)
 
 ```js
 const result = [];
 
 for(let item of DB_MEDIA_CONTAINERS) {
   const ids = (item && item.P_GALLERYIMAGES)
-    ? item.P_GALLERYIMAGES.split(',').filter(id => id.match(/^\d+$/))
+    ? item.P_GALLERYIMAGES.replace(/\\,/g, ',').split(',').filter(id => id.match(/^\d+$/))
     : [];
 
   for (let containerId of ids) {
