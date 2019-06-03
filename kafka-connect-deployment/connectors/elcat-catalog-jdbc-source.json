@@ -1,0 +1,18 @@
+{ "name": "elcat-catalog-jdbc-source",
+  "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "mode": "timestamp",
+    "batch.max.rows": 100,
+    "timestamp.column.name": "EFFECTIVE_DATE",
+    "topic.prefix": "styles-connect-jdbc-CATALOG",
+    "validate.non.null": "false",
+    "errors.log.enable": true,
+    "numeric.mapping": "best_fit",
+    "query": "SELECT CATALOG.*, FACETS.*, STYLE_COLOURS.COLOURGROUP_EN AS TRUE_COLOURGROUP_EN, STYLE_COLOURS.COLOURGROUP_FR AS TRUE_COLOURGROUP_FR FROM ELCAT.CATALOG LEFT JOIN ELCAT.STYLE_COLOURS ON STYLE_COLOURS.STYLEID = CATALOG.STYLEID LEFT JOIN (SELECT STYLEID AS FACET_STYLEID, LISTAGG(CATEGORY || ':' || DESC_ENG, ',') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_ENG, LISTAGG(CATEGORY || ':' || DESC_FR, ',') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_FR FROM ELCAT.STYLE_ITEM_CHARACTERISTICS_ECA GROUP BY STYLEID) FACETS ON CATALOG.STYLEID LIKE FACETS.FACET_STYLEID || '%'",
+    "poll.interval.ms": 120000,
+    "offset.flush.timeout.ms": 120000,
+    "request.timeout.ms": 900000,
+    "producer.request.timeout.ms": 900000
+  }
+}
