@@ -1,0 +1,135 @@
+
+# ELCAT.CATALOG with facet data connector
+curl -X POST   -H "Content-Type: application/json" \
+  --data '{ "name": "elcat-catalog-jdbc-source",
+  "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+  "tasks.max": 1,
+  "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+  "mode": "timestamp",
+  "batch.max.rows": 100,
+  "timestamp.column.name": "EFFECTIVE_DATE",
+  "topic.prefix": "styles-connect-jdbc-CATALOG",
+  "validate.non.null": "false",
+  "errors.log.enable": true,
+  "numeric.mapping": "best_fit",
+  "query": "SELECT CATALOG.*, FACETS.*, STYLE_COLOURS.COLOURGROUP_EN AS TRUE_COLOURGROUP_EN, STYLE_COLOURS.COLOURGROUP_FR AS TRUE_COLOURGROUP_FR FROM ELCAT.CATALOG LEFT JOIN ELCAT.STYLE_COLOURS ON STYLE_COLOURS.STYLEID = CATALOG.STYLEID LEFT JOIN (SELECT STYLEID AS FACET_STYLEID, LISTAGG(CATEGORY || '\'':'\'' || DESC_ENG, '\'','\'') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_ENG, LISTAGG(CATEGORY || '\'':'\'' || DESC_FR, '\'','\'') WITHIN GROUP (ORDER BY CATEGORY) AS FACETS_FR FROM ELCAT.STYLE_ITEM_CHARACTERISTICS_ECA GROUP BY STYLEID) FACETS ON CATALOG.STYLEID LIKE FACETS.FACET_STYLEID || '\''%'\''",
+  "poll.interval.ms": 120000,
+  "offset.flush.timeout.ms": 120000,
+  "request.timeout.ms": 900000,
+  "producer.request.timeout.ms": 900000
+  } }' \
+  http://$CONNECT_HOST:$CONNECT_PORT/connectors
+
+# MERCH.IRO_POS_PRICES - current day in-store sale price connector
+curl -X POST   -H "Content-Type: application/json" \
+  --data '{ "name": "in-store-prices-jdbc-source",
+  "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+  "tasks.max": 1,
+  "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>t@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+  "mode": "bulk",
+  "batch.max.rows": 1000,
+  "topic.prefix": "prices-connect-jdbc",
+  "validate.non.null": "false",
+  "errors.log.enable": true,
+  "numeric.mapping": "best_fit",
+  "query": "SELECT IRO_POS_STYLES.STYLE_ID, NEW_RETAIL_PRICE, START_DATE, SITE_ID FROM MERCH.IRO_POS_STYLES LEFT JOIN (SELECT ipp.STYLE_ID, ipp.NEW_RETAIL_PRICE, ipp.START_DATE, ipp.SITE_ID FROM (SELECT STYLE_ID, MAX(START_DATE) AS START_DATE FROM MERCH.IRO_POS_PRICES WHERE SITE_ID = '\''00011'\'' AND BUSINESS_UNIT_ID = 1 AND TRUNC(SYSDATE) BETWEEN START_DATE AND NVL(END_DATE, '\''01-jan-2525'\'') GROUP BY STYLE_ID) currentpricespan LEFT JOIN MERCH.IRO_POS_PRICES ipp ON currentpricespan.STYLE_ID = ipp.STYLE_ID AND currentpricespan.START_DATE = ipp.START_DATE WHERE SUBSTR(ipp.NEW_RETAIL_PRICE, -1) = '\''9'\'' AND SITE_ID = '\''00011'\'' GROUP BY ipp.STYLE_ID, ipp.NEW_RETAIL_PRICE, ipp.START_DATE, ipp.SITE_ID ORDER BY ipp.STYLE_ID) instoresales ON instoresales.STYLE_ID = IRO_POS_STYLES.STYLE_ID GROUP BY IRO_POS_STYLES.STYLE_ID, NEW_RETAIL_PRICE, START_DATE, SITE_ID",
+  "poll.interval.ms": 10800000,
+  "offset.flush.timeout.ms": 120000
+  } }' \
+  http://$CONNECT_HOST:$CONNECT_PORT/connectors
+
+# MERCH.IRO_POS_PRICES - current day online sale price connector
+curl -X POST   -H "Content-Type: application/json" \
+  --data '{ "name": "online-prices-jdbc-source",
+  "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+  "tasks.max": 1,
+  "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>t@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+  "mode": "bulk",
+  "batch.max.rows": 1000,
+  "topic.prefix": "prices-connect-jdbc",
+  "validate.non.null": "false",
+  "errors.log.enable": true,
+  "numeric.mapping": "best_fit",
+  "query": "SELECT IRO_POS_STYLES.STYLE_ID, NEW_RETAIL_PRICE, START_DATE, SITE_ID FROM MERCH.IRO_POS_STYLES LEFT JOIN (SELECT ipp.STYLE_ID, ipp.NEW_RETAIL_PRICE, ipp.START_DATE, ipp.SITE_ID FROM (SELECT STYLE_ID, MAX(START_DATE) AS START_DATE FROM MERCH.IRO_POS_PRICES WHERE SITE_ID = '\''00990'\'' AND BUSINESS_UNIT_ID = 1 AND TRUNC(SYSDATE) BETWEEN START_DATE AND NVL(END_DATE, '\''01-jan-2525'\'') GROUP BY STYLE_ID) currentpricespan LEFT JOIN MERCH.IRO_POS_PRICES ipp ON currentpricespan.STYLE_ID = ipp.STYLE_ID AND currentpricespan.START_DATE = ipp.START_DATE WHERE SUBSTR(ipp.NEW_RETAIL_PRICE, -1) = '\''9'\'' AND SITE_ID = '\''00990'\'' GROUP BY ipp.STYLE_ID, ipp.NEW_RETAIL_PRICE, ipp.START_DATE, ipp.SITE_ID ORDER BY ipp.STYLE_ID) instoresales ON instoresales.STYLE_ID = IRO_POS_STYLES.STYLE_ID GROUP BY IRO_POS_STYLES.STYLE_ID, NEW_RETAIL_PRICE, START_DATE, SITE_ID",
+  "poll.interval.ms": 10800000,
+  "offset.flush.timeout.ms": 120000
+  } }' \
+  http://$CONNECT_HOST:$CONNECT_PORT/connectors
+
+# VSTORE.SKUINVENTORY connector dev
+curl -X POST   -H "Content-Type: application/json" \
+  --data '{ "name": "vstore-skuinventory-jdbc-source",
+  "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+  "tasks.max": 1,
+  "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>t@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+  "schema.pattern": "VSTORE",
+  "table.poll.interval.ms": 3600000,
+  "mode": "timestamp",
+  "batch.max.rows": 1000,
+  "timestamp.column.name": "LASTMODIFIEDDATE",
+  "query": "SELECT sx.PKPRODUCTNO as SKU_ID, i.INV_FKSTYLENO as STYLE_ID, i.FKSTORENO as STORE_ID, i.QOH, i.QOHSELLABLE, i.QOHNOTSELLABLE, i.QOO, i.QBO, i.QIT, i.LASTMODIFIEDDATE, i.INV_FKORGANIZATIONNO FROM VSTORE.SKUINVENTORY i LEFT JOIN VSTORE.SKUXREF sx ON i.FKSKU = sx.FKSKU AND i.INV_FKORGANIZATIONNO = sx.FKORGANIZATIONNO",
+  "numeric.mapping": "best_fit",
+  "topic.prefix": "inventory-connect-jdbc-SKUINVENTORY",
+  "validate.non.null": "false",
+  "poll.interval.ms": 60000, "offset.flush.timeout.ms": 60000 } }' \
+  http://$CONNECT_HOST:$CONNECT_PORT/connectors
+
+# VSTORE.SKU connector
+curl -X POST   -H "Content-Type: application/json" \
+  --data '{ "name": "vstore-sku-jdbc-source",
+  "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+  "tasks.max": 1,
+  "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>t@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+  "schema.pattern": "VSTORE",
+  "table.whitelist": "SKU",
+  "table.poll.interval.ms": 3600000,
+  "mode": "timestamp",
+  "incrementing.column.name": "",
+  "timestamp.column.name": "LASTMODIFIEDDATE",
+  "topic.prefix": "sku-connect-jdbc-",
+  "validate.non.null": "false",
+  "numeric.mapping": "best_fit",
+  "poll.interval.ms": 60000, "offset.flush.timeout.ms": 60000 } }' \
+  http://$CONNECT_HOST:$CONNECT_PORT/connectors
+
+# HARP.MEDIAS (images) connector
+curl -X POST   -H "Content-Type: application/json" \
+  --data '{ "name": "elcat-catalog-jdbc-source",
+  "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+  "tasks.max": 1,
+  "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+  "mode": "timestamp",
+  "batch.max.rows": 200,
+  "timestamp.column.name": "MODIFIEDTS",
+  "topic.prefix": "medias-connect-jdbc",
+  "validate.non.null": "false",
+  "errors.log.enable": true,
+  "numeric.mapping": "best_fit",
+  "query": "SELECT m.PK AS ID, m.P_MEDIACONTAINER AS CONTAINER_ID, mf.P_QUALIFIER AS QUALIFIER, CASE WHEN m.P_LOCATION IS NULL THEN '\'''\'' ELSE '\''http://www.harryrosen.com/medias/sys_master/'\''||m.P_LOCATION END AS IMAGE_PATH, m.MODIFIEDTS FROM HARP.MEDIAS m JOIN HARP.MEDIAFORMAT mf ON m.P_MEDIAFORMAT = mf.PK",
+  "poll.interval.ms": 120000,
+  "offset.flush.timeout.ms": 120000,
+  "request.timeout.ms": 900000,
+  "producer.request.timeout.ms": 900000
+  } }' \
+  http://$CONNECT_HOST:$CONNECT_PORT/connectors
+
+# HARP.MEDIACONTAINERS (images) connector
+curl -X POST   -H "Content-Type: application/json" \
+  --data '{ "name": "elcat-catalog-jdbc-source",
+  "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+  "tasks.max": 1,
+  "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+  "mode": "timestamp",
+  "batch.max.rows": 200,
+  "timestamp.column.name": "MODIFIEDTS",
+  "topic.prefix": "mediacontainers-connect-jdbc",
+  "validate.non.null": "false",
+  "errors.log.enable": true,
+  "numeric.mapping": "best_fit",
+  "query": SELECT p.CODE, p.P_GALLERYIMAGES, p.P_APPROVALSTATUS, p.MODIFIEDTS FROM HARP.PRODUCTS p JOIN HARP.CATALOGVERSIONS cav ON p.P_CATALOGVERSION = cav.PK AND cav.P_VERSION = '\''Online'\'' JOIN HARP.CATALOGS ca ON cav.P_CATALOG = ca.PK AND ca.P_ID = '\''harryrosenProductCatalog'\''",
+  "poll.interval.ms": 120000,
+  "offset.flush.timeout.ms": 120000,
+  "request.timeout.ms": 900000,
+  "producer.request.timeout.ms": 900000
+  } }' \
+  http://$CONNECT_HOST:$CONNECT_PORT/connectors
