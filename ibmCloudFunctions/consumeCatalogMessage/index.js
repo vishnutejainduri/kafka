@@ -23,7 +23,8 @@ global.main = async function (params) {
                         ? prices.updateOne({ styleId: styleData._id }, { originalPrice: styleData.originalPrice })
                         : null
                     )
-                : styles.insertOne(styleData)
+                : styles.updateOne({ _id: styleData._id }, { $set: styleData }) // fix race condition of some kind that's happening
+                    .then(() => prices.insertOne({ styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice }))
             ).then(() => console.log('Updated/inserted document ' + styleData._id))
             .catch((err) => {
                 console.error('Problem with document ' + styleData._id);
