@@ -14,11 +14,19 @@ let client = null;
  */
 async function getCollection(params, collectionName = null) {
     if (client == null) {
-        if (!params.mongoUri || !params.dbName || !params.collectionName) {
+        if (!params.mongoUri || !params.dbName || !params.collectionName || !params.mongoCertificateBase64) {
             throw new Error('mongoUri, dbName, and collectionName are required action params. See manifest.yaml.')
         }
 
-        client = await MongoClient.connect(params.mongoUri, { useNewUrlParser: true }).catch((err) => {
+        const ca = [Buffer.from(params.mongoCertificateBase64, 'base64')];
+        const options = {
+            ssl: true,
+            sslValidate: true,
+            sslCA: ca,
+            useNewUrlParser: true
+        };
+
+        client = await MongoClient.connect(params.mongoUri, options).catch((err) => {
             throw new Error('Couldn\'t connect to Mongo: ' + err);
         });
     }

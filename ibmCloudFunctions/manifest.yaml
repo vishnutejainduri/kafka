@@ -8,6 +8,7 @@ packages:
           memorySize: 128
         inputs:
           mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
           dbName: $DB_NAME
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
@@ -19,6 +20,7 @@ packages:
           memorySize: 128
         inputs:
           mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
           dbName: $DB_NAME
           collectionName: $PRICES_COLLECTION_NAME
           topicName: prices-connect-jdbc
@@ -29,6 +31,7 @@ packages:
           memorySize: 128
         inputs:
           mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
           dbName: $DB_NAME
           collectionName: $INVENTORY_COLLECTION_NAME
           topicName: inventory-connect-jdbc-SKUINVENTORY
@@ -39,6 +42,7 @@ packages:
           memorySize: 128
         inputs:
           mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
           dbName: $DB_NAME
           collectionName: $STYLES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
