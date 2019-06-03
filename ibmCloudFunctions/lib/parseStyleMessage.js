@@ -74,39 +74,6 @@ function parseStyleMessage(msg) {
         styleData[transformField] = transforms[transformField](styleData[transformField]);
     }
 
-    // Custom logic for facets from DPM
-    // This data comes in the format "CategoryName:categoryValue,CategoryName:categoryValue"
-    // See the custom query for the ELCAT.CATALOG connector for more details
-    // Current known facet names: Category, Fabric, Length, Fit, Sleeve, Pattern, Cuff
-    // The facet "Sleeve" is displayed as "Collar" on the site, so it's renamed here as well
-    // The facet "Category" is displayed as "Style" on the site, so it's renamed here as well
-    // There is some weirdness with the subquery for facets generating ":" for null rows.
-    const facetNameValuePattern = /^([^:]+):(.+)$/;
-    if (msg.value['FACETS_ENG'] && msg.value['FACETS_ENG'] !== ':') {
-        msg.value['FACETS_ENG'].split(',').forEach((facetNameValue) => {
-            const [, facetName, facetValue] = facetNameValuePattern.exec(facetNameValue);
-            styleData[camelCase(facetName)] = { 'en': facetValue };
-        })
-    }
-
-    if (msg.value['FACETS_FR'] && msg.value['FACETS_FR'] !== ':') {
-        msg.value['FACETS_FR'].split(',').forEach((facetNameValue) => {
-            const [, facetName, facetValue] = facetNameValuePattern.exec(facetNameValue);
-            styleData[camelCase(facetName)].fr = facetValue;
-        })
-    }
-
-    // remap certain facet names
-    if (styleData.sleeve) {
-        styleData.collar = styleData.sleeve;
-        delete styleData.sleeve;
-    }
-
-    if (styleData.category) {
-        styleData.style = styleData.category;
-        delete styleData.category;
-    }
-
     // init the rest of the known facets to help with data consistency
     styleData.style = styleData.style || {en: null, fr: null};
     styleData.fabric = styleData.fabric || {en: null, fr: null};
