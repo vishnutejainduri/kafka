@@ -71,12 +71,28 @@ packages:
           algoliaApiKey: $ALGOLIA_API_KEY
           algoliaIndexName: $ALGOLIA_INDEX_NAME
           algoliaAppId: $ALGOLIA_APP_ID
+      consume-medias-message:
+        location: ./consumeMediasMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $MEDIAS_COLLECTION_NAME
+          topicName: medias-connect-jdbc
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
           isJSONData: true
           topic: styles-connect-jdbc-CATALOG
+      medias-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: medias-connect-jdbc
       sale-price-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
@@ -91,6 +107,9 @@ packages:
       catalog-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message
         trigger: catalog-trigger
+      medias-rule:
+        action: /${ORG}_${SPACE}/product-consumers/consume-medias-message
+        trigger: medias-trigger
       sale-price-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-sale-price
         trigger: /${ORG}_${SPACE}/sale-price-trigger

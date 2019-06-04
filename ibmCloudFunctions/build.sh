@@ -21,5 +21,8 @@ npm run build
 cd ../updateAlgoliaPrice/
 npm install
 npm run build
+cd ../consumeMediasMessage/
+npm install
+npm run build
 cd ..
 echo ">>> Built Action packages"
