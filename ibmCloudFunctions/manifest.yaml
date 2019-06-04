@@ -34,7 +34,7 @@ packages:
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
           dbName: $DB_NAME
           collectionName: $STORES_COLLECTION_NAME
-          topicName: stores-connect-jdbc-SITES
+          topicName: stores-connect-jdbc
       consume-sku-inventory-message:
         location: ./consumeSkuInventoryMessage/dist/bundle.js
         runtime: nodejs:10
@@ -119,7 +119,7 @@ packages:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
           isJSONData: true
-          topic: stores-connect-jdbc-SITES
+          topic: stores-connect-jdbc
       media-containers-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
