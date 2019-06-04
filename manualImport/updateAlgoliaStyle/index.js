@@ -81,10 +81,16 @@ global.main = async function () {
     const styles = await getCollection(params);
 
     console.log('reading file')
-    let rawdata = fs.readFileSync('xae'); //'./test.json');
+    let rawdata = fs.readFileSync('retry-offsets-prod-2019-05-30.json'); //'./test.json');
     console.log('parsing data');
     let stylesData = JSON.parse(rawdata);
-    console.log('parsed stylesdata')
+    console.log('parsed stylesdata');
+
+    console.log('reading file')
+    rawdata = fs.readFileSync('facets-grouped-prod-2019-05-30.json'); //'./test.json');
+    console.log('parsing data');
+    let groupedFacetsData = JSON.parse(rawdata);
+    console.log('parsed facets data')
 
     const chunks = chunk(stylesData, 20);
     let i = 0;
@@ -98,6 +104,12 @@ global.main = async function () {
                 // Add Algolia object ID
                 .map((styleData) => {
                     styleData.objectID = styleData.id;
+                    return styleData;
+                })
+                .map((styleData) => {
+                    if (groupedFacetsData[styleData.objectID]) {
+                        styleData = Object.assign({}, styleData, groupedFacetsData[styleData.objectID]);
+                    }
                     return styleData;
                 })
                 .map((styleData) => {
@@ -124,7 +136,8 @@ global.main = async function () {
                         }
 
                         // inventory
-                        requestParams = Object.assign({}, productApiParams, {uri: `/inventory/${styleData._id}`});
+                        styleData.isSellable = styleData.season === 'BASIC' || styleData.season === 'SP-19';
+                        /*requestParams = Object.assign({}, productApiParams, {uri: `/inventory/${styleData._id}`});
                         const inventoryData = await request(requestParams).catch((err) => {
                             console.log('request error', styleData._id, err.message);
                             return null;
@@ -155,7 +168,7 @@ global.main = async function () {
                                 styleData.sizes = skuSizes.filter((skuSize) => skuSize);
                             }
 
-                        }
+                        }*/
 
                         //console.log('generated style data')
                         return Promise.resolve(JSON.stringify(styleData));
@@ -168,7 +181,7 @@ global.main = async function () {
                     .reduce((acc, jsonString) => acc += jsonString + ",\n", '')
                 write(jsonString, () => {
                     console.log('done');
-                    sleep(1000).then(resolve);
+                    sleep(500).then(resolve);
                 })
             });
         })
