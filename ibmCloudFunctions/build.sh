@@ -24,5 +24,8 @@ npm run build
 cd ../consumeMediasMessage/
 npm install
 npm run build
+cd ../consumeMediaContainersMessage/
+npm install
+npm run build
 cd ..
 echo ">>> Built Action packages"

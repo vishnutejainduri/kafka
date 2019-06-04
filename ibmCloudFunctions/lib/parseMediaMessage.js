@@ -9,7 +9,6 @@ const attributeMap = {
     MODIFIEDTS: 'modifiedTs',
 };
 
-// Parse a message from the MERCH.IRO_POS_PRICES table and return a new object with filtered and re-mapped attributes.
 function parseMediaMessage(msg) {
     // Re-map attributes
     const priceData = {};

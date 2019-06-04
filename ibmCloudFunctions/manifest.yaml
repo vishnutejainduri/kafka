@@ -82,6 +82,17 @@ packages:
           dbName: $DB_NAME
           collectionName: $MEDIAS_COLLECTION_NAME
           topicName: medias-connect-jdbc
+      consume-media-containers-message:
+        location: ./consumeMediaContainersMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $MEDIA_CONTAINERS_COLLECTION_NAME
+          topicName: media-containers-connect-jdbc
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
@@ -93,6 +104,11 @@ packages:
         inputs:
           isJSONData: true
           topic: medias-connect-jdbc
+      media-containers-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: media-containers-connect-jdbc
       sale-price-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
@@ -110,6 +126,9 @@ packages:
       medias-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-medias-message
         trigger: medias-trigger
+      media-containers-rule:
+        action: /${ORG}_${SPACE}/product-consumers/consume-media-containers-message
+        trigger: media-containers-trigger
       sale-price-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-sale-price
         trigger: /${ORG}_${SPACE}/sale-price-trigger
