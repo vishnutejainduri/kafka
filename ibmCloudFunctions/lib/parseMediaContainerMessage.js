@@ -60,5 +60,6 @@ function parseMediaContainerMessage(msg) {
 
 module.exports = {
     parseMediaContainerMessage,
-    filterMediaContainerMessage
+    filterMediaContainerMessage,
+    APPROVED_APPROVAL_STATUS
 };
