@@ -13,10 +13,6 @@ const attributeMap = {
     'MODIFIEDTS': 'modifiedTs'
 };
 
-const transforms = {
-    storeId: (storeId) => storeId.padStart(5, '0')
-};
-
 function filterMediaContainerMessage(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse MEDAICONTAINER update messages');

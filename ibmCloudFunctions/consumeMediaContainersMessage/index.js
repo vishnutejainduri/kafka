@@ -14,22 +14,24 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(filterMediaContainerMessage)
         .map(parseMediaContainerMessage)
-        .map((mediaContainerData) => mediaContainers.updateOne({ _id: mediaContainerData._id }, { $set: mediaContainerData }, { upsert: true })
-            .then(() => console.log('Updated/inserted media container ' + mediaContainerData._id))
-            .catch((err) => {
-                console.error('Problem with media container ' + mediaContainerData._id);
-                console.error(err);
-                if (!(err instanceof Error)) {
-                    const e = new Error();
-                    e.originalError = err;
-                    e.attemptedDocument = mediaContainerData;
-                    return e;
-                }
+        .map((mediaContainerDatas) => Promise.all(mediaContainerDatas
+            .map(mediaContainers.updateOne({ _id: mediaContainerData._id }, { $set: mediaContainerData }, { upsert: true })
+                .then(() => console.log('Updated/inserted media container ' + mediaContainerData._id))
+                .catch((err) => {
+                    console.error('Problem with media container ' + mediaContainerData._id);
+                    console.error(err);
+                    if (!(err instanceof Error)) {
+                        const e = new Error();
+                        e.originalError = err;
+                        e.attemptedDocument = mediaContainerData;
+                        return e;
+                    }
 
-                err.attemptedDocument = mediaContainerData;
-                return err;
-            })
-        )
+                    err.attemptedDocument = mediaContainerData;
+                    return err;
+                })
+            )
+        ))
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
