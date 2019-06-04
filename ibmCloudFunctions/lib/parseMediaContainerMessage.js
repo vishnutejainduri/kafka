@@ -1,6 +1,6 @@
 'use strict';
 
-const TOPIC_NAME = 'mediacontainers-connect-jdbc';
+const TOPIC_NAME = 'media-containers-connect-jdbc';
 
 const APPROVED_APPROVAL_STATUS = '8796096954459';
 
