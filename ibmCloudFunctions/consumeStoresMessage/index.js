@@ -2,27 +2,27 @@ const getCollection = require('../lib/getCollection');
 
 const parseStoreMessage = function (msg) {
     return {
-        _id: msg.SITE_ID,
-        id: msg.SITE_ID,
-        businessUnitId: msg.BUSINESS_UNIT_ID,
-        subType: msg.SUB_TYPE,
-        daysOpenPerWeek: msg.DAYS_OPEN_PER_WEEK,
-        name: msg.NAME,
-        address1: msg.ADDRESS_1,
-        address2: msg.ADDRESS_2,
-        address3: msg.ADDRESS_3,
-        address4: msg.ADDRESS_4,
-        city: msg.CITY,
-        stateId: msg.STATE_ID,
-        countryId: msg.COUNTRY_ID,
-        zipCode: msg.ZIP_CODE,
-        telephone: msg.TELEPHONE,
-        fax: msg.FAX,
-        latitude: msg.LATITUDE,
-        longitude: msg.LONGITUDE,
-        operationalStatus: msg.OPERATIONAL_STATUS,
-        siteMgrEmployeeId: msg.SITE_MGR_EMPLOYEE_ID,
-        siteMgrSubType: msg.SITE_MGR_SUB_TYPE
+        _id: msg.value.SITE_ID,
+        id: msg.value.SITE_ID,
+        businessUnitId: msg.value.BUSINESS_UNIT_ID,
+        subType: msg.value.SUB_TYPE,
+        daysOpenPerWeek: msg.value.DAYS_OPEN_PER_WEEK,
+        name: msg.value.NAME,
+        address1: msg.value.ADDRESS_1,
+        address2: msg.value.ADDRESS_2,
+        address3: msg.value.ADDRESS_3,
+        address4: msg.value.ADDRESS_4,
+        city: msg.value.CITY,
+        stateId: msg.value.STATE_ID,
+        countryId: msg.value.COUNTRY_ID,
+        zipCode: msg.value.ZIP_CODE,
+        telephone: msg.value.TELEPHONE,
+        fax: msg.value.FAX,
+        latitude: msg.value.LATITUDE,
+        longitude: msg.value.LONGITUDE,
+        operationalStatus: msg.value.OPERATIONAL_STATUS,
+        siteMgrEmployeeId: msg.value.SITE_MGR_EMPLOYEE_ID,
+        siteMgrSubType: msg.value.SITE_MGR_SUB_TYPE
     };
 };
 
