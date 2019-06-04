@@ -15,7 +15,7 @@ global.main = async function (params) {
         .filter(filterMediaContainerMessage)
         .map(parseMediaContainerMessage)
         .map((mediaContainerDatas) => Promise.all(mediaContainerDatas
-            .map(mediaContainers.updateOne({ _id: mediaContainerData._id }, { $set: mediaContainerData }, { upsert: true })
+            .map((mediaContainerData) => mediaContainers.updateOne({ _id: mediaContainerData._id }, { $set: mediaContainerData }, { upsert: true })
                 .then(() => console.log('Updated/inserted media container ' + mediaContainerData._id))
                 .catch((err) => {
                     console.error('Problem with media container ' + mediaContainerData._id);

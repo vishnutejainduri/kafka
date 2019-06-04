@@ -2,7 +2,7 @@
 
 const TOPIC_NAME = 'media-containers-connect-jdbc';
 
-const APPROVED_APPROVAL_STATUS = '8796096954459';
+const APPROVED_APPROVAL_STATUS = 8796096954459;
 
 // Map of source attribute names to mapped name. Non-translatable attribute names
 // .CODE, p.P_GALLERYIMAGES, p.MODIFIEDTS FROM HARP.PRODUCTS p
@@ -19,13 +19,13 @@ function filterMediaContainerMessage(msg) {
     }
 
     // filter out unapproved items
-    if (msg.value.approvalStatus !== APPROVED_APPROVAL_STATUS) {
+    if (msg.value.P_APPROVALSTATUS !== APPROVED_APPROVAL_STATUS) {
         return false;
     }
 
     // filter out sku images (they have a style ID suffix greater than -00)
     const hasStyleSuffixGreaterThan00 = /^\d+-(1\d|0[1-9])$/;
-    return !msg.value.STYLEID.match(hasStyleSuffixGreaterThan00);
+    return !msg.value.CODE.match(hasStyleSuffixGreaterThan00);
 }
 
 // Parse a message from the HARP.MEDIACONTAINERS table and return new objects with filtered and re-mapped attributes.
@@ -38,10 +38,6 @@ function parseMediaContainerMessage(msg) {
         mediaContainerData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
     }
 
-    for (let transformField in transforms) {
-        mediaContainerData[transformField] = transforms[transformField](mediaContainerData[transformField]);
-    }
-
     const mediaContainerIds = mediaContainerData.galleryImages
         ? mediaContainerData.galleryImages
             .replace(/\\,/g, ',')
@@ -49,6 +45,7 @@ function parseMediaContainerMessage(msg) {
             .filter(id => id.match(/^\d+$/))
             .map(Number)
         : [];
+    delete mediaContainerData.galleryImages;
 
     return mediaContainerIds
         .map((mediaContainerId) => Object.assign({}, mediaContainerData,
