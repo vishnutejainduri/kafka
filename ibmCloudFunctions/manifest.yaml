@@ -35,6 +35,17 @@ packages:
           dbName: $DB_NAME
           collectionName: $STORES_COLLECTION_NAME
           topicName: stores-connect-jdbc
+      consume-sku-message:
+        location: ./consumeSkuMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $SKUS_COLLECTION_NAME
+          topicName: skus-connect-jdbc
       consume-sku-inventory-message:
         location: ./consumeSkuInventoryMessage/dist/bundle.js
         runtime: nodejs:10
@@ -110,6 +121,11 @@ packages:
         inputs:
           isJSONData: true
           topic: styles-connect-jdbc-CATALOG
+      sku-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: skus-connect-jdbc
       medias-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
@@ -139,6 +155,9 @@ packages:
       catalog-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message
         trigger: catalog-trigger
+      sku-rule:
+        action: /${ORG}_${SPACE}/product-consumers/consume-sku-message
+        trigger: sku-trigger
       medias-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-medias-message
         trigger: medias-trigger

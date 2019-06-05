@@ -1,0 +1,18 @@
+{
+  "name": "skus-jdbc-source",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>t@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "schema.pattern": "VSTORE",
+    "table.poll.interval.ms": 3600000,
+    "mode": "timestamp",
+    "timestamp.column.name": "LASTMODIFIEDDATE",
+    "query": "SELECT s.LASTMODIFIEDDATE, s.FKORGANIZATIONNO, sx.pkproductno as id, s.fkstyleno as styleId, s.skusize as \"SIZE\", s.fksizeno as sizeId, s.skudimension as dimension, s.skucolor as colorId FROM vstore.sku s JOIN vstore.skuxref sx ON s.pksku = sx.fksku AND s.fkorganizationno = sx.fkorganizationno",
+    "topic.prefix": "skus-connect-jdbc",
+    "validate.non.null": "false",
+    "numeric.mapping": "best_fit",
+    "poll.interval.ms": 60000,
+    "offset.flush.timeout.ms": 60000
+  }
+}

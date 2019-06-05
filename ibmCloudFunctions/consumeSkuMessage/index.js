@@ -1,4 +1,4 @@
-const parseSkuMessage = require('../lib/parseSkuMessage');
+const { filterSkuMessage, parseSkuMessage } = require('../lib/parseSkuMessage');
 const getCollection = require('../lib/getCollection');
 
 async function main(params) {
@@ -13,17 +13,35 @@ async function main(params) {
 
     const skus = await getCollection(params);
     return Promise.all(params.messages
-        .filter((msg) => msg.topic === params.topicName)
-        .map((msg) => parseSkuMessage(msg))
-        // TODO MUST FILTER BY ORG!!!
+        .filter(filterSkuMessage)
+        .map(parseSkuMessage)
         .map((skuData) => skus.findOne({ _id: skuData._id })
             .then((existingDocument) => existingDocument
                 ? skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, { $set: skuData })
-                : skus.insertOne(skuData)
+                : skus.updateOne({ _id: skuData._id }, { $set: skuData }, { upsert: true }) // fix race condition
             ).then(() => "Updated/inserted document " + skuData._id)
+            .catch((err) => {
+                console.error('Problem with SKU ' + skuData._id);
+                console.error(err);
+                if (!(err instanceof Error)) {
+                    const e = new Error();
+                    e.originalError = err;
+                    e.attemptedDocument = skuData;
+                    return e;
+                }
+
+                err.attemptedDocument = skuData;
+                return err;
+            })
         )
-    ).then((results) => { results });
-    // TODO error handling - this MUST report errors and which offsets must be retried
+    ).then((results) => {
+        const errors = results.filter((res) => res instanceof Error);
+        if (errors.length > 0) {
+            const e = new Error('Some updates failed. See `results`.');
+            e.results = results;
+            throw e;
+        }
+    });
 }
 
 exports.main = main;
