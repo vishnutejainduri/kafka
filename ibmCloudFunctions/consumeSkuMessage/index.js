@@ -1,7 +1,7 @@
 const { filterSkuMessage, parseSkuMessage } = require('../lib/parseSkuMessage');
 const getCollection = require('../lib/getCollection');
 
-async function main(params) {
+global.main = async function (params) {
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
     }
@@ -44,4 +44,4 @@ async function main(params) {
     });
 }
 
-exports.main = main;
+module.exports = global.main;
