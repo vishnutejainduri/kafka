@@ -30,5 +30,8 @@ npm run build
 cd ../consumeStoresMessage/
 npm install
 npm run build
+cd ../addMediaContainerToQueue/
+npm install
+npm run build
 cd ..
 echo ">>> Built Action packages"

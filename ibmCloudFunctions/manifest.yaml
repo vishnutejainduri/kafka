@@ -115,6 +115,17 @@ packages:
           dbName: $DB_NAME
           collectionName: $MEDIA_CONTAINERS_COLLECTION_NAME
           topicName: media-containers-connect-jdbc
+      add-media-container-to-queue-message:
+        location: ./addMediaContainerToQueue/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
+          topicName: media-containers-connect-jdbc
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
@@ -166,6 +177,9 @@ packages:
         trigger: stores-trigger
       media-containers-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-media-containers-message
+        trigger: media-containers-trigger
+      add-media-container-to-queue-message-rule:
+        action: /${ORG}_${SPACE}/product-consumers/add-media-container-to-queue-message
         trigger: media-containers-trigger
       sale-price-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-sale-price

@@ -10,13 +10,13 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const mediaContainers = await getCollection(params);
+    const algoliaImageProcessingQueue = await getCollection(params);
     return Promise.all(params.messages
         .filter(filterMediaContainerMessage)
         .map(parseMediaContainerMessage)
         .map((mediaContainerDatas) => Promise.all(mediaContainerDatas
-            // TODO handle updated main image containers by unsetting existing ones
-            .map((mediaContainerData) => mediaContainers.updateOne({ _id: mediaContainerData._id }, { $set: mediaContainerData }, { upsert: true })
+            .filter((mediaContainerData) => mediaContainerData.isMain)
+            .map((mediaContainerData) => algoliaImageProcessingQueue.updateOne({ _id: mediaContainerData._id }, { $set: mediaContainerData }, { upsert: true })
                 .then(() => console.log('Updated/inserted media container ' + mediaContainerData._id))
                 .catch((err) => {
                     console.error('Problem with media container ' + mediaContainerData._id);
