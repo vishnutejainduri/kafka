@@ -206,9 +206,9 @@ packages:
       algolia-images-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-image
         trigger: every-minute
-      #algolia-catalog-rule:
-      #  action: /${ORG}_${SPACE}/product-consumers/update-algolia-style
-      #  trigger: /${ORG}_${SPACE}/catalog-trigger
+      algolia-catalog-rule:
+        action: /${ORG}_${SPACE}/product-consumers/update-algolia-style
+        trigger: catalog-trigger
       #algolia-price-rule:
        # action: /${ORG}_${SPACE}/product-consumers/update-algolia-price
        # trigger: /${ORG}_${SPACE}/sale-price-trigger
