@@ -177,6 +177,10 @@ packages:
         inputs:
           isJSONData: true
           topic: inventory-connect-jdbc-SKUINVENTORY
+      every-minute:
+        feed: /whisk.system/alarms/alarm
+        inputs:
+          cron: "*/1 * * * *"
     rules:
       catalog-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message
@@ -199,6 +203,9 @@ packages:
       sale-price-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-sale-price
         trigger: /${ORG}_${SPACE}/sale-price-trigger
+      algolia-images-rule:
+        action: /${ORG}_${SPACE}/product-consumers/update-algolia-image
+        trigger: every-minute
       #algolia-catalog-rule:
       #  action: /${ORG}_${SPACE}/product-consumers/update-algolia-style
       #  trigger: /${ORG}_${SPACE}/catalog-trigger
