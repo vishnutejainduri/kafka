@@ -1,5 +1,6 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../lib/getCollection');
+const { productApiRequest } = require('../lib/productApi');
 
 let client = null;
 let index = null;
@@ -21,59 +22,43 @@ global.main = async function (params) {
         throw new Error('Requires Algolia configuration. See manifest.yml');
     }
 
-    if (!params.productApiClientId || !params.productApiHost) {
-        throw new Error('Requires an Event Streams topic.');
-    }
-
-    // TODO make sure this is fetching from params correctly
-    const productApiParams = {
-        baseUrl: params.productApiHost,
-        headers: {
-            'X-IBM-Client-Id': params.productApiClientId,
-            accept: 'application/json'
-        },
-        json: true
-    };
-
     if (index === null) {
         client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
         index = client.initIndex(params.algoliaIndexName);
     }
 
     const algoliaImageProcessingQueue = await getCollection(params);
-    const imageReadyChecks = [];
+    const mediaContainers =  await algoliaImageProcessingQueue.find().limit(200).toArray();
     const imagesToBeSynced = [];
-    algoliaImageProcessingQueue.find().limit(200).forEach(function (mediaContainer) {
-        imageReadyChecks.push(() => {
-            const requestParams = Object.assign({}, productApiParams, {uri: `/media/${mediaContainer.code}/main`});
-            return request(requestParams)
-                .then((imageMedia) => {
-                    let imagePath = null;
-                    if (imageMedia && imageMedia.data && imageMedia.data.length) {
-                        const thumbnail = imageMedia.data[0].images.find((image) => image.qualifier === 'HRSTORE');
-                        if (thumbnail) {
-                            imagePath = thumbnail.url;
-                        }
-                    }
 
-                    if (imagePath) {
-                        imagesToBeSynced.push({
-                            mediaContainer,
-                            imagePath
-                        });
+    const isImageReadyChecks = mediaContainers.map((mediaContainer) => () => {
+        return productApiRequest(params, `/media/${mediaContainer.code}/main`)
+            .then((imageMedia) => {
+                let imagePath = null;
+                if (imageMedia && imageMedia.data && imageMedia.data.length) {
+                    const thumbnail = imageMedia.data[0].images.find((image) => image.qualifier === 'HRSTORE');
+                    if (thumbnail) {
+                        imagePath = thumbnail.url;
                     }
-                })
-                .catch(() => {
-                    console.log('Image not ready for style ', mediaContainer.code);
-                });
-        });
+                }
+
+                if (imagePath) {
+                    imagesToBeSynced.push({
+                        mediaContainer,
+                        imagePath
+                    });
+                }
+            })
+            .catch(() => {
+                console.log('Image not ready for style ', mediaContainer.code);
+            });
     });
 
-    // Run the image ready checks serially to avoid overloading the Image API
-    serial(imageReadyChecks).then(() => {
+    // Run the "is image ready" checks serially to avoid overloading the Image API
+    serial(isImageReadyChecks).then(() => {
         const algoliaUpdates = imagesToBeSynced.map((imageData) => {
             return {
-                objectId: imageData.mediaContainer.code.match(/\d+/)[0] || imageData.mediaContainer.code,
+                objectID: imageData.mediaContainer.code.match(/\d+/)[0] || imageData.mediaContainer.code,
                 image: imageData.imagePath
             };
         });

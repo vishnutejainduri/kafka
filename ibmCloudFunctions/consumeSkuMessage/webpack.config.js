@@ -10,7 +10,7 @@ module.exports = {
     target: 'node',
     externals: [
         'mongodb',
-        'request'
+        'request-promise'
     ],
     optimization: {
         minimize: false

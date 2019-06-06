@@ -1,7 +1,7 @@
 /**
  * This module facilitates calling the product API.
  */
-const request = require('request');
+const request = require('request-promise');
 
 function productApiRequest(params, uri) {
     if (!params.productApiClientId || !params.productApiHost) {
@@ -9,7 +9,7 @@ function productApiRequest(params, uri) {
     }
 
     const productApiParams = {
-        baseUrl: params.productApiClientId,
+        baseUrl: params.productApiHost,
         uri,
         headers: {
             'X-IBM-Client-Id': params.productApiClientId,

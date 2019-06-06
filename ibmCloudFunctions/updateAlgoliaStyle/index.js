@@ -1,7 +1,6 @@
 const algoliasearch = require('algoliasearch');
 const { parseStyleMessage, filterStyleMessages } = require('../lib/parseStyleMessage');
 const getCollection = require('../lib/getCollection');
-const { productApiRequest } = require('../lib/productApi');
 
 let client = null;
 let index = null;
@@ -45,16 +44,6 @@ global.main = async function (params) {
                 : null;
         })
         .filter((styleData) => styleData)
-        .map(async (styleData) => {
-            const imageMedia = await productApiRequest(params, `/media/${styleData._id}/main`);
-            if (imageMedia && imageMedia.data) {
-                const thumbnail = imageMedia.data[0].images.find((image) => image.qualifier === 'HRSTORE');
-                if (thumbnail) {
-                    styleData.image = thumbnail.url;
-                }
-            }
-            return styleData;
-        })
     ).then((recordsToUpdate) => index.partialUpdateObjects(recordsToUpdate, true))
     .catch((error) => {
         console.error('Failed to send styles to Algolia.');
