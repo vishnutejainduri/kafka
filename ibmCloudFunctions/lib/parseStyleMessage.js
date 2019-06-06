@@ -27,7 +27,8 @@ const attributeMap = {
     'COLORID': 'colourId',
     'APPROVED_FOR_WEB': 'approvedForWeb',
     'EFFECTIVE_DATE': 'effectiveDate',
-    'UNIT_PRICE': 'originalPrice'
+    'UNIT_PRICE': 'originalPrice',
+    'VSN': 'vsn'
 };
 
 const transforms = {
@@ -73,6 +74,9 @@ function parseStyleMessage(msg) {
     for (let transformField in transforms) {
         styleData[transformField] = transforms[transformField](styleData[transformField]);
     }
+
+    // VSNs are actually supposed to be compounded with two other fields for uniqueness
+    styleData.relatedProductId = styleData.vsn + msg.value.SUBCLASS + styleData.brandName.en;
 
     // init the rest of the known facets to help with data consistency
     styleData.style = styleData.style || {en: null, fr: null};
