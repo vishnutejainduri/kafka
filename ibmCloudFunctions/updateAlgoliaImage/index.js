@@ -34,18 +34,18 @@ global.main = async function (params) {
     const isImageReadyChecks = mediaContainers.map((mediaContainer) => () => {
         return productApiRequest(params, `/media/${mediaContainer.code}/main`)
             .then((imageMedia) => {
-                let imagePath = null;
+                let url = null;
                 if (imageMedia && imageMedia.data && imageMedia.data.length) {
                     const thumbnail = imageMedia.data[0].images.find((image) => image.qualifier === 'HRSTORE');
                     if (thumbnail) {
-                        imagePath = thumbnail.url;
+                        url = thumbnail.url;
                     }
                 }
 
-                if (imagePath) {
+                if (url) {
                     imagesToBeSynced.push({
                         mediaContainer,
-                        imagePath
+                        url
                     });
                 }
             })
@@ -59,7 +59,7 @@ global.main = async function (params) {
         const algoliaUpdates = imagesToBeSynced.map((imageData) => {
             return {
                 objectID: imageData.mediaContainer.code.match(/\d+/)[0] || imageData.mediaContainer.code,
-                image: imageData.imagePath
+                image: imageData.url
             };
         });
         const mediaContainerIds = imagesToBeSynced.map((imageData) => imageData.mediaContainer._id);

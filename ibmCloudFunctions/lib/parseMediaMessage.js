@@ -5,7 +5,7 @@ const attributeMap = {
     ID: 'id',
     CONTAINER_ID: 'containerId',
     QUALIFIER: 'qualifier',
-    IMAGE_PATH: 'imagePath',
+    IMAGE_PATH: 'url',
     MODIFIEDTS: 'modifiedTs',
 };
 
