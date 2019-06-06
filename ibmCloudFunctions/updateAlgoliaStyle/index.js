@@ -28,7 +28,7 @@ global.main = async function (params) {
     }
 
     const styles = await getCollection(params);
-    const recordsToUpdate = await Promise.all(params.messages
+    let recordsToUpdate = await Promise.all(params.messages
         .filter(filterStyleMessages)
         .map(parseStyleMessage)
         // Add Algolia object ID
@@ -44,6 +44,11 @@ global.main = async function (params) {
                 : null;
         })
     );
+
+    recordsToUpdate = recordsToUpdate.filter((record) => record);
+    if (!recordsToUpdate.length) {
+        return;
+    }
 
     return index.partialUpdateObjects(recordsToUpdate, true)
         .catch((error) => {
