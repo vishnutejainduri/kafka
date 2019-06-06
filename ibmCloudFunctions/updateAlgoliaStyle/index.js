@@ -28,7 +28,7 @@ global.main = async function (params) {
     }
 
     const styles = await getCollection(params);
-    return Promise.all(params.messages
+    const recordsToUpdate = await Promise.all(params.messages
         .filter(filterStyleMessages)
         .map(parseStyleMessage)
         // Add Algolia object ID
@@ -43,13 +43,14 @@ global.main = async function (params) {
                 ? styleData
                 : null;
         })
-        .filter((styleData) => styleData)
-    ).then((recordsToUpdate) => index.partialUpdateObjects(recordsToUpdate, true))
-    .catch((error) => {
-        console.error('Failed to send styles to Algolia.');
-        console.error(params.messages);
-        throw error;
-    });
+    );
+
+    return index.partialUpdateObjects(recordsToUpdate, true)
+        .catch((error) => {
+            console.error('Failed to send styles to Algolia.');
+            console.error(params.messages);
+            throw error;
+        });
 }
 
 module.exports = global.main;
