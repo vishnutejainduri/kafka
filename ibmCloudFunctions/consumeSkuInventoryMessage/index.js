@@ -36,9 +36,9 @@ global.main = async function (params) {
                     if (sku && (updateInventoryResult.modifiedCount || updateInventoryResult.insertedId)) {
                         // If this inventory update added stock then ensure the size is tracked, otherwise remove the size
                         const updateToProcess = inventoryData.quantityOnHandSellable
-                            ? { $addToSet: { sizes: sku.size } }
-                            : { $pull: { sizes: sku.size } };
-                        return styles.updateOne({ _id: inventoryData.styleId }, updateToProcess);
+                            ? { $addToSet: { sizes: sku.size }, $setOnInsert: { effectiveDate: 0 } }
+                            : { $pull: { sizes: sku.size }, $setOnInsert: { effectiveDate: 0 } };
+                        return styles.updateOne({ _id: inventoryData.styleId }, updateToProcess, { upsert: true });
                     }
                 })
                 .catch((err) => {
