@@ -141,6 +141,17 @@ packages:
           dbName: $DB_NAME
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
           topicName: media-containers-connect-jdbc
+      add-style-inventory-check-to-queue:
+        location: ./addStyleInventoryCheckToQueue/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
+          topicName: inventory-connect-jdbc-SKUINVENTORY
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
@@ -209,12 +220,9 @@ packages:
       algolia-catalog-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-style
         trigger: catalog-trigger
-      #algolia-price-rule:
-       # action: /${ORG}_${SPACE}/product-consumers/update-algolia-price
-       # trigger: /${ORG}_${SPACE}/sale-price-trigger
       sku-inventory-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-sku-inventory-message
         trigger: /${ORG}_${SPACE}/sku-inventory-trigger
-      #algolia-inventory-rule:
-       # action: /${ORG}_${SPACE}/product-consumers/update-algolia-inventory
-       # trigger: /${ORG}_${SPACE}/sku-inventory-trigger
+      add-style-inventory-check-rule:
+        action: /${ORG}_${SPACE}/product-consumers/add-style-inventory-check-to-queue
+        trigger: /${ORG}_${SPACE}/sku-inventory-trigger
