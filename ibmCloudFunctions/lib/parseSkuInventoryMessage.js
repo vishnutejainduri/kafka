@@ -16,10 +16,6 @@ const attributeMap = {
     'LASTMODIFIEDDATE': 'lastModifiedDate'
 };
 
-const transforms = {
-    storeId: (storeId) => storeId.padStart(5, '0')
-};
-
 function filterSkuInventoryMessage(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse SKUINVENTORY update messages');
@@ -38,10 +34,6 @@ function parseSkuInventoryMessage(msg) {
     const inventoryData = {};
     for (let sourceAttributeName in attributeMap) {
         inventoryData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
-    }
-
-    for (let transformField in transforms) {
-        inventoryData[transformField] = transforms[transformField](inventoryData[transformField]);
     }
 
     // Add _id for mongo
