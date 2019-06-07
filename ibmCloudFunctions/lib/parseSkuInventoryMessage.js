@@ -37,7 +37,7 @@ function parseSkuInventoryMessage(msg) {
     }
 
     // Add _id for mongo
-    inventoryData.id = `${inventoryData.styleId}-${inventoryData.skuId}-${inventoryData.locationId}`;
+    inventoryData.id = `${inventoryData.styleId}-${inventoryData.skuId}-${inventoryData.storeId}`;
     inventoryData._id = inventoryData.id;
 
     return inventoryData;
