@@ -19,7 +19,7 @@ global.main = async function (params) {
     const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(200).toArray();
     const styleIds = stylesToCheck.map((style) => style.styleId);
 
-    Promise.all(stylesToCheck.map((style) => styles.findOne({ _id: style.styleId })
+    return Promise.all(stylesToCheck.map((style) => styles.findOne({ _id: style.styleId })
         .then((styleData) => {
             return {
                 isSellable: !!styleData.sizes.length,
