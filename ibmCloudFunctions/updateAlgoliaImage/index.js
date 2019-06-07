@@ -30,6 +30,7 @@ global.main = async function (params) {
     const algoliaImageProcessingQueue = await getCollection(params);
     const mediaContainers =  await algoliaImageProcessingQueue.find().limit(50).toArray();
     const imagesToBeSynced = [];
+    const noImagesAvailable = [];
 
     const isImageReadyChecks = mediaContainers.map((mediaContainer) => () => {
         return productApiRequest(params, `/media/${mediaContainer.code}/main`)
@@ -47,6 +48,9 @@ global.main = async function (params) {
                         mediaContainer,
                         url
                     });
+                } else {
+                    // This mediacontainer has images, but none in our crop OR no URL for some reason
+                    noImagesAvailable.push(mediaContainer._id);
                 }
             })
             .catch(() => {
@@ -55,17 +59,21 @@ global.main = async function (params) {
     });
 
     // Run the "is image ready" checks serially to avoid overloading the Image API
-    serial(isImageReadyChecks).then(() => {
+    return serial(isImageReadyChecks).then(() => {
         const algoliaUpdates = imagesToBeSynced.map((imageData) => {
             return {
                 objectID: imageData.mediaContainer.code.match(/\d+/)[0] || imageData.mediaContainer.code,
                 image: imageData.url
             };
         });
-        const mediaContainerIds = imagesToBeSynced.map((imageData) => imageData.mediaContainer._id);
+        const mediaContainerIds = imagesToBeSynced.map((imageData) => imageData.mediaContainer._id)
+            .concat(noImagesAvailable);
 
-        return index.partialUpdateObjects(algoliaUpdates, true)
+        return (algoliaUpdates.length
+            ? index.partialUpdateObjects(algoliaUpdates, true)
+            : Promise.resolve())
             .then(() => algoliaImageProcessingQueue.deleteMany({ _id: { $in: mediaContainerIds } }))
+            .then((result) => console.log('deleted from queue: ' + result.deletedCount))
             .then(() => console.log('Updated images for containers ', mediaContainerIds));
     });
 }
