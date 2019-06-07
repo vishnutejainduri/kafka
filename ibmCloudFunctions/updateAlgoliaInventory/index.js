@@ -19,7 +19,7 @@ global.main = async function (params) {
     const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(200).toArray();
     const styleIds = stylesToCheck.map((style) => style.styleId);
 
-    return Promise.all(stylesToCheck.map((style) => styles.findOne({ _id: style.styleId })
+    const styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map((style) => styles.findOne({ _id: style.styleId })
         .then((styleData) => {
             return {
                 isSellable: !!styleData.sizes.length,
@@ -27,9 +27,14 @@ global.main = async function (params) {
                 objectID: styleData._id
             };
         })
-    )).then((styleAvailabilitiesToBeSynced) => index.partialUpdateObjects(styleAvailabilitiesToBeSynced, true))
-        .then(() => styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } }))
-        .then(() => console.log('Updated availability for styles ', styleIds));
+    ));
+    if (styleAvailabilitiesToBeSynced.length) {
+        return index.partialUpdateObjects(styleAvailabilitiesToBeSynced, true)
+            .then(() => styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } }))
+            .then(() => console.log('Updated availability for styles ', styleIds));
+    } else {
+        console.log('No updates to process.')
+    }
 }
 
 module.exports = global.main;
