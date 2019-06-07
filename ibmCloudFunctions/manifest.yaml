@@ -56,6 +56,8 @@ packages:
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
           dbName: $DB_NAME
           collectionName: $INVENTORY_COLLECTION_NAME
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          skusCollectionName: $SKUS_COLLECTION_NAME
           topicName: inventory-connect-jdbc-SKUINVENTORY
       update-algolia-style:
         location: ./updateAlgoliaStyle/dist/bundle.js
