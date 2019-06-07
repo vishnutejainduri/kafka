@@ -37,7 +37,8 @@ global.main = async function (params) {
             .then(() => styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } }))
             .then(() => console.log('Updated availability for styles ', styleIds));
     } else {
-        console.log('No updates to process.')
+        console.log('No updates to process.');
+        return styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } });
     }
 }
 
