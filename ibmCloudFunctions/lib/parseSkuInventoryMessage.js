@@ -41,7 +41,7 @@ function parseSkuInventoryMessage(msg) {
     }
 
     for (let transformField in transforms) {
-        styleData[transformField] = transforms[transformField](styleData[transformField]);
+        inventoryData[transformField] = transforms[transformField](inventoryData[transformField]);
     }
 
     // Add _id for mongo
