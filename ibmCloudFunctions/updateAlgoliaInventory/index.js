@@ -21,9 +21,11 @@ global.main = async function (params) {
 
     const styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map((style) => styles.findOne({ _id: style.styleId })
         .then((styleData) => {
+            const sizes = styleData.sizes || [];
+
             return {
-                isSellable: !!styleData.sizes.length,
-                sizes: styleData.sizes,
+                isSellable: !!sizes.length,
+                sizes: sizes,
                 objectID: styleData._id
             };
         })
