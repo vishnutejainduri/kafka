@@ -60,12 +60,15 @@ global.main = async function (params) {
 
     // Run the "is image ready" checks serially to avoid overloading the Image API
     return serial(isImageReadyChecks).then(() => {
-        const algoliaUpdates = imagesToBeSynced.map((imageData) => {
-            return {
-                objectID: imageData.mediaContainer.code.match(/\d+/)[0] || imageData.mediaContainer.code,
-                image: imageData.url
-            };
-        });
+        const algoliaUpdates = imagesToBeSynced
+            // some media containers reference non-standard styles
+            .filter((imageData) => imageData.mediaContainer.code.match(/\d+/))
+            .map((imageData) => {
+                return {
+                    objectID: imageData.mediaContainer.code.match(/\d+/)[0] || imageData.mediaContainer.code,
+                    image: imageData.url
+                };
+            });
         const mediaContainerIds = imagesToBeSynced.map((imageData) => imageData.mediaContainer._id)
             .concat(noImagesAvailable);
 
