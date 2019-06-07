@@ -224,6 +224,9 @@ packages:
       algolia-images-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-image
         trigger: every-minute
+      algolia-inventory-rule:
+        action: /${ORG}_${SPACE}/product-consumers/update-algolia-inventory
+        trigger: every-minute
       algolia-catalog-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-style
         trigger: catalog-trigger
