@@ -36,5 +36,8 @@ npm run build
 cd ../addMediaContainerToQueue/
 npm install
 npm run build
+cd ../addStyleInventoryCheckToQueue/
+npm install
+npm run build
 cd ..
 echo ">>> Built Action packages"
