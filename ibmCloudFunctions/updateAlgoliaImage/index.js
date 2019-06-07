@@ -28,7 +28,7 @@ global.main = async function (params) {
     }
 
     const algoliaImageProcessingQueue = await getCollection(params);
-    const mediaContainers =  await algoliaImageProcessingQueue.find().limit(50).toArray();
+    const mediaContainers =  await algoliaImageProcessingQueue.find().limit(40).toArray();
     const imagesToBeSynced = [];
     const noImagesAvailable = [];
 
