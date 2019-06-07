@@ -19,17 +19,19 @@ global.main = async function (params) {
     const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(200).toArray();
     const styleIds = stylesToCheck.map((style) => style.styleId);
 
-    const styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map((style) => styles.findOne({ _id: style.styleId })
+    let styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map((style) => styles.findOne({ _id: style.styleId })
+        // for some reason we don't have style data in the DPM for certain styles referenced in inventory data
         .then((styleData) => {
-            const sizes = styleData.sizes || [];
-
-            return {
-                isSellable: !!sizes.length,
-                sizes: sizes,
-                objectID: styleData._id
-            };
+            return !styleData || !styleData.sizes
+                ? null
+                : {
+                    isSellable: !!styleData.sizes.length,
+                    sizes: styleData.sizes,
+                    objectID: styleData._id
+                };
         })
     ));
+    styleAvailabilitiesToBeSynced = styleAvailabilitiesToBeSynced.filter((styleData) => styleData);
     if (styleAvailabilitiesToBeSynced.length) {
         return index.partialUpdateObjects(styleAvailabilitiesToBeSynced, true)
             .then(() => styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } }))
