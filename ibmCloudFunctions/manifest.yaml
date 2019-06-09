@@ -159,6 +159,17 @@ packages:
           dbName: $DB_NAME
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: inventory-connect-jdbc-SKUINVENTORY
+      add-facets-to-bulk-import-queue:
+        location: ./addFacetsToBulkImportQueue/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
+          topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed

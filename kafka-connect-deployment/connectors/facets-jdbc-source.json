@@ -1,0 +1,18 @@
+{
+  "name": "facets-jdbc-source",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "mode": "bulk",
+    "schema.pattern": "ELCAT",
+    "table.whitelist": "STYLE_ITEM_CHARACTERISTICS_ECA",
+    "batch.max.rows": 500,
+    "errors.log.enable": true,
+    "numeric.mapping": "best_fit",
+    "topic.prefix": "facets-connect-jdbc-",
+    "validate.non.null": "false",
+    "poll.interval.ms": 10800000,
+    "offset.flush.timeout.ms": 120000
+  }
+}
