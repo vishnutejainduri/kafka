@@ -38,22 +38,22 @@ global.main = async function (params) {
                         const updateToProcess = inventoryData.quantityOnHandSellable
                             ? { $addToSet: { sizes: sku.size }, $setOnInsert: { effectiveDate: 0 } }
                             : { $pull: { sizes: sku.size }, $setOnInsert: { effectiveDate: 0 } };
-                        return styles.updateOne({ _id: inventoryData.styleId }, updateToProcess, { upsert: true });
+                        return styles.updateOne({ _id: inventoryData.styleId }, updateToProcess, { upsert: true })
+                            .catch((err) => {
+                                console.error('Problem with document ' + inventoryData._id);
+                                console.error(err);
+                                if (!(err instanceof Error)) {
+                                    const e = new Error();
+                                    e.originalError = err;
+                                    e.attemptedDocument = inventoryData;
+                                    return e;
+                                }
+
+                                err.attemptedDocument = inventoryData;
+                                return err;
+                            });
                     }
                 })
-                .catch((err) => {
-                    console.error('Problem with document ' + inventoryData._id);
-                    console.error(err);
-                    if (!(err instanceof Error)) {
-                        const e = new Error();
-                        e.originalError = err;
-                        e.attemptedDocument = inventoryData;
-                        return e;
-                    }
-
-                    err.attemptedDocument = inventoryData;
-                    return err;
-                });
             }
         )
     ).then((results) => {
