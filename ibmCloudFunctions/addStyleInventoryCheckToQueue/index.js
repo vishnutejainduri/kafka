@@ -16,6 +16,9 @@ global.main = async function (params) {
         .map(parseSkuInventoryMessage)
         .map((skuInventoryData) => skuInventoryData.styleId)
     )];
+    if (!stylesToCheck.length) {
+        return;
+    }
     return styleAvailabilityCheckQueue.bulkWrite(stylesToCheck
         .map((styleId) => {
             return {
