@@ -39,5 +39,8 @@ npm run build
 cd ../addStyleInventoryCheckToQueue/
 npm install
 npm run build
+cd ../addFacetsToBulkImportQueue/
+npm install
+npm run build
 cd ..
 echo ">>> Built Action packages"
