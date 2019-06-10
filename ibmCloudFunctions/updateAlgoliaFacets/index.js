@@ -21,7 +21,7 @@ global.main = async function (params) {
             _id: "$styleId",
             facets: { $push: { name: "$facetName", value: "$facetValue" } }
         }},
-        { $limit: 150 }
+        { $limit: 500 }
     ]).toArray();
 
     if (!styleFacets.length) {
