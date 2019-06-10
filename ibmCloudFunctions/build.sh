@@ -24,6 +24,9 @@ npm run build
 cd ../updateAlgoliaImage/
 npm install
 npm run build
+cd ../updateAlgoliaFacets/
+npm install
+npm run build
 cd ../consumeMediasMessage/
 npm install
 npm run build

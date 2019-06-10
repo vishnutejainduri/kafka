@@ -14,32 +14,50 @@ global.main = async function (params) {
         index = client.initIndex(params.algoliaIndexName);
     }
 
-    const styleAvailabilityCheckQueue = await getCollection(params);
+    const algoliaFacetBulkImportQueue = await getCollection(params);
     const styles = await getCollection(params, params.stylesCollectionName);
-    const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(200).toArray();
-    const styleIds = stylesToCheck.map((style) => style.styleId);
+    const styleFacets = await algoliaFacetBulkImportQueue.aggregate([
+        { $group: {
+            _id: "$styleId",
+            facets: { $push: { name: "$facetName", value: "$facetValue" } }
+        }},
+        { $limit: 500 }
+    ]).toArray();
 
-    let styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map((style) => styles.findOne({ _id: style.styleId })
-        // for some reason we don't have style data in the DPM for certain styles referenced in inventory data
-        .then((styleData) => {
-            return !styleData || !styleData.sizes
-                ? null
-                : {
-                    isSellable: !!styleData.sizes.length,
-                    sizes: styleData.sizes,
-                    objectID: styleData._id
-                };
-        })
-    ));
-    styleAvailabilitiesToBeSynced = styleAvailabilitiesToBeSynced.filter((styleData) => styleData);
-    if (styleAvailabilitiesToBeSynced.length) {
-        return index.partialUpdateObjects(styleAvailabilitiesToBeSynced, true)
-            .then(() => styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } }))
-            .then(() => console.log('Updated availability for styles ', styleIds));
-    } else {
-        console.log('No updates to process.');
-        return styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } });
+    if (!styleFacets.length) {
+        return;
     }
+
+    const algoliaUpdates = styleFacets.map((styleFacetData) => {
+        const styleData = {
+            objectID: styleFacetData._id
+        };
+        styleFacetData.facets.forEach((facetData) => {
+            styleData[facetData.name] = facetData.value;
+        });
+        return styleData;
+    });
+
+    const styleUpdates = algoliaUpdates.map((algoliaUpdate) => {
+        const styleUpdate = Object.assign({}, algoliaUpdate);
+        styleUpdate._id = algoliaUpdate.objectID;
+        delete styleUpdate.objectID;
+        return {
+            updateOne :
+                {
+                    "filter" : { _id : styleUpdate._id },
+                    "update" : { $set : styleUpdate },
+                    "upsert": true
+                }
+        };
+    });
+
+    const styleIds = algoliaUpdates.map((algoliaUpdate) => algoliaUpdate.objectID);
+
+    return index.partialUpdateObjects(algoliaUpdates, true)
+        .then(() => styles.bulkWrite(styleUpdates, { ordered : false })
+        .then(() => algoliaFacetBulkImportQueue.deleteMany({ styleId: { $in: styleIds } }))
+        .then(() => console.log('updated styles', styleIds)));
 }
 
 module.exports = global.main;

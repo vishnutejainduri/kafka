@@ -115,6 +115,20 @@ packages:
           algoliaAppId: $ALGOLIA_APP_ID
           stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
+      update-algolia-facets:
+        location: ./updateAlgoliaFacets/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          algoliaApiKey: $ALGOLIA_API_KEY
+          algoliaIndexName: $ALGOLIA_INDEX_NAME
+          algoliaAppId: $ALGOLIA_APP_ID
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
       consume-medias-message:
         location: ./consumeMediasMessage/dist/bundle.js
         runtime: nodejs:10
@@ -255,3 +269,6 @@ packages:
       add-facets-to-queue-rule:
         action: /${ORG}_${SPACE}/product-consumers/add-facets-to-bulk-import-queue
         trigger: /${ORG}_${SPACE}/facets-trigger
+      algolia-facets-rule:
+        action: /${ORG}_${SPACE}/product-consumers/update-algolia-facets
+        trigger: every-minute
