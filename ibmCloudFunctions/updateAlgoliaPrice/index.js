@@ -21,8 +21,9 @@ function generateUpdateFromParsedMessage(priceData) {
             updateToProcess.onlineSalePrice = priceData.newRetailPrice;
             break;
         case IN_STORE_SITE_ID:
-        default:
             updateToProcess.inStoreSalePrice = priceData.newRetailPrice;
+            break;
+        default:
             break;
     }
     return updateToProcess;

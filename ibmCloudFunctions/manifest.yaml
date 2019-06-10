@@ -251,6 +251,9 @@ packages:
       sale-price-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-sale-price
         trigger: /${ORG}_${SPACE}/sale-price-trigger
+      algolia-price-rule:
+        action: /${ORG}_${SPACE}/product-consumers/update-algolia-price
+        trigger: /${ORG}_${SPACE}/sale-price-trigger
       algolia-images-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-image
         trigger: every-minute
