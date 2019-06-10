@@ -206,6 +206,11 @@ packages:
         inputs:
           isJSONData: true
           topic: inventory-connect-jdbc-SKUINVENTORY
+      facets-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
       every-minute:
         feed: /whisk.system/alarms/alarm
         inputs:
@@ -247,3 +252,6 @@ packages:
       add-style-inventory-check-rule:
         action: /${ORG}_${SPACE}/product-consumers/add-style-inventory-check-to-queue
         trigger: /${ORG}_${SPACE}/sku-inventory-trigger
+      add-facets-to-queue-rule:
+        action: /${ORG}_${SPACE}/product-consumers/add-facets-to-bulk-import-queue
+        trigger: /${ORG}_${SPACE}/facets-trigger
