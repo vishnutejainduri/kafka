@@ -14,10 +14,12 @@ const facetMap = {
 function parseFacetMessage(msg) {
     const facetName = facetMap[msg.value.CATEGORY];
     const returnVal = {
-        _id: msg.value.STYLEID,
-        id: msg.value.STYLEID
+        _id: msg.value.STYLEID + facetName,
+        id: msg.value.STYLEID + facetName,
+        styleId: msg.value.STYLEID,
+        facetName
     };
-    returnVal[`${facetName}`] = {
+    returnVal[facetName] = {
         en: msg.value.DESC_ENG,
         fr: msg.value.DESC_FR
     };
