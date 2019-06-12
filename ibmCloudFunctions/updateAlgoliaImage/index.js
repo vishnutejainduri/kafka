@@ -28,11 +28,19 @@ global.main = async function (params) {
     }
 
     const algoliaImageProcessingQueue = await getCollection(params);
+    const styles = await getCollection(params, params.stylesCollectionName);
     const mediaContainers =  await algoliaImageProcessingQueue.find().limit(40).toArray();
     const imagesToBeSynced = [];
     const noImagesAvailable = [];
 
-    const isImageReadyChecks = mediaContainers.map((mediaContainer) => () => {
+    const isImageReadyChecks = mediaContainers.map((mediaContainer) => async () => {
+        // Many images are for styles not in the DPM (for example, skus). Filter those out
+        const styleData = await styles.findOne({_id: mediaContainer.code});
+        if (!styleData) {
+            noImagesAvailable.push(mediaContainer._id);
+            return null;
+        }
+
         return productApiRequest(params, `/media/${mediaContainer.code}/main`)
             .then((imageMedia) => {
                 let url = null;
@@ -56,7 +64,12 @@ global.main = async function (params) {
             .catch(() => {
                 console.log('Image not ready for style ', mediaContainer.code);
             });
-    });
+    }).filter((promise) => promise);
+
+    if (!isImageReadyChecks.length) {
+        return algoliaImageProcessingQueue.deleteMany({ _id: { $in: noImagesAvailable } })
+            .then((result) => console.log('deleted from queue: ' + result.deletedCount));
+    }
 
     // Run the "is image ready" checks serially to avoid overloading the Image API
     return serial(isImageReadyChecks).then(() => {

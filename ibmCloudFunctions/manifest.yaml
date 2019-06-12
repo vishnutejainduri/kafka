@@ -85,6 +85,7 @@ packages:
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
           dbName: $DB_NAME
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
+          stylesCollectionName: $STYLES_COLLECTION_NAME
           algoliaApiKey: $ALGOLIA_API_KEY
           algoliaIndexName: $ALGOLIA_INDEX_NAME
           algoliaAppId: $ALGOLIA_APP_ID
