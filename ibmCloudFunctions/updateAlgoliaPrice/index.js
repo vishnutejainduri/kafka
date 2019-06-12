@@ -8,6 +8,7 @@ const {
     IN_STORE_SITE_ID,
     ONLINE_SITE_ID
 } = require('../lib/parsePriceMessage');
+const getCollection = require('../lib/getCollection');
 
 let client = null;
 let index = null;
@@ -51,10 +52,22 @@ global.main = async function (params) {
         index = client.initIndex(params.algoliaIndexName);
     }
 
+    const styles = await getCollection(params);
+
     return index.partialUpdateObjects(params.messages
         .filter(filterPriceMessages)
         .map(parsePriceMessage)
         .map(generateUpdateFromParsedMessage)
+        .map(async (update) => {
+            // Ensure that the price update is for an available style
+            const styleData = await styles.findOne({ _id: update.objectID });
+            if (!styleData) {
+                return null;
+            }
+
+            update.currentPrice = update.onlineSalePrice || styleData.originalPrice;
+        })
+        .filter((update) => update)
     ).catch((error) => {
         console.error('Failed to send prices to Algolia.');
         console.error(params.messages);
