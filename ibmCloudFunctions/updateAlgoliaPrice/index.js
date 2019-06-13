@@ -53,22 +53,23 @@ global.main = async function (params) {
     }
 
     const styles = await getCollection(params);
-
-    return index.partialUpdateObjects(params.messages
+    let updates = params.messages
         .filter(filterPriceMessages)
         .map(parsePriceMessage)
-        .map(generateUpdateFromParsedMessage)
-        .map(async (update) => {
-            // Ensure that the price update is for an available style
-            const styleData = await styles.findOne({ _id: update.objectID });
-            if (!styleData) {
-                return null;
-            }
+        .map(generateUpdateFromParsedMessage);
+    updates = await Promise.all(updates.map(async (update) => {
+        // Ensure that the price update is for an available style
+        const styleData = await styles.findOne({ _id: update.objectID });
+        if (!styleData) {
+            return null;
+        }
 
-            update.currentPrice = update.onlineSalePrice || styleData.originalPrice;
-        })
-        .filter((update) => update)
-    ).catch((error) => {
+        update.currentPrice = update.onlineSalePrice || styleData.originalPrice;
+        return update;
+    }));
+    updates = updates.filter((update) => update);
+
+    return index.partialUpdateObjects(updates).catch((error) => {
         console.error('Failed to send prices to Algolia.');
         console.error(params.messages);
         throw error;
