@@ -18,7 +18,7 @@ global.main = async function (params) {
         .map(parseStyleMessage)
         .map((styleData) => styles.findOne({ _id: styleData._id })
             .then((existingDocument) => existingDocument
-                ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lt: styleData.effectiveDate } }, { $set: styleData })
+                ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lte: styleData.effectiveDate } }, { $set: styleData })
                     .then((result) => result.modifiedCount > 0
                         ? prices.updateOne({ _id: styleData._id }, { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice }, { upsert: true })
                         : null
