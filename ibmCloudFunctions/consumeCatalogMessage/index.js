@@ -20,11 +20,11 @@ global.main = async function (params) {
             .then((existingDocument) => existingDocument
                 ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lte: styleData.effectiveDate } }, { $set: styleData })
                     .then((result) => result.modifiedCount > 0
-                        ? prices.updateOne({ _id: styleData._id }, { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice }, { upsert: true })
+                        ? prices.updateOne({ _id: styleData._id }, { $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice } }, { upsert: true })
                         : null
                     )
                 : styles.updateOne({ _id: styleData._id }, { $set: styleData }, { upsert: true }) // fix race condition of some kind that's happening
-                    .then(() => prices.updateOne({ _id: styleData._id }, { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice }, { upsert: true }))
+                    .then(() => prices.updateOne({ _id: styleData._id }, { $set:{ _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice } }, { upsert: true }))
             ).then(() => console.log('Updated/inserted document ' + styleData._id))
             .catch((err) => {
                 console.error('Problem with document ' + styleData._id);
