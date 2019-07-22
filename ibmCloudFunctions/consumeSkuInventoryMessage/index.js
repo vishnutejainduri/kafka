@@ -33,30 +33,35 @@ global.main = async function (params) {
 
             return Promise.all([updateInventory, skuLookup])
                 .then(async ([updateInventoryResult, sku]) => {
-                    // Update style size count if we have a valid SKU and inventory was updated
-                    const styleData = await styles.findOne({_id: sku.styleId});
-                    const sizes = styleData.sizes;
+                    // Update style size count if we have a valid SKU
+                    if (sku) {
+                        const styleData = await styles.findOne({_id: sku.styleId})
 
-                    const newSizes = inventoryData.quantityOnHandSellable
-                        ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`).concat(`${sku.size}-${inventoryData.storeId}`)
-                        : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`);
+                        if (styleData) {
+                            const sizes = styleData.sizes;
 
-                    const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
-
-                    return styles.updateOne({ _id: inventoryData.styleId }, updateToProcess, { upsert: true })
-                        .catch((err) => {
-                            console.error('Problem with document ' + inventoryData._id);
-                            console.error(err);
-                            if (!(err instanceof Error)) {
-                                const e = new Error();
-                                e.originalError = err;
-                                e.attemptedDocument = inventoryData;
-                                return e;
-                            }
-
-                            err.attemptedDocument = inventoryData;
-                            return err;
-                        });
+                            const newSizes = inventoryData.quantityOnHandSellable
+                                ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`).concat(`${sku.size}-${inventoryData.storeId}`)
+                                : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`);
+    
+                            const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
+    
+                            return styles.updateOne({ _id: inventoryData.styleId }, updateToProcess, { upsert: true })
+                                .catch((err) => {
+                                    console.error('Problem with document ' + inventoryData._id);
+                                    console.error(err);
+                                    if (!(err instanceof Error)) {
+                                        const e = new Error();
+                                        e.originalError = err;
+                                        e.attemptedDocument = inventoryData;
+                                        return e;
+                                    }
+    
+                                    err.attemptedDocument = inventoryData;
+                                    return err;
+                                });
+                        }
+                    }
                 })
             }
         )
