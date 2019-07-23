@@ -38,7 +38,7 @@ global.main = async function (params) {
                         const styleData = await styles.findOne({_id: sku.styleId})
 
                         if (styleData) {
-                            const sizes = styleData.sizes;
+                            const sizes = styleData.sizes || [];
 
                             const newSizes = inventoryData.quantityOnHandSellable
                                 ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`).concat(`${sku.size}-${inventoryData.storeId}`)
