@@ -1,11 +1,18 @@
+const { parseStyleBasicMessage } = require('../lib/parseStyleBasicMessage');
 const getCollection = require('../lib/getCollection');
 
-const parseStylesBasicMessage = function (msg) {
-    return {
-        _id: msg.value.STYLE_ID,
-        id: msg.value.STYLE_ID,
-        isOutlet: msg.value.BRAND_ID === "1" ? false : true
-    };
+const handleError = function (err, msg) {
+  console.error('Problem with document ' + msg._id);
+  console.error(err);
+  if (!(err instanceof Error)) {
+      const e = new Error();
+      e.originalError = err;
+      e.attemptedDocument = msg;
+      return e;
+  }
+
+  err.attemptedDocument = msg;
+  return err;
 };
 
 global.main = async function (params) {
@@ -17,26 +24,38 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const styles = await getCollection(params);
+    const [styles, algoliaDeleteCreateQueue] = await Promise.all([
+        getCollection(params),
+        getCollection(params, params.algoliaDeleteCreateQueue)
+    ]);
     return Promise.all(params.messages
         .filter((msg) => msg.topic === params.topicName)
-        .map(parseStylesBasicMessage)
-        .map((styleData) => styles.updateOne({ _id: styleData._id }, { $set: styleData }, { upsert: true })
-            .then(() => console.log('Updated/inserted document ' + styleData._id))
-            .catch((err) => {
-                console.error('Problem with document ' + styleData._id);
-                console.error(err);
-                if (!(err instanceof Error)) {
-                    const e = new Error();
-                    e.originalError = err;
-                    e.attemptedDocument = styleData;
-                    return e;
-                }
+        .map(parseStyleBasicMessage)
+        .map(async (styleData) => {
+            const operations = [];
+            const existingDoc = await styles.findOne({ _id: styleData._id });
 
-                err.attemptedDocument = styleData;
-                return err;
-            })
-        )
+            operations.push(styles.updateOne({ _id: styleData._id }, { $set: { isOutlet: styleData.isOutlet } }, { upsert: true })
+              .catch((err) => {
+                return handleError(err, styleData)
+              })
+            );
+
+            if (existingDoc && !existingDoc.isOutlet && styleData.isOutlet) {
+              operations.push(algoliaDeleteCreateQueue.insertOne({ styleId: styleData._id, delete: true, create: false, insertionTime: styleData.lastModifiedDate})
+                .catch((err) => {
+                  return handleError(err, styleData)
+                })
+              );
+            } else if (existingDoc && existingDoc.isOutlet && !styleData.isOutlet) {
+              operations.push(algoliaDeleteCreateQueue.insertOne({ styleId: styleData._id, delete: false, create: true, insertionTime: styleData.lastModifiedDate})
+                .catch((err) => {
+                  return handleError(err, styleData)
+                })
+              );
+            } 
+            return Promise.all(operations);
+        })
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {

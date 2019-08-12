@@ -86,6 +86,21 @@ packages:
           algoliaAppId: $ALGOLIA_APP_ID
           productApiClientId: $PRODUCT_API_CLIENT_ID
           productApiHost: $PRODUCT_API_HOST
+      delete-create-algolia-styles:
+        location: ./deleteCreateAlgoliaStyles/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          topicName: styles-basic-connect-jdbc
+          algoliaApiKey: $ALGOLIA_API_KEY
+          algoliaIndexName: $ALGOLIA_INDEX_NAME
+          algoliaAppId: $ALGOLIA_APP_ID
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          collectionName: $ALGOLIA_DELETE_CREATE_QUEUE
       update-algolia-image:
         location: ./updateAlgoliaImage/dist/bundle.js
         runtime: nodejs:10
@@ -283,6 +298,9 @@ packages:
         trigger: every-minute
       algolia-inventory-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-inventory
+        trigger: every-minute
+      algolia-delete-create-rule:
+        action: /${ORG}_${SPACE}/product-consumers/delete-create-algolia-styles
         trigger: every-minute
       algolia-catalog-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-style

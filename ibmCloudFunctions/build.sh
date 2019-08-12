@@ -6,6 +6,9 @@ npm run build
 cd ../updateAlgoliaStyle
 npm install
 npm run build
+cd ../deleteCreateAlgoliaStyles/
+npm install
+npm run build
 cd ../consumeStylesBasicMessage/
 npm install
 npm run build
