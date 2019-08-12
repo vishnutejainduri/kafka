@@ -13,6 +13,17 @@ packages:
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
+      consume-styles-basic-message:
+        location: ./consumeStylesBasicMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $STYLES_COLLECTION_NAME
+          topicName: styles-basic-connect-jdbc
       update-sale-price:
         location: ./updateSalePrice/dist/bundle.js
         runtime: nodejs:10
@@ -195,6 +206,11 @@ packages:
         inputs:
           isJSONData: true
           topic: styles-connect-jdbc-CATALOG
+      styles-basic-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: styles-basic-connect-jdbc 
       sku-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
@@ -238,6 +254,9 @@ packages:
       catalog-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message
         trigger: catalog-trigger
+      styles-basic-rule:
+        action: /${ORG}_${SPACE}/product-consumers/consume-styles-basic-message
+        trigger: styles-basic-trigger
       sku-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-sku-message
         trigger: sku-trigger
