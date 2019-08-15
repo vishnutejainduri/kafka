@@ -35,11 +35,13 @@ global.main = async function (params) {
             const operations = [];
             const existingDoc = await styles.findOne({ _id: styleData._id });
 
-            operations.push(styles.updateOne({ _id: styleData._id }, { $set: { isOutlet: styleData.isOutlet } }, { upsert: true })
-              .catch((err) => {
-                return handleError(err, styleData)
-              })
-            );
+            if (existingDoc) {
+              operations.push(styles.updateOne({ _id: styleData._id }, { $set: { isOutlet: styleData.isOutlet } }, { upsert: true })
+                .catch((err) => {
+                  return handleError(err, styleData)
+                })
+              );
+            }
 
             if (existingDoc && !existingDoc.isOutlet && styleData.isOutlet) {
               operations.push(algoliaDeleteCreateQueue.insertOne({ styleId: styleData._id, delete: true, create: false, insertionTime: styleData.lastModifiedDate})

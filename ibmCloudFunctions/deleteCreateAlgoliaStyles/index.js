@@ -18,20 +18,20 @@ global.main = async function (params) {
         getCollection(params),
         getCollection(params, params.stylesCollectionName)
     ]);
-    const recordsToCheck = await algoliaDeleteCreateQueue.find().sort({"insertionTime":1}).limit(200).toArray();
+    const recordsToCheck = await algoliaDeleteCreateQueue.find().sort({"insertionTime":1, "create":false}).limit(200).toArray();
 
     const recordsToDelete = recordsToCheck.filter((record) => record.delete);
-    const recordsToCreate = recordsToCheck.filter((record) => record.create);
+    //const recordsToCreate = recordsToCheck.filter((record) => record.create);
     
     const algoliaStylesToDelete = recordsToDelete.map((record) => record.styleId);
     const deletionRecordsToDelete = recordsToDelete.map((record) => record._id);
 
-    const algoliaStylesToInsert = recordsToCreate.map((record) => record.styleId);
-    const creationRecordsToDelete = recordsToCreate.map((record) => record._id);
+    //const algoliaStylesToInsert = recordsToCreate.map((record) => record.styleId);
+    //const creationRecordsToDelete = recordsToCreate.map((record) => record._id);
 
     const algoliaOperations = [];
 
-    let stylesToBeCreated = await Promise.all(algoliaStylesToInsert.map(async (styleId) => {
+    /*let stylesToBeCreated = await Promise.all(algoliaStylesToInsert.map(async (styleId) => {
       let styleDataToSync = {};
       const styleData = await styles.findOne({ _id: styleId }, { projection: { 
         isOutlet: 0
@@ -53,7 +53,7 @@ global.main = async function (params) {
     } else {
         console.log('No inserts to process.');
         algoliaOperations.push(algoliaDeleteCreateQueue.deleteMany({ _id: { $in: creationRecordsToDelete } }));
-    }
+    }*/
 
     if (algoliaStylesToDelete.length) {
       algoliaOperations.push(index.deleteObjects(algoliaStylesToDelete, true)
