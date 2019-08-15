@@ -18,7 +18,7 @@ global.main = async function (params) {
         getCollection(params),
         getCollection(params, params.stylesCollectionName)
     ]);
-    const recordsToCheck = await algoliaDeleteCreateQueue.find().sort({"insertionTime":1, "create":false}).limit(200).toArray();
+    const recordsToCheck = await algoliaDeleteCreateQueue.find({ "create": false }).sort({"insertionTime":1}).limit(200).toArray();
 
     const recordsToDelete = recordsToCheck.filter((record) => record.delete);
     //const recordsToCreate = recordsToCheck.filter((record) => record.create);
