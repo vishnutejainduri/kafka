@@ -3,14 +3,9 @@
 const TOPIC_NAME = 'styles-basic-connect-jdbc';
 
 function parseStyleBasicMessage(msg) {
-    const validBrandIds = ["1", "2", "3"];
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Style Basic update messages');
     }
-    if (validBrandIds.indexOf(msg.value.BRAND_ID) <= -1) {
-        throw new Error('Invalid brand id in message');
-    }
-
 
     return {
         _id: msg.value.STYLE_ID,
@@ -20,6 +15,12 @@ function parseStyleBasicMessage(msg) {
     };
 }
 
+function filterStyleBasicMessage(msg) {
+    const validBrandIds = ["1", "2", "3"];
+    return validBrandIds.indexOf(msg.value.BRAND_ID) > -1;
+}
+
 module.exports = {
-    parseStyleBasicMessage
+    parseStyleBasicMessage,
+    filterStyleBasicMessage
 };

@@ -1,4 +1,4 @@
-const { parseStyleBasicMessage } = require('../lib/parseStyleBasicMessage');
+const { parseStyleBasicMessage, filterStyleBasicMessage } = require('../lib/parseStyleBasicMessage');
 const getCollection = require('../lib/getCollection');
 
 const handleError = function (err, msg) {
@@ -29,7 +29,7 @@ global.main = async function (params) {
         getCollection(params, params.algoliaDeleteCreateQueue)
     ]);
     return Promise.all(params.messages
-        .filter((msg) => msg.topic === params.topicName)
+        .filter(filterStyleBasicMessage)
         .map(parseStyleBasicMessage)
         .map(async (styleData) => {
             const operations = [];
