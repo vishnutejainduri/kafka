@@ -22,7 +22,7 @@ global.main = async function (params) {
     let styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map((style) => styles.findOne({ _id: style.styleId })
         // for some reason we don't have style data in the DPM for certain styles referenced in inventory data
         .then((styleData) => {
-            return !styleData || !styleData.sizes
+            return !styleData || !styleData.sizes || styleData.isOutlet
                 ? null
                 : {
                     isSellable: !!styleData.sizes.length,

@@ -18,14 +18,13 @@ global.main = async function (params) {
         getCollection(params),
         getCollection(params, params.stylesCollectionName)
     ]);
-    const recordsToCheck = await algoliaDeleteCreateQueue.find({ "create": true }).sort({"insertionTime":1}).limit(200).toArray();
-    console.log("recordsToCheck", recordsToCheck);
+    const recordsToCheck = await algoliaDeleteCreateQueue.find().sort({"insertionTime":1}).limit(200).toArray();
 
-    //const recordsToDelete = recordsToCheck.filter((record) => record.delete);
+    const recordsToDelete = recordsToCheck.filter((record) => record.delete);
     const recordsToCreate = recordsToCheck.filter((record) => record.create);
     
-    //const algoliaStylesToDelete = recordsToDelete.map((record) => record.styleId);
-    //const deletionRecordsToDelete = recordsToDelete.map((record) => record._id);
+    const algoliaStylesToDelete = recordsToDelete.map((record) => record.styleId);
+    const deletionRecordsToDelete = recordsToDelete.map((record) => record._id);
 
     const algoliaStylesToInsert = recordsToCreate.map((record) => record.styleId);
     const creationRecordsToDelete = recordsToCreate.map((record) => record._id);
@@ -45,10 +44,8 @@ global.main = async function (params) {
       return styleDataToSync; 
     }));
     stylesToBeCreated = stylesToBeCreated.filter((styleData) => styleData);
-    console.log("stylesToBeCreated", stylesToBeCreated);
 
     if (stylesToBeCreated.length) {
-        console.log("adding to algolia");
         algoliaOperations.push(index.addObjects(stylesToBeCreated, true)
             .then(() => algoliaDeleteCreateQueue.deleteMany({ _id: { $in: creationRecordsToDelete } }))
             .then(() => console.log('Inserted for styles ', algoliaStylesToInsert))
@@ -58,7 +55,7 @@ global.main = async function (params) {
         algoliaOperations.push(algoliaDeleteCreateQueue.deleteMany({ _id: { $in: creationRecordsToDelete } }));
     }
 
-    /*if (algoliaStylesToDelete.length) {
+    if (algoliaStylesToDelete.length) {
       algoliaOperations.push(index.deleteObjects(algoliaStylesToDelete, true)
           .then(() => algoliaDeleteCreateQueue.deleteMany({ _id: { $in: deletionRecordsToDelete } }))
           .then(() => console.log('Deleted availability for styles ', algoliaStylesToDelete))
@@ -66,9 +63,8 @@ global.main = async function (params) {
     } else {
         console.log('No deletions to process.');
         algoliaOperations.push(algoliaDeleteCreateQueue.deleteMany({ _id: { $in: deletionRecordsToDelete } }));
-    }*/
+    }
 
-    console.log("algoliaOperations", algoliaOperations);
     return Promise.all(algoliaOperations).then(() => console.log('Finished'));
 }
 

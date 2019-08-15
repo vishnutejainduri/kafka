@@ -60,7 +60,7 @@ global.main = async function (params) {
     updates = await Promise.all(updates.map(async (update) => {
         // Ensure that the price update is for an available style
         const styleData = await styles.findOne({ _id: update.objectID });
-        if (!styleData) {
+        if (!styleData || styleData.isOutlet) {
             return null;
         }
 

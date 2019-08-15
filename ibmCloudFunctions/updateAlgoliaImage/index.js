@@ -36,7 +36,7 @@ global.main = async function (params) {
     const isImageReadyChecks = mediaContainers.map((mediaContainer) => async () => {
         // Many images are for styles not in the DPM (for example, skus). Filter those out
         const styleData = await styles.findOne({_id: mediaContainer.code});
-        if (!styleData) {
+        if (!styleData || styleData.isOutlet) {
             noImagesAvailable.push(mediaContainer._id);
             return null;
         }
