@@ -19,6 +19,7 @@ global.main = async function (params) {
         getCollection(params, params.stylesCollectionName)
     ]);
     const recordsToCheck = await algoliaDeleteCreateQueue.find({ "create": true }).sort({"insertionTime":1}).limit(200).toArray();
+    console.log("recordsToCheck", recordsToCheck);
 
     //const recordsToDelete = recordsToCheck.filter((record) => record.delete);
     const recordsToCreate = recordsToCheck.filter((record) => record.create);
@@ -44,8 +45,10 @@ global.main = async function (params) {
       return styleDataToSync; 
     }));
     stylesToBeCreated = stylesToBeCreated.filter((styleData) => styleData);
+    console.log("stylesToBeCreated", stylesToBeCreated);
 
     if (stylesToBeCreated.length) {
+        console.log("adding to algolia");
         algoliaOperations.push(index.addObjects(stylesToBeCreated, true)
             .then(() => algoliaDeleteCreateQueue.deleteMany({ _id: { $in: creationRecordsToDelete } }))
             .then(() => console.log('Inserted for styles ', algoliaStylesToInsert))
@@ -65,6 +68,7 @@ global.main = async function (params) {
         algoliaOperations.push(algoliaDeleteCreateQueue.deleteMany({ _id: { $in: deletionRecordsToDelete } }));
     }*/
 
+    console.log("algoliaOperations", algoliaOperations);
     return Promise.all(algoliaOperations).then(() => console.log('Finished'));
 }
 
