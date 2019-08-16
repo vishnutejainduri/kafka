@@ -43,7 +43,7 @@ global.main = async function (params) {
               );
             }
 
-            if (existingDoc && !existingDoc.isOutlet && styleData.isOutlet) {
+            if ((existingDoc && !existingDoc.isOutlet && styleData.isOutlet) || (!existingDoc && styleData.isOutlet)) {
               operations.push(algoliaDeleteCreateQueue.insertOne({ styleId: styleData._id, delete: true, create: false, insertionTime: styleData.lastModifiedDate})
                 .catch((err) => {
                   return handleError(err, styleData)
@@ -55,7 +55,7 @@ global.main = async function (params) {
                   return handleError(err, styleData)
                 })
               );
-            } 
+            }
             return Promise.all(operations);
         })
     ).then((results) => {
