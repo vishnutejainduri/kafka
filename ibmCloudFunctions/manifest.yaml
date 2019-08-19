@@ -139,7 +139,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           mongoUri: $MONGO_URI
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
