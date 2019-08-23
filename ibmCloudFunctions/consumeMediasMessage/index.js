@@ -14,22 +14,24 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter((msg) => msg.topic === params.topicName)
         .map(parseMediaMessage)
-        .map((mediaData) => medias.updateOne({ _id: mediaData._id }, { $set: mediaData }, { upsert: true })
-            .then(() => console.log('Updated/inserted price ' + mediaData._id))
-            .catch((err) => {
-                console.error('Problem with price ' + mediaData._id);
-                console.error(err);
-                if (!(err instanceof Error)) {
-                    const e = new Error();
-                    e.originalError = err;
-                    e.attemptedDocument = mediaData;
-                    return e;
-                }
+        .map(async (mediaData) => {
+            await medias.deleteMany({ containerId: mediaData.containerId, qualifier: mediaData.qualifier });
+            return medias.updateOne({ _id: mediaData._id }, { $set: mediaData }, { upsert: true })
+              .then(() => console.log('Updated/inserted media ' + mediaData._id))
+              .catch((err) => {
+                  console.error('Problem with media ' + mediaData._id);
+                  console.error(err);
+                  if (!(err instanceof Error)) {
+                      const e = new Error();
+                      e.originalError = err;
+                      e.attemptedDocument = mediaData;
+                      return e;
+                  }
 
-                err.attemptedDocument = mediaData;
-                return err;
-            })
-        )
+                  err.attemptedDocument = mediaData;
+                  return err;
+              })
+        })
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
