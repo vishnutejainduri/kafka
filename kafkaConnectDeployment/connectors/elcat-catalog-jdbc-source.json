@@ -1,7 +1,9 @@
-{ "name": "elcat-catalog-jdbc-source",
-  "config": { "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+{
+  "name": "elcat-catalog-jdbc-source-5",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": 1,
-    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "connection.url": "jdbc:oracle:thin:myplanet/m5N8CKDUL@//142.215.51.30:1521/eleccata.harryrosen.com",
     "mode": "timestamp",
     "batch.max.rows": 100,
     "timestamp.column.name": "EFFECTIVE_DATE",
