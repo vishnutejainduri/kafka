@@ -153,6 +153,9 @@ packages:
         web-export: true
         limits:
           memorySize: 128
+        inputs:
+          productApiClientId: $PRODUCT_API_CLIENT_ID
+          productApiHost: $PRODUCT_API_HOST
       update-algolia-facets:
         location: ./updateAlgoliaFacets/dist/bundle.js
         runtime: nodejs:10

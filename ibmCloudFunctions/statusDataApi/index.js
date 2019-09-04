@@ -1,9 +1,6 @@
 const { productApiRequest } = require('../lib/productApi');
 
 global.main = async function (params) {
-  params.productApiClientId = '';
-  params.productApiHost = '';
-
   const response = {
     statusCode: 200, 
     headers: { 'Content-Type': 'application/json' },
