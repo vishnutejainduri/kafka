@@ -1,4 +1,15 @@
 packages:
+  alert-checks:
+    actions:
+      status-data-api:
+        location: ./statusDataApi/dist/bundle.js
+        runtime: nodejs:10
+        web-export: true
+        limits:
+          memorySize: 128
+        inputs:
+          productApiClientId: $PRODUCT_API_CLIENT_ID
+          productApiHost: $PRODUCT_API_HOST
   product-consumers:
     actions:
       consume-catalog-message:
@@ -147,15 +158,6 @@ packages:
           algoliaAppId: $ALGOLIA_APP_ID
           stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
-      status-data-api:
-        location: ./statusDataApi/dist/bundle.js
-        runtime: nodejs:10
-        web-export: true
-        limits:
-          memorySize: 128
-        inputs:
-          productApiClientId: $PRODUCT_API_CLIENT_ID
-          productApiHost: $PRODUCT_API_HOST
       update-algolia-facets:
         location: ./updateAlgoliaFacets/dist/bundle.js
         runtime: nodejs:10
@@ -326,7 +328,4 @@ packages:
         trigger: /${ORG}_${SPACE}/facets-trigger
       algolia-facets-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-facets
-        trigger: every-minute
-      status-data-api:
-        action: /${ORG}_${SPACE}/product-consumers/status-data-api
         trigger: every-minute
