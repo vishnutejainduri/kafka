@@ -7,6 +7,7 @@ topics.
 In this directory you'll find:
 - `connectors` - connector configuration files
 - `ibmCloudK8sVPN` - resources and instructions for setting up VPN connectivity to the on-prem Harry Rosen network
+- `ibmCloudK8sIngress` - resources and instructions for setting up secure Ingress for Kafka Connect
 - `kafkaConnectImage` - resources and instructions for building the Docker image for Kafka Connect
 
 When starting with a new cluster, you must:
@@ -110,12 +111,8 @@ kubectl create secret generic eventstreams-kafka-connect \
 Create the image (see /kafka-connect-image) and deploy a workload with it
 kubectl apply -f kafka-connect-deployment/kafka-connect-deployment.yaml
 
-Open a NodePort ingress to the Connect host's REST API: https://cloud.ibm.com/docs/containers?topic=containers-nodeport#nodeport
-VERY IMPORTANT - Delete the NodePort ingress when setup is complete!
-
-Create a connector by using the REST API
-export CONNECT_HOST=<public ip for a node in the cluster>
-export CONNECT_PORT=<port set when creating NodePort ingress above>
+TODO remove all this and replace with tooling
+Create a connector by using the REST API:
 
 See connectors.txt for connector definitions. To deploy connectors, use the Kakfa Connect REST API.
 example calls:
