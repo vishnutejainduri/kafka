@@ -1,4 +1,15 @@
 packages:
+  alert-checks:
+    actions:
+      status-data-api:
+        location: ./statusDataApi/dist/bundle.js
+        runtime: nodejs:10
+        web-export: true
+        limits:
+          memorySize: 128
+        inputs:
+          productApiClientId: $PRODUCT_API_CLIENT_ID
+          productApiHost: $PRODUCT_API_HOST
   product-consumers:
     actions:
       consume-catalog-message:
