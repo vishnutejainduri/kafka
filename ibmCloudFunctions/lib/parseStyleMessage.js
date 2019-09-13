@@ -1,6 +1,7 @@
 'use strict';
 
 const TOPIC_NAME = 'styles-connect-jdbc-CATALOG';
+const APPROVED_STATUS = 'Approved';
 
 // Map of source attribute names to mapped name. Translatable attributes are suffixed with _EN, _ENG, or _FR.
 const translatableAttributeMap = {
@@ -25,7 +26,6 @@ const attributeMap = {
     'WEBSTATUS': 'webStatus',
     'SEASON_CD': 'season',
     'COLORID': 'colourId',
-    'APPROVED_FOR_WEB': 'approvedForWeb',
     'EFFECTIVE_DATE': 'effectiveDate',
     'UNIT_PRICE': 'originalPrice',
     'VSN': 'vsn'
@@ -86,6 +86,7 @@ function parseStyleMessage(msg) {
     styleData.collar = styleData.collar || {en: null, fr: null};
     styleData.pattern = styleData.pattern || {en: null, fr: null};
     styleData.cuff = styleData.cuff || {en: null, fr: null};
+    styleData.webStatus = styleData.webStatus === APPROVED_STATUS ? true : false;
 
     // Add _id for mongo
     styleData._id = styleData.id;
