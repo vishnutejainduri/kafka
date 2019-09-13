@@ -1,5 +1,5 @@
 {
-  "name": "facets-jdbc-source-6",
+  "name": "facets-jdbc-source",
   "config": {
     "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": 1,

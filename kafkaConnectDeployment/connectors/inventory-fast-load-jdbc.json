@@ -4,7 +4,7 @@
     "tasks.max": 1,
     "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
     "mode": "bulk",
-    "batch.max.rows": 300,
+    "batch.max.rows": 1000,
     "errors.log.enable": true,
     "numeric.mapping": "best_fit",
     "query": "SELECT sx.PKPRODUCTNO as SKU_ID, i.INV_FKSTYLENO as STYLE_ID, i.FKSTORENO as STORE_ID, i.QOH, i.QOHSELLABLE, i.QOHNOTSELLABLE, i.QOO, i.QBO, i.QIT, i.LASTMODIFIEDDATE, i.INV_FKORGANIZATIONNO FROM VSTORE.SKUINVENTORY i INNER JOIN (SELECT FKORGANIZATIONNO, FKSKU, PKPRODUCTNO FROM VSTORE.SKUXREF) sx ON i.FKSKU = sx.FKSKU AND i.INV_FKORGANIZATIONNO = sx.FKORGANIZATIONNO WHERE QOHSELLABLE > 0",
