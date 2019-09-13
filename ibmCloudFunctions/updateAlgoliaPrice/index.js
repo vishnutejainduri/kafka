@@ -65,6 +65,8 @@ global.main = async function (params) {
         }
 
         update.currentPrice = update.onlineSalePrice || styleData.originalPrice;
+        const priceArray = update.currentPrice.split('.');
+        update.isSale = priceArray.length > 1 ? priceArray[1] === '99' : false;
         return update;
     }));
     updates = updates.filter((update) => update);
