@@ -12,7 +12,7 @@
     "numeric.mapping": "best_fit",
     "topic.prefix": "facets-connect-jdbc-",
     "validate.non.null": "false",
-    "poll.interval.ms": 10800000,
+    "poll.interval.ms": 172800000,
     "offset.flush.timeout.ms": 120000
   }
 }
