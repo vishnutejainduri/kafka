@@ -182,3 +182,20 @@ spec:
                 secretKeyRef:
                   name: eventstreams-kafka-connect
                   key: CONNECT_BUFFER_MEMORY
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-connect
+  labels:
+    app: kafka-connect
+spec:
+  selector:
+    app: kafka-connect
+  ports:
+    - protocol: "TCP"
+      port: 80
+      targetPort: 28083
+  type: NodePort
