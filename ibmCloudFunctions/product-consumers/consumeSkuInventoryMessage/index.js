@@ -1,5 +1,5 @@
-const getCollection = require('../lib/getCollection');
-const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../lib/parseSkuInventoryMessage');
+const getCollection = require('../../lib/getCollection');
+const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 
 global.main = async function (params) {
     if (!params.topicName) {
@@ -15,7 +15,7 @@ global.main = async function (params) {
         getCollection(params, params.stylesCollectionName),
         getCollection(params, params.skusCollectionName)
     ]);
-    
+
     return Promise.all(params.messages
         .filter(filterSkuInventoryMessage)
         .map(parseSkuInventoryMessage)
@@ -43,9 +43,9 @@ global.main = async function (params) {
                             const newSizes = inventoryData.quantityOnHandSellable
                                 ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`).concat(`${sku.size}-${inventoryData.storeId}`)
                                 : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`);
-    
+
                             const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
-    
+
                             return styles.updateOne({ _id: inventoryData.styleId }, updateToProcess, { upsert: true })
                                 .catch((err) => {
                                     console.error('Problem with document ' + inventoryData._id);
@@ -56,7 +56,7 @@ global.main = async function (params) {
                                         e.attemptedDocument = inventoryData;
                                         return e;
                                     }
-    
+
                                     err.attemptedDocument = inventoryData;
                                     return err;
                                 });

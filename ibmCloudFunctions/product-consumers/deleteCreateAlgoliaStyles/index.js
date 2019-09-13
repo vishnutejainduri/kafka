@@ -1,5 +1,5 @@
 const algoliasearch = require('algoliasearch');
-const getCollection = require('../lib/getCollection');
+const getCollection = require('../../lib/getCollection');
 
 let client = null;
 let index = null;
@@ -22,7 +22,7 @@ global.main = async function (params) {
 
     const recordsToDelete = recordsToCheck.filter((record) => record.delete);
     const recordsToCreate = recordsToCheck.filter((record) => record.create);
-    
+
     const algoliaStylesToDelete = recordsToDelete.map((record) => record.styleId);
     const deletionRecordsToDelete = recordsToDelete.map((record) => record._id);
 
@@ -33,7 +33,7 @@ global.main = async function (params) {
 
     let stylesToBeCreated = await Promise.all(algoliaStylesToInsert.map(async (styleId) => {
       let styleDataToSync = {};
-      const styleData = await styles.findOne({ _id: styleId }, { projection: { 
+      const styleData = await styles.findOne({ _id: styleId }, { projection: {
         isOutlet: 0
       }});
       if (!styleData) return null;
@@ -41,7 +41,7 @@ global.main = async function (params) {
       styleDataToSync = styleData;
       styleDataToSync.objectID = styleId;
 
-      return styleDataToSync; 
+      return styleDataToSync;
     }));
     stylesToBeCreated = stylesToBeCreated.filter((styleData) => styleData);
 

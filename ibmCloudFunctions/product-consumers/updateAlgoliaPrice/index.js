@@ -7,8 +7,8 @@ const {
     parsePriceMessage,
     IN_STORE_SITE_ID,
     ONLINE_SITE_ID
-} = require('../lib/parsePriceMessage');
-const getCollection = require('../lib/getCollection');
+} = require('../../lib/parsePriceMessage');
+const getCollection = require('../../lib/getCollection');
 
 let client = null;
 let index = null;

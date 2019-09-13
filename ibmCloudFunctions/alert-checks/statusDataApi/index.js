@@ -1,13 +1,13 @@
-const { productApiRequest } = require('../lib/productApi');
+const { productApiRequest } = require('../../lib/productApi');
 
 global.main = async function (params) {
   const response = {
-    statusCode: 200, 
+    statusCode: 200,
     headers: { 'Content-Type': 'application/json' },
     body: { msg: 'Success' }
   };
 
-  const apiStatusChecks = [];  
+  const apiStatusChecks = [];
   apiStatusChecks.push(productApiRequest(params, `/style`));
   apiStatusChecks.push(productApiRequest(params, `/sku`));
   apiStatusChecks.push(productApiRequest(params, `/inventory`));

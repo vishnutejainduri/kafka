@@ -1,6 +1,6 @@
 const algoliasearch = require('algoliasearch');
-const { parseStyleMessage, filterStyleMessages } = require('../lib/parseStyleMessage');
-const getCollection = require('../lib/getCollection');
+const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
+const getCollection = require('../../lib/getCollection');
 
 let client = null;
 let index = null;

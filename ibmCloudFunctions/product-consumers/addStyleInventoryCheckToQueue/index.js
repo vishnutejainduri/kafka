@@ -1,5 +1,5 @@
-const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../lib/parseSkuInventoryMessage');
-const getCollection = require('../lib/getCollection');
+const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
+const getCollection = require('../../lib/getCollection');
 
 global.main = async function (params) {
     if (!params.topicName) {

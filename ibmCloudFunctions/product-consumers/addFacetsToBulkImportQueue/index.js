@@ -1,5 +1,5 @@
-const { parseFacetMessage } = require('../lib/parseFacetMessage');
-const getCollection = require('../lib/getCollection');
+const { parseFacetMessage } = require('../../lib/parseFacetMessage');
+const getCollection = require('../../lib/getCollection');
 
 global.main = async function (params) {
     if (!params.messages || !params.messages[0] || !params.messages[0].value) {

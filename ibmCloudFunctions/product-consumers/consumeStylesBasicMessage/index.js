@@ -1,5 +1,5 @@
-const { parseStyleBasicMessage, filterStyleBasicMessage } = require('../lib/parseStyleBasicMessage');
-const getCollection = require('../lib/getCollection');
+const { parseStyleBasicMessage, filterStyleBasicMessage } = require('../../lib/parseStyleBasicMessage');
+const getCollection = require('../../lib/getCollection');
 
 const handleError = function (err, msg) {
   console.error('Problem with document ' + msg._id);

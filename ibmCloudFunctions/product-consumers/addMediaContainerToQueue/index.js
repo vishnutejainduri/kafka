@@ -1,5 +1,5 @@
-const { filterMediaContainerMessage, parseMediaContainerMessage } = require('../lib/parseMediaContainerMessage');
-const getCollection = require('../lib/getCollection');
+const { filterMediaContainerMessage, parseMediaContainerMessage } = require('../../lib/parseMediaContainerMessage');
+const getCollection = require('../../lib/getCollection');
 
 global.main = async function (params) {
     if (!params.topicName) {

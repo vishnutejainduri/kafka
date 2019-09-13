@@ -1,4 +1,4 @@
-const getCollection = require('../lib/getCollection');
+const getCollection = require('../../lib/getCollection');
 
 const parseStoreMessage = function (msg) {
     return {

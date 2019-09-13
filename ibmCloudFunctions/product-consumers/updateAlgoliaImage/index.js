@@ -1,6 +1,6 @@
 const algoliasearch = require('algoliasearch');
-const getCollection = require('../lib/getCollection');
-const { productApiRequest } = require('../lib/productApi');
+const getCollection = require('../../lib/getCollection');
+const { productApiRequest } = require('../../lib/productApi');
 
 let client = null;
 let index = null;
