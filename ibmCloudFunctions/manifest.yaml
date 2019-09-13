@@ -1,6 +1,18 @@
 packages:
   alert-checks:
     actions:
+      connector-status-check:
+        location: ./alert-checks/connectorStatusCheck/dist/bundle.js
+        runtime: nodejs:10
+        web-export: true
+        limits:
+          memorySize: 128
+        inputs:
+          connectHost: $CONNECT_HOST
+          authHost: $APP_ID_HOST
+          authUser: $APP_ID_USER
+          authPassword: $APP_ID_PASSWORD
+          authTenantId: $APP_ID_TENANT_ID
       status-data-api:
         location: ./alert-checks/statusDataApi/dist/bundle.js
         runtime: nodejs:10
