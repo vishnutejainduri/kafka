@@ -1,5 +1,5 @@
 {
-  "name": "elcat-catalog-audit-jdbc-source-v3",
+  "name": "elcat-catalog-audit-jdbc-source",
   "config": {
     "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": 1,
