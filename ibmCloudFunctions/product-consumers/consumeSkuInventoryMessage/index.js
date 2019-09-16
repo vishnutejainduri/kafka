@@ -39,10 +39,11 @@ global.main = async function (params) {
 
                         if (styleData) {
                             const sizes = styleData.sizes || [];
+                            const storeInventory = styleData.storeInventory || [];
 
                             const newSizes = inventoryData.quantityOnHandSellable
-                                ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`).concat(`${sku.size}-${inventoryData.storeId}`)
-                                : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`);
+                                ? sizes.filter((size) => size !== `${sku.size}` && size !== `${sku.size}-${inventoryData.storeId}`).concat(`${sku.size}`)
+                                : sizes.filter((size) => size !== `${sku.size}` && size !== `${sku.size}-${inventoryData.storeId}`);
 
                             const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
 
