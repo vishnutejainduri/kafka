@@ -30,6 +30,9 @@ npm run build
 cd ../updateAlgoliaImage/
 npm install
 npm run build
+cd ../statusDataApi/
+npm install
+npm run build
 cd ../updateAlgoliaFacets/
 npm install
 npm run build

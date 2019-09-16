@@ -1,3 +1,4 @@
 **/node_modules
 **/dist
 /manualImport/**/*.json
+.idea
