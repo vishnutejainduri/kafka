@@ -16,6 +16,7 @@ global.main = async function (params) {
 
     const styleAvailabilityCheckQueue = await getCollection(params);
     const styles = await getCollection(params, params.stylesCollectionName);
+    const updateAlgoliaInventoryCount = await getCollection(params, 'updateAlgoliaInventoryCount');
     const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(200).toArray();
     const styleIds = stylesToCheck.map((style) => style.styleId);
 
@@ -35,6 +36,7 @@ global.main = async function (params) {
     if (styleAvailabilitiesToBeSynced.length) {
         return index.partialUpdateObjects(styleAvailabilitiesToBeSynced, true)
             .then(() => styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } }))
+            .then(() => updateAlgoliaInventoryCount.insert({ batchSize: styleAvailabilitiesToBeSynced.length }))
             .then(() => console.log('Updated availability for styles ', styleIds));
     } else {
         console.log('No updates to process.');

@@ -14,9 +14,11 @@ global.main = async function (params) {
         index = client.initIndex(params.algoliaIndexName);
     }
 
-    const [algoliaDeleteCreateQueue, styles] = await Promise.all([
+    const [algoliaDeleteCreateQueue, styles, createAlgoliaStylesCount, deleteAlgoliaStylesCount] = await Promise.all([
         getCollection(params),
-        getCollection(params, params.stylesCollectionName)
+        getCollection(params, params.stylesCollectionName),
+        getCollection(params, 'createAlgoliaStylesCount'),
+        getCollection(params, 'deleteAlgoliaStylesCount')
     ]);
     const recordsToCheck = await algoliaDeleteCreateQueue.find().sort({"insertionTime":1}).limit(200).toArray();
 
@@ -48,6 +50,7 @@ global.main = async function (params) {
     if (stylesToBeCreated.length) {
         algoliaOperations.push(index.addObjects(stylesToBeCreated, true)
             .then(() => algoliaDeleteCreateQueue.deleteMany({ _id: { $in: creationRecordsToDelete } }))
+            .then(() => createAlgoliaStylesCount.insert({ batchSize: stylesToBeCreated.length }))
             .then(() => console.log('Inserted for styles ', algoliaStylesToInsert))
         );
     } else {
@@ -58,6 +61,7 @@ global.main = async function (params) {
     if (algoliaStylesToDelete.length) {
       algoliaOperations.push(index.deleteObjects(algoliaStylesToDelete, true)
           .then(() => algoliaDeleteCreateQueue.deleteMany({ _id: { $in: deletionRecordsToDelete } }))
+          .then(() => deleteAlgoliaStylesCount.insert({ batchSize: algoliaStylesToDelete.length }))
           .then(() => console.log('Deleted availability for styles ', algoliaStylesToDelete))
       );
     } else {

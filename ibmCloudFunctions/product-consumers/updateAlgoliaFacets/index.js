@@ -16,6 +16,7 @@ global.main = async function (params) {
 
     const algoliaFacetBulkImportQueue = await getCollection(params);
     const styles = await getCollection(params, params.stylesCollectionName);
+    const updateAlgoliaFacetsCount = await getCollection(params, 'updateAlgoliaFacetsCount');
     const styleFacets = await algoliaFacetBulkImportQueue.aggregate([
         { $group: {
             _id: "$styleId",
@@ -65,6 +66,7 @@ global.main = async function (params) {
     return index.partialUpdateObjects(algoliaUpdatesWithoutOutlet, true)
         .then(() => styles.bulkWrite(styleUpdates, { ordered : false })
         .then(() => algoliaFacetBulkImportQueue.deleteMany({ styleId: { $in: styleIds } }))
+        .then(() => updateAlgoliaFacetsCount.insert({ batchSize: algoliaUpdatesWithoutOutlet.length }))
         .then(() => console.log('updated styles', styleIds)));
 }
 

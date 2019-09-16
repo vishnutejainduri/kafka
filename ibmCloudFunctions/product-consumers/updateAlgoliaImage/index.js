@@ -29,6 +29,7 @@ global.main = async function (params) {
 
     const algoliaImageProcessingQueue = await getCollection(params);
     const styles = await getCollection(params, params.stylesCollectionName);
+    const updateAlgoliaImageCount = await getCollection(params, 'updateAlgoliaImageCount');
     const mediaContainers =  await algoliaImageProcessingQueue.find().limit(40).toArray();
     const imagesToBeSynced = [];
     const noImagesAvailable = [];
@@ -89,6 +90,7 @@ global.main = async function (params) {
             ? index.partialUpdateObjects(algoliaUpdates, true)
             : Promise.resolve())
             .then(() => algoliaImageProcessingQueue.deleteMany({ _id: { $in: mediaContainerIds } }))
+            .then((result) => updateAlgoliaImageCount.insert({ batchSize: algoliaUpdates.length }))
             .then((result) => console.log('deleted from queue: ' + result.deletedCount))
             .then(() => console.log('Updated images for containers ', mediaContainerIds));
     });
