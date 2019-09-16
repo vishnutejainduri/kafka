@@ -1,6 +1,6 @@
 const algoliasearch = require('algoliasearch');
-const { parseStyleMessage, filterStyleMessages } = require('../lib/parseStyleMessage');
-const getCollection = require('../lib/getCollection');
+const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
+const getCollection = require('../../lib/getCollection');
 
 let client = null;
 let index = null;
@@ -28,6 +28,7 @@ global.main = async function (params) {
     }
 
     const styles = await getCollection(params);
+    const updateAlgoliaStyleCount = await getCollection(params, 'updateAlgoliaStyleCount');
     let recordsToUpdate = await Promise.all(params.messages
         .filter(filterStyleMessages)
         .map(parseStyleMessage)
@@ -51,6 +52,7 @@ global.main = async function (params) {
     }
 
     return index.partialUpdateObjects(recordsToUpdate, true)
+        .then(() => updateAlgoliaStyleCount.insert({ batchSize: recordsToUpdate.length }))
         .catch((error) => {
             console.error('Failed to send styles to Algolia.');
             console.error(params.messages);

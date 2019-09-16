@@ -7,8 +7,8 @@ const {
     parsePriceMessage,
     IN_STORE_SITE_ID,
     ONLINE_SITE_ID
-} = require('../lib/parsePriceMessage');
-const getCollection = require('../lib/getCollection');
+} = require('../../lib/parsePriceMessage');
+const getCollection = require('../../lib/getCollection');
 
 let client = null;
 let index = null;
@@ -53,6 +53,7 @@ global.main = async function (params) {
     }
 
     const styles = await getCollection(params);
+    const updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount');
     let updates = params.messages
         .filter(filterPriceMessages)
         .map(parsePriceMessage)
@@ -65,11 +66,16 @@ global.main = async function (params) {
         }
 
         update.currentPrice = update.onlineSalePrice || styleData.originalPrice;
+        const priceString = update.currentPrice ? update.currentPrice.toString() : '';
+        const priceArray = priceString.split('.');
+        update.isSale = priceArray.length > 1 ? priceArray[1] === '99' : false;
         return update;
     }));
     updates = updates.filter((update) => update);
 
-    return index.partialUpdateObjects(updates).catch((error) => {
+    return index.partialUpdateObjects(updates)
+      .then(() => updateAlgoliaPriceCount.insert({ batchSize: updates.length }))
+      .catch((error) => {
         console.error('Failed to send prices to Algolia.');
         console.error(params.messages);
         throw error;
