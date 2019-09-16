@@ -45,6 +45,13 @@ global.main = async function (params) {
                                 ? sizes.filter((size) => size !== `${sku.size}` && size !== `${sku.size}-${inventoryData.storeId}`).concat(`${sku.size}`)
                                 : sizes.filter((size) => size !== `${sku.size}` && size !== `${sku.size}-${inventoryData.storeId}`);
 
+                            const newStoreInventory = inventoryData.quantityOnHandSellable
+                                ? storeInventory.filter((store) => store.sizes
+                                  .filter((size) => store.siteId !== inventoryData.storeId && size !== sku.size)
+                                    .concat(sku.size).length > 0)
+                                : storeInventory.filter((store) => size !== `${sku.size}`);
+
+
                             const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
 
                             return styles.updateOne({ _id: inventoryData.styleId }, updateToProcess, { upsert: true })
