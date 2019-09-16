@@ -53,6 +53,7 @@ global.main = async function (params) {
     }
 
     const styles = await getCollection(params);
+    const updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount');
     let updates = params.messages
         .filter(filterPriceMessages)
         .map(parsePriceMessage)
@@ -69,7 +70,9 @@ global.main = async function (params) {
     }));
     updates = updates.filter((update) => update);
 
-    return index.partialUpdateObjects(updates).catch((error) => {
+    return index.partialUpdateObjects(updates)
+      .then(() => updateAlgoliaPriceCount.insert({ batchSize: updates.length }))
+      .catch((error) => {
         console.error('Failed to send prices to Algolia.');
         console.error(params.messages);
         throw error;
