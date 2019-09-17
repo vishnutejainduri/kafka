@@ -25,7 +25,6 @@ global.main = async function (params) {
                         ? inventory.updateOne({ _id: inventoryData._id, lastModifiedDate: { $lt: inventoryData.lastModifiedDate } }, { $set: inventoryData })
                         : inventory.insertOne(inventoryData)
                     );
-
             // sku ids can be null...
             const skuLookup = inventoryData.skuId
                 ? skus.findOne({ _id: inventoryData.skuId })
@@ -41,18 +40,23 @@ global.main = async function (params) {
                             const sizes = styleData.sizes || [];
                             const storeInventory = styleData.storeInventory || [];
 
-                            const newSizes = inventoryData.quantityOnHandSellable
+                            const newSizes = inventoryData.quantityOnHandSellable > 0
                                 ? sizes.filter((size) => size !== `${sku.size}` && size !== `${sku.size}-${inventoryData.storeId}`).concat(`${sku.size}`)
                                 : sizes.filter((size) => size !== `${sku.size}` && size !== `${sku.size}-${inventoryData.storeId}`);
 
-                            const newStoreInventory = inventoryData.quantityOnHandSellable
-                                ? storeInventory.filter((store) => store.sizes
-                                  .filter((size) => store.siteId !== inventoryData.storeId && size !== sku.size)
-                                    .concat(sku.size).length > 0)
-                                : storeInventory.filter((store) => size !== `${sku.size}`);
+                            const storeInventoryStore = storeInventory.filter((store) => store.storeId === inventoryData.storeId)[0];
+                            const storeInventorySizes = storeInventoryStore ? storeInventoryStore.sizes : [];
+                            const newStoreInventorySizes = inventoryData.quantityOnHandSellable > 0
+                                ? storeInventorySizes.filter((size) => size !== sku.size).concat(sku.size)
+                                : storeInventorySizes.filter((size) => size !== sku.size)
 
+                            const newStoreInventory = storeInventory.filter((store) => store.storeId !== inventoryData.storeId);
+                            newStoreInventory.push({
+                              storeId: inventoryData.storeId,
+                              sizes: newStoreInventorySizes
+                            });
 
-                            const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
+                            const updateToProcess = { $set: { sizes: newSizes, storeInventory: newStoreInventory }, $setOnInsert: { effectiveDate: 0 } };
 
                             return styles.updateOne({ _id: inventoryData.styleId }, updateToProcess, { upsert: true })
                                 .catch((err) => {
