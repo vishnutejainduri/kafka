@@ -38,25 +38,20 @@ global.main = async function (params) {
 
                         if (styleData) {
                             const sizes = styleData.sizes || [];
-                            const storeInventory = styleData.storeInventory || [];
+                            const storeInventory = styleData.storeInventory || {};
 
                             const newSizes = inventoryData.quantityOnHandSellable > 0
                                 ? sizes.filter((size) => size !== `${sku.size}` && size !== `${sku.size}-${inventoryData.storeId}`).concat(`${sku.size}`)
                                 : sizes.filter((size) => size !== `${sku.size}` && size !== `${sku.size}-${inventoryData.storeId}`);
 
-                            const storeInventoryStore = storeInventory.filter((store) => store.storeId === inventoryData.storeId)[0];
-                            const storeInventorySizes = storeInventoryStore ? storeInventoryStore.sizes : [];
+                            const storeInventorySizes = storeInventory[inventoryData.storeId] || [];
                             const newStoreInventorySizes = inventoryData.quantityOnHandSellable > 0
                                 ? storeInventorySizes.filter((size) => size !== sku.size).concat(sku.size)
                                 : storeInventorySizes.filter((size) => size !== sku.size)
 
-                            const newStoreInventory = storeInventory.filter((store) => store.storeId !== inventoryData.storeId);
-                            newStoreInventory.push({
-                              storeId: inventoryData.storeId,
-                              sizes: newStoreInventorySizes
-                            });
+                            storeInventory[inventoryData.storeId] = newStoreInventorySizes;
 
-                            const updateToProcess = { $set: { sizes: newSizes, storeInventory: newStoreInventory }, $setOnInsert: { effectiveDate: 0 } };
+                            const updateToProcess = { $set: { sizes: newSizes, storeInventory: storeInventory }, $setOnInsert: { effectiveDate: 0 } };
 
                             return styles.updateOne({ _id: inventoryData.styleId }, updateToProcess, { upsert: true })
                                 .catch((err) => {
