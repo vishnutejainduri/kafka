@@ -151,6 +151,7 @@ packages:
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
           dbName: $DB_NAME
           collectionName: $STYLES_COLLECTION_NAME
+          pricesCollectionName: $PRICES_COLLECTION_NAME
           topicName: prices-connect-jdbc
           algoliaApiKey: $ALGOLIA_API_KEY
           algoliaIndexName: $ALGOLIA_INDEX_NAME
