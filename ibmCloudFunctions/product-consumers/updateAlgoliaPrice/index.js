@@ -63,7 +63,6 @@ global.main = async function (params) {
         // Ensure that the price update is for an available style
         const styleData = await styles.findOne({ _id: update.objectID });
         const priceData = await prices.findOne({ _id: update.objectID });
-        console.log(update, priceData);
         if (!styleData 
             || styleData.isOutlet
             || update.onlineSalePrice === priceData.onlineSalePrice
@@ -80,7 +79,6 @@ global.main = async function (params) {
     updates = updates.filter((update) => update);
 
     if (updates.length > 0) {
-      console.log('update algolia');
       return index.partialUpdateObjects(updates)
         .then(() => updateAlgoliaPriceCount.insert({ batchSize: updates.length }))
         .catch((error) => {
