@@ -1,0 +1,20 @@
+{
+  "name": "medias-jdbc-source",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "mode": "timestamp",
+    "batch.max.rows": 200,
+    "timestamp.column.name": "MODIFIEDTS",
+    "topic.prefix": "medias-connect-jdbc",
+    "validate.non.null": "false",
+    "errors.log.enable": true,
+    "numeric.mapping": "best_fit",
+    "query": "SELECT CAST(m.PK AS NUMBER(13)) AS ID, CAST(m.P_MEDIACONTAINER AS NUMBER(13)) AS CONTAINER_ID, mf.P_QUALIFIER AS QUALIFIER, m.MODIFIEDTS, CASE WHEN m.P_LOCATION IS NULL THEN (CASE WHEN m.P_DATAPK IS NULL OR m.P_SUBFOLDERPATH IS NULL THEN '' ELSE 'https://www.harryrosen.com/medias/sys_master/root/'||m.P_SUBFOLDERPATH||m.P_DATAPK||'.jpg' END) ELSE 'https://www.harryrosen.com/medias/sys_master/'||m.P_LOCATION END AS IMAGE_PATH FROM HARP.MEDIAS m JOIN (SELECT P_QUALIFIER, PK FROM HARP.MEDIAFORMAT) mf ON m.P_MEDIAFORMAT = mf.PK",
+    "poll.interval.ms": 120000,
+    "offset.flush.timeout.ms": 120000,
+    "request.timeout.ms": 900000,
+    "producer.request.timeout.ms": 900000
+  }
+}

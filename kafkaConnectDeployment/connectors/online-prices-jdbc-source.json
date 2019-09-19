@@ -1,0 +1,17 @@
+{
+  "name": "online-prices-jdbc-source",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "mode": "bulk",
+    "batch.max.rows": 1000,
+    "topic.prefix": "prices-connect-jdbc",
+    "validate.non.null": "false",
+    "errors.log.enable": true,
+    "numeric.mapping": "best_fit",
+    "query": "SELECT IRO_POS_STYLES.STYLE_ID, NEW_RETAIL_PRICE, START_DATE, '00990' AS SITE_ID FROM MERCH.IRO_POS_STYLES LEFT JOIN (SELECT ipp.STYLE_ID, ipp.NEW_RETAIL_PRICE, ipp.START_DATE, ipp.SITE_ID FROM (SELECT STYLE_ID, MAX(START_DATE) AS START_DATE FROM MERCH.IRO_POS_PRICES WHERE SITE_ID = '00990' AND BUSINESS_UNIT_ID = 1 AND TRUNC(SYSDATE) BETWEEN START_DATE AND NVL(END_DATE, '01-jan-2525') GROUP BY STYLE_ID) currentpricespan LEFT JOIN MERCH.IRO_POS_PRICES ipp ON currentpricespan.STYLE_ID = ipp.STYLE_ID AND currentpricespan.START_DATE = ipp.START_DATE WHERE SUBSTR(ipp.NEW_RETAIL_PRICE, -1) = '9' AND SITE_ID = '00990' GROUP BY ipp.STYLE_ID, ipp.NEW_RETAIL_PRICE, ipp.START_DATE, ipp.SITE_ID ORDER BY ipp.STYLE_ID) instoresales ON instoresales.STYLE_ID = IRO_POS_STYLES.STYLE_ID GROUP BY IRO_POS_STYLES.STYLE_ID, NEW_RETAIL_PRICE, START_DATE, SITE_ID",
+    "poll.interval.ms": 10800000,
+    "offset.flush.timeout.ms": 120000
+  }
+}
