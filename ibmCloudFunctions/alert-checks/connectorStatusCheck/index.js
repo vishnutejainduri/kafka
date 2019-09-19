@@ -1,7 +1,7 @@
 const bent = require('bent');
 const btoa = require('btoa');
 
-async function main(params) {
+global.main = async function (params) {
     const {
         connectHost,
         authHost,
@@ -42,3 +42,5 @@ async function main(params) {
         };
     });
 }
+
+module.exports = global.main;
