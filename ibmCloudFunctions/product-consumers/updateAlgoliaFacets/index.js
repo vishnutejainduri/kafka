@@ -55,7 +55,7 @@ global.main = async function (params) {
 
     let algoliaUpdatesWithoutOutlet = await Promise.all(algoliaUpdates.map((algoliaUpdate) => styles.findOne({ _id: algoliaUpdate.objectID })
         .then((styleData) => {
-            return styleData.isOutlet
+            return !styleData || styleData.isOutlet
                 ? null
                 : algoliaUpdate
         })
