@@ -22,7 +22,7 @@ global.main = async function (params) {
         .map((inventoryData) => {
             const updateInventory = inventory.findOne({ _id: inventoryData._id })
                     .then((existingDocument) => existingDocument
-                        ? inventory.updateOne({ _id: inventoryData._id, lastModifiedDate: { $lt: inventoryData.lastModifiedDate } }, { $set: inventoryData })
+                        ? inventory.updateOne({ _id: inventoryData._id }, { $set: inventoryData })
                         : inventory.insertOne(inventoryData)
                     );
 
