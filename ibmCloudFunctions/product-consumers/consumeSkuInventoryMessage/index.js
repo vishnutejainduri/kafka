@@ -40,7 +40,7 @@ global.main = async function (params) {
                         if (styleData) {
                             const sizes = styleData.sizes || [];
 
-                            const newSizes = inventoryData.quantityOnHandSellable
+                            const newSizes = (inventoryData.availableToSell && inventoryData.availableToSell > 0)
                                 ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`).concat(`${sku.size}-${inventoryData.storeId}`)
                                 : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`);
 
