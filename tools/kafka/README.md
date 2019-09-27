@@ -14,5 +14,5 @@ Populate .env with the following variables:
 * HR_PLATORM_PATH
 
 # Examples
-`./statusConnector.sh dev`
-`./createConnector.sh dev inv`
+* `./statusConnector.sh dev`
+* `./createConnector.sh dev inv`
