@@ -1,4 +1,4 @@
-#Setup
+# Setup
 Populate .env with the following variables:
 
 KUBE_DEV_USERNAME
@@ -13,6 +13,6 @@ KUBE_PROD_HOST
 
 HR_PLATORM_PATH
 
-#Examples
+# Examples
 `./statusConnector.sh dev`
 `./createConnector.sh dev inv`
