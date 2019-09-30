@@ -10,6 +10,8 @@ global.main = async function (params) {
         authTenantId
     } = params;
 
+    const FAILED_STATE = 'FAILED';
+
     const getAuthJSON = bent(
         `${authHost}`,
         'POST',
@@ -26,8 +28,10 @@ global.main = async function (params) {
     );
 
     return Promise.all(statusCheckRequests).then((statusChecks) => {
+        console.log(statusChecks);
         const failedChecks = statusChecks
-            .filter(statusCheck => statusCheck.error)
+            .filter(statusCheck => statusCheck.error || statusCheck.connector.state === FAILED_STATE 
+              || statusCheck.tasks.filter((task) => task.state === FAILED_STATE).length > 0)
             .map(statusCheck => statusCheck.name)
             .join(', ');
         const status = failedChecks
