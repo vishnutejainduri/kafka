@@ -1,5 +1,5 @@
 const getCollection = require('../../lib/getCollection');
-const constants = require('../../lib/constants');
+const { HIDDEN_STORES } = require('../../lib/constants');
 
 const parseStoreMessage = function (msg) {
     return {
@@ -24,7 +24,7 @@ const parseStoreMessage = function (msg) {
         operationalStatus: msg.value.OPERATIONAL_STATUS,
         siteMgrEmployeeId: msg.value.SITE_MGR_EMPLOYEE_ID,
         siteMgrSubType: msg.value.SITE_MGR_SUB_TYPE,
-        isVisible: constants.HIDDEN_STORES.indexOf(msg.value.SITE_ID) < 0
+        isVisible: HIDDEN_STORES.indexOf(msg.value.SITE_ID) < 0
     };
 };
 
