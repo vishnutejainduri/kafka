@@ -2,3 +2,5 @@
 **/dist
 /manualImport/**/*.json
 .idea
+*.swp
+.env

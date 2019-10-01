@@ -1,0 +1,14 @@
+. .env
+
+if [ $1 = "prod" ]; then
+  KAFKA_USERNAME=$KAFKA_USER_PROD
+  KAFKA_PASSWORD=$KAFKA_PASSWORD_PROD
+  KAFKA_BROKERS=$KAFKA_BROKERS_PROD
+elif  [ $1 = "dev" ]; then
+  KAFKA_USERNAME=$KAFKA_USER_DEV
+  KAFKA_PASSWORD=$KAFKA_PASSWORD_DEV
+  KAFKA_BROKERS=$KAFKA_BROKERS_DEV
+else
+  echo "No environment provided"
+  exit 1
+fi
