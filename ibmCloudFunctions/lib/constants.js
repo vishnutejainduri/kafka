@@ -10,4 +10,6 @@ const HIDDEN_STORES = [
   '00533'
 ]; 
 
-module.exports = HIDDEN_STORES;
+module.exports = {
+  HIDDEN_STORES
+};
