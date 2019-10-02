@@ -53,6 +53,7 @@ global.main = async function (params) {
     }
 
     const styles = await getCollection(params);
+    const prices = await getCollection(params, params.pricesCollectionName);
     const updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount');
     let updates = params.messages
         .filter(filterPriceMessages)
@@ -61,7 +62,11 @@ global.main = async function (params) {
     updates = await Promise.all(updates.map(async (update) => {
         // Ensure that the price update is for an available style
         const styleData = await styles.findOne({ _id: update.objectID });
-        if (!styleData || styleData.isOutlet) {
+        const priceData = await prices.findOne({ _id: update.objectID });
+        if (!styleData 
+            || styleData.isOutlet
+            || update.onlineSalePrice === priceData.onlineSalePrice
+            || update.inStoreSalePrice === priceData.inStoreSalePrice) {
             return null;
         }
 
@@ -73,13 +78,17 @@ global.main = async function (params) {
     }));
     updates = updates.filter((update) => update);
 
-    return index.partialUpdateObjects(updates)
-      .then(() => updateAlgoliaPriceCount.insert({ batchSize: updates.length }))
-      .catch((error) => {
-        console.error('Failed to send prices to Algolia.');
-        console.error(params.messages);
-        throw error;
-    });
+    if (updates.length > 0) {
+      return index.partialUpdateObjects(updates)
+        .then(() => updateAlgoliaPriceCount.insert({ batchSize: updates.length }))
+        .catch((error) => {
+          console.error('Failed to send prices to Algolia.');
+          console.error(params.messages);
+          throw error;
+      });
+    } else {
+        console.log('No updates to process.');
+    }
 };
 
 module.exports = global.main;

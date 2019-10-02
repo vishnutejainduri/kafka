@@ -1,7 +1,7 @@
 const bent = require('bent');
 const btoa = require('btoa');
 
-async function main(params) {
+global.main = async function (params) {
     const {
         connectHost,
         authHost,
@@ -16,12 +16,12 @@ async function main(params) {
         { Authorization: 'Basic ' + btoa(`${authUser}:${authPassword}`), 'Content-Type': 'application/json' },
         'json'
     );
-    const authResponse = await getAuthJSON(`oauth/v4/${authTenantId}/token`, { 'grant_type': 'client_credentials' });
+    const authResponse = await getAuthJSON(`/oauth/v4/${authTenantId}/token`, { 'grant_type': 'client_credentials' });
 
     const getJSON = bent(`${connectHost}`, 'json', { Authorization: `Bearer ${authResponse.access_token}` });
-    const connectors = await getJSON(`connectors`);
+    const connectors = await getJSON(`/connectors`);
     const statusCheckRequests = connectors.map(connector =>
-        getJSON(`connectors/${connector}/status`)
+        getJSON(`/connectors/${connector}/status`)
             .catch(err => { error: true, err })
     );
 
@@ -42,3 +42,5 @@ async function main(params) {
         };
     });
 }
+
+module.exports = global.main;

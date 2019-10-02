@@ -22,7 +22,7 @@ global.main = async function (params) {
         .map((inventoryData) => {
             const updateInventory = inventory.findOne({ _id: inventoryData._id })
                     .then((existingDocument) => existingDocument
-                        ? inventory.updateOne({ _id: inventoryData._id, lastModifiedDate: { $lt: inventoryData.lastModifiedDate } }, { $set: inventoryData })
+                        ? inventory.updateOne({ _id: inventoryData._id }, { $set: inventoryData })
                         : inventory.insertOne(inventoryData)
                     );
 
@@ -40,7 +40,7 @@ global.main = async function (params) {
                         if (styleData) {
                             const sizes = styleData.sizes || [];
 
-                            const newSizes = inventoryData.quantityOnHandSellable
+                            const newSizes = (inventoryData.availableToSell && inventoryData.availableToSell > 0)
                                 ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`).concat(`${sku.size}-${inventoryData.storeId}`)
                                 : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`);
 
