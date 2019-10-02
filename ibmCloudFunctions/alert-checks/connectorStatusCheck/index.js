@@ -28,7 +28,6 @@ global.main = async function (params) {
     );
 
     return Promise.all(statusCheckRequests).then((statusChecks) => {
-        console.log(statusChecks);
         const failedChecks = statusChecks
             .filter(statusCheck => statusCheck.error || statusCheck.connector.state === FAILED_STATE 
               || statusCheck.tasks.filter((task) => task.state === FAILED_STATE).length > 0)
