@@ -3,4 +3,3 @@
 /manualImport/**/*.json
 .idea
 *.swp
-.env
