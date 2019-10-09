@@ -28,6 +28,11 @@ function generateUpdateFromParsedMessage(priceData) {
 }
 
 global.main = async function (params) {
+    console.log({
+        cfName: 'updateSalePrice',
+        params
+    });
+
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
     }

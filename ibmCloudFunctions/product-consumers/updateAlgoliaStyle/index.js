@@ -6,6 +6,11 @@ let client = null;
 let index = null;
 
 global.main = async function (params) {
+    console.log({
+        cfName: 'updateAlgoliaStyle',
+        params
+    });
+
     if (!params.algoliaIndexName) {
         throw new Error('Requires an Algolia index.');
     }

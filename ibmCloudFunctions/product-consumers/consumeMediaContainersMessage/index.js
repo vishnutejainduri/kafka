@@ -2,6 +2,11 @@ const { filterMediaContainerMessage, parseMediaContainerMessage } = require('../
 const getCollection = require('../../lib/getCollection');
 
 global.main = async function (params) {
+    console.log({
+        cfName: 'consumeMediaContainersMessage',
+        params
+    });
+
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
     }
