@@ -1,5 +1,5 @@
 const getCollection = require('../../lib/getCollection');
-const { HIDDEN_STORES } = require('./constants');
+const { HIDDEN_STORES } = require('../../lib/constants');
 
 const parseStoreMessage = function (msg) {
     return {

@@ -1,6 +1,7 @@
 'use strict';
 
 const TOPIC_NAME = 'inventory-connect-jdbc-SKUINVENTORY';
+const { HIDDEN_STORES } = require('./constants');
 
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
