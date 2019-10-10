@@ -38,6 +38,7 @@ function parseSkuInventoryMessage(msg) {
     }
 
     inventoryData['availableToSell'] = inventoryData.quantityOnHandSellable - inventoryData.quantityInPicking;
+    inventoryData['isVisible'] = !HIDDEN_STORES.includes(`${inventoryData.storeId}`.padStart(5, '0'))
 
     // Add _id for mongo
     inventoryData.id = `${inventoryData.styleId}-${inventoryData.skuId}-${inventoryData.storeId}`;
