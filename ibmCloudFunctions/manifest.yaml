@@ -1,7 +1,7 @@
 packages:
-  inputs:
-    nameSpace: $SPACE
   alert-checks:
+    inputs:
+      nameSpace: $SPACE
     actions:
       connector-status-check:
         location: ./alert-checks/connectorStatusCheck/dist/bundle.js
