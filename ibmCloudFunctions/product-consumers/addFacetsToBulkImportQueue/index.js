@@ -2,10 +2,10 @@ const { parseFacetMessage } = require('../../lib/parseFacetMessage');
 const getCollection = require('../../lib/getCollection');
 
 global.main = async function (params) {
-    console.log({
+    console.log(JSON.stringify({
         cfName: 'addFacetsToBulkImportQueue',
         params
-    });
+    }));
 
     if (!params.messages || !params.messages[0] || !params.messages[0].value) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");

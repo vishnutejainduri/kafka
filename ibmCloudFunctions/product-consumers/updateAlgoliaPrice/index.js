@@ -31,10 +31,10 @@ function generateUpdateFromParsedMessage(priceData) {
 }
 
 global.main = async function (params) {
-    console.log({
+    console.log(JSON.stringify({
         cfName: 'updateAlgoliaPrice',
         params
-    });
+    }));
 
     if (!params.algoliaIndexName) {
         throw new Error('Requires an Algolia index.');

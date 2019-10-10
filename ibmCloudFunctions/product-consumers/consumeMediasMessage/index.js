@@ -2,10 +2,10 @@ const { parseMediaMessage } = require('../../lib/parseMediaMessage');
 const getCollection = require('../../lib/getCollection');
 
 global.main = async function (params) {
-    console.log({
+    console.log(JSON.stringify({
         cfName: 'consumeMediasMessage',
         params
-    });
+    }));
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
