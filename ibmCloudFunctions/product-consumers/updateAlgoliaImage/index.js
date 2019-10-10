@@ -18,10 +18,10 @@ const serial = funcs =>
         promise.then(result => func().then(Array.prototype.concat.bind(result))), Promise.resolve([]));
 
 global.main = async function (params) {
-    console.log({
+    console.log(JSON.stringify({
         cfName: 'updateAlgoliaImage',
         params
-    });
+    }));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
         throw new Error('Requires Algolia configuration. See manifest.yml');

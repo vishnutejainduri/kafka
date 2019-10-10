@@ -16,10 +16,10 @@ const handleError = function (err, msg) {
 };
 
 global.main = async function (params) {
-    console.log({
+  console.log(JSON.stringify({
       cfName: 'consumeStylesBasicMessage',
       params
-    });
+    }));
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');

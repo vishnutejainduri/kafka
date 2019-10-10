@@ -2,10 +2,10 @@ const getCollection = require('../../lib/getCollection');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 
 global.main = async function (params) {
-    console.log({
+    console.log(JSON.stringify({
         cfName: 'consumeSkuInventoryMessage',
         params
-    });
+    }));
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');

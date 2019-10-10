@@ -2,10 +2,10 @@ const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyle
 const getCollection = require('../../lib/getCollection');
 
 global.main = async function (params) {
-    console.log({
+    console.log(JSON.stringify({
         cfName: 'consumeCatalogMessage',
         params
-    });
+    }));
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
