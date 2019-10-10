@@ -1,5 +1,7 @@
 packages:
   alert-checks:
+    inputs:
+      nameSpace: $SPACE
     actions:
       connector-status-check:
         location: ./alert-checks/connectorStatusCheck/dist/bundle.js
@@ -23,6 +25,8 @@ packages:
           productApiClientId: $PRODUCT_API_CLIENT_ID
           productApiHost: $PRODUCT_API_HOST
   product-consumers:
+    inputs:
+      nameSpace: $SPACE
     actions:
       consume-catalog-message:
         location: ./product-consumers/consumeCatalogMessage/dist/bundle.js

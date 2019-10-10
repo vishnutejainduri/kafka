@@ -1,5 +1,4 @@
 const getCollection = require('../../lib/getCollection');
-const { HIDDEN_STORES } = require('../../lib/constants');
 
 const parseStoreMessage = function (msg) {
     return {
@@ -23,12 +22,16 @@ const parseStoreMessage = function (msg) {
         longitude: msg.value.LONGITUDE,
         operationalStatus: msg.value.OPERATIONAL_STATUS,
         siteMgrEmployeeId: msg.value.SITE_MGR_EMPLOYEE_ID,
-        siteMgrSubType: msg.value.SITE_MGR_SUB_TYPE,
-        isVisible: !HIDDEN_STORES.includes(msg.value.SITE_ID)
+        siteMgrSubType: msg.value.SITE_MGR_SUB_TYPE
     };
 };
 
 global.main = async function (params) {
+    console.log(JSON.stringify({
+        cfName: 'consumeStoresMessage',
+        params
+    }));
+
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
     }
