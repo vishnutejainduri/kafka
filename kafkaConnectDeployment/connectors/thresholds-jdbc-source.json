@@ -8,7 +8,7 @@
     "table.poll.interval.ms": 3600000,
     "mode": "timestamp",
     "timestamp.column.name": "LAST_MOD_DATE",
-    "query": "SELECT FKPRODUCTNO AS SKU_ID, CURR_THRESHOLD AS THRESHOLD, LAST_MOD_DATE FROM CUSTOM.THRESHOLDS" ,
+    "query": "SELECT FKPRODUCTNO AS SKU_ID, TO_NUMBER(CURR_THRESHOLD) AS THRESHOLD, LAST_MOD_DATE FROM CUSTOM.THRESHOLDS",
     "topic.prefix": "thresholds-connect-jdbc",
     "validate.non.null": "false",
     "numeric.mapping": "best_fit",
