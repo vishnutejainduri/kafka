@@ -7,7 +7,7 @@
     "schema.pattern": "VSTORE",
     "table.poll.interval.ms": 3600000,
     "mode": "timestamp",
-    "batch.max.rows": 1000,
+    "batch.max.rows": 500,
     "timestamp.column.name": "LASTMODIFIEDDATE",
     "query": "SELECT sx.PKPRODUCTNO as SKU_ID, i.INV_FKSTYLENO as STYLE_ID, i.FKSTORENO as STORE_ID, i.QOH, i.QOHSELLABLE, i.QOHNOTSELLABLE, i.QOO, i.QBO, i.QIT, i.QIP, i.LASTMODIFIEDDATE, i.INV_FKORGANIZATIONNO  FROM VSTORE.SKUINVENTORY i LEFT JOIN (SELECT FKORGANIZATIONNO, FKSKU, PKPRODUCTNO FROM VSTORE.SKUXREF) sx ON i.FKSKU = sx.FKSKU AND i.INV_FKORGANIZATIONNO = sx.FKORGANIZATIONNO",
     "numeric.mapping": "best_fit",
