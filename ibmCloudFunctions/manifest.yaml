@@ -52,6 +52,17 @@ packages:
           collectionName: $STYLES_COLLECTION_NAME
           algoliaDeleteCreateQueue: $ALGOLIA_DELETE_CREATE_QUEUE
           topicName: styles-basic-connect-jdbc
+      consume-threshold-message:
+        location: ./product-consumers/consumeThresholdMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $SKUS_COLLECTION_NAME
+          topicName: thresholds-connect-jdbc
       update-sale-price:
         location: ./product-consumers/updateSalePrice/dist/bundle.js
         runtime: nodejs:10
@@ -255,6 +266,11 @@ packages:
         inputs:
           isJSONData: true
           topic: styles-basic-connect-jdbc
+      threshold-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: thresholds-connect-jdbc
       sku-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
@@ -301,6 +317,9 @@ packages:
       styles-basic-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-styles-basic-message
         trigger: styles-basic-trigger
+      threshold-rule:
+        action: /${ORG}_${SPACE}/product-consumers/consume-threshold-message
+        trigger: threshold-trigger
       sku-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-sku-message
         trigger: sku-trigger
