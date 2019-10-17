@@ -3,3 +3,4 @@
 /manualImport/**/*.json
 .idea
 *.swp
+tools/kafka/.env
