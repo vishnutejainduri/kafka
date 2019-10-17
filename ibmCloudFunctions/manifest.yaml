@@ -1,5 +1,7 @@
 packages:
   alert-checks:
+    inputs:
+      nameSpace: $SPACE
     actions:
       connector-status-check:
         location: ./alert-checks/connectorStatusCheck/dist/bundle.js
@@ -23,6 +25,8 @@ packages:
           productApiClientId: $PRODUCT_API_CLIENT_ID
           productApiHost: $PRODUCT_API_HOST
   product-consumers:
+    inputs:
+      nameSpace: $SPACE
     actions:
       consume-catalog-message:
         location: ./product-consumers/consumeCatalogMessage/dist/bundle.js
@@ -85,7 +89,7 @@ packages:
         location: ./product-consumers/consumeSkuInventoryMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
         inputs:
           mongoUri: $MONGO_URI
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
@@ -145,7 +149,7 @@ packages:
         location: ./product-consumers/updateAlgoliaPrice/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
         inputs:
           mongoUri: $MONGO_URI
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
@@ -233,7 +237,7 @@ packages:
         location: ./product-consumers/addFacetsToBulkImportQueue/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
         inputs:
           mongoUri: $MONGO_URI
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
