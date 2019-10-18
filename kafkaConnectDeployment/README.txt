@@ -9,6 +9,7 @@ In this directory you'll find:
 - `ibmCloudK8sVPN` - resources and instructions for setting up VPN connectivity to the on-prem Harry Rosen network
 - `ibmCloudK8sIngress` - resources and instructions for setting up secure Ingress for Kafka Connect
 - `kafkaConnectImage` - resources and instructions for building the Docker image for Kafka Connect
+- `logging` - resources and instructions for setting up logging with LogDNA
 
 When starting with a new cluster, you must:
 1. set up VPN connectivity with the resources in the `ibmCloudK8sVPN` folder
@@ -123,5 +124,3 @@ example calls:
 *restart connector (does not reset offsets)* curl -X POST http://$CONNECT_HOST:$CONNECT_PORT/connectors/online-prices-jdbc-source/restart
 
 VERY IMPORTANT - Delete the NodePort ingress when setup is complete!
-
-

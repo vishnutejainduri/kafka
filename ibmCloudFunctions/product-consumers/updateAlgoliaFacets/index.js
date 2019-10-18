@@ -5,6 +5,11 @@ let client = null;
 let index = null;
 
 global.main = async function (params) {
+    console.log(JSON.stringify({
+        cfName: 'updateAlgoliaFacets',
+        params
+    }));
+
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
         throw new Error('Requires Algolia configuration. See manifest.yml');
     }
