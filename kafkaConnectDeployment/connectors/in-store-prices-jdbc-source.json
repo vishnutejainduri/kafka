@@ -5,7 +5,7 @@
     "tasks.max": 1,
     "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
     "mode": "bulk",
-    "batch.max.rows": 1000,
+    "batch.max.rows": 500,
     "topic.prefix": "prices-connect-jdbc",
     "validate.non.null": "false",
     "errors.log.enable": true,
