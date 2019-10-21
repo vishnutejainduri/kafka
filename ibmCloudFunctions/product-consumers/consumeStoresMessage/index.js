@@ -1,5 +1,6 @@
 const getCollection = require('../../lib/getCollection');
 const { HIDDEN_STORES } = require('../../lib/constants');
+const OUTLET_ID = "3";
 
 const parseStoreMessage = function (msg) {
     return {
@@ -25,7 +26,7 @@ const parseStoreMessage = function (msg) {
         siteMgrEmployeeId: msg.value.SITE_MGR_EMPLOYEE_ID,
         siteMgrSubType: msg.value.SITE_MGR_SUB_TYPE,
         isVisible: !HIDDEN_STORES.includes(msg.value.SITE_ID),
-        isOutlet: msg.value.ZONE_ID === 3
+        isOutlet: msg.value.ZONE_ID === OUTLET_ID
     };
 };
 
