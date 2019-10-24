@@ -74,6 +74,17 @@ packages:
           dbName: $DB_NAME
           collectionName: $STORES_COLLECTION_NAME
           topicName: stores-connect-jdbc
+      consume-dep27fulfill-message:
+        location: ./product-consumers/consumeDep27FulfillMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $STORES_COLLECTION_NAME
+          topicName: stores-dep27fulfill-connect-jdbc
       consume-sku-message:
         location: ./product-consumers/consumeSkuMessage/dist/bundle.js
         runtime: nodejs:10
@@ -270,6 +281,11 @@ packages:
         inputs:
           isJSONData: true
           topic: stores-connect-jdbc
+      dep27fulfill-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: stores-dep27fulfill-connect-jdbc
       media-containers-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
@@ -310,6 +326,9 @@ packages:
       stores-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-stores-message
         trigger: stores-trigger
+      dep27fulfill-rule:
+        action: /${ORG}_${SPACE}/product-consumers/consume-dep27fulfill-message
+        trigger: dep27fulfill-trigger
       media-containers-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-media-containers-message
         trigger: media-containers-trigger
