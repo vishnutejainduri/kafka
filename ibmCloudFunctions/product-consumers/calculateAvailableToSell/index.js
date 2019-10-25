@@ -25,10 +25,20 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(filterSkuInventoryMessage)
         .map(parseSkuInventoryMessage)
-        .map(async (inventoryData) => {
-               
+        /*.map(async (inventoryData) => {
+          const skuAts = await db.inventory.aggregate([
+                    {
+                        $match: { styleId: id }
+                    },
+                    {
+                        $group: {
+                          _id: "$styleId",
+                          total: { $sum: "$quantityOnHandSellable" },
+                        }
+                    }
+                ]);
             }
-        )
+        )*/
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
