@@ -25,10 +25,10 @@ global.main = async function (params) {
         .filter(filterSkuInventoryMessage)
         .map(parseSkuInventoryMessage)
         .map((inventoryData) => inventory.findOne({ _id: inventoryData._id })
-                    .then((existingDocument) => existingDocument
-                        ? inventory.updateOne({ _id: inventoryData._id }, { $set: inventoryData })
-                        : inventory.insertOne(inventoryData)
-                    )
+                    .then(async (existingDocument) => {
+                        await inventory.updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
+                        return existingDocument.availableToSell || existingDocument.quantityOnHandSellable
+                      })
                     .then(() => inventoryData._id)
                     .catch((err) => {
                         console.error('Problem with inventory ' + inventoryData._id);
