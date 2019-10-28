@@ -27,9 +27,15 @@ global.main = async function (params) {
         .map((inventoryData) => inventory.findOne({ _id: inventoryData._id })
                     .then(async (existingDocument) => {
                         await inventory.updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
-                        return existingDocument.availableToSell || existingDocument.quantityOnHandSellable
+                        return {
+                          skuId: inventoryData.skuId,
+                          styleId: inventoryData.styleId
+                        };
+                        /*return { 
+                          oldStoreATS: existingDocument.availableToSell || existingDocument.quantityOnHandSellable,
+                          newStoreATS: inventoryData.availableToSell || inventoryData.quantityOnHandSellable
+                        };*/
                       })
-                    .then(() => inventoryData._id)
                     .catch((err) => {
                         console.error('Problem with inventory ' + inventoryData._id);
                         console.error(err);
@@ -45,7 +51,6 @@ global.main = async function (params) {
                     })
         )
     ).then((results) => {
-        //console.log("results ", results);
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
@@ -53,8 +58,8 @@ global.main = async function (params) {
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
             throw e;
         } else {
-          console.log("results ", results.map(async (inventoryData) => await inventory.findOne({ _id: inventoryData._id })).filter((inventoryData) => inventoryData));
-          return results.map(async (inventoryData) => await inventory.findOne({ _id: inventoryData._id })).filter((inventoryData) => inventoryData);
+            params.messages = results.filter((res) => !(res instanceof Error))
+            return params;
         }
     });
 };

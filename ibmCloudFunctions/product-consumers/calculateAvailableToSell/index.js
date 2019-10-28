@@ -1,5 +1,4 @@
 const getCollection = require('../../lib/getCollection');
-const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 
 global.main = async function (params) {
     console.log(JSON.stringify({
@@ -11,22 +10,19 @@ global.main = async function (params) {
         throw new Error('Requires an Event Streams topic.');
     }
 
-    if (!params.messages || !params.messages[0] || !params.messages[0].value) {
-        throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
+    if (!params.messages || !params.messages[0]) {
+        throw new Error("Invalid arguments. Must include 'messages' JSON array");
     }
 
-    const [inventory, styles, skus, stores] = await Promise.all([
+    const [inventory, styles, skus] = await Promise.all([
         getCollection(params),
         getCollection(params, params.stylesCollectionName),
-        getCollection(params, params.skusCollectionName),
-        getCollection(params, params.storesCollectionName)
+        getCollection(params, params.skusCollectionName)
     ]);
 
     return Promise.all(params.messages
-        .filter(filterSkuInventoryMessage)
-        .map(parseSkuInventoryMessage)
-        /*.map(async (inventoryData) => {
-          const skuAts = await db.inventory.aggregate([
+        .map(async (atsData) => {
+          const skuAts = await inventory.aggregate([
                     {
                         $match: { styleId: id }
                     },
@@ -38,8 +34,9 @@ global.main = async function (params) {
                     }
                 ]);
             }
-        )*/
+        )
     ).then((results) => {
+        console.log(results);
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
             const e = new Error('Some updates failed. See `results`.');
