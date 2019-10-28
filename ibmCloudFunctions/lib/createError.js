@@ -13,10 +13,10 @@ module.exports = {
         'Failed to connect to db.'
     ),
     consumeInventoryMessage: {
-        failed: (originalError, activationId) => createError(
+        failed: (originalError, paramsExcludingMessages) => createError(
             originalError,
             'failed-consume-inventory-message',
-            `Failure in run of consume inventory message; activation ID: ${activationId}.`
+            `Failure in run of consume inventory message; params excluding messages: ${paramsExcludingMessages}.`
         ),
         failedUpdateInventory: (originalError, inventoryData, existingDocument) => createError(
             originalError,

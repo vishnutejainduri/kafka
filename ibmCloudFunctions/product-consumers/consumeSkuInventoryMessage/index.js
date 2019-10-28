@@ -80,7 +80,7 @@ global.main = async function (params) {
         }
     })
     .catch(originalError => {
-        throw createError.consumeInventoryMessage.failed(originalError, params.activationId);
+        throw createError.consumeInventoryMessage.failed(originalError, paramsExcludingMessages);
     });
 };
 
