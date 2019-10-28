@@ -18,10 +18,10 @@ module.exports = {
             'failed-consume-inventory-message',
             `Failure in run of consume inventory message; params excluding messages: ${paramsExcludingMessages}.`
         ),
-        failedUpdateInventory: (originalError, inventoryData, existingDocument) => createError(
+        failedUpdateInventory: (originalError, inventoryData) => createError(
             originalError,
             'failed-inventory-update',
-            `Failed to update inventory; document: ${existingDocument}, inventory: ${inventoryData}.`
+            `Failed to update inventory; inventory: ${inventoryData}.`
         ),
         failedUpdateStyle: (originalError, styleId) => createError(
             originalError,

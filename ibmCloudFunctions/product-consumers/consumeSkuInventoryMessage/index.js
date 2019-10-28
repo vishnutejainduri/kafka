@@ -37,7 +37,7 @@ global.main = async function (params) {
             const inventoryUpdatePromise = inventory
                 .updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
                 .catch(originalError => {
-                    return createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData, existingDocument);
+                    return createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
                 });
 
             const styleUpdatePromise = !inventoryData.skuId
