@@ -1,10 +1,55 @@
 const getCollection = require('../../lib/getCollection');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
+const createError = require('../../lib/createError');
+
+const handleStyleUpdate = (
+    skus,
+    styles,
+    {
+        skuId,
+        storeId,
+        quantityOnHandSellable
+    }
+) => skus
+    .findOne({ _id: skuId })
+    .then(sku => {
+        if (!sku) {
+            return null;
+        }
+
+        return styles.findOne({_id: sku.styleId})
+                .then(styleData => {
+                    if (!styleData) {
+                        return null;
+                    }
+
+                    if (styleData) {
+                        const sizes = styleData.sizes || [];
+
+                        const newSizes = quantityOnHandSellable
+                            ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`).concat(`${sku.size}-${storeId}`)
+                            : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`);
+
+                        const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
+
+                        return styles.updateOne({ _id: styleId }, updateToProcess, { upsert: true })
+                    }
+                });
+            }
+    )
+    .catch(originalError => {
+        return createError.consumeInventoryMessage.failedUpdateStyle(originalError, styleId, updateToProcess);
+    });
 
 global.main = async function (params) {
+    const { messages, ...paramsExcludingMessages } = params;
+    const messagesIsArray = Array.isArray(messages);
     console.log(JSON.stringify({
         cfName: 'consumeSkuInventoryMessage',
-        params
+        paramsExcludingMessages,
+        messagesLength: messagesIsArray ? messages.length : null,
+        messages: messagesIsArray ? messages.slice(10) : messages
+        // Writing a large output to stdout is slow, and logs that are too long are truncated in logDNA anyways
     }));
 
     if (!params.topicName) {
@@ -19,58 +64,50 @@ global.main = async function (params) {
         getCollection(params),
         getCollection(params, params.stylesCollectionName),
         getCollection(params, params.skusCollectionName)
-    ]);
+    ]).catch(originalError => {
+        throw createError.failedDbConnection(originalError);
+    });
 
     return Promise.all(params.messages
         .filter(filterSkuInventoryMessage)
         .map(parseSkuInventoryMessage)
         .map((inventoryData) => {
-            const updateInventory = inventory.findOne({ _id: inventoryData._id })
-                    .then((existingDocument) => existingDocument
-                        ? inventory.updateOne({ _id: inventoryData._id }, { $set: inventoryData })
-                        : inventory.insertOne(inventoryData)
-                    );
+            const inventoryUpdatePromise = inventory
+                .updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
+                .catch(originalError => {
+                    return createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData, existingDocument);
+                });
 
-            // sku ids can be null...
-            const skuLookup = inventoryData.skuId
-                ? skus.findOne({ _id: inventoryData.skuId })
-                : null;
-
-            return Promise.all([updateInventory, skuLookup])
-                .then(async ([updateInventoryResult, sku]) => {
-                    // Update style size count if we have a valid SKU
-                    if (sku) {
-                        const styleData = await styles.findOne({_id: sku.styleId})
-
-                        if (styleData) {
-                            const sizes = styleData.sizes || [];
-
-                            const newSizes = (inventoryData.availableToSell && inventoryData.availableToSell > 0)
-                                ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`).concat(`${sku.size}-${inventoryData.storeId}`)
-                                : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`);
-
-                            const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
-
-                            return styles.updateOne({ _id: inventoryData.styleId }, updateToProcess, { upsert: true })
-                                .catch((err) => {
-                                    console.error('Problem with document ' + inventoryData._id);
-                                    console.error(err);
-                                    if (!(err instanceof Error)) {
-                                        const e = new Error();
-                                        e.originalError = err;
-                                        e.attemptedDocument = inventoryData;
-                                        return e;
-                                    }
-
-                                    err.attemptedDocument = inventoryData;
-                                    return err;
-                                });
-                        }
+            const styleUpdatePromise = !inventoryData.skuId
+                ? null
+                : handleStyleUpdate(
+                    skus,
+                    styles,
+                    {
+                        skuId: inventoryData.skuId,
+                        storeId: inventoryData.storeId,
+                        quantityOnHandSellable: inventoryData.quantityOnHandSellable
                     }
-                })
+                );
+
+            return Promise.all([inventoryUpdatePromise].concat(styleUpdatePromise !== null ? [styleUpdatePromise] : []))
+                .catch(err => {
+                    console.error('Problem with document ' + inventoryData._id);
+                    console.error(err);
+                    if (!(err instanceof Error)) {
+                        const e = new Error();
+                        e.originalError = err;
+                        e.attemptedDocument = inventoryData;
+                        return e;
+                    }
+
+                    err.attemptedDocument = inventoryData;
+                    return err;
+                });
             }
         )
-    ).then((results) => {
+    )
+    .then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
@@ -78,8 +115,10 @@ global.main = async function (params) {
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
             throw e;
         }
+    })
+    .catch(originalError => {
+        throw createError.consumeInventoryMessage.failed(originalError, params.activationId);
     });
-    // TODO error handling - this MUST report errors and which offsets must be retried
 };
 
 module.exports = global.main;
