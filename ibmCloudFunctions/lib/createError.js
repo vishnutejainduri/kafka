@@ -22,10 +22,10 @@ module.exports = {
             'failed-inventory-update',
             `failed to update inventory. Document: ${existingDocument}, inventory: ${inventoryData}.`
         ),
-        failedUpdateStyle: (originalError, styleId, update) => createError(
+        failedUpdateStyle: (originalError, styleId) => createError(
             originalError,
             'failed-style-update',
-            `failed to update style. Style Id: ${styleId}, update: ${update}`
+            `failed to update style. Style Id: ${styleId}`
         )
     }
 }

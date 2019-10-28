@@ -6,7 +6,8 @@ const handleStyleUpdate = (
     {
         skuId,
         storeId,
-        quantityOnHandSellable
+        quantityOnHandSellable,
+        styleId
     }
 ) => skus
     .findOne({ _id: skuId })
@@ -36,7 +37,7 @@ const handleStyleUpdate = (
             }
     )
     .catch(originalError => {
-        return createError.consumeInventoryMessage.failedUpdateStyle(originalError, styleId, updateToProcess);
+        return createError.consumeInventoryMessage.failedUpdateStyle(originalError, styleId);
     });
 
 module.exports = {
