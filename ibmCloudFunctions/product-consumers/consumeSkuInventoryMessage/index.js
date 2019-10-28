@@ -1,45 +1,7 @@
 const getCollection = require('../../lib/getCollection');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 const createError = require('../../lib/createError');
-
-const handleStyleUpdate = (
-    skus,
-    styles,
-    {
-        skuId,
-        storeId,
-        quantityOnHandSellable
-    }
-) => skus
-    .findOne({ _id: skuId })
-    .then(sku => {
-        if (!sku) {
-            return null;
-        }
-
-        return styles.findOne({_id: sku.styleId})
-                .then(styleData => {
-                    if (!styleData) {
-                        return null;
-                    }
-
-                    if (styleData) {
-                        const sizes = styleData.sizes || [];
-
-                        const newSizes = quantityOnHandSellable
-                            ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`).concat(`${sku.size}-${storeId}`)
-                            : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`);
-
-                        const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
-
-                        return styles.updateOne({ _id: styleId }, updateToProcess, { upsert: true })
-                    }
-                });
-            }
-    )
-    .catch(originalError => {
-        return createError.consumeInventoryMessage.failedUpdateStyle(originalError, styleId, updateToProcess);
-    });
+const { handleStyleUpdate } = require('./utils');
 
 global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;
