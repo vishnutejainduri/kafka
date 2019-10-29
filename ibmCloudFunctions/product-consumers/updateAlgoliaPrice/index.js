@@ -84,8 +84,8 @@ global.main = async function (params) {
 
     if (updates.length > 0) {
       return index.partialUpdateObjects(updates)
-        .then(() => {
-          updateAlgoliaPriceCount.insert({ batchSize: updates.length });
+        .then(async () => {
+          await updateAlgoliaPriceCount.insert({ batchSize: updates.length });
           return params;
          })
         .catch((error) => {
