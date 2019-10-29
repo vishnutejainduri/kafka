@@ -10,8 +10,7 @@ global.main = async function (params) {
         cfName: 'consumeSkuInventoryMessage',
         paramsExcludingMessages,
         messagesLength: messagesIsArray ? messages.length : null,
-        messages: messagesIsArray ? messages.slice(10) : messages
-        // Writing a large output to stdout is slow, and logs that are too long are truncated in logDNA anyways
+        messages // outputting messages as the last parameter because if it is too long the rest of the log will be truncated in logDNA
     }));
 
     if (!params.topicName) {
