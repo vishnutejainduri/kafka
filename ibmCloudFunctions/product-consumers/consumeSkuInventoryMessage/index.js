@@ -24,18 +24,7 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(filterSkuInventoryMessage)
         .map(parseSkuInventoryMessage)
-        .map((inventoryData) => inventory.findOne({ _id: inventoryData._id })
-                    .then(async (existingDocument) => {
-                        await inventory.updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
-                        return {
-                          skuId: inventoryData.skuId,
-                          styleId: inventoryData.styleId
-                        };
-                        /*return { 
-                          oldStoreATS: existingDocument.availableToSell || existingDocument.quantityOnHandSellable,
-                          newStoreATS: inventoryData.availableToSell || inventoryData.quantityOnHandSellable
-                        };*/
-                      })
+        .map((inventoryData) => inventory.updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
                     .catch((err) => {
                         console.error('Problem with inventory ' + inventoryData._id);
                         console.error(err);
