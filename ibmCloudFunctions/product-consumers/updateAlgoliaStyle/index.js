@@ -6,8 +6,14 @@ const createError = require('../../lib/createError');
 let client = null;
 let index = null;
 
+const log = (msg, level) => {
+    if (process.env.NODE_ENV === "test") return;
+    if (level === "ERROR") {  console.error(msg); }
+    else {  console.log(msg); }
+}
+
 const addErrorHandling = fn => {
-    if (fn instanceof async) {
+    if (Promise.resolve(fn) === fn) {
         return async arg => {
             if (arg instanceof Error) return arg;
             return fn(arg).catch(error => error);
@@ -28,7 +34,7 @@ const addErrorHandling = fn => {
 global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;
     const messagesIsArray = Array.isArray(messages);
-    console.log(JSON.stringify({
+    log(JSON.stringify({
         cfName: 'updateAlgoliaStyle',
         paramsExcludingMessages,
         messagesLength: messagesIsArray ? messages.length : null,
@@ -88,22 +94,22 @@ global.main = async function (params) {
         }))
     );
 
-    const recordsWithError = recordsToUpdate.filter(rec => rec instanceof Error);
+    const recordsWithError = records.filter(rec => rec instanceof Error);
     if (recordsWithError.length > 0) {
-        console.error(createError.updateAlgoliaStyle.failedRecords(null, recordsWithError.length, records.length));
+        log(createError.updateAlgoliaStyle.failedRecords(null, recordsWithError.length, records.length), "ERROR");
         recordsWithError.forEach(originalError => {
-            console.error(createError.updateAlgoliaStyle.failedRecord(originalError))
+            log(createError.updateAlgoliaStyle.failedRecord(originalError), "ERROR");
         });
     }
 
-    recordsToUpdate = records.filter((record) => record && !(record instanceof Error));
+    const recordsToUpdate = records.filter((record) => record && !(record instanceof Error));
 
     if (recordsToUpdate.length) {
         return index.partialUpdateObjects(recordsToUpdate, true)
             .then(() => updateAlgoliaStyleCount.insert({ batchSize: recordsToUpdate.length }))
             .catch((error) => {
-                console.error('Failed to send styles to Algolia.');
-                console.error(messages);
+                log('Failed to send styles to Algolia.', "ERROR");
+                log(messages, "ERROR");
                 throw error;
             });
     }

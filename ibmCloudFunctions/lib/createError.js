@@ -1,4 +1,11 @@
 const createError = (originalError, name, message) => {
+    if (!originalError) {
+        const error = new Error(message);
+        error.name = name;
+        error.code = error.name;
+        return error;
+    };
+
     const error = new Error(`${message} --- Caused by: ${originalError.message}`);
     error.name = `${name} --- Caused by: ${originalError.name || originalError.name}`;
     error.code = error.name; // https://github.com/nodejs/help/issues/789
