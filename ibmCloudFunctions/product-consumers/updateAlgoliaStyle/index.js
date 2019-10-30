@@ -1,6 +1,7 @@
 const algoliasearch = require('algoliasearch');
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
 
 let client = null;
 let index = null;
@@ -32,8 +33,16 @@ global.main = async function (params) {
         index = client.initIndex(params.algoliaIndexName);
     }
 
-    const styles = await getCollection(params);
-    const updateAlgoliaStyleCount = await getCollection(params, 'updateAlgoliaStyleCount');
+    const styles = await getCollection(params)
+        .catch(originalError => {
+            throw createError.failedDbConnection(originalError, params && params.collectionName);
+        });
+
+    const updateAlgoliaStyleCount = await getCollection(params, 'updateAlgoliaStyleCount')
+        .catch(originalError => {
+            throw createError.failedDbConnection(originalError, 'updateAlgoliaStyleCount');
+        });
+
     let recordsToUpdate = await Promise.all(params.messages
         .filter(filterStyleMessages)
         .map(parseStyleMessage)

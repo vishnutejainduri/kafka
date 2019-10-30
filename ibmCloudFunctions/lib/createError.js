@@ -7,10 +7,10 @@ const createError = (originalError, name, message) => {
 }
 
 module.exports = {
-    failedDbConnection: (originalError) => createError(
+    failedDbConnection: (originalError, collectionName) => createError(
         originalError,
         'failed-db-connection',
-        'Failed to connect to db.'
+        `Failed to connect to db${collectionName ? ` for collection ${collectionName}` : ''}.`
     ),
     consumeInventoryMessage: {
         failed: (originalError, paramsExcludingMessages) => createError(
