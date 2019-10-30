@@ -22,21 +22,9 @@ global.main = async function (params) {
 
     return Promise.all(params.messages
         .map(async (atsData) => {
-          const skuAts = await inventory.aggregate([
-                    {
-                        $match: { styleId: id }
-                    },
-                    {
-                        $group: {
-                          _id: "$styleId",
-                          total: { $sum: "$quantityOnHandSellable" },
-                        }
-                    }
-                ]);
-            }
-        )
+          
+        })
     ).then((results) => {
-        console.log(results);
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
             const e = new Error('Some updates failed. See `results`.');

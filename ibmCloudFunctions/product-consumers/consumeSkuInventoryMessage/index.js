@@ -24,18 +24,7 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(filterSkuInventoryMessage)
         .map(parseSkuInventoryMessage)
-        .map((inventoryData) => inventory.findOne({ _id: inventoryData._id })
-                    .then(async (existingDocument) => {
-                        await inventory.updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
-                        return {
-                          skuId: inventoryData.skuId,
-                          styleId: inventoryData.styleId
-                        };
-                        /*return { 
-                          oldStoreATS: existingDocument.availableToSell || existingDocument.quantityOnHandSellable,
-                          newStoreATS: inventoryData.availableToSell || inventoryData.quantityOnHandSellable
-                        };*/
-                      })
+        .map((inventoryData) => inventory.updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
                     .catch((err) => {
                         console.error('Problem with inventory ' + inventoryData._id);
                         console.error(err);
@@ -52,14 +41,11 @@ global.main = async function (params) {
         )
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
-        if (errors.length > 0) {
-            const e = new Error('Some updates failed. See `results`.');
-            e.results = results;
-            throw e;
-        } else {
-            params.messages = results.filter((res) => !(res instanceof Error))
-            return params;
-        }
+        const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
+        e.failedUpdatesErrors = errors;
+        e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
+        console.log (e);
+        return e.successfulUpdatesResults;
     });
 };
 
