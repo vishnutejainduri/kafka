@@ -7,6 +7,11 @@ const createError = (originalError, name, message) => {
 }
 
 module.exports = {
+    failedAlgoliaConnection: (originalError) => createError(
+        originalError,
+        'failed-algolia-connection',
+        'Failed to connect to Algolia.'
+    ),
     failedDbConnection: (originalError, collectionName) => createError(
         originalError,
         'failed-db-connection',
@@ -28,5 +33,17 @@ module.exports = {
             'failed-style-update',
             `Failed to update style; style Id: ${styleId}.`
         )
+    },
+    updateAlgoliaStyle: {
+        failedRecords: (_, failed, total) => createError(
+            null,
+            'failed-prepare-styles-for-algolia',
+            `Failed to prepare ${failed} of ${total} styles for Algolia.`
+        ),
+        failedRecord: (originalError) => createError(
+            originalError,
+            'failed-prepare-style-for-algolia',
+            'Failed to prepare a style for Algolia'
+        ),
     }
 }
