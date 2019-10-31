@@ -41,6 +41,7 @@ global.main = async function (params) {
         )
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
+<<<<<<< HEAD
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
             e.failedUpdatesErrors = errors;
@@ -50,6 +51,13 @@ global.main = async function (params) {
             params.messages = results.filter((res) => !(res instanceof Error))
             return params;
         }
+=======
+        const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
+        e.failedUpdatesErrors = errors;
+        e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
+        console.log (e);
+        return e.successfulUpdatesResults;
+>>>>>>> a229cf185a50875c317ab87a6733f7872966a752
     });
 };
 
