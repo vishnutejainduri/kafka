@@ -88,7 +88,7 @@ global.main = async function (params) {
         // We should run the update if there's no existing doc or the update is newer than existing
         .map(addErrorHandling(async (styleData) => {
             const existingDoc = await styles.findOne({_id: styleData._id});
-            return (!existingDoc || (existingDoc.effectiveDate <= styleData.effectiveDate)) && !existingDoc.isOutlet
+            return !existingDoc || ((existingDoc.effectiveDate <= styleData.effectiveDate) && !existingDoc.isOutlet)
                 ? styleData
                 : null;
         }))
@@ -103,7 +103,7 @@ global.main = async function (params) {
     }
 
     const recordsToUpdate = records.filter((record) => record && !(record instanceof Error));
-
+    
     if (recordsToUpdate.length) {
         return index.partialUpdateObjects(recordsToUpdate, true)
             .then(() => updateAlgoliaStyleCount.insert({ batchSize: recordsToUpdate.length }))
