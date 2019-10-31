@@ -70,8 +70,7 @@ global.main = async function (params) {
         const priceData = await prices.findOne({ _id: update.objectID });
         if (!styleData 
             || styleData.isOutlet
-            || update.onlineSalePrice === priceData.onlineSalePrice
-            || update.inStoreSalePrice === priceData.inStoreSalePrice) {
+            || (update.onlineSalePrice === priceData.onlineSalePrice && update.inStoreSalePrice === priceData.inStoreSalePrice)) {
             return null;
         }
 
@@ -85,7 +84,10 @@ global.main = async function (params) {
 
     if (updates.length > 0) {
       return index.partialUpdateObjects(updates)
-        .then(() => updateAlgoliaPriceCount.insert({ batchSize: updates.length }))
+        .then(async () => {
+          await updateAlgoliaPriceCount.insert({ batchSize: updates.length });
+          return params;
+         })
         .catch((error) => {
           console.error('Failed to send prices to Algolia.');
           console.error(params.messages);
@@ -93,6 +95,7 @@ global.main = async function (params) {
       });
     } else {
         console.log('No updates to process.');
+        return params;
     }
 };
 

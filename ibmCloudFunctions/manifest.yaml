@@ -263,6 +263,9 @@ packages:
           dbName: $DB_NAME
           collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
           topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
+    sequences:
+      update-pricing-sequence:
+        actions: update-algolia-price,update-sale-price
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
@@ -335,11 +338,8 @@ packages:
       add-media-container-to-queue-message-rule:
         action: /${ORG}_${SPACE}/product-consumers/add-media-container-to-queue-message
         trigger: media-containers-trigger
-      sale-price-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-sale-price
-        trigger: /${ORG}_${SPACE}/sale-price-trigger
-      algolia-price-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-algolia-price
+      sale-price-sequence-rule:
+        action: /${ORG}_${SPACE}/product-consumers/update-pricing-sequence
         trigger: /${ORG}_${SPACE}/sale-price-trigger
       algolia-images-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-image

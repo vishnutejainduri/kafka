@@ -1,10 +1,16 @@
 const getCollection = require('../../lib/getCollection');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
+const createError = require('../../lib/createError');
+const { handleStyleUpdate } = require('./utils');
 
 global.main = async function (params) {
+    const { messages, ...paramsExcludingMessages } = params;
+    const messagesIsArray = Array.isArray(messages);
     console.log(JSON.stringify({
         cfName: 'consumeSkuInventoryMessage',
-        params
+        paramsExcludingMessages,
+        messagesLength: messagesIsArray ? messages.length : null,
+        messages // outputting messages as the last parameter because if it is too long the rest of the log will be truncated in logDNA
     }));
 
     if (!params.topicName) {
@@ -19,45 +25,61 @@ global.main = async function (params) {
         getCollection(params),
         getCollection(params, params.stylesCollectionName),
         getCollection(params, params.skusCollectionName)
-    ]);
+    ]).catch(originalError => {
+        throw createError.failedDbConnection(originalError);
+    });
 
     return Promise.all(params.messages
         .filter(filterSkuInventoryMessage)
         .map(parseSkuInventoryMessage)
-        .map((inventoryData) => inventory.updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
-                    .catch((err) => {
-                        console.error('Problem with inventory ' + inventoryData._id);
-                        console.error(err);
-                        if (!(err instanceof Error)) {
-                            const e = new Error();
-                            e.originalError = err;
-                            e.attemptedDocument = inventoryData;
-                            return e;
-                        }
+        .map((inventoryData) => {
+            const inventoryUpdatePromise = inventory
+                .updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
+                .catch(originalError => {
+                    return createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
+                });
 
-                        err.attemptedDocument = inventoryData;
-                        return err;
-                    })
+            const styleUpdatePromise = !inventoryData.skuId
+                ? null
+                : handleStyleUpdate(
+                    skus,
+                    styles,
+                    {
+                        skuId: inventoryData.skuId,
+                        storeId: inventoryData.storeId,
+                        quantityOnHandSellable: inventoryData.quantityOnHandSellable,
+                        styleId: inventory.styleId
+                    }
+                );
+
+            return Promise.all([inventoryUpdatePromise].concat(styleUpdatePromise !== null ? [styleUpdatePromise] : []))
+                .catch(err => {
+                    console.error('Problem with document ' + inventoryData._id);
+                    console.error(err);
+                    if (!(err instanceof Error)) {
+                        const e = new Error();
+                        e.originalError = err;
+                        e.attemptedDocument = inventoryData;
+                        return e;
+                    }
+
+                    err.attemptedDocument = inventoryData;
+                    return err;
+                });
+            }
         )
-    ).then((results) => {
+    )
+    .then((results) => {
         const errors = results.filter((res) => res instanceof Error);
-<<<<<<< HEAD
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
             e.failedUpdatesErrors = errors;
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
             throw e;
-        } else {
-            params.messages = results.filter((res) => !(res instanceof Error))
-            return params;
         }
-=======
-        const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
-        e.failedUpdatesErrors = errors;
-        e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-        console.log (e);
-        return e.successfulUpdatesResults;
->>>>>>> a229cf185a50875c317ab87a6733f7872966a752
+    })
+    .catch(originalError => {
+        throw createError.consumeInventoryMessage.failed(originalError, paramsExcludingMessages);
     });
 };
 
