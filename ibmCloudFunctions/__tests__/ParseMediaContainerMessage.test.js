@@ -1,5 +1,3 @@
-const expect = require('chai').expect;
-
 const {APPROVED_APPROVAL_STATUS, filterMediaContainerMessage, parseMediaContainerMessage} = require('../lib/parseMediaContainerMessage');
 
 const testData = {
@@ -18,26 +16,26 @@ const testData = {
 describe('parseMediaContainerMessage', () => {
     it('should generate multiple output rows for galleryImages that reference multiple containers', () => {
         const actual = parseMediaContainerMessage(testData);
-        expect(actual).to.have.length(2);
+        expect(actual.length).toBe(2);
     });
 
     it('should designate the first gallery image as "isMain"', () => {
         const actual = parseMediaContainerMessage(testData);
-        expect(actual[0].isMain).to.be.true;
+        expect(actual[0].isMain).toBe(true);
     });
 
     it('should no output rows for null galleryImages', () => {
         const nullGalleryImages = Object.assign({}, testData);
         nullGalleryImages.value.P_GALLERYIMAGES = null;
         const actual = parseMediaContainerMessage(nullGalleryImages);
-        expect(actual).to.have.length(0);
+        expect(actual.length).toBe(0);
     });
 });
 
 describe('filterMediaContainerMessage', () => {
     it('should only work for messages about the relevant topic', () => {
         const wrongTopicMessage = {topic: 'foobar'};
-        expect(filterMediaContainerMessage.bind(null, wrongTopicMessage)).to.throw('Can only parse MEDAICONTAINER update messages');
+        expect(filterMediaContainerMessage.bind(null, wrongTopicMessage)).toThrow('Can only parse MEDAICONTAINER update messages');
     });
 
     it('should filter out non-approved media containers', () => {
@@ -50,8 +48,8 @@ describe('filterMediaContainerMessage', () => {
             value: {CODE: '1234-00', P_APPROVALSTATUS: APPROVED_APPROVAL_STATUS}
         }].filter(filterMediaContainerMessage);
 
-        expect(actual1).to.be.empty;
-        expect(actual2).to.have.length(1);
+        expect(actual1.length).toBe(0);
+        expect(actual2.length).toBe(1);
     });
 
     it('should filter out "pseudo styles"', () => {
@@ -68,8 +66,8 @@ describe('filterMediaContainerMessage', () => {
             value: {CODE: '1234-00', P_APPROVALSTATUS: APPROVED_APPROVAL_STATUS}
         }].filter(filterMediaContainerMessage);
 
-        expect(actual1).to.be.empty;
-        expect(actual2).to.be.empty;
-        expect(actual3).to.have.length(1);
+        expect(actual1.length).toBe(0);
+        expect(actual2.length).toBe(0);
+        expect(actual3.length).toBe(1);
     });
 })
