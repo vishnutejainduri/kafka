@@ -1,35 +1,12 @@
 const algoliasearch = require('algoliasearch');
+
+const { addErrorHandling, log } = require('../utils');
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 
 let client = null;
 let index = null;
-
-const log = (msg, level) => {
-    if (process.env.NODE_ENV === "test") return;
-    if (level === "ERROR") {  console.error(msg); }
-    else {  console.log(msg); }
-}
-
-const addErrorHandling = fn => {
-    if (Promise.resolve(fn) === fn) {
-        return async arg => {
-            if (arg instanceof Error) return arg;
-            return fn(arg).catch(error => error);
-        }
-    }
-
-    return arg => {
-        if (arg instanceof Error) return arg;
-        try {
-            return fn(arg);
-        } catch(error) {
-            return error;
-        }
-    };
-}
-
 
 global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;

@@ -3,29 +3,8 @@ const updateAlgoliaStyle = require('../');
 const styleId = "10"; // id fo a style that does not match any existing document
 const result = { id: "success"} // result of a success insert for 'updateAlgoliaStyleCount' collection
 
-jest.mock("mongodb", () => ({
-    MongoClient: {
-        connect: async () => ({
-            db: () => ({
-                collection: (collection) => collection === 'updateAlgoliaStyleCount'
-                ? ({
-                    insert: () => ({
-                        id: "success"
-                    })
-                })
-                : ({
-                    findOne: (params) => (params._id === "10" ? null : {})
-                })
-            })
-        })
-    }
-}));
-
-jest.mock("algoliasearch", () => () =>({
-    initIndex: () => ({
-        partialUpdateObjects: async () => {}
-    })
-}));
+jest.mock("mongodb");
+jest.mock("algoliasearch");
 
 describe('updateAlgoliaStyle', () => {
     it.skip('throws an error if params argument is empty', async () => {
