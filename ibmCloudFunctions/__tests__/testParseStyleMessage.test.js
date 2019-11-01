@@ -1,5 +1,3 @@
-const expect = require('chai').expect;
-
 const { parseStyleMessage, filterStyleMessages } = require('../lib/parseStyleMessage');
 
 const testData = {
@@ -142,22 +140,22 @@ const testData = {
 describe('parseStyleMessage', () => {
     it('should only work for messages about the relevant topic', () => {
         const wrongTopicMessage = { topic: 'foobar' };
-        expect(parseStyleMessage.bind(null, wrongTopicMessage)).to.throw('Can only parse Catalog update messages');
+        expect(parseStyleMessage.bind(null, wrongTopicMessage)).toThrow('Can only parse Catalog update messages');
     });
 
     it('should transform translatable fields that are populated', () => {
        const actual = parseStyleMessage(testData);
-       expect(actual.brandName).to.deep.equal({ en: 'Thom Browne', fr: 'Thom Brownefr' });
+       expect(actual.brandName).toEqual({ en: 'Thom Browne', fr: 'Thom Brownefr' });
     });
 
     it('should generate `{en: null, fr: null}` for translatable fields that are not populated', () => {
         const actual = parseStyleMessage(testData);
-        expect(actual.construction).to.deep.equal({ en: null, fr: null });
+        expect(actual.construction).toEqual({ en: null, fr: null });
     });
 
     it('should remove the dashes from style IDs', () => {
         const actual = parseStyleMessage(testData);
-        expect(actual.id).to.match(/^\d+$/);
+        expect(actual.id).toMatch((/^\d+$/));
     });
 });
 
@@ -167,8 +165,8 @@ describe('filterStyleMessages', () => {
         const actual2 = [{ topic: 'styles-connect-jdbc-CATALOG', value: { STYLEID: '1234-11' } }].filter(filterStyleMessages);
         const actual3 = [{ topic: 'styles-connect-jdbc-CATALOG', value: { STYLEID: '1234-00' } }].filter(filterStyleMessages);
 
-        expect(actual1).to.be.empty;
-        expect(actual2).to.be.empty;
-        expect(actual3).to.have.length(1);
+        expect(actual1.length).toBe(0);
+        expect(actual2.length).toBe(0);
+        expect(actual3.length).toBe(1);
     });
 })

@@ -1,4 +1,11 @@
 const createError = (originalError, name, message) => {
+    if (!originalError) {
+        const error = new Error(message);
+        error.name = name;
+        error.code = error.name;
+        return error;
+    };
+
     const error = new Error(`${message} --- Caused by: ${originalError.message}`);
     error.name = `${name} --- Caused by: ${originalError.name || originalError.name}`;
     error.code = error.name; // https://github.com/nodejs/help/issues/789
@@ -7,10 +14,15 @@ const createError = (originalError, name, message) => {
 }
 
 module.exports = {
-    failedDbConnection: (originalError) => createError(
+    failedAlgoliaConnection: (originalError) => createError(
+        originalError,
+        'failed-algolia-connection',
+        'Failed to connect to Algolia.'
+    ),
+    failedDbConnection: (originalError, collectionName) => createError(
         originalError,
         'failed-db-connection',
-        'Failed to connect to db.'
+        `Failed to connect to db${collectionName ? ` for collection ${collectionName}` : ''}.`
     ),
     consumeInventoryMessage: {
         failed: (originalError, paramsExcludingMessages) => createError(
@@ -28,5 +40,17 @@ module.exports = {
             'failed-style-update',
             `Failed to update style; style Id: ${styleId}.`
         )
+    },
+    updateAlgoliaStyle: {
+        failedRecords: (_, failed, total) => createError(
+            null,
+            'failed-prepare-styles-for-algolia',
+            `Failed to prepare ${failed} of ${total} styles for Algolia.`
+        ),
+        failedRecord: (originalError) => createError(
+            originalError,
+            'failed-prepare-style-for-algolia',
+            'Failed to prepare a style for Algolia'
+        ),
     }
 }
