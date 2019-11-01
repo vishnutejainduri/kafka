@@ -105,6 +105,7 @@ packages:
           collectionName: $INVENTORY_COLLECTION_NAME
           stylesCollectionName: $STYLES_COLLECTION_NAME
           skusCollectionName: $SKUS_COLLECTION_NAME
+          storesCollectionName: $STORES_COLLECTION_NAME
           topicName: inventory-connect-jdbc-SKUINVENTORY
       update-algolia-style:
         location: ./product-consumers/updateAlgoliaStyle/dist/bundle.js

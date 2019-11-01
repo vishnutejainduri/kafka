@@ -9,6 +9,7 @@ module.exports = {
     },
     target: 'node',
     externals: [
+        'mongodb',
         'request-promise'
     ],
     optimization: {

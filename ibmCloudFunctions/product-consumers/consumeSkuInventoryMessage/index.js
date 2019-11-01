@@ -35,6 +35,7 @@ global.main = async function (params) {
         .map((inventoryData) => {
             const inventoryUpdatePromise = inventory
                 .updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
+                .then(() => inventoryData)
                 .catch(originalError => {
                     return createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
                 });
@@ -71,11 +72,24 @@ global.main = async function (params) {
     )
     .then((results) => {
         const errors = results.filter((res) => res instanceof Error);
+        const successes = results.filter((res) => !(res instanceof Error));
+        const successResults = successes.map((results) => results[0]);
+
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
             e.failedUpdatesErrors = errors;
-            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            throw e;
+            e.successfulUpdatesResults = successes;
+
+            console.error(e);
+            return {
+              messages: successResults,
+              ...paramsExcludingMessages
+            };
+        } else {
+            return {
+              messages: successResults,
+              ...paramsExcludingMessages
+            };
         }
     })
     .catch(originalError => {
