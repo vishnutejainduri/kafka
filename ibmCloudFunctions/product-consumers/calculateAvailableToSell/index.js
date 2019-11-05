@@ -1,6 +1,7 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { addErrorHandling, log } = require('../utils');
+const { handleAtsUpdate } = require('./utils');
 
 global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;
@@ -28,46 +29,22 @@ global.main = async function (params) {
         .map(addErrorHandling(async (atsData) => {
           const styleData = await styles.findOne({ _id: atsData.styleId });
           const skuData = await skus.findOne({ _id: atsData.skuId });
-          //const storeData = await stores.findOne({ _id: "00025" });
-          const storeId = atsData.storeId.toString().padStart(5, '0');
-          console.log('store id', storeId);
-          const storeData = await stores.findOne({ _id: storeId });
+          const storeData = await stores.findOne({ _id: atsData.storeId.toString().padStart(5, '0') });
 
-          console.log(storeData);
-
-          if (styleData.departmentId === 27 && !storeData.canFulfillDep27) return null;
-          if (storeData.isOutlet) return null;
+          if (!storeData || (styleData.departmentId === 27 && !storeData.canFulfillDep27) || storeData.isOutlet) return null;
 
           const ats = styleData.ats || [];
-
-          const newAts = (atsData.availableToSell && atsData.availableToSell > 0)
-              ? ats.filter((atsRecord) => atsRecord.skuId !== atsData.skuId && atsRecord.storeId !== atsData.storeId)
-                .concat({
-                  skuId: atsRecord.skuId,
-                  storeId: atsRecord.storeId,
-                  availableToSell: atsRecord.availableToSell,
-                  threshold: skuData.threshold
-                })
-              : ats.filter((atsRecord) => atsRecord.skuId !== atsData.skuId && atsRecord.storeId !== atsData.storeId);
-
+          const newAts = handleAtsUpdate(ats, atsData, skuData.threshold);
           const updateToProcess = { $set: { ats: newAts } };
 
           if (storeData.canOnlineFulfill) {
             const onlineAts = styleData.onlineAts || [];
-            const newOnlineAts = (atsData.availableToSell && atsData.availableToSell > 0)
-                ? onlineAts.filter((atsRecord) => atsRecord.skuId !== atsData.skuId && atsRecord.storeId !== atsData.storeId)
-                  .concat({
-                    skuId: atsRecord.skuId,
-                    storeId: atsRecord.storeId,
-                    availableToSell: atsRecord.availableToSell,
-                    threshold: skuData.threshold
-                  })
-                : onlineAts.filter((atsRecord) => atsRecord.skuId !== atsData.skuId && atsRecord.storeId !== atsData.storeId);
+            const newOnlineAts = handleAtsUpdate(onlineAts, atsData, skuData.threshold);
             updateToProcess['$set']['onlineAts'] = newOnlineAts;
           }
-          console.log(updateToProcess); 
+          console.log(JSON.stringify(updateToProcess));
 
-          return styles.updateOne({ _id: styleId }, updateToProcess)
+          return await styles.updateOne({ _id: atsData.styleId }, updateToProcess)
         }))
     )
     .then((results) => {
