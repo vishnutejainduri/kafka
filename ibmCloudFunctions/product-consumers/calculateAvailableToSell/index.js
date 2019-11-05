@@ -27,11 +27,44 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .map(addErrorHandling(async (atsData) => {
           const styleData = await styles.findOne({ _id: atsData.styleId });
-          if (styleData.departmentId === 27) {
-             
-          } 
+          const skuData = await skus.findOne({ _id: atsData.skuId });
           const storeData = await stores.findOne({ _id: `${atsData.storeId}`.padStart(5, '0') });
-          return atsData;      
+
+          console.log(storeData);
+
+          if (styleData.departmentId === 27 && !storeData.canFulfillDep27) return null;
+          if (storeData.isOutlet) return null;
+
+          const ats = styleData.ats || [];
+
+          const newAts = (atsData.availableToSell && atsData.availableToSell > 0)
+              ? ats.filter((atsRecord) => atsRecord.skuId !== atsData.skuId && atsRecord.storeId !== atsData.storeId)
+                .concat({
+                  skuId: atsRecord.skuId,
+                  storeId: atsRecord.storeId,
+                  availableToSell: atsRecord.availableToSell,
+                  threshold: skuData.threshold
+                })
+              : ats.filter((atsRecord) => atsRecord.skuId !== atsData.skuId && atsRecord.storeId !== atsData.storeId);
+
+          const updateToProcess = { $set: { ats: newAts } };
+
+          if (storeData.canOnlineFulfill) {
+            const onlineAts = styleData.onlineAts || [];
+            const newOnlineAts = (atsData.availableToSell && atsData.availableToSell > 0)
+                ? onlineAts.filter((atsRecord) => atsRecord.skuId !== atsData.skuId && atsRecord.storeId !== atsData.storeId)
+                  .concat({
+                    skuId: atsRecord.skuId,
+                    storeId: atsRecord.storeId,
+                    availableToSell: atsRecord.availableToSell,
+                    threshold: skuData.threshold
+                  })
+                : onlineAts.filter((atsRecord) => atsRecord.skuId !== atsData.skuId && atsRecord.storeId !== atsData.storeId);
+            updateToProcess['$set']['onlineAts'] = newOnlineAts;
+          }
+          console.log(updateToProcess); 
+
+          return styles.updateOne({ _id: styleId }, updateToProcess)
         }))
     )
     .then((results) => {

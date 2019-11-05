@@ -38,7 +38,9 @@ function parseSkuInventoryMessage(msg) {
         inventoryData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
     }
 
-    inventoryData['availableToSell'] = inventoryData.quantityOnHandSellable - inventoryData.quantityInPicking;
+    inventoryData['availableToSell'] = (inventoryData.quantityOnHandSellable - inventoryData.quantityInPicking) > 0
+      ? (inventoryData.quantityOnHandSellable - inventoryData.quantityInPicking)
+      : 0
     inventoryData['isVisible'] = !HIDDEN_STORES.includes(`${inventoryData.storeId}`.padStart(5, '0'))
 
     // Add _id for mongo
