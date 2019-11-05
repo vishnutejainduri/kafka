@@ -248,7 +248,7 @@ module.exports = {
             'Failed to parse price message because style ID does not exist.'
         )
     },
-        addFacetsToBulkImportQueue: {
+    addFacetsToBulkImportQueue: {
         failedParseMessage: (originalError, message) => createError(
             originalError,
             'addFacetsToBulkImportQueue:failed-to-parse-facet-message',
