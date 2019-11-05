@@ -1,17 +1,30 @@
-const createError = (originalError, name, message) => {
-    if (!originalError) {
-        const error = new Error(message);
-        error.name = name;
-        error.code = error.name;
-        return error;
-    };
-
+const createError = (originalError, name, message, debugInfo) => {
     const error = new Error();
-    Object.assign(error, originalError)
-    error.message = `${message} --- Caused by: ${originalError.message}`
-    error.name = `${name} --- Caused by: ${originalError.name || originalError.name}`;
+
+    if (originalError) {
+        const {
+            stack: originalStack,
+            name: originalName,
+            code: OriginalCode,
+            message: OriginalMessage,
+            ...originalDebugInfo
+        } = originalError;
+    
+        Object.assign(error, {
+            originalDebugInfo,
+            message: `${message} --- Caused by: ${OriginalMessage}`,
+            name:  `${name} --- Caused by: ${OriginalCode || originalName}`,
+            stack: originalStack,
+        });
+    } else {
+        Object.assign(error, {
+            message,
+            name
+        });
+    }
+
+    error.debugInfo = debugInfo;
     error.code = error.name; // https://github.com/nodejs/help/issues/789
-    error.stack = originalError.stack;
     return error;
 }
 
@@ -208,5 +221,23 @@ module.exports = {
             'failed-store-update',
             `Failed to update store; store Id: ${storeId}.`
         )
-    }
+    },
+    updateAlgoliaPrice: {
+        partialFailure: (messages, messageFailures) => createError(
+            null,
+            'partial-failure-updating-algolia-price',
+            `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
+            {
+                messages,
+                messageFailures
+            }
+        )
+    },
+    parsePriceMessage: {
+        noStyleId: () => createError(
+            null,
+            'failed-to-parse-price-message-no-style-id',
+            'Failed to parse price message because style ID does not exist.'
+        )
+    },
 }

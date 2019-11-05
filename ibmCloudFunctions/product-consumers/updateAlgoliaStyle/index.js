@@ -1,10 +1,9 @@
 const algoliasearch = require('algoliasearch');
 
-const { addErrorHandling, log } = require('../utils');
+const { createLog, addErrorHandling, log } = require('../utils');
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { createLog, log } = require('../utils');
 
 let client = null;
 let index = null;

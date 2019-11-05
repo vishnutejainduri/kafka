@@ -1,4 +1,5 @@
 'use strict';
+const createError = require('./createError');
 
 const TOPIC_NAME = 'prices-connect-jdbc';
 
@@ -26,6 +27,10 @@ function parsePriceMessage(msg) {
     const priceData = {};
     for (let sourceAttributeName in attributeMap) {
         priceData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
+    }
+
+    if (!priceData.styleId) {
+        throw createError.parsePriceMessage.noStyleId()
     }
 
     priceData._id = priceData.styleId;
