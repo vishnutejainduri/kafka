@@ -28,7 +28,10 @@ global.main = async function (params) {
         .map(addErrorHandling(async (atsData) => {
           const styleData = await styles.findOne({ _id: atsData.styleId });
           const skuData = await skus.findOne({ _id: atsData.skuId });
-          const storeData = await stores.findOne({ _id: `${atsData.storeId}`.padStart(5, '0') });
+          //const storeData = await stores.findOne({ _id: "00025" });
+          const storeId = atsData.storeId.toString().padStart(5, '0');
+          console.log('store id', storeId);
+          const storeData = await stores.findOne({ _id: storeId });
 
           console.log(storeData);
 
