@@ -1,5 +1,6 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
+const { addErrorHandling, log } = require('../utils');
 
 global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;
@@ -24,11 +25,14 @@ global.main = async function (params) {
     });
 
     return Promise.all(params.messages
-        .map(async (atsData) => {
+        .map(addErrorHandling(async (atsData) => {
           const styleData = await styles.findOne({ _id: atsData.styleId });
+          if (styleData.departmentId === 27) {
+             
+          } 
           const storeData = await stores.findOne({ _id: `${atsData.storeId}`.padStart(5, '0') });
           return atsData;      
-        })
+        }))
     )
     .then((results) => {
         const errors = results.filter((res) => res instanceof Error);
