@@ -4,19 +4,13 @@ const { addErrorHandling, log } = require('../utils');
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
+const { createLog, log } = require('../utils');
 
 let client = null;
 let index = null;
 
 global.main = async function (params) {
-    const { messages, ...paramsExcludingMessages } = params;
-    const messagesIsArray = Array.isArray(messages);
-    log(JSON.stringify({
-        cfName: 'updateAlgoliaStyle',
-        paramsExcludingMessages,
-        messagesLength: messagesIsArray ? messages.length : null,
-        messages // outputting messages as the last parameter because if it is too long the rest of the log will be truncated in logDNA
-    }));
+    log(createLog.params('updateAlgoliaStyle', params));
 
     if (!params.algoliaIndexName) {
         throw new Error('Requires an Algolia index.');
@@ -86,7 +80,7 @@ global.main = async function (params) {
             .then(() => updateAlgoliaStyleCount.insert({ batchSize: recordsToUpdate.length }))
             .catch((error) => {
                 log('Failed to send styles to Algolia.', "ERROR");
-                log(messages, "ERROR");
+                error.params = params;
                 throw error;
             });
     }

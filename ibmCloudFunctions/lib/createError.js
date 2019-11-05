@@ -34,10 +34,10 @@ module.exports = {
         )
     },
     consumeInventoryMessage: {
-        failed: (originalError, paramsExcludingMessages) => createError(
+        failed: (originalError, params) => createError(
             originalError,
             'failed-consume-inventory-message',
-            `Failure in run of consume inventory message; params excluding messages: ${paramsExcludingMessages}.`
+            `Failure in run of consume inventory message; params: ${params}.`
         ),
         failedUpdateInventory: (originalError, inventoryData) => createError(
             originalError,
