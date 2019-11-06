@@ -1,7 +1,7 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { addErrorHandling, log } = require('../utils');
-const { handleAtsUpdate } = require('./utils');
+const { handleStyleAtsUpdate, handleSkuAtsUpdate } = require('./utils');
 
 global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;
@@ -33,18 +33,45 @@ global.main = async function (params) {
 
           if (!storeData || (styleData.departmentId === 27 && !storeData.canFulfillDep27) || storeData.isOutlet) return null;
 
-          const ats = styleData.ats || [];
-          const newAts = handleAtsUpdate(ats, atsData, skuData.threshold);
-          const updateToProcess = { $set: { ats: newAts } };
+          const styleAts = styleData.ats || [];
+          const newStyleAts = handleStyleAtsUpdate(styleAts, atsData, skuData.threshold);
+          const styleUpdateToProcess = { $set: { ats: newStyleAts } };
+
+          const skuAts = skuData.ats || [];
+          const newSkuAts = handleSkuAtsUpdate(skuAts, atsData);
+          const skuUpdateToProcess = { $set: { ats: newSkuAts } };
 
           if (storeData.canOnlineFulfill) {
-            const onlineAts = styleData.onlineAts || [];
-            const newOnlineAts = handleAtsUpdate(onlineAts, atsData, skuData.threshold);
-            updateToProcess['$set']['onlineAts'] = newOnlineAts;
-          }
-          console.log(JSON.stringify(updateToProcess));
+            const styleOnlineAts = styleData.onlineAts || [];
+            const newStyleOnlineAts = handleStyleAtsUpdate(styleOnlineAts, atsData, skuData.threshold);
+            styleUpdateToProcess['$set']['onlineAts'] = newStyleOnlineAts;
 
-          return await styles.updateOne({ _id: atsData.styleId }, updateToProcess)
+            const skuOnlineAts = skuData.onlineAts || [];
+            const newSkuOnlineAts = handleSkuAtsUpdate(skuOnlineAts, atsData);
+            skuUpdateToProcess['$set']['onlineAts'] = newSkuOnlineAts;
+          }
+
+          return Promise.all([styles.updateOne({ _id: atsData.styleId }, styleUpdateToProcess)
+                              .catch(originalError => {
+                                  return createError.calculateAvailableToSell.failedUpdateStyleAts(originalError, inventoryData);
+                              }),
+                              skus.updateOne({ _id: atsData.skuId }, skuUpdateToProcess)
+                              .catch(originalError => {
+                                  return createError.calculateAvailableToSell.failedUpdateSkuAts(originalError, inventoryData);
+                              })])
+                              .catch(err => {
+                                  console.error('Problem with document ' + inventoryData._id);
+                                  console.error(err);
+                                  if (!(err instanceof Error)) {
+                                      const e = new Error();
+                                      e.originalError = err;
+                                      e.attemptedDocument = inventoryData;
+                                      return e;
+                                  }
+
+                                  err.attemptedDocument = inventoryData;
+                                  return err;
+                              });
         }))
     )
     .then((results) => {
@@ -58,7 +85,7 @@ global.main = async function (params) {
         }
     })
     .catch(originalError => {
-        throw createError.consumeInventoryMessage.failed(originalError, paramsExcludingMessages);
+        throw createError.calculateAvailableToSell.failed(originalError, paramsExcludingMessages);
     });
 };
 

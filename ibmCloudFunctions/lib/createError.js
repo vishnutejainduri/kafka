@@ -41,6 +41,23 @@ module.exports = {
             `Failed to update style; style Id: ${styleId}.`
         )
     },
+    calculateAvailableToSell: {
+        failed: (originalError, paramsExcludingMessages) => createError(
+            originalError,
+            'failed-calculate-available-to-sell',
+            `Failure in run of calculate available to sell; params excluding messages: ${paramsExcludingMessages}.`
+        ),
+        failedUpdateStyleAts: (originalError, inventoryData) => createError(
+            originalError,
+            'failed-style-ats-update',
+            `Failed to update style ats; inventory: ${inventoryData}.`
+        ),
+        failedUpdateSkuAts: (originalError, inventoryData) => createError(
+            originalError,
+            'failed-sku-ats-update',
+            `Failed to update sku ats; inventory: ${inventoryData}.`
+        )
+    },
     updateAlgoliaStyle: {
         failedRecords: (_, failed, total) => createError(
             null,
