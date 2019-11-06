@@ -17,10 +17,11 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array");
     }
 
-    const [styles, skus, stores] = await Promise.all([
+    const [styles, skus, stores, styleAvailabilityCheckQueue] = await Promise.all([
         getCollection(params, params.stylesCollectionName),
         getCollection(params, params.skusCollectionName),
-        getCollection(params, params.storesCollectionName)
+        getCollection(params, params.storesCollectionName),
+        getCollection(params, params.styleAvailabilityCheckQueue)
     ]).catch(originalError => {
         throw createError.failedDbConnection(originalError);
     });
@@ -58,6 +59,10 @@ global.main = async function (params) {
                               skus.updateOne({ _id: atsData.skuId }, skuUpdateToProcess)
                               .catch(originalError => {
                                   return createError.calculateAvailableToSell.failedUpdateSkuAts(originalError, inventoryData);
+                              }),
+                              styleAvailabilityCheckQueue.updateOne({ _id : atsData.styleId }, { $set : { _id: atsData.styleId, styleId: atsData.styleId } }, { upsert: true })
+                              .catch(originalError => {
+                                  return createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, inventoryData);
                               })])
                               .catch(err => {
                                   console.error('Problem with document ' + inventoryData._id);

@@ -56,6 +56,11 @@ module.exports = {
             originalError,
             'failed-sku-ats-update',
             `Failed to update sku ats; inventory: ${inventoryData}.`
+        ),
+        failedAddToAlgoliaQueue: (originalError, inventoryData) => createError(
+            originalError,
+            'failed-add-to-algolia-queue',
+            `Failed to add style for inventory update to algolia mongo queue; inventory: ${inventoryData}.`
         )
     },
     updateAlgoliaStyle: {
