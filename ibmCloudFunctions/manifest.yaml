@@ -9,6 +9,7 @@ packages:
         web-export: true
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           connectHost: $CONNECT_HOST
           authHost: $APP_ID_HOST
@@ -21,6 +22,7 @@ packages:
         web-export: true
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           productApiClientId: $PRODUCT_API_CLIENT_ID
           productApiHost: $PRODUCT_API_HOST
@@ -41,6 +43,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
@@ -50,6 +53,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           algoliaDeleteCreateQueue: $ALGOLIA_DELETE_CREATE_QUEUE
@@ -68,6 +72,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           collectionName: $PRICES_COLLECTION_NAME
           topicName: prices-connect-jdbc
@@ -76,6 +81,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           collectionName: $STORES_COLLECTION_NAME
           topicName: stores-connect-jdbc
@@ -84,6 +90,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
           topicName: skus-connect-jdbc
@@ -91,7 +98,8 @@ packages:
         location: ./product-consumers/consumeSkuInventoryMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
+          timeout: 120000
         inputs:
           collectionName: $INVENTORY_COLLECTION_NAME
           stylesCollectionName: $STYLES_COLLECTION_NAME
@@ -102,6 +110,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
@@ -110,6 +119,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           topicName: styles-basic-connect-jdbc
           stylesCollectionName: $STYLES_COLLECTION_NAME
@@ -119,6 +129,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
           stylesCollectionName: $STYLES_COLLECTION_NAME
@@ -126,7 +137,8 @@ packages:
         location: ./product-consumers/updateAlgoliaPrice/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
+          timeout: 120000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
@@ -136,6 +148,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           topicName: inventory-connect-jdbc-SKUINVENTORY
           stylesCollectionName: $STYLES_COLLECTION_NAME
@@ -145,6 +158,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
@@ -153,6 +167,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           collectionName: $MEDIAS_COLLECTION_NAME
           topicName: medias-connect-jdbc
@@ -161,6 +176,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           collectionName: $MEDIA_CONTAINERS_COLLECTION_NAME
           topicName: media-containers-connect-jdbc
@@ -169,6 +185,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
           topicName: media-containers-connect-jdbc
@@ -177,6 +194,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
+          timeout: 120000
         inputs:
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: inventory-connect-jdbc-SKUINVENTORY
@@ -184,10 +202,14 @@ packages:
         location: ./product-consumers/addFacetsToBulkImportQueue/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
+          timeout: 120000
         inputs:
           collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
           topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
+    sequences:
+      update-pricing-sequence:
+        actions: update-algolia-price,update-sale-price
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
@@ -268,11 +290,8 @@ packages:
       add-media-container-to-queue-message-rule:
         action: /${ORG}_${SPACE}/product-consumers/add-media-container-to-queue-message
         trigger: media-containers-trigger
-      sale-price-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-sale-price
-        trigger: /${ORG}_${SPACE}/sale-price-trigger
-      algolia-price-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-algolia-price
+      sale-price-sequence-rule:
+        action: /${ORG}_${SPACE}/product-consumers/update-pricing-sequence
         trigger: /${ORG}_${SPACE}/sale-price-trigger
       algolia-images-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-image

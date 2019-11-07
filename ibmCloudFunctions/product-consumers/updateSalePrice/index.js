@@ -41,18 +41,18 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const prices = await getCollection(params);
+    const prices = await getCollection(params, params.pricesCollectionName);
     return Promise.all(params.messages
         .filter(filterPriceMessages)
         .map(parsePriceMessage)
         .map(generateUpdateFromParsedMessage)
         .map((update) => {
-                prices.updateOne(
+                return prices.updateOne(
                     { _id: update._id },
                     { $set: update },
                     { upsert: true }
                 ).catch((err) => {
-                    console.error('Problem with sale price price ' + update.styleId, update);
+                    console.error('Problem with sale price ' + update.styleId, update);
                     if (!(err instanceof Error)) {
                         const e = new Error();
                         e.originalError = err;
@@ -66,8 +66,9 @@ global.main = async function (params) {
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
-            const e = new Error('Some updates failed. See `results`.');
-            e.results = results;
+            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
+            e.failedUpdatesErrors = errors;
+            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
             throw e;
         }
     });

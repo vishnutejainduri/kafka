@@ -58,6 +58,8 @@ global.main = async function (params) {
         };
     });
 
+    const styleIds = algoliaUpdates.map((algoliaUpdate) => algoliaUpdate.objectID);
+
     let algoliaUpdatesWithoutOutlet = await Promise.all(algoliaUpdates.map((algoliaUpdate) => styles.findOne({ _id: algoliaUpdate.objectID })
         .then((styleData) => {
             return !styleData || styleData.isOutlet
@@ -66,7 +68,6 @@ global.main = async function (params) {
         })
     ));
     algoliaUpdatesWithoutOutlet = algoliaUpdatesWithoutOutlet.filter((algoliaUpdate) => algoliaUpdate);
-    const styleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
 
     return index.partialUpdateObjects(algoliaUpdatesWithoutOutlet, true)
         .then(() => styles.bulkWrite(styleUpdates, { ordered : false })
