@@ -47,20 +47,35 @@ module.exports = {
             'failed-calculate-available-to-sell',
             `Failure in run of calculate available to sell; params excluding messages: ${paramsExcludingMessages}.`
         ),
-        failedUpdateStyleAts: (originalError, inventoryData) => createError(
+        failedUpdateStyleAts: (originalError, atsData) => createError(
             originalError,
             'failed-style-ats-update',
-            `Failed to update style ats; inventory: ${inventoryData}.`
+            `Failed to update style ats; inventory: ${atsData}.`
         ),
-        failedUpdateSkuAts: (originalError, inventoryData) => createError(
+        failedUpdateSkuAts: (originalError, atsData) => createError(
             originalError,
             'failed-sku-ats-update',
-            `Failed to update sku ats; inventory: ${inventoryData}.`
+            `Failed to update sku ats; inventory: ${atsData}.`
         ),
-        failedAddToAlgoliaQueue: (originalError, inventoryData) => createError(
+        failedAddToAlgoliaQueue: (originalError, atsData) => createError(
             originalError,
             'failed-add-to-algolia-queue',
-            `Failed to add style for inventory update to algolia mongo queue; inventory: ${inventoryData}.`
+            `Failed to add style for inventory update to algolia mongo queue; inventory: ${atsData}.`
+        ),
+        failedGetStyle: (originalError, atsData) => createError(
+            originalError,
+            'failed-get-style',
+            `Failed to get style for ats update; inventory: ${atsData}.`
+        ),
+        failedGetSku: (originalError, atsData) => createError(
+            originalError,
+            'failed-get-sku',
+            `Failed to get sku for ats update; inventory: ${atsData}.`
+        ),
+        failedGetStore: (originalError, atsData) => createError(
+            originalError,
+            'failed-get-store',
+            `Failed to get store for ats update; inventory: ${atsData}.`
         )
     },
     updateAlgoliaStyle: {

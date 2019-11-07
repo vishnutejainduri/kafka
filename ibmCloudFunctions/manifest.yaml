@@ -108,6 +108,22 @@ packages:
           storesCollectionName: $STORES_COLLECTION_NAME
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: inventory-connect-jdbc-SKUINVENTORY
+      calculate-available-to-sell:
+        location: ./product-consumers/calculateAvailableToSell/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 120000
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $INVENTORY_COLLECTION_NAME
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          skusCollectionName: $SKUS_COLLECTION_NAME
+          storesCollectionName: $STORES_COLLECTION_NAME
+          styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
+          topicName: inventory-connect-jdbc-SKUINVENTORY
       update-algolia-style:
         location: ./product-consumers/updateAlgoliaStyle/dist/bundle.js
         runtime: nodejs:10
@@ -256,6 +272,8 @@ packages:
     sequences:
       update-pricing-sequence:
         actions: update-algolia-price,update-sale-price
+      update-inventory-sequence:
+        actions: consume-sku-inventory-message,calculate-available-to-sell
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
@@ -343,11 +361,8 @@ packages:
       algolia-catalog-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-style
         trigger: catalog-trigger
-      sku-inventory-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-sku-inventory-message
-        trigger: /${ORG}_${SPACE}/sku-inventory-trigger
-      add-style-inventory-check-rule:
-        action: /${ORG}_${SPACE}/product-consumers/add-style-inventory-check-to-queue
+      update-inventory-sequence-rule:
+        action: /${ORG}_${SPACE}/product-consumers/update-inventory-sequence
         trigger: /${ORG}_${SPACE}/sku-inventory-trigger
       add-facets-to-queue-rule:
         action: /${ORG}_${SPACE}/product-consumers/add-facets-to-bulk-import-queue

@@ -28,9 +28,18 @@ global.main = async function (params) {
 
     return Promise.all(params.messages
         .map(addErrorHandling(async (atsData) => {
-          const styleData = await styles.findOne({ _id: atsData.styleId });
-          const skuData = await skus.findOne({ _id: atsData.skuId });
-          const storeData = await stores.findOne({ _id: atsData.storeId.toString().padStart(5, '0') });
+          const styleData = await styles.findOne({ _id: atsData.styleId })
+                              .catch(originalError => {
+                                  return createError.calculateAvailableToSell.failedGetStyle(originalError, atsData);
+                              });
+          const skuData = await skus.findOne({ _id: atsData.skuId })
+                              .catch(originalError => {
+                                  return createError.calculateAvailableToSell.failedGetSku(originalError, atsData);
+                              });
+          const storeData = await stores.findOne({ _id: atsData.storeId.toString().padStart(5, '0') })
+                              .catch(originalError => {
+                                  return createError.calculateAvailableToSell.failedGetStore(originalError, atsData);
+                              });
 
           if (!storeData || (styleData.departmentId === 27 && !storeData.canFulfillDep27) || storeData.isOutlet) return null;
 
@@ -54,27 +63,27 @@ global.main = async function (params) {
 
           return Promise.all([styles.updateOne({ _id: atsData.styleId }, styleUpdateToProcess)
                               .catch(originalError => {
-                                  return createError.calculateAvailableToSell.failedUpdateStyleAts(originalError, inventoryData);
+                                  return createError.calculateAvailableToSell.failedUpdateStyleAts(originalError, atsData);
                               }),
                               skus.updateOne({ _id: atsData.skuId }, skuUpdateToProcess)
                               .catch(originalError => {
-                                  return createError.calculateAvailableToSell.failedUpdateSkuAts(originalError, inventoryData);
+                                  return createError.calculateAvailableToSell.failedUpdateSkuAts(originalError, atsData);
                               }),
                               styleAvailabilityCheckQueue.updateOne({ _id : atsData.styleId }, { $set : { _id: atsData.styleId, styleId: atsData.styleId } }, { upsert: true })
                               .catch(originalError => {
-                                  return createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, inventoryData);
+                                  return createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, atsData);
                               })])
                               .catch(err => {
-                                  console.error('Problem with document ' + inventoryData._id);
+                                  console.error('Problem with document ' + atsData._id);
                                   console.error(err);
                                   if (!(err instanceof Error)) {
                                       const e = new Error();
                                       e.originalError = err;
-                                      e.attemptedDocument = inventoryData;
+                                      e.attemptedDocument = atsData;
                                       return e;
                                   }
 
-                                  err.attemptedDocument = inventoryData;
+                                  err.attemptedDocument = atsData;
                                   return err;
                               });
         }))
