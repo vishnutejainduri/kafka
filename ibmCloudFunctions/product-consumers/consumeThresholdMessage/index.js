@@ -17,23 +17,29 @@ global.main = async function (params) {
 
 
     const skus = await getCollection(params);
+    const styles = await getCollection(params.stylesCollectionName);
     return Promise.all(params.messages
         .map(parseThresholdMessage)
-        .map((thresholdData) => skus.updateOne({ _id: thresholdData.skuId }, { $set: { threshold: thresholdData.threshold } })
-            .then(() => "Updated document " + thresholdData.skuId)
-            .catch((err) => {
-                console.error('Problem with SKU ' + thresholdData.skuId);
-                console.error(err);
-                if (!(err instanceof Error)) {
-                    const e = new Error();
-                    e.originalError = err;
-                    e.attemptedDocument = thresholdData;
-                    return e;
-                }
+        .map(async (thresholdData) => { 
+              const skuData = await skus.findOne({ _id: thresholdData.skuId });
+              const styleData = await styles.findOne({ _id: skuData.styleId });
+ 
 
-                err.attemptedDocument = thresholdData;
-                return err;
-            })
+              skus.updateOne({ _id: thresholdData.skuId }, { $set: { threshold: thresholdData.threshold } })
+              .catch((err) => {
+                  console.error('Problem with SKU ' + thresholdData.skuId);
+                  console.error(err);
+                  if (!(err instanceof Error)) {
+                      const e = new Error();
+                      e.originalError = err;
+                      e.attemptedDocument = thresholdData;
+                      return e;
+                  }
+
+                  err.attemptedDocument = thresholdData;
+                  return err;
+              })
+            }
         )
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);

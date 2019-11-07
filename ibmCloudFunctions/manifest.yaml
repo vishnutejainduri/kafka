@@ -61,6 +61,7 @@ packages:
           memorySize: 128
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
+          stylesCollectionName: $STYLES_COLLECTION_NAME
           topicName: thresholds-connect-jdbc
       update-sale-price:
         location: ./product-consumers/updateSalePrice/dist/bundle.js
