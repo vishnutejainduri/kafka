@@ -52,5 +52,27 @@ module.exports = {
             'failed-prepare-style-for-algolia',
             'Failed to prepare a style for Algolia'
         ),
+    },
+    consumeThresholdMessage: {
+        failedToGetSku: (originalError, thresholdData) => createError(
+            originalError,
+            'failed-get-sku-record',
+            `Failed to get a sku record from mongo; threshold data: ${thresholdData}.`
+        ),
+        failedToGetStyle: (originalError, thresholdData) => createError(
+            originalError,
+            'failed-get-style-record',
+            `Failed to get a style record from mongo; threshold data: ${thresholdData}.`
+        ),
+        failedToUpdateStyleThreshold: (originalError, styleData) => createError(
+            originalError,
+            'failed-to-update-style-threshold',
+            `Failed to update the thresholds on a style; style data: ${styleData}.`
+        ),
+        failedToUpdateSkuThreshold: (originalError, thesholdData) => createError(
+            originalError,
+            'failed-to-update-sku-threshold',
+            `Failed to update the thresholds on a sku; threshold data: ${thresholdData}.`
+        )
     }
 }

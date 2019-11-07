@@ -1,5 +1,7 @@
 const { parseThresholdMessage } = require('../../lib/parseThresholdMessage');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
+const { addErrorHandling, log } = require('../utils');
 
 global.main = async function (params) {
     console.log(JSON.stringify({
@@ -15,19 +17,48 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
+    const [skus, styles] = await Promise.all([
+        getCollection(params),
+        getCollection(params, params.stylesCollectionName)
+    ]).catch(originalError => {
+        throw createError.failedDbConnection(originalError);
+    });
 
-    const skus = await getCollection(params);
-    const styles = await getCollection(params.stylesCollectionName);
     return Promise.all(params.messages
         .map(parseThresholdMessage)
-        .map(async (thresholdData) => { 
-              const skuData = await skus.findOne({ _id: thresholdData.skuId });
-              const styleData = await styles.findOne({ _id: skuData.styleId });
- 
+        .map(addErrorHandling(async (thresholdData) => { 
+              const skuData = await skus.findOne({ _id: thresholdData.skuId })
+                .catch(originalError => {
+                    return createError.consumeThresholdMessage.failedToGetSku(originalError, thresholdData);
+                });
+              const styleData = await styles.findOne({ _id: skuData.styleId })
+                .catch(originalError => {
+                    return createError.consumeThresholdMessage.failedToGetStyle(originalError, thresholdData);
+                });
 
-              skus.updateOne({ _id: thresholdData.skuId }, { $set: { threshold: thresholdData.threshold } })
-              .catch((err) => {
-                  console.error('Problem with SKU ' + thresholdData.skuId);
+              const newAts = styleData.ats.map((atsRecord) => {
+                if (atsRecord.skuId === thresholdData.skuId) {
+                  atsRecord.threshold = thresholdData.threshold
+                }
+                return atsRecord;
+              });
+              const newOnlineAts = styleData.onlineAts.map((atsRecord) => {
+                if (atsRecord.skuId === thresholdData.skuId) {
+                  atsRecord.threshold = thresholdData.threshold
+                }
+                return atsRecord;
+              });
+              
+              return Promise.all([styles.updateOne({ _id: styleData._id }, { $set: { ats: newAts, onlineAts: newOnlineAts } })
+                                  .catch(originalError => {
+                                      return createError.consumeThresholdMessage.failedToUpdateStyleThreshold(originalError, styleData);
+                                  }),
+                                  skus.updateOne({ _id: thresholdData.skuId }, { $set: { threshold: thresholdData.threshold } })
+                                  .catch(originalError => {
+                                      return createError.consumeThresholdMessage.failedToUpdateSkuThreshold(originalError, thresholdData);
+                                  })
+              ]).catch((err) => {
+                  console.error('Problem with threshold data ' + thresholdData);
                   console.error(err);
                   if (!(err instanceof Error)) {
                       const e = new Error();
@@ -39,7 +70,7 @@ global.main = async function (params) {
                   err.attemptedDocument = thresholdData;
                   return err;
               })
-            }
+            })
         )
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
