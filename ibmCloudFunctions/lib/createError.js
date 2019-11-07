@@ -24,6 +24,13 @@ module.exports = {
         'failed-db-connection',
         `Failed to connect to db${collectionName ? ` for collection ${collectionName}` : ''}.`
     ),
+    updateAlgoliaInventory: {
+        failedToGetApiResponse: (originalError, styleId) => createError(
+            originalError,
+            'failed-to-get-api-response',
+            `Failed to get api response; style Id: ${styleId}.`
+        )
+    },
     consumeInventoryMessage: {
         failed: (originalError, paramsExcludingMessages) => createError(
             originalError,

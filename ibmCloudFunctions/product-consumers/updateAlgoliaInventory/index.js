@@ -1,5 +1,7 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
+const { productApiRequest } = require('../../lib/productApi');
 
 let client = null;
 let index = null;
@@ -28,13 +30,18 @@ global.main = async function (params) {
     let styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map((style) => styles.findOne({ _id: style.styleId })
         // for some reason we don't have style data in the DPM for certain styles referenced in inventory data
         .then((styleData) => {
-            return !styleData || !styleData.sizes || styleData.isOutlet
-                ? null
-                : {
-                    isSellable: !!styleData.sizes.length,
-                    sizes: styleData.sizes,
+            if (!styleData || !styleData.ats || styleData.isOutlet) return null;
+            return productApiRequest(params, `/inventory/ats/${styleData._id}`)
+              .then((styleAts) => {
+                return {
+                    isAvailableToSell: styleAts.ats > 0,
+                    isOnlineAvailableToSell: styleAts.onlineAts > 0,
                     objectID: styleData._id
                 };
+            })
+            .catch(originalError => {
+                return createError.updateAlgoliaInventory.failedToGetApiResponse(originalError, styleData._id);
+            });
         })
     ));
     styleAvailabilitiesToBeSynced = styleAvailabilitiesToBeSynced.filter((styleData) => styleData);

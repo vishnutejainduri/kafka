@@ -206,6 +206,9 @@ packages:
           algoliaAppId: $ALGOLIA_APP_ID
           stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          productApiClientId: $PRODUCT_API_CLIENT_ID
+          productApiHost: $PRODUCT_API_HOST
       update-algolia-facets:
         location: ./product-consumers/updateAlgoliaFacets/dist/bundle.js
         runtime: nodejs:10

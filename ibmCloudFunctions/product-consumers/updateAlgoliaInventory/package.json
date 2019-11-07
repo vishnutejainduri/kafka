@@ -10,7 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "algoliasearch": "^3.32.1"
+    "algoliasearch": "^3.32.1",
+    "request-promise": "^4.2.5"
   },
   "devDependencies": {
     "webpack": "^4.29.6",
