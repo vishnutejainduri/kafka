@@ -73,6 +73,11 @@ module.exports = {
             originalError,
             'failed-to-update-sku-threshold',
             `Failed to update the thresholds on a sku; threshold data: ${thresholdData}.`
+        ),
+        failedAddToAlgoliaQueue: (originalError, styleData) => createError(
+            originalError,
+            'failed-to-add-to-algolia-queue',
+            `Failed to add style inventory update to algolia mongo queue; style data: ${styleData}.`
         )
     }
 }

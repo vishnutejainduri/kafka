@@ -17,9 +17,10 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const [skus, styles] = await Promise.all([
+    const [skus, styles, styleAvailabilityCheckQueue] = await Promise.all([
         getCollection(params),
-        getCollection(params, params.stylesCollectionName)
+        getCollection(params, params.stylesCollectionName),
+        getCollection(params, params.styleAvailabilityCheckQueue)
     ]).catch(originalError => {
         throw createError.failedDbConnection(originalError);
     });
@@ -56,6 +57,10 @@ global.main = async function (params) {
                                   skus.updateOne({ _id: thresholdData.skuId }, { $set: { threshold: thresholdData.threshold } })
                                   .catch(originalError => {
                                       return createError.consumeThresholdMessage.failedToUpdateSkuThreshold(originalError, thresholdData);
+                                  }),
+                                  styleAvailabilityCheckQueue.updateOne({ _id : styleData._id }, { $set : { _id: styleData._id, styleId: styleData._id } }, { upsert: true })
+                                  .catch(originalError => {
+                                      return createError.consumeThresholdMessage.failedAddToAlgoliaQueue(originalError, styleData);
                                   })
               ]).catch((err) => {
                   console.error('Problem with threshold data ' + thresholdData);
