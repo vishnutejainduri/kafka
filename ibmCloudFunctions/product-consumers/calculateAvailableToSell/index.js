@@ -63,29 +63,19 @@ global.main = async function (params) {
 
           return Promise.all([styles.updateOne({ _id: atsData.styleId }, styleUpdateToProcess)
                               .catch(originalError => {
-                                  return createError.calculateAvailableToSell.failedUpdateStyleAts(originalError, atsData);
+                                  throw createError.calculateAvailableToSell.failedUpdateStyleAts(originalError, atsData);
                               }),
                               skus.updateOne({ _id: atsData.skuId }, skuUpdateToProcess)
                               .catch(originalError => {
-                                  return createError.calculateAvailableToSell.failedUpdateSkuAts(originalError, atsData);
+                                  throw createError.calculateAvailableToSell.failedUpdateSkuAts(originalError, atsData);
                               }),
                               styleAvailabilityCheckQueue.updateOne({ _id : atsData.styleId }, { $set : { _id: atsData.styleId, styleId: atsData.styleId } }, { upsert: true })
                               .catch(originalError => {
-                                  return createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, atsData);
+                                  throw createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, atsData);
                               })])
-                              .catch(err => {
-                                  console.error('Problem with document ', atsData);
-                                  console.error(err);
-                                  if (!(err instanceof Error)) {
-                                      const e = new Error();
-                                      e.originalError = err;
-                                      e.attemptedDocument = atsData;
-                                      return e;
-                                  }
-
-                                  err.attemptedDocument = atsData;
-                                  return err;
-                              });
+                              .catch(originalError => {
+                                  return createError.calculateAvailableToSell.failedAllUpdates(originalError, atsData);
+                              })
         }))
     )
     .then((results) => {

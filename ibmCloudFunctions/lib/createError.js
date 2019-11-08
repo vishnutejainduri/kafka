@@ -46,6 +46,11 @@ module.exports = {
             originalError,
             'failed-style-update',
             `Failed to update style; style Id: ${styleId}.`
+        ),
+        failedUpdates: (originalError, inventoryData) => createError(
+            originalError,
+            'failed-updates',
+            `Failed to run inventory updates on style and inventory; inventory data: ${inventoryData}.`
         )
     },
     calculateAvailableToSell: {
@@ -83,6 +88,11 @@ module.exports = {
             originalError,
             'failed-get-store',
             `Failed to get store for ats update; inventory: ${atsData}.`
+        ),
+        failedAllUpdates: (originalError, atsData) => createError(
+            originalError,
+            'failed-all-updates',
+            `Failed to run all ats queries; inventory: ${atsData}.`
         )
     },
     updateAlgoliaStyle: {

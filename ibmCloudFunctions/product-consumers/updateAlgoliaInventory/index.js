@@ -47,9 +47,9 @@ global.main = async function (params) {
         .catch(originalError => {
             throw createError.updateAlgoliaInventory.failedToGetRecords(originalError);
         });
-    const styleIds = stylesToCheck.map((style) => style.styleId);
+    const styleIds = stylesToCheck.map(addErrorHandling((style) => style.styleId));
 
-    let styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map((style) => styles.findOne({ _id: style.styleId })
+    let styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map(addErrorHandling((style) => styles.findOne({ _id: style.styleId })
         // for some reason we don't have style data in the DPM for certain styles referenced in inventory data
         .then((styleData) => {
             if (!styleData || !styleData.ats || styleData.isOutlet) return null;
@@ -66,9 +66,9 @@ global.main = async function (params) {
             });
         })
         .catch(originalError => {
-            throw createError.updateAlgoliaInventory.failedToGetStyle(originalError, style);
+            return createError.updateAlgoliaInventory.failedToGetStyle(originalError, style);
         })
-    ))
+    )))
     .catch(originalError => {
         throw createError.updateAlgoliaInventory.failedToGetStyleAtsData(originalError, stylesToCheck);
     });

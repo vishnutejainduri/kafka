@@ -38,7 +38,7 @@ global.main = async function (params) {
                 .updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
                 .then(() => inventoryData)
                 .catch(originalError => {
-                    return createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
+                    throw createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
                 });
 
             const styleUpdatePromise = !inventoryData.skuId
@@ -55,18 +55,8 @@ global.main = async function (params) {
                 );
 
             return Promise.all([inventoryUpdatePromise].concat(styleUpdatePromise !== null ? [styleUpdatePromise] : []))
-                .catch(err => {
-                    console.error('Problem with document ' + inventoryData._id);
-                    console.error(err);
-                    if (!(err instanceof Error)) {
-                        const e = new Error();
-                        e.originalError = err;
-                        e.attemptedDocument = inventoryData;
-                        return e;
-                    }
-
-                    err.attemptedDocument = inventoryData;
-                    return err;
+                .catch(originalError => {
+                    return createError.consumeInventoryMessage.failedUpdates(originalError, inventoryData);
                 });
             })
         )
