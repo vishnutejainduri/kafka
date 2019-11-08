@@ -74,7 +74,7 @@ global.main = async function (params) {
                                   return createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, atsData);
                               })])
                               .catch(err => {
-                                  console.error('Problem with document ' + atsData._id);
+                                  console.error('Problem with document ', atsData);
                                   console.error(err);
                                   if (!(err instanceof Error)) {
                                       const e = new Error();

@@ -2,6 +2,7 @@ const getCollection = require('../../lib/getCollection');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 const createError = require('../../lib/createError');
 const { handleStyleUpdate } = require('./utils');
+const { addErrorHandling, log } = require('../utils');
 
 global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;
@@ -30,9 +31,9 @@ global.main = async function (params) {
     });
 
     return Promise.all(params.messages
-        .filter(filterSkuInventoryMessage)
-        .map(parseSkuInventoryMessage)
-        .map((inventoryData) => {
+        .filter(addErrorHandling(filterSkuInventoryMessage))
+        .map(addErrorHandling(parseSkuInventoryMessage))
+        .map(addErrorHandling((inventoryData) => {
             const inventoryUpdatePromise = inventory
                 .updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
                 .then(() => inventoryData)
@@ -67,7 +68,7 @@ global.main = async function (params) {
                     err.attemptedDocument = inventoryData;
                     return err;
                 });
-            }
+            })
         )
     )
     .then((results) => {
@@ -80,7 +81,8 @@ global.main = async function (params) {
             e.failedUpdatesErrors = errors;
             e.successfulUpdatesResults = successes;
 
-            console.error(e);
+            log('Failed to update some inventory records', "ERROR");
+            log(e, "ERROR");
             return {
               messages: successResults,
               ...paramsExcludingMessages

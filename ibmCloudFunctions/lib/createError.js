@@ -96,5 +96,32 @@ module.exports = {
             'failed-prepare-style-for-algolia',
             'Failed to prepare a style for Algolia'
         ),
+    },
+    updateAlgoliaInventory: {
+        failedRecord: (originalError) => createError(
+            originalError,
+            'failed-record',
+            'Failed to update algolia ats'
+        ),
+        failedToRemoveFromQueue: (originalError, styleIds) => createError(
+            originalError,
+            'failed-to-remove-from-queue',
+            `Failed to remove from algolia mongo queue the following style ids: ${styleIds}`
+        ),
+        failedToGetRecords: (originalError) => createError(
+            originalError,
+            'failed-to-get-records-from-algolia-mongo-queue',
+            'Failed to get any records from the algolia mongo queue'
+        ),
+        failedToGetStyle: (originalError, style) => createError(
+            originalError,
+            'failed-to-get-style-from-mongo',
+            `Failed to get relevant algolia style from mongo: style ${style}`
+        ),
+        failedToGetStyleAtsData: (originalError, stylesToCheck) => createError(
+            originalError,
+            'failed-to-get-style-ats-data',
+            `Failed to get current ats data for styles: ${stylesToCheck}`
+        )
     }
 }
