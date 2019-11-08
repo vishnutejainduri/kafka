@@ -26,7 +26,7 @@ global.main = async function (params) {
     });
 
     return Promise.all(params.messages
-        .map(parseThresholdMessage)
+        .map(addErrorHandling(parseThresholdMessage))
         .map(addErrorHandling(async (thresholdData) => { 
               const skuData = await skus.findOne({ _id: thresholdData.skuId })
                 .catch(originalError => {
@@ -61,29 +61,34 @@ global.main = async function (params) {
                                   styleAvailabilityCheckQueue.updateOne({ _id : styleData._id }, { $set : { _id: styleData._id, styleId: styleData._id } }, { upsert: true })
                                   .catch(originalError => {
                                       return createError.consumeThresholdMessage.failedAddToAlgoliaQueue(originalError, styleData);
-                                  })
-              ]).catch((err) => {
-                  console.error('Problem with threshold data ' + thresholdData);
-                  console.error(err);
-                  if (!(err instanceof Error)) {
-                      const e = new Error();
-                      e.originalError = err;
-                      e.attemptedDocument = thresholdData;
-                      return e;
-                  }
+                                  })])
+                                  .catch((err) => {
+                                      console.error('Problem with threshold data ' + thresholdData);
+                                      console.error(err);
+                                      if (!(err instanceof Error)) {
+                                          const e = new Error();
+                                          e.originalError = err;
+                                          e.attemptedDocument = thresholdData;
+                                          return e;
+                                      }
 
-                  err.attemptedDocument = thresholdData;
-                  return err;
-              })
+                                      err.attemptedDocument = thresholdData;
+                                      return err;
+                                  })
             })
         )
-    ).then((results) => {
+    )
+    .then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
-            const e = new Error('Some updates failed. See `results`.');
-            e.results = results;
+            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
+            e.failedUpdatesErrors = errors;
+            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
             throw e;
         }
+    })
+    .catch(originalError => {
+        throw createError.consumeThresholdMessage.failed(originalError, paramsExcludingMessages);
     });
 }
 

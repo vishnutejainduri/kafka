@@ -54,6 +54,11 @@ module.exports = {
         ),
     },
     consumeThresholdMessage: {
+        failed: (originalError, paramsExcludingMessages) => createError(
+            originalError,
+            'failed-consume-threshold-message',
+            `Failure in run of consume threshold message; params excluding messages: ${paramsExcludingMessages}.`
+        ),
         failedToGetSku: (originalError, thresholdData) => createError(
             originalError,
             'failed-get-sku-record',
