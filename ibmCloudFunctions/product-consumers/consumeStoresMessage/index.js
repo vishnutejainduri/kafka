@@ -60,7 +60,7 @@ global.main = async function (params) {
         .map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $set: storeData }, { upsert: true })
             .then(() => console.log('Updated/inserted store ' + storeData._id))
             .catch(originalError => {
-                throw createError.consumeStoresMessage.failedToUpdateStore(originalError, storeData._id);
+                return createError.consumeStoresMessage.failedToUpdateStore(originalError, storeData._id);
             })
         ))
     )
