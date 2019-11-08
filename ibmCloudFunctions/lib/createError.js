@@ -59,6 +59,11 @@ module.exports = {
             'failed-consume-threshold-message',
             `Failure in run of consume threshold message; params excluding messages: ${paramsExcludingMessages}.`
         ),
+        failedUpdates: (originalError, thresholdData) => createError(
+            originalError,
+            'failed-updates',
+            `Failed to run any queries on mongo for thresholds on sku, styles and algolia queue; threshold data: ${thresholdData}.`
+        ),
         failedToGetSku: (originalError, thresholdData) => createError(
             originalError,
             'failed-get-sku-record',

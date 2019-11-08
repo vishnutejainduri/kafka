@@ -52,28 +52,18 @@ global.main = async function (params) {
               
               return Promise.all([styles.updateOne({ _id: styleData._id }, { $set: { ats: newAts, onlineAts: newOnlineAts } })
                                   .catch(originalError => {
-                                      return createError.consumeThresholdMessage.failedToUpdateStyleThreshold(originalError, styleData);
+                                      throw createError.consumeThresholdMessage.failedToUpdateStyleThreshold(originalError, styleData);
                                   }),
                                   skus.updateOne({ _id: thresholdData.skuId }, { $set: { threshold: thresholdData.threshold } })
                                   .catch(originalError => {
-                                      return createError.consumeThresholdMessage.failedToUpdateSkuThreshold(originalError, thresholdData);
+                                      throw createError.consumeThresholdMessage.failedToUpdateSkuThreshold(originalError, thresholdData);
                                   }),
                                   styleAvailabilityCheckQueue.updateOne({ _id : styleData._id }, { $set : { _id: styleData._id, styleId: styleData._id } }, { upsert: true })
                                   .catch(originalError => {
-                                      return createError.consumeThresholdMessage.failedAddToAlgoliaQueue(originalError, styleData);
+                                      throw createError.consumeThresholdMessage.failedAddToAlgoliaQueue(originalError, styleData);
                                   })])
-                                  .catch((err) => {
-                                      console.error('Problem with threshold data ' + thresholdData);
-                                      console.error(err);
-                                      if (!(err instanceof Error)) {
-                                          const e = new Error();
-                                          e.originalError = err;
-                                          e.attemptedDocument = thresholdData;
-                                          return e;
-                                      }
-
-                                      err.attemptedDocument = thresholdData;
-                                      return err;
+                                  .catch(originalError => {
+                                      return createError.consumeThresholdMessage.failedUpdates(originalError, thresholdData);
                                   })
             })
         )
