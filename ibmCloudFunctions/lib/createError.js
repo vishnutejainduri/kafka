@@ -52,5 +52,17 @@ module.exports = {
             'failed-prepare-style-for-algolia',
             'Failed to prepare a style for Algolia'
         ),
+    },
+    consumeStoresFulfillMessage: {
+        failed: (originalError, paramsExcludingMessages) => createError(
+            originalError,
+            'failed-consume-stores-fulfill-message',
+            `Failure in run of consume stores fulfill message; params excluding messages: ${paramsExcludingMessages}.`
+        ),
+        failedToUpdateStore: (originalError, storeId) => createError(
+            originalError,
+            'failed-store-update',
+            `Failed to update store; store Id: ${storeId}.`
+        )
     }
 }
