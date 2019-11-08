@@ -2,22 +2,28 @@ const handleStyleAtsUpdate = (
     ats,
     atsData,
     threshold
-) => (atsData.availableToSell && atsData.availableToSell > 0)
-                ? ats.filter((atsRecord) => !(atsRecord.skuId === atsData.skuId))
-                  .concat({
-                    skuId: atsData.skuId,
-                    threshold: threshold,
-                    ats: ats.filter((atsRecord) => atsRecord.skuId === atsData.skuId).length === 0
-                        ? [{
-                            storeId: atsData.storeId,
-                            availableToSell: atsData.availableToSell
-                          }]
-                        : ats.filter((atsRecord) => atsRecord.skuId === atsData.skuId)[0].ats.filter((atsValue) => !(atsValue.storeId === atsData.storeId)).concat({
-                          storeId: atsData.storeId,
-                          availableToSell: atsData.availableToSell
-                        })
+) => {
+        const shouldUpdateAts = (atsData.availableToSell && atsData.availableToSell > 0);
+        const originalAtsRecords = ats.filter((atsRecord) => !(atsRecord.skuId === atsData.skuId))
+
+        if (shouldUpdateAts) {
+          const newAtsRecord = {
+              skuId: atsData.skuId,
+              threshold: threshold,
+              ats: ats.filter((atsRecord) => atsRecord.skuId === atsData.skuId).length === 0
+                  ? [{
+                      storeId: atsData.storeId,
+                      availableToSell: atsData.availableToSell
+                    }]
+                  : ats.filter((atsRecord) => atsRecord.skuId === atsData.skuId)[0].ats.filter((atsValue) => !(atsValue.storeId === atsData.storeId)).concat({
+                    storeId: atsData.storeId,
+                    availableToSell: atsData.availableToSell
                   })
-                : ats.filter((atsRecord) => !(atsRecord.skuId === atsData.skuId))
+            };
+            return originalAtsRecords.concat(newAtsRecord);
+        }
+        return originalAtsRecords;
+      }
 
 const handleSkuAtsUpdate = (
     ats,
