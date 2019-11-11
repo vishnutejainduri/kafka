@@ -100,6 +100,24 @@ packages:
           collectionName: $INVENTORY_COLLECTION_NAME
           stylesCollectionName: $STYLES_COLLECTION_NAME
           skusCollectionName: $SKUS_COLLECTION_NAME
+          storesCollectionName: $STORES_COLLECTION_NAME
+          styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
+          topicName: inventory-connect-jdbc-SKUINVENTORY
+      calculate-available-to-sell:
+        location: ./product-consumers/calculateAvailableToSell/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 120000
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $INVENTORY_COLLECTION_NAME
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          skusCollectionName: $SKUS_COLLECTION_NAME
+          storesCollectionName: $STORES_COLLECTION_NAME
+          styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: inventory-connect-jdbc-SKUINVENTORY
       update-algolia-style:
         location: ./product-consumers/updateAlgoliaStyle/dist/bundle.js
@@ -149,6 +167,9 @@ packages:
           topicName: inventory-connect-jdbc-SKUINVENTORY
           stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          productApiClientId: $PRODUCT_API_CLIENT_ID
+          productApiHost: $PRODUCT_API_HOST
       update-algolia-facets:
         location: ./product-consumers/updateAlgoliaFacets/dist/bundle.js
         runtime: nodejs:10
@@ -185,15 +206,6 @@ packages:
         inputs:
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
           topicName: media-containers-connect-jdbc
-      add-style-inventory-check-to-queue:
-        location: ./product-consumers/addStyleInventoryCheckToQueue/dist/bundle.js
-        runtime: nodejs:10
-        limits:
-          memorySize: 128
-          timeout: 120000
-        inputs:
-          collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
-          topicName: inventory-connect-jdbc-SKUINVENTORY
       add-facets-to-bulk-import-queue:
         location: ./product-consumers/addFacetsToBulkImportQueue/dist/bundle.js
         runtime: nodejs:10
@@ -206,6 +218,8 @@ packages:
     sequences:
       update-pricing-sequence:
         actions: update-algolia-price,update-sale-price
+      update-inventory-sequence:
+        actions: consume-sku-inventory-message,calculate-available-to-sell
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
@@ -237,19 +251,16 @@ packages:
         inputs:
           isJSONData: true
           topic: stores-connect-jdbc
-<<<<<<< HEAD
       storesfulfill-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
           isJSONData: true
           topic: stores-fulfill-connect-jdbc
-=======
       dep27fulfill-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
           isJSONData: true
           topic: stores-dep27fulfill-connect-jdbc
->>>>>>> a185ce882bcfc723a4a9e8f2b5fe6a04d4c1b2f9
       media-containers-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
@@ -293,15 +304,12 @@ packages:
       stores-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-stores-message
         trigger: stores-trigger
-<<<<<<< HEAD
       storesfulfill-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-storesfulfill-message
         trigger: storesfulfill-trigger
-=======
       dep27fulfill-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-dep27fulfill-message
         trigger: dep27fulfill-trigger
->>>>>>> a185ce882bcfc723a4a9e8f2b5fe6a04d4c1b2f9
       media-containers-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-media-containers-message
         trigger: media-containers-trigger
@@ -323,11 +331,8 @@ packages:
       algolia-catalog-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-style
         trigger: catalog-trigger
-      sku-inventory-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-sku-inventory-message
-        trigger: /${ORG}_${SPACE}/sku-inventory-trigger
-      add-style-inventory-check-rule:
-        action: /${ORG}_${SPACE}/product-consumers/add-style-inventory-check-to-queue
+      update-inventory-sequence-rule:
+        action: /${ORG}_${SPACE}/product-consumers/update-inventory-sequence
         trigger: /${ORG}_${SPACE}/sku-inventory-trigger
       add-facets-to-queue-rule:
         action: /${ORG}_${SPACE}/product-consumers/add-facets-to-bulk-import-queue

@@ -64,7 +64,7 @@ global.main = async function (params) {
         }))
         // We should run the update if there's no existing doc or the update is newer than existing
         .map(addErrorHandling(async (styleData) => {
-            const existingDoc = await styles.findOne({_id: styleData._id});
+            const existingDoc = await styles.findOne({_id: styleData._id}, { ats:0, onlineAts:0 });
             return !existingDoc || ((existingDoc.effectiveDate <= styleData.effectiveDate) && !existingDoc.isOutlet)
                 ? styleData
                 : null;

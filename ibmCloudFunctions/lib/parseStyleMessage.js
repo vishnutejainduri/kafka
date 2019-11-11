@@ -28,6 +28,7 @@ const attributeMap = {
     'COLORID': 'colourId',
     'EFFECTIVE_DATE': 'effectiveDate',
     'UNIT_PRICE': 'originalPrice',
+    'SUBDEPT': 'departmentId',
     'VSN': 'vsn'
 };
 
