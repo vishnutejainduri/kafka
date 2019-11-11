@@ -66,6 +66,15 @@ module.exports = {
             originalError,
             'failed-updates',
             `Failed to run inventory updates on style and inventory; inventory data: ${inventoryData}.`
+        ),
+        partialFailure: (messages, messageFailures) => createError(
+            null,
+            'partial-failure-consuming-sku-inventory-messages',
+            `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
+            {
+                messages,
+                messageFailures
+            }
         )
     },
     calculateAvailableToSell: {
