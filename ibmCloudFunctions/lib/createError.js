@@ -251,6 +251,22 @@ module.exports = {
         )
     },
     addFacetsToBulkImportQueue: {
+        failedParseMessage: (originalError, message) => createError(
+            originalError,
+            'addFacetsToBulkImportQueue:failed-to-parse-facet-message',
+            'Failed to parse facet update message.',
+            {
+                message
+            }
+        ),
+        failedUpdateFacetQueue: (originalError, message) => createError(
+            originalError,
+            'addFacetsToBulkImportQueue:failed-to-update-facet-queue',
+            'Failed to update facet queue for algolia.',
+            {
+                message
+            }
+        ),
         partialFailure: (messages, messageFailures) => createError(
             null,
             'partial-failure-updating-algolia-facet-queue',
