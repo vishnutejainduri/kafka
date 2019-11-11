@@ -9,8 +9,8 @@ module.exports = {
     },
     target: 'node',
     externals: [
-        'bent',
-        'btoa',
+        'mongodb',
+        'request-promise'
     ],
     optimization: {
         minimize: false
