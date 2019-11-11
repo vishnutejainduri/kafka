@@ -1,31 +1,4 @@
 packages:
-  alert-checks:
-    inputs:
-      nameSpace: $SPACE
-    actions:
-      connector-status-check:
-        location: ./alert-checks/connectorStatusCheck/dist/bundle.js
-        runtime: nodejs:10
-        web-export: true
-        limits:
-          memorySize: 128
-          timeout: 120000
-        inputs:
-          connectHost: $CONNECT_HOST
-          authHost: $APP_ID_HOST
-          authUser: $APP_ID_USER
-          authPassword: $APP_ID_PASSWORD
-          authTenantId: $APP_ID_TENANT_ID
-      status-data-api:
-        location: ./alert-checks/statusDataApi/dist/bundle.js
-        runtime: nodejs:10
-        web-export: true
-        limits:
-          memorySize: 128
-          timeout: 120000
-        inputs:
-          productApiClientId: $PRODUCT_API_CLIENT_ID
-          productApiHost: $PRODUCT_API_HOST
   product-consumers:
     inputs:
       nameSpace: $SPACE
@@ -91,6 +64,17 @@ packages:
           dbName: $DB_NAME
           collectionName: $STORES_COLLECTION_NAME
           topicName: stores-fulfill-connect-jdbc
+      consume-dep27fulfill-message:
+        location: ./product-consumers/consumeDep27FulfillMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $STORES_COLLECTION_NAME
+          topicName: stores-dep27fulfill-connect-jdbc
       consume-sku-message:
         location: ./product-consumers/consumeSkuMessage/dist/bundle.js
         runtime: nodejs:10
@@ -303,11 +287,19 @@ packages:
         inputs:
           isJSONData: true
           topic: stores-connect-jdbc
+<<<<<<< HEAD
       storesfulfill-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
           isJSONData: true
           topic: stores-fulfill-connect-jdbc
+=======
+      dep27fulfill-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: stores-dep27fulfill-connect-jdbc
+>>>>>>> a185ce882bcfc723a4a9e8f2b5fe6a04d4c1b2f9
       media-containers-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
@@ -348,9 +340,15 @@ packages:
       stores-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-stores-message
         trigger: stores-trigger
+<<<<<<< HEAD
       storesfulfill-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-storesfulfill-message
         trigger: storesfulfill-trigger
+=======
+      dep27fulfill-rule:
+        action: /${ORG}_${SPACE}/product-consumers/consume-dep27fulfill-message
+        trigger: dep27fulfill-trigger
+>>>>>>> a185ce882bcfc723a4a9e8f2b5fe6a04d4c1b2f9
       media-containers-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-media-containers-message
         trigger: media-containers-trigger
