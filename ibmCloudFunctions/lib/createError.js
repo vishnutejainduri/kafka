@@ -41,6 +41,18 @@ module.exports = {
             `Failed to update style; style Id: ${styleId}.`
         )
     },
+    consumeDep27FulfillMessage: {
+        failed: (originalError, paramsExcludingMessages) => createError(
+            originalError,
+            'failed-consume-dep27-message',
+            `Failure in run of consume dep 27 message; params excluding messages: ${paramsExcludingMessages}.`
+        ),
+        failedUpdates: (originalError, storeId) => createError(
+            originalError,
+            'failed-consume-dep27-message-updates',
+            `Failure to run all db updates for dep27; store id: ${storeId}`
+        )
+    },
     updateAlgoliaStyle: {
         failedRecords: (_, failed, total) => createError(
             null,
@@ -63,6 +75,18 @@ module.exports = {
             originalError,
             'failed-to-update-store',
             `Failed to update store record; store id: ${storeId}.`
+        )
+    },
+    consumeStoresFulfillMessage: {
+        failed: (originalError, paramsExcludingMessages) => createError(
+            originalError,
+            'failed-consume-stores-fulfill-message',
+            `Failure in run of consume stores fulfill message; params excluding messages: ${paramsExcludingMessages}.`
+        ),
+        failedToUpdateStore: (originalError, storeId) => createError(
+            originalError,
+            'failed-store-update',
+            `Failed to update store; store Id: ${storeId}.`
         )
     }
 }
