@@ -1,5 +1,8 @@
 const getCollection = require('../../lib/getCollection');
+const { addErrorHandling, log } = require('../utils');
+const createError = require('../../lib/createError');
 const { HIDDEN_STORES } = require('../../lib/constants');
+const OUTLET_ID = "3";
 
 const parseStoreMessage = function (msg) {
     return {
@@ -24,14 +27,19 @@ const parseStoreMessage = function (msg) {
         operationalStatus: msg.value.OPERATIONAL_STATUS,
         siteMgrEmployeeId: msg.value.SITE_MGR_EMPLOYEE_ID,
         siteMgrSubType: msg.value.SITE_MGR_SUB_TYPE,
-        isVisible: !HIDDEN_STORES.includes(msg.value.SITE_ID)
+        isVisible: !HIDDEN_STORES.includes(msg.value.SITE_ID),
+        isOutlet: msg.value.ZONE_ID === OUTLET_ID
     };
 };
 
 global.main = async function (params) {
+    const { messages, ...paramsExcludingMessages } = params;
+    const messagesIsArray = Array.isArray(messages);
     console.log(JSON.stringify({
         cfName: 'consumeStoresMessage',
-        params
+        paramsExcludingMessages,
+        messagesLength: messagesIsArray ? messages.length : null,
+        messages // outputting messages as the last parameter because if it is too long the rest of the log will be truncated in logDNA
     }));
 
     if (!params.topicName) {
@@ -42,27 +50,21 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const stores = await getCollection(params);
+    const stores = await getCollection(params)
+      .catch(originalError => {
+          throw createError.failedDbConnection(originalError);
+      });
     return Promise.all(params.messages
-        .filter((msg) => msg.topic === params.topicName)
-        .map(parseStoreMessage)
-        .map((storeData) => stores.updateOne({ _id: storeData._id }, { $set: storeData }, { upsert: true })
+        .filter(addErrorHandling((msg) => msg.topic === params.topicName))
+        .map(addErrorHandling(parseStoreMessage))
+        .map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $set: storeData }, { upsert: true })
             .then(() => console.log('Updated/inserted store ' + storeData._id))
-            .catch((err) => {
-                console.error('Problem with store ' + storeData._id);
-                console.error(err);
-                if (!(err instanceof Error)) {
-                    const e = new Error();
-                    e.originalError = err;
-                    e.attemptedDocument = storeData;
-                    return e;
-                }
-
-                err.attemptedDocument = storeData;
-                return err;
+            .catch(originalError => {
+                return createError.consumeStoresMessage.failedToUpdateStore(originalError, storeData._id);
             })
-        )
-    ).then((results) => {
+        ))
+    )
+    .then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
@@ -70,6 +72,9 @@ global.main = async function (params) {
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
             throw e;
         }
+    })
+    .catch(originalError => {
+        throw createError.consumeStoresMessage.failed(originalError, paramsExcludingMessages);
     });
 }
 
