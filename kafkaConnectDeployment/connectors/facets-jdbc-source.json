@@ -11,7 +11,7 @@
     "topic.prefix": "facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA",
     "validate.non.null": "false",
     "query": "SELECT STYLE_COLOURS.IMAGE_STYLEID AS STYLEID, facets.CATEGORY, facets.DESC_ENG, facets.DESC_FR, facets.UPD_FLG, facets.FKORGANIZATIONNO, facets.CHAR_TY_SUB_TYPE, facets.CHARACTERISTIC_TYPE_ID, facets.CHARACTERISTIC_VALUE_ID FROM ELCAT.STYLE_ITEM_CHARACTERISTICS_ECA facets INNER JOIN ELCAT.STYLE_COLOURS ON SUBSTR(STYLE_COLOURS.STYLEID,1,8) = facets.STYLEID",
-    "poll.interval.ms": 43200000,
+    "poll.interval.ms": 172800000,
     "offset.flush.timeout.ms": 120000
   }
 }
