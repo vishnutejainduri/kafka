@@ -65,6 +65,43 @@ module.exports = {
             'Failed to prepare a style for Algolia'
         ),
     },
+    consumeThresholdMessage: {
+        failed: (originalError, paramsExcludingMessages) => createError(
+            originalError,
+            'failed-consume-threshold-message',
+            `Failure in run of consume threshold message; params excluding messages: ${paramsExcludingMessages}.`
+        ),
+        failedUpdates: (originalError, thresholdData) => createError(
+            originalError,
+            'failed-updates',
+            `Failed to run any queries on mongo for thresholds on sku, styles and algolia queue; threshold data: ${thresholdData}.`
+        ),
+        failedToGetSku: (originalError, thresholdData) => createError(
+            originalError,
+            'failed-get-sku-record',
+            `Failed to get a sku record from mongo; threshold data: ${thresholdData}.`
+        ),
+        failedToGetStyle: (originalError, thresholdData) => createError(
+            originalError,
+            'failed-get-style-record',
+            `Failed to get a style record from mongo; threshold data: ${thresholdData}.`
+        ),
+        failedToUpdateStyleThreshold: (originalError, styleData) => createError(
+            originalError,
+            'failed-to-update-style-threshold',
+            `Failed to update the thresholds on a style; style data: ${styleData}.`
+        ),
+        failedToUpdateSkuThreshold: (originalError, thesholdData) => createError(
+            originalError,
+            'failed-to-update-sku-threshold',
+            `Failed to update the thresholds on a sku; threshold data: ${thresholdData}.`
+        ),
+        failedAddToAlgoliaQueue: (originalError, styleData) => createError(
+            originalError,
+            'failed-to-add-to-algolia-queue',
+            `Failed to add style inventory update to algolia mongo queue; style data: ${styleData}.`
+        )
+    },
     consumeStoresMessage: {
         failed: (originalError, paramsExcludingMessages) => createError(
             originalError,
