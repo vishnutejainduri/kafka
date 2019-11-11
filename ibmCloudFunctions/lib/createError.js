@@ -34,10 +34,11 @@ module.exports = {
         'failed-algolia-connection',
         'Failed to connect to Algolia.'
     ),
-    failedDbConnection: (originalError, collectionName) => createError(
+    failedDbConnection: (originalError, collectionName, params) => createError(
         originalError,
         'failed-db-connection',
-        `Failed to connect to db${collectionName ? ` for collection ${collectionName}` : ''}.`
+        `Failed to connect to db${collectionName ? ` for collection ${collectionName}` : ''}.`,
+        params
     ),
     updateAlgoliaInventory: {
         failedToGetApiResponse: (originalError, styleId) => createError(
@@ -249,4 +250,15 @@ module.exports = {
             'Failed to parse price message because style ID does not exist.'
         )
     },
+    addFacetsToBulkImportQueue: {
+        partialFailure: (messages, messageFailures) => createError(
+            null,
+            'partial-failure-updating-algolia-facet-queue',
+            `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
+            {
+                messages,
+                messageFailures
+            }
+        )
+    }
 }
