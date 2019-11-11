@@ -1,34 +1,15 @@
 packages:
-  alert-checks:
-    inputs:
-      nameSpace: $SPACE
-    actions:
-      connector-status-check:
-        location: ./alert-checks/connectorStatusCheck/dist/bundle.js
-        runtime: nodejs:10
-        web-export: true
-        limits:
-          memorySize: 128
-          timeout: 120000
-        inputs:
-          connectHost: $CONNECT_HOST
-          authHost: $APP_ID_HOST
-          authUser: $APP_ID_USER
-          authPassword: $APP_ID_PASSWORD
-          authTenantId: $APP_ID_TENANT_ID
-      status-data-api:
-        location: ./alert-checks/statusDataApi/dist/bundle.js
-        runtime: nodejs:10
-        web-export: true
-        limits:
-          memorySize: 128
-          timeout: 120000
-        inputs:
-          productApiClientId: $PRODUCT_API_CLIENT_ID
-          productApiHost: $PRODUCT_API_HOST
   product-consumers:
     inputs:
       nameSpace: $SPACE
+      mongoUri: $MONGO_URI
+      mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+      dbName: $DB_NAME
+      algoliaApiKey: $ALGOLIA_API_KEY
+      algoliaIndexName: $ALGOLIA_INDEX_NAME
+      algoliaAppId: $ALGOLIA_APP_ID
+      productApiClientId: $PRODUCT_API_CLIENT_ID
+      productApiHost: $PRODUCT_API_HOST
     actions:
       consume-catalog-message:
         location: ./product-consumers/consumeCatalogMessage/dist/bundle.js
@@ -37,9 +18,6 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
@@ -50,12 +28,19 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           collectionName: $STYLES_COLLECTION_NAME
           algoliaDeleteCreateQueue: $ALGOLIA_DELETE_CREATE_QUEUE
           topicName: styles-basic-connect-jdbc
+      consume-threshold-message:
+        location: ./product-consumers/consumeThresholdMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          collectionName: $SKUS_COLLECTION_NAME
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
+          topicName: thresholds-connect-jdbc
       update-sale-price:
         location: ./product-consumers/updateSalePrice/dist/bundle.js
         runtime: nodejs:10
@@ -63,9 +48,6 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           collectionName: $PRICES_COLLECTION_NAME
           topicName: prices-connect-jdbc
       consume-stores-message:
@@ -75,11 +57,30 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
+          collectionName: $STORES_COLLECTION_NAME
+          topicName: stores-connect-jdbc
+      consume-storesfulfill-message:
+        location: ./product-consumers/consumeStoresFulfillMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
           mongoUri: $MONGO_URI
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
           dbName: $DB_NAME
           collectionName: $STORES_COLLECTION_NAME
-          topicName: stores-connect-jdbc
+          topicName: stores-fulfill-connect-jdbc
+      consume-dep27fulfill-message:
+        location: ./product-consumers/consumeDep27FulfillMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $STORES_COLLECTION_NAME
+          topicName: stores-dep27fulfill-connect-jdbc
       consume-sku-message:
         location: ./product-consumers/consumeSkuMessage/dist/bundle.js
         runtime: nodejs:10
@@ -87,9 +88,6 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           collectionName: $SKUS_COLLECTION_NAME
           topicName: skus-connect-jdbc
       consume-sku-inventory-message:
@@ -99,9 +97,6 @@ packages:
           memorySize: 512
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           collectionName: $INVENTORY_COLLECTION_NAME
           stylesCollectionName: $STYLES_COLLECTION_NAME
           skusCollectionName: $SKUS_COLLECTION_NAME
@@ -131,16 +126,8 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           collectionName: $STYLES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
-          algoliaApiKey: $ALGOLIA_API_KEY
-          algoliaIndexName: $ALGOLIA_INDEX_NAME
-          algoliaAppId: $ALGOLIA_APP_ID
-          productApiClientId: $PRODUCT_API_CLIENT_ID
-          productApiHost: $PRODUCT_API_HOST
       delete-create-algolia-styles:
         location: ./product-consumers/deleteCreateAlgoliaStyles/dist/bundle.js
         runtime: nodejs:10
@@ -148,13 +135,7 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           topicName: styles-basic-connect-jdbc
-          algoliaApiKey: $ALGOLIA_API_KEY
-          algoliaIndexName: $ALGOLIA_INDEX_NAME
-          algoliaAppId: $ALGOLIA_APP_ID
           stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $ALGOLIA_DELETE_CREATE_QUEUE
       update-algolia-image:
@@ -164,16 +145,8 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
           stylesCollectionName: $STYLES_COLLECTION_NAME
-          algoliaApiKey: $ALGOLIA_API_KEY
-          algoliaIndexName: $ALGOLIA_INDEX_NAME
-          algoliaAppId: $ALGOLIA_APP_ID
-          productApiClientId: $PRODUCT_API_CLIENT_ID
-          productApiHost: $PRODUCT_API_HOST
       update-algolia-price:
         location: ./product-consumers/updateAlgoliaPrice/dist/bundle.js
         runtime: nodejs:10
@@ -181,15 +154,9 @@ packages:
           memorySize: 512
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
           topicName: prices-connect-jdbc
-          algoliaApiKey: $ALGOLIA_API_KEY
-          algoliaIndexName: $ALGOLIA_INDEX_NAME
-          algoliaAppId: $ALGOLIA_APP_ID
       update-algolia-inventory:
         location: ./product-consumers/updateAlgoliaInventory/dist/bundle.js
         runtime: nodejs:10
@@ -197,13 +164,7 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           topicName: inventory-connect-jdbc-SKUINVENTORY
-          algoliaApiKey: $ALGOLIA_API_KEY
-          algoliaIndexName: $ALGOLIA_INDEX_NAME
-          algoliaAppId: $ALGOLIA_APP_ID
           stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
           stylesCollectionName: $STYLES_COLLECTION_NAME
@@ -216,12 +177,6 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
-          algoliaApiKey: $ALGOLIA_API_KEY
-          algoliaIndexName: $ALGOLIA_INDEX_NAME
-          algoliaAppId: $ALGOLIA_APP_ID
           stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
       consume-medias-message:
@@ -231,9 +186,6 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           collectionName: $MEDIAS_COLLECTION_NAME
           topicName: medias-connect-jdbc
       consume-media-containers-message:
@@ -243,9 +195,6 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           collectionName: $MEDIA_CONTAINERS_COLLECTION_NAME
           topicName: media-containers-connect-jdbc
       add-media-container-to-queue-message:
@@ -255,9 +204,6 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
           topicName: media-containers-connect-jdbc
       add-facets-to-bulk-import-queue:
@@ -267,9 +213,6 @@ packages:
           memorySize: 512
           timeout: 120000
         inputs:
-          mongoUri: $MONGO_URI
-          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-          dbName: $DB_NAME
           collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
           topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
     sequences:
@@ -288,6 +231,11 @@ packages:
         inputs:
           isJSONData: true
           topic: styles-basic-connect-jdbc
+      threshold-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: thresholds-connect-jdbc
       sku-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
@@ -303,6 +251,16 @@ packages:
         inputs:
           isJSONData: true
           topic: stores-connect-jdbc
+      storesfulfill-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: stores-fulfill-connect-jdbc
+      dep27fulfill-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: stores-dep27fulfill-connect-jdbc
       media-containers-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
@@ -334,6 +292,9 @@ packages:
       styles-basic-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-styles-basic-message
         trigger: styles-basic-trigger
+      threshold-rule:
+        action: /${ORG}_${SPACE}/product-consumers/consume-threshold-message
+        trigger: threshold-trigger
       sku-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-sku-message
         trigger: sku-trigger
@@ -343,6 +304,12 @@ packages:
       stores-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-stores-message
         trigger: stores-trigger
+      storesfulfill-rule:
+        action: /${ORG}_${SPACE}/product-consumers/consume-storesfulfill-message
+        trigger: storesfulfill-trigger
+      dep27fulfill-rule:
+        action: /${ORG}_${SPACE}/product-consumers/consume-dep27fulfill-message
+        trigger: dep27fulfill-trigger
       media-containers-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-media-containers-message
         trigger: media-containers-trigger
