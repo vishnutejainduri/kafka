@@ -82,9 +82,9 @@ global.main = async function (params) {
         });
     }
 
-    const recordsToUpdate = styleAvailabilitiesToBeSynced.filter((record) => record && !(record instanceof Error));
-
+    let recordsToUpdate = styleAvailabilitiesToBeSynced.filter((record) => record && !(record instanceof Error));
     recordsToUpdate = recordsToUpdate.filter((styleData) => styleData);
+
     if (recordsToUpdate.length) {
         return index.partialUpdateObjects(styleAvailabilitiesToBeSynced, true)
             .then(() => styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } })
