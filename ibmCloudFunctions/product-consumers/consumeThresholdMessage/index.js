@@ -41,20 +41,27 @@ global.main = async function (params) {
                     return createError.consumeThresholdMessage.failedToGetStyle(originalError, thresholdData);
                 });
 
-              const newAts = styleData.ats.map((atsRecord) => {
-                if (atsRecord.skuId === thresholdData.skuId) {
-                  atsRecord.threshold = thresholdData.threshold
-                }
-                return atsRecord;
-              });
-              const newOnlineAts = styleData.onlineAts.map((atsRecord) => {
-                if (atsRecord.skuId === thresholdData.skuId) {
-                  atsRecord.threshold = thresholdData.threshold
-                }
-                return atsRecord;
-              });
-              
-              return Promise.all([styles.updateOne({ _id: styleData._id }, { $set: { ats: newAts, onlineAts: newOnlineAts } })
+              const styleUpdates = { $set: {} };
+
+              if (styleData && styleData.ats) {
+                styleUpdates["$set"]["ats"] = styleData.ats.map((atsRecord) => {
+                  if (atsRecord.skuId === thresholdData.skuId) {
+                    atsRecord.threshold = thresholdData.threshold
+                  }
+                  return atsRecord;
+                });
+              }
+
+              if (styleData && styleData.onlineAts) {
+                styleUpdates["$set"]["onlineAts"] = styleData.onlineAts.map((atsRecord) => {
+                  if (atsRecord.skuId === thresholdData.skuId) {
+                    atsRecord.threshold = thresholdData.threshold
+                  }
+                  return atsRecord;
+                });
+              }
+             
+              return Promise.all([styles.updateOne({ _id: styleData._id }, styleUpdates)
                                   .catch(originalError => {
                                       throw createError.consumeThresholdMessage.failedToUpdateStyleThreshold(originalError, styleData);
                                   }),
