@@ -83,10 +83,9 @@ global.main = async function (params) {
     }
 
     let recordsToUpdate = styleAvailabilitiesToBeSynced.filter((record) => record && !(record instanceof Error));
-    recordsToUpdate = recordsToUpdate.filter((styleData) => styleData);
 
     if (recordsToUpdate.length) {
-        return index.partialUpdateObjects(styleAvailabilitiesToBeSynced, true)
+        return index.partialUpdateObjects(recordsToUpdate, true)
             .then(() => styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } })
               .catch(originalError => {
                   throw createError.updateAlgoliaInventory.failedToRemoveFromQueue(originalError, styleIds);
