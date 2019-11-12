@@ -1,6 +1,7 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
+const { addErrorHandling, log } = require('../utils');
 const { productApiRequest } = require('../../lib/productApi');
 
 let client = null;
