@@ -32,6 +32,7 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .map(addErrorHandling(parseThresholdMessage))
         .map(addErrorHandling(async (thresholdData) => { 
+              const thresholdOperations = [];
               const skuData = await skus.findOne({ _id: thresholdData.skuId })
                 .catch(originalError => {
                     return createError.consumeThresholdMessage.failedToGetSku(originalError, thresholdData);
@@ -43,36 +44,39 @@ global.main = async function (params) {
 
               const styleUpdates = { $set: {} };
 
-              if (styleData && styleData.ats) {
-                styleUpdates["$set"]["ats"] = styleData.ats.map((atsRecord) => {
-                  if (atsRecord.skuId === thresholdData.skuId) {
-                    atsRecord.threshold = thresholdData.threshold
-                  }
-                  return atsRecord;
-                });
-              }
-
-              if (styleData && styleData.onlineAts) {
-                styleUpdates["$set"]["onlineAts"] = styleData.onlineAts.map((atsRecord) => {
-                  if (atsRecord.skuId === thresholdData.skuId) {
-                    atsRecord.threshold = thresholdData.threshold
-                  }
-                  return atsRecord;
-                });
-              }
-             
-              return Promise.all([styles.updateOne({ _id: styleData._id }, styleUpdates)
+              if (styleData && (styleData.ats || styleData.onlineAts)) {
+                if (styleData.ats) {
+                  styleUpdates["$set"]["ats"] = styleData.ats.map((atsRecord) => {
+                    if (atsRecord.skuId === thresholdData.skuId) {
+                      atsRecord.threshold = thresholdData.threshold
+                    }
+                    return atsRecord;
+                  });
+                }
+                if (styleData.onlineAts) {
+                  styleUpdates["$set"]["onlineAts"] = styleData.onlineAts.map((atsRecord) => {
+                    if (atsRecord.skuId === thresholdData.skuId) {
+                      atsRecord.threshold = thresholdData.threshold
+                    }
+                    return atsRecord;
+                  });
+                }
+                thresholdOperations.push(styles.updateOne({ _id: styleData._id }, styleUpdates)
                                   .catch(originalError => {
                                       throw createError.consumeThresholdMessage.failedToUpdateStyleThreshold(originalError, styleData);
-                                  }),
-                                  skus.updateOne({ _id: thresholdData.skuId }, { $set: { threshold: thresholdData.threshold } })
-                                  .catch(originalError => {
-                                      throw createError.consumeThresholdMessage.failedToUpdateSkuThreshold(originalError, thresholdData);
                                   }),
                                   styleAvailabilityCheckQueue.updateOne({ _id : styleData._id }, { $set : { _id: styleData._id, styleId: styleData._id } }, { upsert: true })
                                   .catch(originalError => {
                                       throw createError.consumeThresholdMessage.failedAddToAlgoliaQueue(originalError, styleData);
-                                  })])
+                                  }));
+              }
+  
+              thresholdOperations.push(skus.updateOne({ _id: thresholdData.skuId }, { $set: { threshold: thresholdData.threshold } })
+                                  .catch(originalError => {
+                                      throw createError.consumeThresholdMessage.failedToUpdateSkuThreshold(originalError, thresholdData);
+                                  }));
+
+              return Promise.all(thresholdOperations)
                                   .catch(originalError => {
                                       return createError.consumeThresholdMessage.failedUpdates(originalError, thresholdData);
                                   })
