@@ -1,5 +1,5 @@
 const addErrorHandling = fn => {
-    if (Promise.resolve(fn) === fn) {
+    if (Promise.resolve(fn) == fn || fn.constructor.name === 'AsyncFunction') {
         return async arg => {
             if (arg instanceof Error) return arg;
             return fn(arg).catch(error => error);
