@@ -6,7 +6,9 @@ const createError = (originalError, name, message) => {
         return error;
     };
 
-    const error = new Error(`${message} --- Caused by: ${originalError.message}`);
+    const error = new Error();
+    Object.assign(error, originalError)
+    error.message = `${message} --- Caused by: ${originalError.message}`
     error.name = `${name} --- Caused by: ${originalError.name || originalError.name}`;
     error.code = error.name; // https://github.com/nodejs/help/issues/789
     error.stack = originalError.stack;
