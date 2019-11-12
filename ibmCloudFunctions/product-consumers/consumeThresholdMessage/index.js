@@ -4,9 +4,13 @@ const createError = require('../../lib/createError');
 const { addErrorHandling, log } = require('../utils');
 
 global.main = async function (params) {
+    const { messages, ...paramsExcludingMessages } = params;
+    const messagesIsArray = Array.isArray(messages);
     console.log(JSON.stringify({
         cfName: 'consumeThresholdMessage',
-        params
+        paramsExcludingMessages,
+        messagesLength: messagesIsArray ? messages.length : null,
+        messages // outputting messages as the last parameter because if it is too long the rest of the log will be truncated in logDNA
     }));
 
     if (!params.topicName) {
