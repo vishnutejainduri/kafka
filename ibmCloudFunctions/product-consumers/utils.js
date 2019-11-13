@@ -31,7 +31,7 @@ const createLog = {
             cfName,
             paramsExcludingMessages,
             messagesLength: messagesIsArray ? messages.length : null,
-            sampleMessage: messages[0]
+            sampleMessage: messages ? messages[0] : 'Does not have messages'
             // outputting only a single message,
             // because a long message will truncate the whole log and subsequent logs will be lost
         });
