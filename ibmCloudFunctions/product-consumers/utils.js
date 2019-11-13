@@ -1,8 +1,8 @@
-const addErrorHandling = fn => {
+const addErrorHandling = (fn, createError) => {
     if (Promise.resolve(fn) == fn || fn.constructor.name === 'AsyncFunction') {
         return async arg => {
             if (arg instanceof Error) return arg;
-            return fn(arg).catch(error => error);
+            return fn(arg).catch(error => createError ? createError(error, arg) : error);
         }
     }
 
@@ -11,7 +11,7 @@ const addErrorHandling = fn => {
         try {
             return fn(arg);
         } catch(error) {
-            return error;
+            return createError ? createError(error, arg) : error;
         }
     };
 }
@@ -22,7 +22,24 @@ const log = (msg, level) => {
     else {  console.log(msg); }
 }
 
+const createLog = {
+    params: (cfName, params) => {
+        const { messages, ...paramsExcludingMessages } = params;
+        const messagesIsArray = Array.isArray(messages);
+
+        return JSON.stringify({
+            cfName,
+            paramsExcludingMessages,
+            messagesLength: messagesIsArray ? messages.length : null,
+            sampleMessage: messages[0]
+            // outputting only a single message,
+            // because a long message will truncate the whole log and subsequent logs will be lost
+        });
+    }
+}
+
 module.exports = {
     addErrorHandling,
-    log
+    log,
+    createLog
 }

@@ -1,3 +1,4 @@
-const { mocks } = require('../../testUtils');
+const { algoliasearch } = require('../../mocks');
 
-module.exports = mocks.algoliasearch()
+module.exports = algoliasearch;
+

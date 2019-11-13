@@ -7,12 +7,12 @@ jest.mock("mongodb");
 jest.mock("algoliasearch");
 
 describe('updateAlgoliaStyle', () => {
-    it.skip('throws an error if params argument is empty', async () => {
+    it('throws an error if params argument is empty', async () => {
         const params = {};
         expect(await updateAlgoliaStyle(params).catch(error => error) instanceof Error).toBe(true);
     });
 
-    it.skip('does not throw if all of the parmaeters are provided', async () => {
+    it('does not throw if all of the parmaeters are provided, regardless of their value', async () => {
         const params = {
             topicName: 'some-topic',
             algoliaIndexName: 'index-name',
@@ -37,7 +37,7 @@ describe('updateAlgoliaStyle', () => {
             algoliaAppId: 'app-id',
             mongoUri: 'uri',
             dbName: 'db-name',
-            collectionName: 'collection-name',
+            collectionName: 'updateAlgoliaStyle',
             mongoCertificateBase64: 'certificate',
             messages: [{
                 topic: 'styles-connect-jdbc-CATALOG',
@@ -47,6 +47,6 @@ describe('updateAlgoliaStyle', () => {
                 }
             }]
         };
-        expect(await updateAlgoliaStyle(params)).toEqual(result);
+        expect(await updateAlgoliaStyle(params)).toEqual(Object.assign({}, params, result));
     });
 });

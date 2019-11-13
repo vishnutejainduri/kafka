@@ -3,15 +3,13 @@ const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { addErrorHandling, log } = require('../utils');
 const { productApiRequest } = require('../../lib/productApi');
+const { createLog, log } = require('../utils');
 
 let client = null;
 let index = null;
 
 global.main = async function (params) {
-    console.log(JSON.stringify({
-        cfName: 'updateAlgoliaInventory',
-        params
-    }));
+    log(createLog.params('updateAlgoliaInventory', params));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
         throw new Error('Requires Algolia configuration. See manifest.yml');
