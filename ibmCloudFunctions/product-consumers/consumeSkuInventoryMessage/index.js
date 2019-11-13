@@ -8,6 +8,8 @@ const { createLog, addErrorHandling, log } = require('../utils');
 global.main = async function (params) {
     log(createLog.params('consumeSkuInventoryMessage', params));
 
+    const { messages, ...paramsExcludingMessages } = params;
+
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
     }
@@ -67,6 +69,7 @@ global.main = async function (params) {
 
             log('Failed to update some inventory records', "ERROR");
             log(e, "ERROR");
+            
             return {
               messages: successResults,
               ...paramsExcludingMessages
