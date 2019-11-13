@@ -47,6 +47,6 @@ describe('updateAlgoliaStyle', () => {
                 }
             }]
         };
-        expect(await updateAlgoliaStyle(params)).toEqual(result);
+        expect(await updateAlgoliaStyle(params)).toEqual(Object.assign({}, params, result));
     });
 });

@@ -76,9 +76,9 @@ global.main = async function (params) {
     
     if (recordsToUpdate.length) {
         return index.partialUpdateObjects(recordsToUpdate, true)
-            .then(() => {
-                await updateAlgoliaStyleCount.insert({ batchSize: recordsToUpdate.length });
-                return params;
+            .then(async () => {
+                const result = await updateAlgoliaStyleCount.insert({ batchSize: recordsToUpdate.length });
+                return Object.assign({}, params, result);
             })
             .catch((error) => {
                 log('Failed to send styles to Algolia.', "ERROR");
