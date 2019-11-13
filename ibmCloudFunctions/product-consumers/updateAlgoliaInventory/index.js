@@ -44,7 +44,7 @@ global.main = async function (params) {
         .catch(originalError => {
             throw createError.failedDbConnection(originalError, params && 'updateAlgoliaInventoryCount');
         });
-    const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(1).toArray()
+    const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(40).toArray()
         .catch(originalError => {
             throw createError.updateAlgoliaInventory.failedToGetRecords(originalError);
         });
@@ -76,7 +76,7 @@ global.main = async function (params) {
 
     const recordsWithError = styleAvailabilitiesToBeSynced.filter(rec => rec instanceof Error);
     if (recordsWithError.length > 0) {
-        log(createError.updateAlgoliaInventory.failedRecords(null, recordsWithError.length, records.length), "ERROR");
+        log(createError.updateAlgoliaInventory.failedRecords(null, recordsWithError.length, recordsWithError.length), "ERROR");
         recordsWithError.forEach(originalError => {
             log(createError.updateAlgoliaInventory.failedRecord(originalError), "ERROR");
         });
@@ -98,7 +98,6 @@ global.main = async function (params) {
                 throw error;
             });
     } else {
-        console.log('No updates to process.');
         return styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } })
           .catch(originalError => {
               throw createError.updateAlgoliaInventory.failedToRemoveFromQueue(originalError, styleIds);
