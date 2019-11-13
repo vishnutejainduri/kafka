@@ -1,10 +1,9 @@
 const getCollection = require('../../lib/getCollection');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 const createError = require('../../lib/createError');
-const { createLog, log } = require('../utils');
 
 const { handleStyleUpdate } = require('./utils');
-const { addErrorHandling, log } = require('../utils');
+const { createLog, addErrorHandling, log } = require('../utils');
 
 global.main = async function (params) {
     log(createLog.params('consumeSkuInventoryMessage', params));
