@@ -73,7 +73,7 @@ global.main = async function (params) {
     }
 
     const recordsToUpdate = records.filter((record) => record && !(record instanceof Error));
-    
+
     if (recordsToUpdate.length) {
         return index.partialUpdateObjects(recordsToUpdate, true)
             .then(async () => {

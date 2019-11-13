@@ -49,6 +49,8 @@ global.main = async function (params) {
         const messageFailures = results.filter((res) => res instanceof Error);
         if (messageFailures.length >= 1) {
             throw createError.addFacetsToBulkImportQueue.partialFailure(params.messages, messageFailures);
+        } else {
+            return results;
         }
     });
 }

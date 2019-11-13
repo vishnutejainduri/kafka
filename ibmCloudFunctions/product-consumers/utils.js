@@ -17,7 +17,7 @@ const addErrorHandling = (fn, createError) => {
 }
 
 const log = (msg, level) => {
-    // if (process.env.NODE_ENV === "test") return;
+    if (process.env.NODE_ENV === "test") return;
     if (level === "ERROR") {  console.error(msg); }
     else {  console.log(msg); }
 }

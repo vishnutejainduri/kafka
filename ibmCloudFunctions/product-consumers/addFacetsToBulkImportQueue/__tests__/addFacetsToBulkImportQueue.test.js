@@ -1,4 +1,6 @@
-const addFacetsToBulkImportQueue = require('../index');
+const addFacetsToBulkImportQueue = require('../');
+
+jest.mock("mongodb");
 
 describe('addFacetsToBulkImportQueue', () => {
     it('will throw if the parameters are not provided', async () => {
@@ -10,14 +12,17 @@ describe('addFacetsToBulkImportQueue', () => {
     it('will succeed if all of the parameters are provided', async () => {
         const params = {
             messages: [{
-                value: 'some-value',
+                value: {
+                    STYLEID: 'styleId',
+                    CATEGORY: 'Category'
+                },
             }],
             mongoUri: 'mongo-uri',
             dbName: 'db-name',
-            collectionName: 'collection-name',
-            mongoCertificateBase64: 'mong-certificate'
+            mongoCertificateBase64: 'mong-certificate',
+            collectionName: 'addFacetsToBulkImportQueue'
         }
-        const response = await addFacetsToBulkImportQueue(params);
-        expect(response).toBeTruthy();
+        const response = await addFacetsToBulkImportQueue(params).catch(console.log);
+        expect(response).toEqual([{ _id: 'styleIdstyle' }]);
     });
 });

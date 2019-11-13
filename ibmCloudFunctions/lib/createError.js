@@ -67,16 +67,16 @@ module.exports = {
             originalError,
             'failed-updates',
             `Failed to run inventory updates on style and inventory; inventory data: ${inventoryData}.`
-        ),
-        partialFailure: (messages, messageFailures) => createError(
-            null,
-            'partial-failure-consuming-sku-inventory-messages',
-            `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
-            {
-                messages,
-                messageFailures
-            }
-        )
+            ),
+            partialFailure: (messages, messageFailures) => createError(
+                null,
+                'partial-failure-consuming-sku-inventory-messages',
+                `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
+                {
+                    messages,
+                    messageFailures
+                }
+            )
     },
     calculateAvailableToSell: {
         failed: (originalError, paramsExcludingMessages) => createError(
@@ -250,7 +250,7 @@ module.exports = {
             'Failed to parse price message because style ID does not exist.'
         )
     },
-    addFacetsToBulkImportQueue: {
+        addFacetsToBulkImportQueue: {
         failedParseMessage: (originalError, message) => createError(
             originalError,
             'addFacetsToBulkImportQueue:failed-to-parse-facet-message',
@@ -272,8 +272,8 @@ module.exports = {
             'partial-failure-updating-algolia-facet-queue',
             `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
             {
-                messages,
-                messageFailures
+                messages: JSON.stringify(messages),
+                messageFailures: JSON.stringify(messageFailures)
             }
         )
     }
