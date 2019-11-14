@@ -41,6 +41,8 @@ global.main = async function (params) {
         .catch(originalError => {
             throw createError.failedDbConnection(originalError, params && 'updateAlgoliaInventoryCount');
         });
+
+    console.log(styleAvailabilityCheckQueue);
     const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(40).toArray()
         .catch(originalError => {
             throw createError.updateAlgoliaInventory.failedToGetRecords(originalError);

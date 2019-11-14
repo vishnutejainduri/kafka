@@ -16,25 +16,26 @@ const getCollection = (collectionName) => {
                     id: "success"
                 })
             };
-        case 'consumeDep27FulfillMessage':
+        case 'stores':
             return {
                 updateOne: async ({ _id }) => ({ _id })
             }; 
-        case 'consumeStoresFulfillMessage':
+        case 'skus':
             return {
                 updateOne: async ({ _id }) => ({ _id })
             }; 
-        case 'consumeStoresMessage':
+        case 'styleAvailabilityCheckQueue':
             return {
                 updateOne: async ({ _id }) => ({ _id })
             }; 
-        case 'consumeThesholdMessage':
+        case 'styles':
             return {
                 updateOne: async ({ _id }) => ({ _id })
             }; 
         default:
             return {
                 findOne: async (params) => (params._id === "10" ? null : {}),
+                find: async (params) => (params._id === "10" ? null : {}),
                 updateOne: async () => ({})
             }
     }
