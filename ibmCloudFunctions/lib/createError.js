@@ -1,15 +1,30 @@
-const createError = (originalError, name, message) => {
-    if (!originalError) {
-        const error = new Error(message);
-        error.name = name;
-        error.code = error.name;
-        return error;
-    };
+const createError = (originalError, name, message, debugInfo) => {
+    const error = new Error();
 
-    const error = new Error(`${message} --- Caused by: ${originalError.message}`);
-    error.name = `${name} --- Caused by: ${originalError.name || originalError.name}`;
+    if (originalError) {
+        const {
+            stack: originalStack,
+            name: originalName,
+            code: OriginalCode,
+            message: OriginalMessage,
+            ...originalDebugInfo
+        } = originalError;
+    
+        Object.assign(error, {
+            originalDebugInfo,
+            message: `${message} --- Caused by: ${OriginalMessage}`,
+            name:  `${name} --- Caused by: ${OriginalCode || originalName}`,
+            stack: originalStack,
+        });
+    } else {
+        Object.assign(error, {
+            message,
+            name
+        });
+    }
+
+    error.debugInfo = debugInfo;
     error.code = error.name; // https://github.com/nodejs/help/issues/789
-    error.stack = originalError.stack;
     return error;
 }
 
@@ -19,23 +34,17 @@ module.exports = {
         'failed-algolia-connection',
         'Failed to connect to Algolia.'
     ),
-    failedDbConnection: (originalError, collectionName) => createError(
+    failedDbConnection: (originalError, collectionName, params) => createError(
         originalError,
         'failed-db-connection',
-        `Failed to connect to db${collectionName ? ` for collection ${collectionName}` : ''}.`
+        `Failed to connect to db${collectionName ? ` for collection ${collectionName}` : ''}.`,
+        params
     ),
-    updateAlgoliaInventory: {
-        failedToGetApiResponse: (originalError, styleId) => createError(
-            originalError,
-            'failed-to-get-api-response',
-            `Failed to get api response; style Id: ${styleId}.`
-        )
-    },
     consumeInventoryMessage: {
-        failed: (originalError, paramsExcludingMessages) => createError(
+        failed: (originalError, params) => createError(
             originalError,
             'failed-consume-inventory-message',
-            `Failure in run of consume inventory message; params excluding messages: ${paramsExcludingMessages}.`
+            `Failure in run of consume inventory message; params: ${params}.`
         ),
         failedUpdateInventory: (originalError, inventoryData) => createError(
             originalError,
@@ -51,7 +60,16 @@ module.exports = {
             originalError,
             'failed-updates',
             `Failed to run inventory updates on style and inventory; inventory data: ${inventoryData}.`
-        )
+            ),
+            partialFailure: (messages, messageFailures) => createError(
+                null,
+                'partial-failure-consuming-sku-inventory-messages',
+                `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
+                {
+                    messages,
+                    messageFailures
+                }
+            )
     },
     calculateAvailableToSell: {
         failed: (originalError, paramsExcludingMessages) => createError(
@@ -124,6 +142,11 @@ module.exports = {
             originalError,
             'failed-record',
             'Failed to update algolia ats'
+        ),
+        failedToGetApiResponse: (originalError, styleId) => createError(
+            originalError,
+            'failed-to-get-api-response',
+            `Failed to get api response; style Id: ${styleId}.`
         ),
         failedToRemoveFromQueue: (originalError, styleIds) => createError(
             originalError,
@@ -205,6 +228,51 @@ module.exports = {
             originalError,
             'failed-store-update',
             `Failed to update store; store Id: ${storeId}.`
+        )
+    },
+    updateAlgoliaPrice: {
+        partialFailure: (messages, messageFailures) => createError(
+            null,
+            'partial-failure-updating-algolia-price',
+            `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
+            {
+                messages,
+                messageFailures
+            }
+        )
+    },
+    parsePriceMessage: {
+        noStyleId: () => createError(
+            null,
+            'failed-to-parse-price-message-no-style-id',
+            'Failed to parse price message because style ID does not exist.'
+        )
+    },
+    addFacetsToBulkImportQueue: {
+        failedParseMessage: (originalError, message) => createError(
+            originalError,
+            'addFacetsToBulkImportQueue:failed-to-parse-facet-message',
+            'Failed to parse facet update message.',
+            {
+                message
+            }
+        ),
+        failedUpdateFacetQueue: (originalError, message) => createError(
+            originalError,
+            'addFacetsToBulkImportQueue:failed-to-update-facet-queue',
+            'Failed to update facet queue for algolia.',
+            {
+                message
+            }
+        ),
+        partialFailure: (messages, messageFailures) => createError(
+            null,
+            'partial-failure-updating-algolia-facet-queue',
+            `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
+            {
+                messages: JSON.stringify(messages),
+                messageFailures: JSON.stringify(messageFailures)
+            }
         )
     }
 }

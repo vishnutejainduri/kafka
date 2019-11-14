@@ -1,17 +1,14 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { addErrorHandling, log } = require('../utils');
 const { productApiRequest } = require('../../lib/productApi');
+const { createLog, log, addErrorHandling } = require('../utils');
 
 let client = null;
 let index = null;
 
 global.main = async function (params) {
-    console.log(JSON.stringify({
-        cfName: 'updateAlgoliaInventory',
-        params
-    }));
+    log(createLog.params('updateAlgoliaInventory', params));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
         throw new Error('Requires Algolia configuration. See manifest.yml');
@@ -44,7 +41,7 @@ global.main = async function (params) {
         .catch(originalError => {
             throw createError.failedDbConnection(originalError, params && 'updateAlgoliaInventoryCount');
         });
-    const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(200).toArray()
+    const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(40).toArray()
         .catch(originalError => {
             throw createError.updateAlgoliaInventory.failedToGetRecords(originalError);
         });
@@ -76,17 +73,16 @@ global.main = async function (params) {
 
     const recordsWithError = styleAvailabilitiesToBeSynced.filter(rec => rec instanceof Error);
     if (recordsWithError.length > 0) {
-        log(createError.updateAlgoliaInventory.failedRecords(null, recordsWithError.length, records.length), "ERROR");
+        log(createError.updateAlgoliaInventory.failedRecords(null, recordsWithError.length, recordsWithError.length), "ERROR");
         recordsWithError.forEach(originalError => {
             log(createError.updateAlgoliaInventory.failedRecord(originalError), "ERROR");
         });
     }
 
     let recordsToUpdate = styleAvailabilitiesToBeSynced.filter((record) => record && !(record instanceof Error));
-    recordsToUpdate = recordsToUpdate.filter((styleData) => styleData);
 
     if (recordsToUpdate.length) {
-        return index.partialUpdateObjects(styleAvailabilitiesToBeSynced, true)
+        return index.partialUpdateObjects(recordsToUpdate, true)
             .then(() => styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } })
               .catch(originalError => {
                   throw createError.updateAlgoliaInventory.failedToRemoveFromQueue(originalError, styleIds);
@@ -99,7 +95,6 @@ global.main = async function (params) {
                 throw error;
             });
     } else {
-        console.log('No updates to process.');
         return styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } })
           .catch(originalError => {
               throw createError.updateAlgoliaInventory.failedToRemoveFromQueue(originalError, styleIds);

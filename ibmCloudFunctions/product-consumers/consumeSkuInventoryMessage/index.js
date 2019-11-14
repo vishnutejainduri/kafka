@@ -1,18 +1,14 @@
 const getCollection = require('../../lib/getCollection');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 const createError = require('../../lib/createError');
+
 const { handleStyleUpdate } = require('./utils');
-const { addErrorHandling, log } = require('../utils');
+const { createLog, addErrorHandling, log } = require('../utils');
 
 global.main = async function (params) {
+    log(createLog.params('consumeSkuInventoryMessage', params));
+
     const { messages, ...paramsExcludingMessages } = params;
-    const messagesIsArray = Array.isArray(messages);
-    console.log(JSON.stringify({
-        cfName: 'consumeSkuInventoryMessage',
-        paramsExcludingMessages,
-        messagesLength: messagesIsArray ? messages.length : null,
-        messages // outputting messages as the last parameter because if it is too long the rest of the log will be truncated in logDNA
-    }));
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
@@ -73,6 +69,7 @@ global.main = async function (params) {
 
             log('Failed to update some inventory records', "ERROR");
             log(e, "ERROR");
+            
             return {
               messages: successResults,
               ...paramsExcludingMessages
@@ -85,7 +82,7 @@ global.main = async function (params) {
         }
     })
     .catch(originalError => {
-        throw createError.consumeInventoryMessage.failed(originalError, paramsExcludingMessages);
+        throw createError.consumeInventoryMessage.failed(originalError, params);
     });
 };
 

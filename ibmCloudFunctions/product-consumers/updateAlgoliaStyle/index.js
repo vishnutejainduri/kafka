@@ -1,6 +1,6 @@
 const algoliasearch = require('algoliasearch');
 
-const { addErrorHandling, log } = require('../utils');
+const { createLog, addErrorHandling, log } = require('../utils');
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
@@ -9,14 +9,7 @@ let client = null;
 let index = null;
 
 global.main = async function (params) {
-    const { messages, ...paramsExcludingMessages } = params;
-    const messagesIsArray = Array.isArray(messages);
-    log(JSON.stringify({
-        cfName: 'updateAlgoliaStyle',
-        paramsExcludingMessages,
-        messagesLength: messagesIsArray ? messages.length : null,
-        messages // outputting messages as the last parameter because if it is too long the rest of the log will be truncated in logDNA
-    }));
+    log(createLog.params('updateAlgoliaStyle', params));
 
     if (!params.algoliaIndexName) {
         throw new Error('Requires an Algolia index.');
@@ -80,13 +73,16 @@ global.main = async function (params) {
     }
 
     const recordsToUpdate = records.filter((record) => record && !(record instanceof Error));
-    
+
     if (recordsToUpdate.length) {
         return index.partialUpdateObjects(recordsToUpdate, true)
-            .then(() => updateAlgoliaStyleCount.insert({ batchSize: recordsToUpdate.length }))
+            .then(async () => {
+                const result = await updateAlgoliaStyleCount.insert({ batchSize: recordsToUpdate.length });
+                return Object.assign({}, params, result);
+            })
             .catch((error) => {
                 log('Failed to send styles to Algolia.', "ERROR");
-                log(messages, "ERROR");
+                error.params = params;
                 throw error;
             });
     }
