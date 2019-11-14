@@ -1,4 +1,6 @@
 const updateAlgoliaStyle = require('../');
+const mongodb = require('../../__mocks__/mongodb');
+const algoliasearch = require('../../__mocks__/algoliasearch');
 
 const styleId = "10"; // id fo a style that does not match any existing document
 const result = { id: "success"} // result of a success insert for 'updateAlgoliaStyleCount' collection

@@ -1,4 +1,5 @@
 const addFacetsToBulkImportQueue = require('../');
+const mongodb = require('../../__mocks__/mongodb');
 
 jest.mock("mongodb");
 

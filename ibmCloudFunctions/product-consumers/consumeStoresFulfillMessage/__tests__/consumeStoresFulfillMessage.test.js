@@ -1,23 +1,23 @@
-const consumeDep27FulfillMessage = require('../');
+const consumeStoresFulfillMessage = require('../');
 const mongodb = require('../../__mocks__/mongodb');
 
 jest.mock("mongodb");
 
-describe('consumeDep27FulfillMessage', () => {
+describe('consumeStoresFulfillMessage', () => {
     it('missing all parameters', async () => {
         let response = null;
-        await consumeDep27FulfillMessage().catch(error => { response = error});
+        await consumeStoresFulfillMessage().catch(error => { response = error});
         expect(response instanceof Error).toBe(true);
     });
     it('correct message', async () => {
         const params = {
-            topicName: 'stores-dep27fulfill-connect-jdbc',
+            topicName: 'stores-fulfill-connect-jdbc',
             messages: [{
-                topic: 'stores-dep27fulfill-connect-jdbc',
+                topic: 'stores-fulfill-connect-jdbc',
                 value: {
                     SITE_ID: 'siteId',
                     FULFILL_STATUS: 'fulfillStatus',
-                    MODIFIEDDATE: 1000000000000
+                    LAST_MODIFIED: 1000000000000
                 },
             }],
             mongoUri: 'mongo-uri',
@@ -25,7 +25,7 @@ describe('consumeDep27FulfillMessage', () => {
             mongoCertificateBase64: 'mong-certificate',
             collectionName: 'stores'
         }
-        const response = await consumeDep27FulfillMessage(params).catch(console.log);
+        const response = await consumeStoresFulfillMessage(params).catch(console.log);
         // returns nothing/undefined if successfully run
         expect(response).toEqual(undefined);
     });
