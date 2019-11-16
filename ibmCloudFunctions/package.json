@@ -7,11 +7,13 @@
     "test": "test"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "pretest": "eslint './lib/**' './product-consumers/**'"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "eslint": "^6.6.0",
     "jest": "^24.9.0"
   }
 }
