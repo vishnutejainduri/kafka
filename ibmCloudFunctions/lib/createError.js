@@ -1,6 +1,6 @@
 const createError = (originalError, name, message, debugInfo) => {
     const error = new Error();
-
+    // TODO: use prototype assignment to identify the line of error better: https://stackoverflow.com/a/871646
     if (originalError) {
         const {
             stack: originalStack,
@@ -29,6 +29,16 @@ const createError = (originalError, name, message, debugInfo) => {
 }
 
 module.exports = {
+    failedSchemaValidation: (validationErrors, entityName, message = '') => createError(
+        null,
+        `failed-schema-validation-${entityName}`,
+        `${message || `Failed schema validation for ${entityName}`}: ${
+            validationErrors.reduce((errorString, error, index) => `#${index+1}: ${error.message}, ${errorString}`,'')
+        }`,
+        {
+            validationErrors: validationErrors
+        }
+    ),
     failedAlgoliaConnection: (originalError) => createError(
         originalError,
         'failed-algolia-connection',
