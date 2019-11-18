@@ -14,7 +14,8 @@ describe('addFacetsToBulkImportQueue', () => {
             messages: [{
                 value: {
                     STYLEID: 'styleId',
-                    CATEGORY: 'Category'
+                    CATEGORY: 'Category',
+                    DESC_ENG: 'eng-desc'
                 },
             }],
             mongoUri: 'mongo-uri',

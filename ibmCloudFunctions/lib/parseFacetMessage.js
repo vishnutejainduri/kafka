@@ -38,10 +38,9 @@ const facetMessageSchema = {
                 },
                 "DESC_FR": {
                     "type": "string",
-                    "minLength": 1,
                 }
             },
-            "required": ['CATEGORY', 'STYLEID', 'DESC_ENG', 'DESC_FR']
+            "required": ['CATEGORY', 'STYLEID', 'DESC_ENG']
         }
     },
     "required": ["value"]
