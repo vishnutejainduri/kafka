@@ -1,5 +1,5 @@
 const getCollection = require('../../lib/getCollection');
-const { addErrorHandling, log } = require('../utils');
+const { addErrorHandling, log, createLog } = require('../utils');
 const createError = require('../../lib/createError');
 
 const parseDep27FulfillMessage = function (msg) {
@@ -11,14 +11,10 @@ const parseDep27FulfillMessage = function (msg) {
 };
 
 global.main = async function (params) {
+    log(createLog.params('consumeDep27FulfillMessage', params));
+    // messages is not used, but paramsExcludingMessages is used
+    // eslint-disable-next-line no-unused-vars
     const { messages, ...paramsExcludingMessages } = params;
-    const messagesIsArray = Array.isArray(messages);
-    console.log(JSON.stringify({
-        cfName: 'consumeDep27FulfillMessage',
-        paramsExcludingMessages,
-        messagesLength: messagesIsArray ? messages.length : null,
-        messages // outputting messages as the last parameter because if it is too long the rest of the log will be truncated in logDNA
-    }));
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');

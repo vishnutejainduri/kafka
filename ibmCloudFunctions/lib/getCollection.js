@@ -13,6 +13,7 @@ let client = null;
  * @returns {MongoCollection}
  */
 async function getCollection(params, collectionName = null) {
+    // do not use this function in Promise.all: https://stackoverflow.com/q/58919867/12144949
     if (client == null) {
         if (!params.mongoUri || !params.dbName || !params.collectionName || !params.mongoCertificateBase64) {
             throw new Error('mongoUri, dbName, and collectionName are required action params. See manifest.yaml.')

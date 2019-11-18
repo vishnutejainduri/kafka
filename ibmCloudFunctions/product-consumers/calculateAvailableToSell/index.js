@@ -1,17 +1,13 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { addErrorHandling, log } = require('../utils');
+const { addErrorHandling, log, createLog } = require('../utils');
 const { handleStyleAtsUpdate, handleSkuAtsUpdate } = require('./utils');
 
 global.main = async function (params) {
+    log(createLog.params('calculateAvailableToSell', params));
+    // messages is not used, but paramsExcludingMessages is used
+    // eslint-disable-next-line no-unused-vars
     const { messages, ...paramsExcludingMessages } = params;
-    const messagesIsArray = Array.isArray(messages);
-    console.log(JSON.stringify({
-        cfName: 'calculateAvailableToSell',
-        paramsExcludingMessages,
-        messagesLength: messagesIsArray ? messages.length : null,
-        messages // outputting messages as the last parameter because if it is too long the rest of the log will be truncated in logDNA
-    }));
 
     if (!params.messages || !params.messages[0]) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array");

@@ -26,7 +26,7 @@ const getCollection = (collectionName) => {
 const mongodb = {
     MongoClient: {
         connect: async () => ({
-            db: (dbName = '') => ({
+            db: () => ({
                 collection: getCollection
             })
         })
