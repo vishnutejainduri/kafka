@@ -31,7 +31,7 @@ const mongoParametersSchema = {
     "required": ["mongoUri", "dbName", "collectionName", "mongoCertificateBase64"]
  };
 
-var ajv = new Ajv({ allErrors: true });
+const ajv = new Ajv({ allErrors: true });
 const validate = ajv.compile(mongoParametersSchema);
 
 let client = null;

@@ -1,6 +1,6 @@
 'use strict';
-var Ajv = require('ajv');
-var ajv = new Ajv({ allErrors: true });
+const Ajv = require('ajv');
+const ajv = new Ajv({ allErrors: true });
 
 const createError = require('../lib/createError');
 
