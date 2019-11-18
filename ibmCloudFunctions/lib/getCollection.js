@@ -72,6 +72,4 @@ async function getCollection(params, collectionName = null) {
     return client.db(params.dbName).collection(collection);
 }
 
-getCollection.validate = validate;
-
 module.exports = getCollection;

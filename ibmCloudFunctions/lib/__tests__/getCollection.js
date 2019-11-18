@@ -2,8 +2,6 @@ const getCollection = require('../getCollection');
 
 describe('getCollection', () => {
     describe('params validation', () => {
-        const validate = getCollection.validate;
-
         it('rejects an incomplete set of inputs', async () => {
             const emptyParams = {};
             const response = await getCollection(emptyParams).catch(error => error);
