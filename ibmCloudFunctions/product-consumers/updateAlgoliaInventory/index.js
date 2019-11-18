@@ -42,7 +42,6 @@ global.main = async function (params) {
             throw createError.failedDbConnection(originalError, params && 'updateAlgoliaInventoryCount');
         });
 
-    console.log(styleAvailabilityCheckQueue);
     const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(40).toArray()
         .catch(originalError => {
             throw createError.updateAlgoliaInventory.failedToGetRecords(originalError);
@@ -93,7 +92,7 @@ global.main = async function (params) {
             .then(() => console.log('Updated availability for styles ', styleIds))
             .catch((error) => {
                 log('Failed to send styles to Algolia.', "ERROR");
-                log(messages, "ERROR");
+                log(recordsToUpdate, "ERROR");
                 throw error;
             });
     } else {

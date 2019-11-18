@@ -1,9 +1,11 @@
 const updateAlgoliaInventory = require('../');
 const mongodb = require('../../__mocks__/mongodb');
 const algoliasearch = require('../../__mocks__/algoliasearch');
+const request = require('../../__mocks__/request-promise');
 
 jest.mock("mongodb");
 jest.mock("algoliasearch");
+jest.mock("request-promise");
 
 describe('updateAlgoliaInventory', () => {
     it('missing all parameters', async () => {
@@ -16,14 +18,18 @@ describe('updateAlgoliaInventory', () => {
             algoliaIndexName: 'index-name',
             algoliaApiKey: 'api-key',
             algoliaAppId: 'app-id',
+            productApiClientId: 'product-api-client-id',
+            productApiHost: 'product-api-host', 
             mongoUri: 'mongo-uri',
             dbName: 'db-name',
             mongoCertificateBase64: 'mong-certificate',
-            collectionName: 'styleAvailabilityCheckQueue' 
+            collectionName: 'styleAvailabilityCheckQueue',
+            stylesCollectionName: 'styles',
+            styleAvailabilityCheckQueue: 'styleAvailabilityCheckQueue'
         }
-        const response = await updateAlgoliaInventory(params).catch(console.log);
-        console.log(response);
+        let response = null;
+        await updateAlgoliaInventory(params).catch(error => { response = error });
         // returns nothing/undefined if successfully run
-        expect(response).toEqual(undefined);
+        expect(response).toEqual(null);
     });
 });

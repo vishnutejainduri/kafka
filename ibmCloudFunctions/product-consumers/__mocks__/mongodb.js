@@ -13,7 +13,13 @@ const getCollection = (collectionName) => {
         case 'updateAlgoliaStyleCount':
             return {
                 insert: async () => ({
-                    id: "success"
+                    id: 'success'
+                })
+            };
+        case 'updateAlgoliaInventoryCount':
+            return {
+                insert: async () => ({
+                    id: 'success'
                 })
             };
         case 'stores':
@@ -22,20 +28,27 @@ const getCollection = (collectionName) => {
             }; 
         case 'skus':
             return {
-                updateOne: async ({ _id }) => ({ _id })
+                updateOne: async ({ _id }) => ({ _id }),
+                findOne: async (params) => ({ _id: 'success' }),
             }; 
         case 'styleAvailabilityCheckQueue':
             return {
-                updateOne: async ({ _id }) => ({ _id })
+                updateOne: async ({ _id }) => ({ _id }),
+                find: (params) => ({ 
+                  limit: (params) => ({
+                    toArray: async (params) => ([{ _id: 'success', styleId: 'success' }]) 
+                  })
+                }),
+                deleteMany: async ({ _id }) => ({})
             }; 
         case 'styles':
             return {
-                updateOne: async ({ _id }) => ({ _id })
+                updateOne: async ({ _id }) => ({ _id }),
+                findOne: async (params) => ({ _id: 'success', styleId: 'success', ats: [] }),
             }; 
         default:
             return {
-                findOne: async (params) => (params._id === "10" ? null : {}),
-                find: async (params) => (params._id === "10" ? null : {}),
+                findOne: async (params) => (params._id === '10' ? null : {}),
                 updateOne: async () => ({})
             }
     }
