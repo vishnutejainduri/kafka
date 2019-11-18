@@ -1,4 +1,4 @@
-const { parseStyleMessage, filterStyleMessages } = require('../lib/parseStyleMessage');
+const { parseStyleMessage, filterStyleMessages } = require('../../../lib/parseStyleMessage');
 
 const testData = {
     "key": null,

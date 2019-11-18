@@ -24,7 +24,8 @@ const getCollection = (collectionName) => {
             };
         case 'stores':
             return {
-                updateOne: async ({ _id }) => ({ _id })
+                updateOne: async ({ _id }) => ({ _id }),
+                findOne: async (params) => ({ _id: 'success' }),
             }; 
         case 'skus':
             return {
