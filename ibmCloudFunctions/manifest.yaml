@@ -254,7 +254,7 @@ packages:
         inputs:
           isJSONData: true
           topic: stores-connect-jdbc
-      storesfulfill-trigger:
+      storefulfill-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
           isJSONData: true
@@ -307,9 +307,9 @@ packages:
       stores-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-stores-message
         trigger: stores-trigger
-      storesfulfill-rule:
+      storefulfill-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-storesfulfill-message
-        trigger: storesfulfill-trigger
+        trigger: storefulfill-trigger
       dep27fulfill-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-dep27fulfill-message
         trigger: dep27fulfill-trigger
