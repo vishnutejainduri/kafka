@@ -4,7 +4,7 @@ const mongodb = require('../../__mocks__/mongodb');
 jest.mock("mongodb");
 
 describe('consumeThresholdMessage', () => {
-    it('missing all parameters', async () => {
+    it('missing all parameters; should fail', async () => {
         let response = null;
         await consumeThresholdMessage().catch(error => { response = error});
         expect(response instanceof Error).toBe(true);
@@ -27,7 +27,7 @@ describe('consumeThresholdMessage', () => {
             stylesCollectionName: 'styles',
             styleAvailabilityCheckQueue: 'styleAvailabilityCheckQueue',
         }
-        const response = await consumeThresholdMessage(params).catch(console.log);
+        const response = await consumeThresholdMessage(params);
         // returns nothing/undefined if successfully run
         expect(response).toEqual(undefined);
     });

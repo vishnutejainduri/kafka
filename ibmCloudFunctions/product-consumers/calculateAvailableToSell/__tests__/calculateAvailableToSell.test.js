@@ -20,7 +20,7 @@ const increaseAtsTestData = {
 };
 
 describe('calculateAvailableToSell', () => {
-    it('missing all parameters', async () => {
+    it('missing all parameters; should fail', async () => {
         let response = null;
         await calculateAvailableToSell().catch(error => { response = error});
         expect(response instanceof Error).toBe(true);
@@ -37,14 +37,14 @@ describe('calculateAvailableToSell', () => {
             storesCollectionName: 'stores',
             styleAvailabilityCheckQueue: 'styleAvailabilityCheckQueue'
         }
-        const response = await calculateAvailableToSell(params).catch(console.log);
+        const response = await calculateAvailableToSell(params);
         // returns nothing/undefined if successfully run
         expect(response).toEqual(undefined);
     });
 });
 
 describe('handleSyleAtsUpdate', () => {
-    it('missing all params', () => {
+    it('missing all params; should fail', () => {
         const atsData = {};
         const ats = [];
         const threshold = 0;
@@ -63,7 +63,7 @@ describe('handleSyleAtsUpdate', () => {
 });
 
 describe('handleSkuAtsUpdate', () => {
-    it('missing all params', () => {
+    it('missing all params; should fail', () => {
         const atsData = {};
         const ats = [];
 

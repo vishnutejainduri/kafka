@@ -4,7 +4,7 @@ const mongodb = require('../../__mocks__/mongodb');
 jest.mock("mongodb");
 
 describe('consumeStoresMessage', () => {
-    it('missing all parameters', async () => {
+    it('missing all parameters; should fail', async () => {
         let response = null;
         await consumeStoresMessage().catch(error => { response = error});
         expect(response instanceof Error).toBe(true);
@@ -40,7 +40,7 @@ describe('consumeStoresMessage', () => {
             mongoCertificateBase64: 'mong-certificate',
             collectionName: 'stores'
         }
-        const response = await consumeStoresMessage(params).catch(console.log);
+        const response = await consumeStoresMessage(params);
         // returns nothing/undefined if successfully run
         expect(response).toEqual(undefined);
     });

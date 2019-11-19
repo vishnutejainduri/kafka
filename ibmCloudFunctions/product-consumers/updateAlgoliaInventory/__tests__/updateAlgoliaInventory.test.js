@@ -8,7 +8,7 @@ jest.mock("algoliasearch");
 jest.mock("request-promise");
 
 describe('updateAlgoliaInventory', () => {
-    it('missing all parameters', async () => {
+    it('missing all parameters; should fail', async () => {
         let response = null;
         await updateAlgoliaInventory().catch(error => { response = error});
         expect(response instanceof Error).toBe(true);
@@ -28,7 +28,7 @@ describe('updateAlgoliaInventory', () => {
             styleAvailabilityCheckQueue: 'styleAvailabilityCheckQueue'
         }
         let response = null;
-        await updateAlgoliaInventory(params).catch(error => { response = error });
+        await updateAlgoliaInventory(params);
         // returns nothing/undefined if successfully run
         expect(response).toEqual(null);
     });
