@@ -50,7 +50,9 @@ global.main = async function (params) {
         if (messageFailures.length >= 1) {
             throw createError.addFacetsToBulkImportQueue.partialFailure(params.messages, messageFailures);
         } else {
-            return results;
+            return {
+                results
+            };
         }
     });
 }
