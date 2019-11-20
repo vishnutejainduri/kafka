@@ -61,7 +61,6 @@ global.main = async function (params) {
         }
     }
 
-    console.log('stuff');
     const styles = await getCollection(params)
         .catch(originalError => {
             throw createError.failedDbConnection(originalError, params && params.collectionName);
@@ -109,7 +108,6 @@ global.main = async function (params) {
         return true
     });
 
-    console.log('updates', updates);
     if (updates.length > 0) {
         await index.partialUpdateObjects(updates)
             .then(async () => {
