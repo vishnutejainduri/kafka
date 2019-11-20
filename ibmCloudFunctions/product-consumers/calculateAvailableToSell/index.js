@@ -41,7 +41,7 @@ global.main = async function (params) {
                                   return createError.calculateAvailableToSell.failedGetStore(originalError, atsData);
                               });
 
-          if (!storeData || (styleData.departmentId === "27" && !storeData.canFulfillDep27) || storeData.isOutlet) return null;
+          if (!storeData || storeData.isOutlet) return null;
 
           const styleAts = styleData.ats || [];
           const newStyleAts = handleStyleAtsUpdate(styleAts, atsData, skuData.threshold);
@@ -51,7 +51,7 @@ global.main = async function (params) {
           const newSkuAts = handleSkuAtsUpdate(skuAts, atsData);
           const skuUpdateToProcess = { $set: { ats: newSkuAts } };
 
-          if (storeData.canOnlineFulfill) {
+        if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27")) {
             const styleOnlineAts = styleData.onlineAts || [];
             const newStyleOnlineAts = handleStyleAtsUpdate(styleOnlineAts, atsData, skuData.threshold);
             styleUpdateToProcess['$set']['onlineAts'] = newStyleOnlineAts;
