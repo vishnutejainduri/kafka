@@ -110,10 +110,7 @@ global.main = async function (params) {
 
     if (updates.length > 0) {
         await index.partialUpdateObjects(updates)
-            .then(async () => {
-                await updateAlgoliaPriceCount.insert({ batchSize: updates.length });
-                return params;
-            })
+            .then(() => updateAlgoliaPriceCount.insert({ batchSize: updates.length }))
             .catch((error) => {
                 console.error('Failed to send prices to Algolia.');
                 error.debugInfo = {
@@ -123,9 +120,12 @@ global.main = async function (params) {
                 throw error;
         });
     }
+
     if (messageFailures.length > 0) {
         throw createError.updateAlgoliaPrice.partialFailure(params.messages, messageFailures);
     }
+
+    return params;
 };
 
 module.exports = global.main;
