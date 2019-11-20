@@ -88,6 +88,13 @@ global.main = async function (params) {
                 return null;
             }
 
+            if (update.onlineSalePrice !== priceData.onlineSalePrice && update.onlineSalePrice == priceData.onlineSalePrice) {
+              log(`HRC-978: online price unexpected discrepancy. HR price ${update.onlineSalePrice}. Mongo price ${priceData.onlineSalePrice}`);
+            }
+            if (update.inStoreSalePrice !== priceData.inStoreSalePrice && update.inStoreSalePrice == priceData.inStoreSalePrice) {
+              log(`HRC-978: in store price unexpected discrepancy. HR price ${update.inStoreSalePrice}. Mongo price ${priceData.inStoreSalePrice}`);
+            }
+
             update.currentPrice = update.onlineSalePrice || styleData.originalPrice;
             const priceString = update.currentPrice ? update.currentPrice.toString() : '';
             const priceArray = priceString.split('.');
