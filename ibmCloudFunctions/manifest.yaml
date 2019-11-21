@@ -222,7 +222,7 @@ packages:
       update-pricing-sequence:
         actions: update-algolia-price,update-sale-price
       update-inventory-sequence:
-        actions: consume-sku-inventory-message,calculate-available-to-sell
+        actions: consume-sku-inventory-message
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
