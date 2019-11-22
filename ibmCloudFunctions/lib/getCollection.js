@@ -1,6 +1,38 @@
 'use strict';
 
 const MongoClient = require('mongodb').MongoClient;
+const Ajv = require('ajv');
+
+const createError = require('./createError');
+
+const mongoParametersSchema = {
+    "$schema": "http://json-schema.org/draft-07/schema",
+    title: "getcollection",
+    description: "Parameters for obtaining a mongodb connection",
+    type: "object",
+    properties: {
+        mongoUri: {
+            type: "string",
+            minLength: 1
+        },
+        dbName: {
+            type: "string",
+            minLength: 1
+        },
+        collectionName: {
+            type: "string",
+            minLength: 1
+        },
+        mongoCertificateBase64: {
+            type: "string",
+            minLength: 1
+        },
+    },
+    "required": ["mongoUri", "dbName", "collectionName", "mongoCertificateBase64"]
+ };
+
+const ajv = new Ajv({ allErrors: true });
+const validate = ajv.compile(mongoParametersSchema);
 
 let client = null;
 
@@ -15,8 +47,13 @@ let client = null;
 async function getCollection(params, collectionName = null) {
     // do not use this function in Promise.all: https://stackoverflow.com/q/58919867/12144949
     if (client == null) {
-        if (!params.mongoUri || !params.dbName || !params.collectionName || !params.mongoCertificateBase64) {
-            throw new Error('mongoUri, dbName, and collectionName are required action params. See manifest.yaml.')
+        validate(params)
+        if (validate.errors) {
+            throw createError.failedSchemaValidation(
+                validate.errors,
+                'getCollection',
+                'MongoUri, mongoCertificateBase64, dbName, and collectionName are required action params. See manifest.yaml.'
+            )
         }
 
         const ca = [Buffer.from(params.mongoCertificateBase64, 'base64')];
