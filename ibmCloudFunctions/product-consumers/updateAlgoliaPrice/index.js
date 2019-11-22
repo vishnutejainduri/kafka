@@ -104,7 +104,7 @@ global.main = async function (params) {
     );
     
     const messageFailures = [];
-    updates = updates.filter((update, index) => {
+    updates = updates.filter((update) => {
         if (!update) {
             return false
         }

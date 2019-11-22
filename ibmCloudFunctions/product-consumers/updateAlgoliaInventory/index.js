@@ -91,7 +91,7 @@ global.main = async function (params) {
             .then(() => console.log('Updated availability for styles ', styleIds))
             .catch((error) => {
                 log('Failed to send styles to Algolia.', "ERROR");
-                log(messages, "ERROR");
+                log(params.messages, "ERROR");
                 throw error;
             });
     } else {

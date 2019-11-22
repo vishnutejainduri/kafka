@@ -195,7 +195,7 @@ module.exports = {
             'failed-to-update-style-threshold',
             `Failed to update the thresholds on a style; style data: ${styleData}.`
         ),
-        failedToUpdateSkuThreshold: (originalError, thesholdData) => createError(
+        failedToUpdateSkuThreshold: (originalError, thresholdData) => createError(
             originalError,
             'failed-to-update-sku-threshold',
             `Failed to update the thresholds on a sku; threshold data: ${thresholdData}.`

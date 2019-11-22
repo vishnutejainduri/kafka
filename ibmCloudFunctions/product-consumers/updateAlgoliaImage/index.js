@@ -95,7 +95,7 @@ global.main = async function (params) {
             ? index.partialUpdateObjects(algoliaUpdates, true)
             : Promise.resolve())
             .then(() => algoliaImageProcessingQueue.deleteMany({ _id: { $in: mediaContainerIds } }))
-            .then((result) => updateAlgoliaImageCount.insert({ batchSize: algoliaUpdates.length }))
+            .then(() => updateAlgoliaImageCount.insert({ batchSize: algoliaUpdates.length }))
             .then((result) => console.log('deleted from queue: ' + result.deletedCount))
             .then(() => console.log('Updated images for containers ', mediaContainerIds));
     });
