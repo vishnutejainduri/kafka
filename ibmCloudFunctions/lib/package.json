@@ -11,6 +11,7 @@
     "license": "ISC",
     "dependencies": {
         "ajv": "^6.10.2",
-        "mongodb": "^3.3.4"
+        "mongodb": "3.3.4",
+        "saslprep": "1.0.3"
     }
 }
