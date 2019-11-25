@@ -29,10 +29,9 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const [styles, algoliaDeleteCreateQueue] = await Promise.all([
-        getCollection(params),
-        getCollection(params, params.algoliaDeleteCreateQueue)
-    ]);
+    const styles = await getCollection(params);
+    const algoliaDeleteCreateQueue = await getCollection(params, params.algoliaDeleteCreateQueue);
+
     return Promise.all(params.messages
         .filter(filterStyleBasicMessage)
         .map(parseStyleBasicMessage)
