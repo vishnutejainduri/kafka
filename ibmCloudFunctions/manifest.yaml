@@ -221,17 +221,11 @@ packages:
       add-facets-to-bulk-import-queue-with-retry:
         location: ./product-consumers/addFacetsToBulkImportQueueWithRetry/dist/bundle.js
         conductor: true
-        memorySize: 512
-        timeout: 600000
     sequences:
       update-pricing-sequence:
         actions: update-algolia-price,update-sale-price
-        memorySize: 512
-        timeout: 600000
       update-inventory-sequence:
         actions: consume-sku-inventory-message,calculate-available-to-sell
-        memorySize: 512
-        timeout: 600000
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
