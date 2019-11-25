@@ -17,13 +17,18 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const [skus, styles, styleAvailabilityCheckQueue] = await Promise.all([
-        getCollection(params),
-        getCollection(params, params.stylesCollectionName),
-        getCollection(params, params.styleAvailabilityCheckQueue)
-    ]).catch(originalError => {
+    const skus = await getCollection(params)
+      .catch(originalError => {
         throw createError.failedDbConnection(originalError);
-    });
+      });
+    const styles = await getCollection(params, params.stylesCollectionName)
+      .catch(originalError => {
+        throw createError.failedDbConnection(originalError);
+      });
+    const styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue)
+      .catch(originalError => {
+        throw createError.failedDbConnection(originalError);
+      });
 
     return Promise.all(params.messages
         .map(addErrorHandling(parseThresholdMessage))

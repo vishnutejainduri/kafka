@@ -16,15 +16,19 @@ global.main = async function (params) {
 
     if (index === null) {
         client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+        client.setTimeouts({
+            connect: 600000,
+            read: 600000,
+            write: 600000
+        });
         index = client.initIndex(params.algoliaIndexName);
     }
 
-    const [algoliaDeleteCreateQueue, styles, createAlgoliaStylesCount, deleteAlgoliaStylesCount] = await Promise.all([
-        getCollection(params),
-        getCollection(params, params.stylesCollectionName),
-        getCollection(params, 'createAlgoliaStylesCount'),
-        getCollection(params, 'deleteAlgoliaStylesCount')
-    ]);
+    const algoliaDeleteCreateQueue = await getCollection(params);
+    const styles = await getCollection(params, params.stylesCollectionName);
+    const createAlgoliaStylesCount = await getCollection(params, 'createAlgoliaStylesCount');
+    const deleteAlgoliaStylesCount = await getCollection(params, 'deleteAlgoliaStylesCount')
+
     const recordsToCheck = await algoliaDeleteCreateQueue.find().sort({"insertionTime":1}).limit(200).toArray();
 
     const recordsToDelete = recordsToCheck.filter((record) => record.delete);

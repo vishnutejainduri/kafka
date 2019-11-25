@@ -16,7 +16,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
@@ -26,7 +26,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           algoliaDeleteCreateQueue: $ALGOLIA_DELETE_CREATE_QUEUE
@@ -36,7 +36,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
           stylesCollectionName: $STYLES_COLLECTION_NAME
@@ -47,7 +47,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $PRICES_COLLECTION_NAME
           topicName: prices-connect-jdbc
@@ -56,7 +56,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $STORES_COLLECTION_NAME
           topicName: stores-connect-jdbc
@@ -65,7 +65,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           mongoUri: $MONGO_URI
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
@@ -77,7 +77,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           mongoUri: $MONGO_URI
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
@@ -89,7 +89,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
           topicName: skus-connect-jdbc
@@ -98,7 +98,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 512
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $INVENTORY_COLLECTION_NAME
           stylesCollectionName: $STYLES_COLLECTION_NAME
@@ -111,7 +111,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 512
-          timeout: 120000
+          timeout: 600000
         inputs:
           mongoUri: $MONGO_URI
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
@@ -127,7 +127,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
@@ -136,7 +136,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           topicName: styles-basic-connect-jdbc
           stylesCollectionName: $STYLES_COLLECTION_NAME
@@ -146,7 +146,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
           stylesCollectionName: $STYLES_COLLECTION_NAME
@@ -155,7 +155,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 512
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
@@ -165,7 +165,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           topicName: inventory-connect-jdbc-SKUINVENTORY
           stylesCollectionName: $STYLES_COLLECTION_NAME
@@ -178,7 +178,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
@@ -187,7 +187,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $MEDIAS_COLLECTION_NAME
           topicName: medias-connect-jdbc
@@ -196,7 +196,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $MEDIA_CONTAINERS_COLLECTION_NAME
           topicName: media-containers-connect-jdbc
@@ -205,7 +205,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 128
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
           topicName: media-containers-connect-jdbc
@@ -214,18 +214,24 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 512
-          timeout: 120000
+          timeout: 600000
         inputs:
           collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
           topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
       add-facets-to-bulk-import-queue-with-retry:
         location: ./product-consumers/addFacetsToBulkImportQueueWithRetry/dist/bundle.js
         conductor: true
+        memorySize: 512
+        timeout: 600000
     sequences:
       update-pricing-sequence:
         actions: update-algolia-price,update-sale-price
+        memorySize: 512
+        timeout: 600000
       update-inventory-sequence:
         actions: consume-sku-inventory-message,calculate-available-to-sell
+        memorySize: 512
+        timeout: 600000
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed

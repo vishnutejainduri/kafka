@@ -57,11 +57,15 @@ async function getCollection(params, collectionName = null) {
         }
 
         const ca = [Buffer.from(params.mongoCertificateBase64, 'base64')];
+        // timeout settings: https://mongodb.github.io/node-mongodb-native/2.0/reference/faq/
         const options = {
             ssl: true,
             sslValidate: true,
             sslCA: ca,
-            useNewUrlParser: true
+            useNewUrlParser: true,
+            connectTimeoutMS: 600000, 
+            socketTimeoutMS: 600000,
+            maxTimeMS: 600000
         };
 
         client = await MongoClient.connect(params.mongoUri, options).catch((err) => {
