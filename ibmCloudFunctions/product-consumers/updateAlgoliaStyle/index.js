@@ -29,7 +29,12 @@ global.main = async function (params) {
 
     if (index === null) {
         try {
-            client = algoliasearch(params.algoliaAppId, params.algoliaApiKey)
+            client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+            client.setTimeouts({
+                connect: 600000,
+                read: 600000,
+                write: 600000
+            });
             index = client.initIndex(params.algoliaIndexName);
         }
         catch (originalError) {
