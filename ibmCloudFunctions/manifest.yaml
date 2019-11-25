@@ -214,7 +214,7 @@ packages:
         runtime: nodejs:10
         limits:
           memorySize: 512
-          timeout: 200000
+          timeout: 600000
         inputs:
           collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
           topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
