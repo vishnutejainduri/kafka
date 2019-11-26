@@ -1,0 +1,21 @@
+{
+  "name": "kafka",
+  "version": "1.0.0",
+  "description": "Populate .env with the following variables:",
+  "main": "getConnectors.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "eslint": "^6.7.1",
+    "request": "^2.88.0",
+    "shelljs": "^0.8.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "pretest": "eslint . "
+  },
+  "author": "",
+  "license": "ISC"
+}
