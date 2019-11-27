@@ -45,7 +45,7 @@ global.main = async function (params) {
                                   return createError.calculateAvailableToSell.failedGetStore(originalError, atsData);
                               });
 
-          if (!storeData || storeData.isOutlet) return null;
+          if (!storeData || !skuData || !styleData || storeData.isOutlet) return null;
 
           const styleAts = styleData.ats || [];
           const newStyleAts = handleStyleAtsUpdate(styleAts, atsData, skuData.threshold);
