@@ -1,7 +1,6 @@
 #!/bin/bash
 echo ">>> Logging into IBM Cloud…"
-DEPLOYER_API_KEY=$1
-ibmcloud login --apikey $DEPLOYER_API_KEY -a api.ng.bluemix.net -o "Myplanet Harry Rosen" -s "Harry Rosen Dev Dallas"
+ibmcloud login --apikey $DEPLOYER_API_KEY -a cloud.ibm.com -r us-south -o "Myplanet Ltd" -s "Platform Dev Dallas"
 echo ">>> Contents Of Manifest File:"
 cat manifest.yaml
 echo ">>> Currently Deployed Packages:"
