@@ -15,8 +15,6 @@ echo ">>> Currently Deployed Triggers:"
 ibmcloud fn trigger list
 echo ">>> Currently Deployed Rules:"
 ibmcloud fn rule list
-echo ">>> Building Actions packaged as modules:"
-./build.sh
 echo ">>> Deploying Actions Using WhiskDeploy…"
 ALGOLIA_APP_ID=$ALGOLIA_APP_ID \
   ALGOLIA_API_KEY=$ALGOLIA_API_KEY \
