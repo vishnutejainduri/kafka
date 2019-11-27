@@ -1,8 +1,4 @@
 #!/bin/bash
-echo ">>> Checking installed version of IBM Cloud CLI…"
-ibmcloud –-version
-echo ">>> Installing the Cloud Functions plug-in…"
-ibmcloud plugin install cloud-functions
 echo ">>> Logging into IBM Cloud…"
 ibmcloud login --apikey $DEPLOYER_API_KEY -a api.ng.bluemix.net -o "Myplanet Harry Rosen" -s "Harry Rosen Dev Dallas"
 echo ">>> Contents Of Manifest File:"
