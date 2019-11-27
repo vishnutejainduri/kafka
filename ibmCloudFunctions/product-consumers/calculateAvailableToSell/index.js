@@ -10,24 +10,24 @@ global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;
 
     if (!params.messages || !params.messages[0]) {
-        throw new Error("Invalid arguments. Must include 'messages' JSON array");
+        return { error: new Error("Invalid arguments. Must include 'messages' JSON array") };
     }
 
     const styles = await getCollection(params, params.stylesCollectionName)
         .catch(originalError => {
-            throw createError.failedDbConnection(originalError);
+            return { error: createError.failedDbConnection(originalError) };
         });
     const skus = await getCollection(params, params.skusCollectionName)
         .catch(originalError => {
-            throw createError.failedDbConnection(originalError);
+            return { error: createError.failedDbConnection(originalError) };
         });
     const stores = await getCollection(params, params.storesCollectionName)
         .catch(originalError => {
-            throw createError.failedDbConnection(originalError);
+            return { error: createError.failedDbConnection(originalError) };
         });
     const styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue)
         .catch(originalError => {
-            throw createError.failedDbConnection(originalError);
+            return { error: createError.failedDbConnection(originalError) };
         });
 
     return Promise.all(params.messages
@@ -89,11 +89,11 @@ global.main = async function (params) {
             e.failedUpdatesErrors = errors;
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
 
-            throw e;
+            return { error: e };
         }
     })
     .catch(originalError => {
-        throw createError.calculateAvailableToSell.failed(originalError, paramsExcludingMessages);
+        return { error: createError.calculateAvailableToSell.failed(originalError, paramsExcludingMessages) }
     });
 };
 

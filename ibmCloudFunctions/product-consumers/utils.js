@@ -2,14 +2,21 @@ const addErrorHandling = (fn, createError) => {
     if (Promise.resolve(fn) == fn || fn.constructor.name === 'AsyncFunction') {
         return async arg => {
             if (arg instanceof Error) return arg;
-            return fn(arg).catch(error => createError ? createError(error, arg) : error);
+            return fn(arg)
+                .then(response => {
+                    if (response && response.error) throw new Error(response.error);
+                    return response;
+                })
+                .catch(error => createError ? createError(error, arg) : error);
         }
     }
 
     return arg => {
         if (arg instanceof Error) return arg;
         try {
-            return fn(arg);
+            const result = fn(arg);
+            if (result && result.error) throw new Error(result.error);
+            return result;
         } catch(error) {
             return createError ? createError(error, arg) : error;
         }

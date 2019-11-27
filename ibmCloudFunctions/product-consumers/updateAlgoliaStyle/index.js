@@ -12,19 +12,19 @@ global.main = async function (params) {
     log(createLog.params('updateAlgoliaStyle', params));
 
     if (!params.algoliaIndexName) {
-        throw new Error('Requires an Algolia index.');
+        return { error: new Error('Requires an Algolia index.') };
     }
 
     if (!params.algoliaApiKey) {
-        throw new Error('Requires an API key for writing to Algolia.');
+        return { error: new Error('Requires an API key for writing to Algolia.') };
     }
 
     if (!params.algoliaAppId) {
-        throw new Error('Requires an App ID for writing to Algolia.');
+        return { error: new Error('Requires an App ID for writing to Algolia.') };
     }
 
     if (!params.topicName) {
-        throw new Error('Requires an Event Streams topic.');
+        return { error: new Error('Requires an Event Streams topic.') };
     }
 
     if (index === null) {
@@ -38,18 +38,18 @@ global.main = async function (params) {
             index = client.initIndex(params.algoliaIndexName);
         }
         catch (originalError) {
-            throw createError.failedAlgoliaConnection(originalError);
+            return { error: createError.failedAlgoliaConnection(originalError) };
         }
     }
 
     const styles = await getCollection(params)
         .catch(originalError => {
-            throw createError.failedDbConnection(originalError, params && params.collectionName);
+            return { error: createError.failedDbConnection(originalError, params && params.collectionName) };
         });
 
     const updateAlgoliaStyleCount = await getCollection(params, 'updateAlgoliaStyleCount')
         .catch(originalError => {
-            throw createError.failedDbConnection(originalError, 'updateAlgoliaStyleCount');
+            return { error: createError.failedDbConnection(originalError, 'updateAlgoliaStyleCount') };
         });
 
     let records = await Promise.all(params.messages
@@ -88,7 +88,7 @@ global.main = async function (params) {
             .catch((error) => {
                 log('Failed to send styles to Algolia.', "ERROR");
                 error.params = params;
-                throw error;
+                return { error };
             });
     }
 }

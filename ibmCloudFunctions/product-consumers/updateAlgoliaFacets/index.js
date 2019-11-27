@@ -11,7 +11,7 @@ global.main = async function (params) {
     }));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
-        throw new Error('Requires Algolia configuration. See manifest.yml');
+        return { error: new Error('Requires Algolia configuration. See manifest.yml') };
     }
 
     if (index === null) {

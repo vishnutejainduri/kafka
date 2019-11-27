@@ -17,16 +17,16 @@ global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;
 
     if (!params.topicName) {
-        throw new Error('Requires an Event Streams topic.');
+        return { error: new Error('Requires an Event Streams topic.') };
     }
 
     if (!params.messages || !params.messages[0] || !params.messages[0].value) {
-        throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
+        return { error: new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field") };
     }
 
     const stores = await getCollection(params)
       .catch(originalError => {
-          throw createError.failedDbConnection(originalError);
+          return { error: createError.failedDbConnection(originalError) };
       });
     return Promise.all(params.messages
         .filter(addErrorHandling((msg) => msg.topic === params.topicName))
@@ -44,11 +44,11 @@ global.main = async function (params) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
             e.failedUpdatesErrors = errors;
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            throw e;
+            return { error: e };
         }
     })
     .catch(originalError => {
-        throw createError.consumeDep27FulfillMessage.failed(originalError, paramsExcludingMessages);
+        return { error: createError.consumeDep27FulfillMessage.failed(originalError, paramsExcludingMessages) };
     });
 }
 
