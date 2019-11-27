@@ -20,9 +20,7 @@ const increaseAtsTestData = {
 
 describe('calculateAvailableToSell', () => {
     it('missing all parameters; should fail', async () => {
-        let response = null;
-        await calculateAvailableToSell().catch(error => { response = error});
-        expect(response instanceof Error).toBe(true);
+        expect((await calculateAvailableToSell({})).error instanceof Error).toBe(true);
     });
     it('correct message to update ats', async () => {
         const params = {
