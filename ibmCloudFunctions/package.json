@@ -15,11 +15,19 @@
   "devDependencies": {
     "eslint": "^6.6.0",
     "husky": "^3.0.9",
-    "jest": "^24.9.0"
+    "jest": "^24.9.0",
+    "jest-junit": "^9.0.0"
   },
   "husky": {
     "hooks": {
       "pre-push": "npm test"
     }
-  }
+  },
+  "jest": {
+    "reporters": [
+      "default",
+      "jest-junit"
+    ]
+  },
+  "dependencies": {}
 }
