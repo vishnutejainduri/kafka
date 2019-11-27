@@ -17,7 +17,7 @@ function getDeleteConnector(kubeHost, token) {
         };
     
         return new Promise(function(resolve, reject) {
-            console.log("Deleting: ", connectorName);
+            console.log("Deleting connector: ", connectorName);
             const request = https.request(options, function(res){
                 let body = "";
                 res.on('data', function(data) {
@@ -25,9 +25,11 @@ function getDeleteConnector(kubeHost, token) {
                 });
                 res.on('end', function() {
                     //here we have the full response, html or json object
+                    console.log(connectorName, " connector successfully deleted.");
                     resolve(JSON.parse(body));
                 })
                 res.on('error', function(e) {
+                    console.log("Received an error while deleting connector: ", connectorName);
                     reject(e);
                 });
             });

@@ -14,7 +14,11 @@
   },
   "devDependencies": {},
   "scripts": {
-    "pretest": "eslint . "
+    "pretest": "eslint . ",
+    "connectors:getAll:dev": "node debugConnectors getAll dev",
+    "connectors:deleteAll:dev": "node debugConnectors deleteAll dev",
+    "connectors:getAll:prod": "node debugConnectors getAll prod",
+    "connectors:deleteAll:prod:iknowhatiamdoing": "node debugConnectors deleteAll prod"
   },
   "author": "",
   "license": "ISC"

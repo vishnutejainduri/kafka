@@ -6,9 +6,9 @@ const env = process.argv[3];
 
 function debug(_command, _env) {
     switch (_command) {
-        case 'get':
+        case 'getAll':
             return getConnectorNames(_env);
-        case 'deleteAllConnectors':
+        case 'deleteAll':
             return deleteConnectors(_env, getConnectorNames(_env))
     }
 }
