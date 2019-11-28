@@ -105,6 +105,11 @@ module.exports = {
             originalError,
             'failed-style-price-updates',
             `Failed to run price updates for a style; style data: ${styleData}.`
+        ),
+        failedBulkAtsInsert: (originalError, styleData) => new CustomError(
+            originalError,
+            'failed-bulk-ats-insert',
+            `Failed to insert a style for bulk ats recalculation; style data: ${styleData}.`
         )
     },
     calculateAvailableToSell: {

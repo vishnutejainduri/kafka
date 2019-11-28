@@ -22,15 +22,27 @@ global.main = async function (params) {
       .catch(originalError => {
           return { error: createError.failedDbConnection(originalError) };
       });
+    const bulkAtsRecalculateQueue = await getCollection(params, params.bulkAtsRecalculateQueue)
+      .catch(originalError => {
+          return { error: createError.failedDbConnection(originalError) };
+      });
     return Promise.all(params.messages
         .filter(addErrorHandling((msg) => msg.topic === params.topicName))
         .filter(addErrorHandling(filterStyleMessages))
         .map(addErrorHandling(parseStyleMessage))
         .map(addErrorHandling((styleData) => styles.findOne({ _id: styleData._id })
             .then((existingDocument) => (existingDocument && existingDocument.effectiveDate)
-                ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lte: styleData.effectiveDate } }, { $set: styleData })
+                  ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lte: styleData.effectiveDate } }, { $set: styleData })
                     .then((result) => result.modifiedCount > 0
                         ? prices.updateOne({ _id: styleData._id }, { $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice } }, { upsert: true })
+                          .then(() => {
+                            if (existingDocument.departmentId && existingDocument.departmentId !== styleData.departmentId) {
+                              bulkAtsRecalculateQueue.insertOne({ _id: styleData._id })
+                              .catch(originalError => {
+                                  return { error: createError.consumeCatalogMessage.failedBulkAtsInsert(originalError, styleData) };
+                              })
+                            }
+                          })
                           .catch(originalError => {
                               return { error: createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData) };
                           })
@@ -39,7 +51,7 @@ global.main = async function (params) {
                     .catch(originalError => {
                         return { error: createError.consumeCatalogMessage.failedStyleUpdates(originalError, styleData) };
                     })
-                : styles.updateOne({ _id: styleData._id }, { $set: styleData }, { upsert: true })
+                  : styles.updateOne({ _id: styleData._id }, { $set: styleData }, { upsert: true })
                     .then(() => prices.updateOne({ _id: styleData._id }, { $set:{ _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice } }, { upsert: true })
                                 .catch(originalError => {
                                     return { error: createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData) };

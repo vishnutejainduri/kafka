@@ -1,5 +1,9 @@
 const { parseStyleMessage, filterStyleMessages } = require('../../../lib/parseStyleMessage');
 
+const consumeCatalogMessage = require('../');
+
+jest.mock("mongodb");
+
 const testData = {
     "key": null,
     "offset": 139188,
@@ -170,3 +174,63 @@ describe('filterStyleMessages', () => {
         expect(actual3.length).toBe(1);
     });
 })
+
+describe('consumeCatalogMessage', () => {
+    it('missing all parameters; should fail', async () => {
+        expect((await consumeCatalogMessage({})).error instanceof Error).toBe(true);
+    });
+    it('correct message to update style', async () => {
+        const params = {
+            topicName: 'styles-connect-jdbc-CATALOG',
+            messages: [{
+                topic: 'styles-connect-jdbc-CATALOG',
+                value: {
+                    STYLEID: '20000000',
+                    SUBDEPT: 'subDept',
+                    BRAND_NAME_ENG: 'brandNameEng',
+                    BRAND_NAME_FR: 'brandNameFr',
+                    DESC_ENG: 'descEng',
+                    DESC_FR: 'descFr',
+                    MARKET_DESC_ENG: 'marketDescEng',
+                    MARKET_DESC_ENG2: 'marketDescEng2',
+                    MARKET_DESC_FR: 'marketDescFr',
+                    MARKET_DESC_FR2: 'marketDescFr2',
+                    DETAIL_DESC3_ENG: 'detailDescEng',
+                    DETAIL_DESC3_FR: 'detailDescFr',
+                    FABRICANDMATERIAL_EN: 'fabricAndMaterialEn',
+                    FABRICANDMATERIAL_FR: 'fabricAndMaterialFr',
+                    SIZE_DESC_ENG: 'sizeDescEng',
+                    SIZE_DESC_FR: 'sizeDescFr',
+                    CAREINSTRUCTIONS_EN: 'careInstructionsEn',
+                    CAREINSTRUCTIONS_FR: 'careInstructionsFr',
+                    ADVICE_EN: 'adviceEn',
+                    ADVICE_FR: 'adviceFr',
+                    COLOUR_DESC_ENG: 'colourDescEng',
+                    COLOUR_DESC_FR: 'colourDescFr',
+                    CATAGORY: 'catagory',
+                    CATAGORY_LEVEL_1A: 'catagoryLevel1A',
+                    CATAGORY_LEVEL_2A: 'catagoryLevel2A',
+                    WEBSTATUS: 'webStatus',
+                    SEASON_CD: 'seasonCd',
+                    COLORID: 'colorId',
+                    UNIT_PRICE: 0.0,
+                    VSN: 'vsn',
+                    SUBCLASS: 341,
+                    UPD_TIMESTAMP: 1000000000000,
+                    EFFECTIVE_DATE: 1000000000000,
+                    TRUE_COLOURGROUP_EN: 'trueColourGroupEn',
+                    TRUE_COLOURGROUP_FR: 'trueColourGroupFr'
+                }
+            }],
+            mongoUri: 'mongo-uri',
+            dbName: 'db-name',
+            mongoCertificateBase64: 'mong-certificate',
+            collectionName: 'styles',
+            pricesCollectionName: 'prices',
+            bulkAtsRecalculateQueue: 'bulkAtsRecalculateQueue'
+        };
+        const response = await consumeCatalogMessage(params);
+        // returns nothing/undefined if successfully run
+        expect(response).toEqual(undefined);
+    });
+});
