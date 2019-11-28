@@ -79,16 +79,33 @@ module.exports = {
             originalError,
             'failed-updates',
             `Failed to run inventory updates on style and inventory; inventory data: ${inventoryData}.`
-            ),
-            partialFailure: (messages, messageFailures) => new CustomError(
-                null,
-                'partial-failure-consuming-sku-inventory-messages',
-                `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
-                {
-                    messages,
-                    messageFailures
-                }
-            )
+        ),
+        partialFailure: (messages, messageFailures) => new CustomError(
+            null,
+            'partial-failure-consuming-sku-inventory-messages',
+            `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
+            {
+                messages,
+                messageFailures
+            }
+        )
+    },
+    consumeCatalogMessage: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-catalog-message',
+            `Failure in run of consume catalog message; params: ${params}.`
+        ),
+        failedStyleUpdates: (originalError, styleData) => new CustomError(
+            originalError,
+            'failed-style-updates',
+            `Failed to run styles updates; style data: ${styleData}.`
+        ),
+        failedPriceUpdates: (originalError, styleData) => new CustomError(
+            originalError,
+            'failed-style-price-updates',
+            `Failed to run price updates for a style; style data: ${styleData}.`
+        )
     },
     calculateAvailableToSell: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(

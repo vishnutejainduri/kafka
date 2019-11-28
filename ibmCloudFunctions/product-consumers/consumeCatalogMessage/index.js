@@ -1,11 +1,10 @@
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
+const { addErrorHandling, log, createLog } = require('../utils');
+const createError = require('../../lib/createError');
 const getCollection = require('../../lib/getCollection');
 
 global.main = async function (params) {
-    console.log(JSON.stringify({
-        cfName: 'consumeCatalogMessage',
-        params
-    }));
+    log(createLog.params('consumeCatalogMessage', params));
 
     if (!params.topicName) {
         return { error: new Error('Requires an Event Streams topic.') };
@@ -15,21 +14,40 @@ global.main = async function (params) {
         return { error: new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field") }
     }
 
-    const styles = await getCollection(params);
-    const prices = await getCollection(params, params.pricesCollectionName);
+    const styles = await getCollection(params)
+      .catch(originalError => {
+          return { error: createError.failedDbConnection(originalError) };
+      });
+    const prices = await getCollection(params, params.pricesCollectionName)
+      .catch(originalError => {
+          return { error: createError.failedDbConnection(originalError) };
+      });
     return Promise.all(params.messages
-        .filter((msg) => msg.topic === params.topicName)
-        .filter(filterStyleMessages)
-        .map(parseStyleMessage)
-        .map((styleData) => styles.findOne({ _id: styleData._id })
+        .filter(addErrorHandling((msg) => msg.topic === params.topicName))
+        .filter(addErrorHandling(filterStyleMessages))
+        .map(addErrorHandling(parseStyleMessage))
+        .map(addErrorHandling((styleData) => styles.findOne({ _id: styleData._id })
             .then((existingDocument) => (existingDocument && existingDocument.effectiveDate)
                 ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lte: styleData.effectiveDate } }, { $set: styleData })
                     .then((result) => result.modifiedCount > 0
                         ? prices.updateOne({ _id: styleData._id }, { $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice } }, { upsert: true })
+                          .catch(originalError => {
+                              return { error: createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData) };
+                          })
                         : null
                     )
-                : styles.updateOne({ _id: styleData._id }, { $set: styleData }, { upsert: true }) // fix race condition of some kind that's happening
-                    .then(() => prices.updateOne({ _id: styleData._id }, { $set:{ _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice } }, { upsert: true }))
+                    .catch(originalError => {
+                        return { error: createError.consumeCatalogMessage.failedStyleUpdates(originalError, styleData) };
+                    })
+                : styles.updateOne({ _id: styleData._id }, { $set: styleData }, { upsert: true })
+                    .then(() => prices.updateOne({ _id: styleData._id }, { $set:{ _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice } }, { upsert: true })
+                                .catch(originalError => {
+                                    return { error: createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData) };
+                                })
+                    )
+                    .catch(originalError => {
+                        return { error: createError.consumeCatalogMessage.failedStyleUpdates(originalError, styleData) };
+                    })
             ).then(() => console.log('Updated/inserted document ' + styleData._id))
             .catch((err) => {
                 console.error('Problem with document ' + styleData._id);
@@ -44,7 +62,7 @@ global.main = async function (params) {
                 err.attemptedDocument = styleData;
                 return err;
             })
-        )
+        ))
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
@@ -53,6 +71,9 @@ global.main = async function (params) {
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
             return { error: e };
         }
+    })
+    .catch(originalError => {
+        return { error: createError.consumeCatalogMessage.failed(originalError, params) };
     });
 }
 
