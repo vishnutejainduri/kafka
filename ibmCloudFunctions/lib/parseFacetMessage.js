@@ -2,6 +2,7 @@
 const Ajv = require('ajv');
 const ajv = new Ajv({ allErrors: true });
 
+const { camelCase } = require('./utils');
 const createError = require('../lib/createError');
 
 const facetMap = {
@@ -26,7 +27,7 @@ const facetMessageSchema = {
             "properties": {
                 "CATEGORY": {
                     "type": "string",
-                    "enum": ["Category", "Fabric", "Length", "Fit", "Sleeve", "Pattern", "Cuff"]
+                    "minLength": 1,
                 },
                 "STYLEID": {
                     "type": "string",
@@ -57,7 +58,7 @@ function parseFacetMessage(msg) {
             'parseFacetMessage'
         );
     }
-    const facetName = facetMap[msg.value.CATEGORY];
+    const facetName = facetMap[msg.value.CATEGORY] || camelCase(msg.value.CATEGORY);
     return {
         _id: msg.value.STYLEID + facetName,
         id: msg.value.STYLEID + facetName,
