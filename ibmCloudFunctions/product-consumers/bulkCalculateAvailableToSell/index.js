@@ -4,30 +4,14 @@ const { addErrorHandling, log, createLog } = require('../utils');
 const { handleStyleAtsUpdate, handleSkuAtsUpdate } = require('../../lib/atsUtils');
 
 global.main = async function (params) {
-    log(createLog.params('calculateAvailableToSell', params));
+    log(createLog.params('bulkCalculateAvailableToSell', params));
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
     const { messages, ...paramsExcludingMessages } = params;
 
-    if (!params.messages || !params.messages[0]) {
-        return { error: new Error("Invalid arguments. Must include 'messages' JSON array") };
-    }
-
-    const styles = await getCollection(params, params.stylesCollectionName)
+    const bulkAtsRecalculateQueue = await getCollection(params)
         .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const skus = await getCollection(params, params.skusCollectionName)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const stores = await getCollection(params, params.storesCollectionName)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
+            return { error: createError.failedDbConnection(originalError, params && params.collectionName) };
         });
 
     return Promise.all(params.messages
