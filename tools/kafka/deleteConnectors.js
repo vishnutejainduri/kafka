@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const getKubeEnv = require('./lib/getKubeEnv');
 const getSessionToken = require('./lib/getSessionToken');
+const { retry } = require('./utils');
 
 function getDeleteConnector(kubeHost, token) {
     return function(connectorName) {
@@ -43,7 +44,7 @@ async function deleteConnectors(platformEnv, connectorNames) {
     const kubeParams = getKubeEnv(platformEnv);
     const token = await getSessionToken(kubeParams);
     const deleteConnector = getDeleteConnector(kubeParams.host, token)
-    return Promise.all(connectorNames.map(deleteConnector))
+    return Promise.all(connectorNames.map(retry(deleteConnector)))
 }
 
 module.exports = deleteConnectors;
