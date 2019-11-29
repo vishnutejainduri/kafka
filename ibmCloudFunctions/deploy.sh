@@ -1,6 +1,9 @@
 #!/bin/bash
 echo ">>> Logging into IBM Cloud…"
-ibmcloud login --apikey $1 -a cloud.ibm.com -r us-south -o $2 -s $3
+DEPLOYER_API_KEY=$1
+ORG=$2" "$3
+SPACE=$4" "$5" "$6
+ibmcloud login --apikey $DEPLOYER_API_KEY -a cloud.ibm.com -r us-south -o $ORG -s $SPACE
 echo ">>> Contents Of Manifest File:"
 cat manifest.yaml
 echo ">>> Currently Deployed Packages:"
