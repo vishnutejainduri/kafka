@@ -20,6 +20,34 @@ function retry(fn, retries = 3) {
     }
 }
 
+// TODO move utils.js to the root and import from there for all ofthe packages
+// TODO dedupe this function from ibmCloudFunctions/product-consumers/utils.js
+const addErrorHandling = (fn, createError) => {
+    if (Promise.resolve(fn) == fn || fn.constructor.name === 'AsyncFunction') {
+        return async arg => {
+            if (arg instanceof Error) return arg;
+            return fn(arg)
+                .then(response => {
+                    if (response && response.error) throw new Error(response.error);
+                    return response;
+                })
+                .catch(error => createError ? createError(error, arg) : error);
+        }
+    }
+
+    return arg => {
+        if (arg instanceof Error) return arg;
+        try {
+            const result = fn(arg);
+            if (result && result.error) throw new Error(result.error);
+            return result;
+        } catch(error) {
+            return createError ? createError(error, arg) : error;
+        }
+    };
+}
+
 module.exports = {
-    retry
+    retry,
+    addErrorHandling
 }
