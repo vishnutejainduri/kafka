@@ -154,6 +154,48 @@ module.exports = {
             `Failed to run all ats queries; inventory: ${atsData}.`
         )
     },
+    bulkCalculateAvailableToSell: {
+        failedGetStyle: (originalError, styleToRecalcAts) => new CustomError(
+            originalError,
+            'failed-get-style',
+            `Failed to get style for bulk ats update; style: ${styleToRecalcAts}.`
+        ),
+        failedGetSku: (originalError, styleToRecalcAts) => new CustomError(
+            originalError,
+            'failed-get-sku',
+            `Failed to get sku for bulk ats update; style: ${styleToRecalcAts}.`
+        ),
+        failedGetInventory: (originalError, skuData) => new CustomError(
+            originalError,
+            'failed-get-inventory',
+            `Failed to get inventory for bulk ats update; sku: ${skuData}.`
+        ),
+        failedGetStore: (originalError, inventoryData) => new CustomError(
+            originalError,
+            'failed-get-store',
+            `Failed to get store for bulk ats update; inventory: ${inventoryData}.`
+        ),
+        failedAllUpdates: (originalError, stylesToRecalcAts) => new CustomError(
+            originalError,
+            'failed-all-updates',
+            `Failed to run all bulk ats updates; style: ${stylesToRecalcAts}.`
+        ),
+        failedAllAtsUpdates: (originalError, stylesToRecalcAts) => new CustomError(
+            originalError,
+            'failed-all-ats-updates',
+            `Failed to run all bulk ats queries; style: ${stylesToRecalcAts}.`
+        ),
+        failedUpdateSkuAts: (originalError, skuData) => new CustomError(
+            originalError,
+            'failed-sku-ats-update',
+            `Failed to update sku bulk ats; sku: ${skuData}.`
+        ),
+        failedUpdateStyleAts: (originalError, styleToRecalcAts) => new CustomError(
+            originalError,
+            'failed-style-ats-update',
+            `Failed to update style bulk ats; style: ${styleToRecalcAts}.`
+        )
+    },
     consumeDep27FulfillMessage: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(
             originalError,

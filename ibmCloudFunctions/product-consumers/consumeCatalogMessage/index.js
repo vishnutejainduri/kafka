@@ -37,7 +37,7 @@ global.main = async function (params) {
                         ? prices.updateOne({ _id: styleData._id }, { $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice } }, { upsert: true })
                           .then(() => {
                             if (existingDocument.departmentId && existingDocument.departmentId !== styleData.departmentId) {
-                              bulkAtsRecalculateQueue.insertOne({ _id: styleData._id })
+                              bulkAtsRecalculateQueue.insertOne({ _id: styleData._id, insertTimestamp: styleData.effectiveDate })
                               .catch(originalError => {
                                   return { error: createError.consumeCatalogMessage.failedBulkAtsInsert(originalError, styleData) };
                               })

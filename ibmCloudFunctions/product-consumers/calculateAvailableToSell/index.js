@@ -1,7 +1,7 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { addErrorHandling, log, createLog } = require('../utils');
-const { handleStyleAtsUpdate, handleSkuAtsUpdate } = require('../../lib/atsUtils');
+const { handleStyleAtsUpdate, handleSkuAtsUpdate } = require('./utils');
 
 global.main = async function (params) {
     log(createLog.params('calculateAvailableToSell', params));
