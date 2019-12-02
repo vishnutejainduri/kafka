@@ -1,0 +1,25 @@
+{
+  "totalDebugs": 4,
+  "deleteAll": [{
+    "number": 1,
+    "date": 1575317326194,
+    "env": "dev",
+    "data": []
+  }, {
+    "number": 2,
+    "date": 1575317338586,
+    "env": "dev",
+    "data": []
+  }, {
+    "number": 4,
+    "date": 1575317484096,
+    "env": "dev",
+    "data": []
+  }],
+  "getAll": [{
+    "number": 3,
+    "date": 1575317345418,
+    "env": "dev",
+    "data": []
+  }]
+}
