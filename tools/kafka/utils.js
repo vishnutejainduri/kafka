@@ -47,7 +47,21 @@ const addErrorHandling = (fn, createError) => {
     };
 }
 
+function extractFilenameAndVersion(connectorInstanceName) {
+  let version = null;
+  let fileName = connectorInstanceName;
+  const versionMatch = connectorInstanceName.match(/(.*)-v(\d+)/);
+  if (versionMatch) {
+    version = Number(versionMatch[2]);
+    fileName = versionMatch[1]
+  }
+  return {
+    fileName,
+    version
+  }
+}
 module.exports = {
     retry,
-    addErrorHandling
+    addErrorHandling,
+    extractFilenameAndVersion
 }
