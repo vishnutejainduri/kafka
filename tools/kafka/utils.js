@@ -60,8 +60,18 @@ function extractFilenameAndVersion(connectorInstanceName) {
     version
   }
 }
+
+function getConnectorObject(fileName) {
+  try {
+    return require(`../../kafkaConnectDeployment/connectors/${fileName}`);
+  } catch (error) {
+    return null;
+  }
+}
+
 module.exports = {
     retry,
     addErrorHandling,
-    extractFilenameAndVersion
+    extractFilenameAndVersion,
+    getConnectorObject
 }

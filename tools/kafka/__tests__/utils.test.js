@@ -1,4 +1,4 @@
-const { retry, extractFilenameAndVersion } = require('../utils');
+const { retry, extractFilenameAndVersion, getConnectorObject } = require('../utils');
 
 describe('retry', () => {
     it('retries if the promise fails fewer times than the specified retries', async () => {
@@ -43,4 +43,21 @@ describe('getConnectorFilenameAndVersion', () => {
     const { version } = extractFilenameAndVersion(instanceName);
     expect(version).toEqual(expectedVersion);
   });
+});
+
+describe('getConnectorObject', () => {
+    it('returns an object with the same name if a valid connector name is passed to it', () => {
+      const validName = 'style-basic-jdbc-source-v16';
+      const { fileName } = extractFilenameAndVersion(validName);
+      const object = getConnectorObject(fileName);
+      expect(typeof object === 'object').toEqual(true);
+      expect(object.name).toEqual(fileName);
+    });
+
+    it('returns null if a invalid connector name is passed to it', () => {
+      const validName = '';
+      const { fileName } = extractFilenameAndVersion(validName);
+      const object = getConnectorObject(fileName);
+      expect(object).toEqual(null);
+    });
 });
