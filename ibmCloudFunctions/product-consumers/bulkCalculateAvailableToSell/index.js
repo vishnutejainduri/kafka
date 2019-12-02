@@ -25,6 +25,7 @@ global.main = async function (params) {
         .catch(originalError => {
             return { error: createError.failedDbConnection(originalError) };
         });
+
     const stylesToRecalcAts = await bulkAtsRecalculateQueue.find().sort({"insertTimestamp":1}).limit(20).toArray();
     console.log('stylesToRecalcAts', stylesToRecalcAts);
 
@@ -43,15 +44,20 @@ global.main = async function (params) {
           .catch(originalError => {
               return { error: createError.bulkCalculateAvailableToSell.failedGetSku(originalError, styleToRecalcAts) }
           })
-          const skuAtsOperations = skuRecords.map(async (skuRecord) => {
+         
+          console.log('skuRecords', skuRecords); 
+          const skuAtsOperations = Promise.all(skuRecords.map(async (skuRecord) => {
               console.log('check sku', skuRecord._id);
               const skuAts = [];
               const skuOnlineAts = [];
+              console.log('get inv records');
               const inventoryRecords = await inventory.find({ skuId: skuRecord._id, availableToSell: { $gt: 0 } }).toArray()
               .catch(originalError => {
+                  console.log('failure?');
                   return { error: createError.bulkCalculateAvailableToSell.failedGetInventory(originalError, skuRecord) }
               })
-              inventoryRecords.forEach(async (inventoryRecord) => {
+              console.log('inventoryRecords', inventoryRecords);
+              await inventoryRecords.forEach(async (inventoryRecord) => {
                   console.log('check inv', inventoryRecord._id);
                   const storeData = await stores.findOne({ _id: inventoryRecord.storeId.toString().padStart(5, '0') })
                   .catch(originalError => {
@@ -83,14 +89,14 @@ global.main = async function (params) {
               .catch(originalError => {
                   throw createError.bulkCalculateAvailableToSell.failedUpdateSkuAts(originalError, skuRecord);
               })
-          })
+          }))
           console.log('styleAts', styleAts);
           console.log('styleOnlineAts', styleOnlineAts);
           console.log('skuAtsOperations', JSON.stringify(skuAtsOperations));
           return Promise.all([styles.updateOne({ _id: styleToRecalcAts._id }, { ats: styleAts, onlineAts: styleOnlineAts })
                               .catch(originalError => {
                                   throw createError.bulkCalculateAvailableToSell.failedUpdateStyleAts(originalError, styleToRecalcAts);
-                              })].concat(skuAtsOperations))
+                              })])
                               .catch(originalError => {
                                   return { error: createError.bulkCalculateAvailableToSell.failedAllAtsUpdates(originalError, stylesToRecalcAts) }
                               })
