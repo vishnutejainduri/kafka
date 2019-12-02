@@ -49,29 +49,50 @@ const addErrorHandling = (fn, createError) => {
 
 function extractFilenameAndVersion(connectorInstanceName) {
   let version = null;
-  let fileName = connectorInstanceName;
+  let filename = connectorInstanceName;
   const versionMatch = connectorInstanceName.match(/(.*)-v(\d+)/);
   if (versionMatch) {
     version = Number(versionMatch[2]);
-    fileName = versionMatch[1]
+    filename = versionMatch[1]
   }
   return {
-    fileName,
+    filename,
     version
   }
 }
 
-function getConnectorObject(fileName) {
+function createConnectorObject(
+  baseConfig,
+  { filename, version, connectionUrl
+}) {
+  return {
+    name: version ? `${filename}-v${version}` : filename,
+    config: {
+      ...baseConfig,
+      "connection.url": connectionUrl
+    }
+  }
+}
+
+function getConnectorBaseObject(filename) {
   try {
-    return require(`../../kafkaConnectDeployment/connectors/${fileName}`);
+    return require(`../../kafkaConnectDeployment/connectors/${filename}`);
   } catch (error) {
     return null;
   }
+}
+
+const log = (msg, level = 'log') => {
+    if (process.env.NODE_ENV === "test") return;
+    if (level.toLowerCase() === "error") {  console.error(msg); }
+    else {  console.log(msg); }
 }
 
 module.exports = {
     retry,
     addErrorHandling,
     extractFilenameAndVersion,
-    getConnectorObject
+    getConnectorBaseObject,
+    createConnectorObject,
+    log
 }

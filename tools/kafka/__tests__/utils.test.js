@@ -1,4 +1,4 @@
-const { retry, extractFilenameAndVersion, getConnectorObject } = require('../utils');
+const { retry, extractFilenameAndVersion, getConnectorBaseObject } = require('../utils');
 
 describe('retry', () => {
     it('retries if the promise fails fewer times than the specified retries', async () => {
@@ -19,15 +19,15 @@ describe('getConnectorFilenameAndVersion', () => {
   it('extracts the filename from name with version', () => {
     const instanceName = 'style-basic-jdbc-source-v16';
     const expectedFileName = 'style-basic-jdbc-source';
-    const { fileName } = extractFilenameAndVersion(instanceName);
-    expect(fileName).toEqual(expectedFileName);
+    const { filename } = extractFilenameAndVersion(instanceName);
+    expect(filename).toEqual(expectedFileName);
   });
 
   it('extracts the filename from name without version', () => {
     const instanceName = 'style-basic-jdbc-source';
     const expectedFileName = 'style-basic-jdbc-source';
-    const { fileName } = extractFilenameAndVersion(instanceName);
-    expect(fileName).toEqual(expectedFileName);
+    const { filename } = extractFilenameAndVersion(instanceName);
+    expect(filename).toEqual(expectedFileName);
   });
 
   it('extracts the version from name with version', () => {
@@ -45,19 +45,19 @@ describe('getConnectorFilenameAndVersion', () => {
   });
 });
 
-describe('getConnectorObject', () => {
+describe('getConnectorBaseObject', () => {
     it('returns an object with the same name if a valid connector name is passed to it', () => {
       const validName = 'style-basic-jdbc-source-v16';
-      const { fileName } = extractFilenameAndVersion(validName);
-      const object = getConnectorObject(fileName);
+      const { filename } = extractFilenameAndVersion(validName);
+      const object = getConnectorBaseObject(filename);
       expect(typeof object === 'object').toEqual(true);
-      expect(object.name).toEqual(fileName);
+      expect(object.name).toEqual(filename);
     });
 
     it('returns null if a invalid connector name is passed to it', () => {
       const validName = '';
-      const { fileName } = extractFilenameAndVersion(validName);
-      const object = getConnectorObject(fileName);
+      const { filename } = extractFilenameAndVersion(validName);
+      const object = getConnectorBaseObject(filename);
       expect(object).toEqual(null);
     });
 });

@@ -1,1 +1,25 @@
-{"deleteAll":{"number":4,"date":1575317484096,"env":"dev","data":[]},"getAll":{"number":3,"date":1575317345418,"env":"dev","data":[]}}
+{
+  "deleteAll": {
+    "number": 30,
+    "date": 1575389802244,
+    "env": "dev",
+    "data": [{
+      "success": false
+    }]
+  },
+  "getAll": {
+    "number": 21,
+    "date": 1575388828386,
+    "env": "dev",
+    "data": []
+  },
+  "recreateDeleted": {
+    "number": 35,
+    "date": 1575391105608,
+    "env": "dev",
+    "data": [{
+      "name": "facets-jdbc-source",
+      "success": false
+    }]
+  }
+}
