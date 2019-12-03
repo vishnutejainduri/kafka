@@ -45,7 +45,7 @@ async function getConnectorNames(platformEnv) {
     let parsingError = false;
     let error = null;
 
-    if (statusCode !== 200) {
+    if (statusCode < 200 || statusCode >= 300) {
       error = new Error(`Server call not successful with status code: ${statusCode}`);
       error.debugInfo = { body };
     } else if (parsingError) {

@@ -42,7 +42,7 @@ async function getDeleteConnector(kubeHost, token) {
   return async function(connectorName) {
     console.log('Deleting connector: ', connectorName);
     const { statusCode, body } = await callDeleteConnector(connectorName);
-    if (statusCode !== 200) {
+    if (statusCode < 200 || statusCode >= 300) {
       const errorMessage = `Error: server responded with status code ${statusCode} and could not delete connector: ${connectorName}.`;
       console.log(errorMessage);
       throw new Error(errorMessage);

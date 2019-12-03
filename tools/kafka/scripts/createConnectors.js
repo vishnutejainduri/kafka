@@ -17,7 +17,6 @@ function getCallCreateConnector(kubeHost, token) {
             port: 443,
             path: `/connectors`,
             method: 'POST',
-            body: connectorObject,
             headers: {
                 Authorization: `${token.token_type} ${token.access_token}`,
                 'Content-Type': 'application/json'
@@ -43,7 +42,7 @@ function getCallCreateConnector(kubeHost, token) {
                     reject(e);
                 });
             });
-
+            request.write(Buffer.from(JSON.stringify(connectorObject)));
             request.end();
         });
     }
@@ -55,7 +54,7 @@ function getCreateConnector(kubeHost, token) {
     log('Creating connector: ')
     log(JSON.stringify(connectorObject, null, 3));
     const { statusCode, body } = await callDeleteConnector(connectorObject);
-    if (statusCode !== 200) {
+    if (statusCode < 200 || statusCode >= 300) {
       const errorMessage = `Server responded with status code ${statusCode} and could not create connector: ${connectorObject.name}.`
       log(errorMessage, 'error');
       throw new Error(errorMessage);
