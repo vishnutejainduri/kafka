@@ -50,7 +50,8 @@ async function debug({
             const previousHistory = debugHistory.deleteAll || [];
             const data = deletedConnectors.map((result, index) => ({
                 name: connectorNames[index],
-                success: result instanceof Error ? false : true
+                success: result instanceof Error ? false : true,
+                error: result instanceof Error ? result.message : null
             }));
             const log = {
                 number: totalDebugs,
@@ -80,7 +81,8 @@ async function debug({
           const previousHistory = debugHistory.recreateDeleted || [];
           const data = createdConnectors.map((result, index) => ({
               name: deletedConnectorsFilenamesAndVersions[index].filename,
-              success: result instanceof Error ? false : true
+              success: result instanceof Error ? false : true,
+              error: result instanceof Error ? result.message : null
           }));
           const log = {
               number: totalDebugs,
