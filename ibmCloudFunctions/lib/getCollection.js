@@ -63,8 +63,10 @@ async function getCollection(params, collectionName = null) {
             sslValidate: true,
             sslCA: ca,
             useNewUrlParser: true,
-            connectTimeoutMS: 600000, 
-            socketTimeoutMS: 600000
+            connectTimeoutMS: 60000,
+            socketTimeoutMS: 600000,
+            reconnectTries: 30,
+            reconnectInterval: 3000
         };
 
         client = await MongoClient.connect(params.mongoUri, options).catch((err) => {
