@@ -108,7 +108,9 @@ global.main = async function (params) {
 
             if (successfulStyleIds.length > 0) {
               return bulkAtsRecalculateQueue.deleteMany({ _id: { $in: successfulStyleIds } })
-              .then(() => { error: e })
+              .then(() => { 
+                return { error: e }
+              })
               .catch(originalError => {
                   return { error: createError.bulkAtsRecalculateQueue.failedToRemoveFromQueue(originalError, successfulStyleIds) };
               })
