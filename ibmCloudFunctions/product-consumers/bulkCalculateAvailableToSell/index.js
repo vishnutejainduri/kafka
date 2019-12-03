@@ -43,7 +43,7 @@ global.main = async function (params) {
               return { error: createError.bulkCalculateAvailableToSell.failedGetSku(originalError, styleToRecalcAts) }
           })
          
-          const skuAtsOperations = await Promise.all(skuRecords.map(async (skuRecord) => {
+          const skuAtsOperations = await Promise.all(skuRecords.map(addErrorHandling(async (skuRecord) => {
               const skuAts = [];
               const skuOnlineAts = [];
 
@@ -52,7 +52,7 @@ global.main = async function (params) {
                   return { error: createError.bulkCalculateAvailableToSell.failedGetInventory(originalError, skuRecord) }
               })
 
-              await Promise.all(inventoryRecords.map(async (inventoryRecord) => {
+              await Promise.all(inventoryRecords.map(addErrorHandling(async (inventoryRecord) => {
                   const storeData = await stores.findOne({ _id: inventoryRecord.storeId.toString().padStart(5, '0') })
                   .catch(originalError => {
                       return { error: createError.bulkCalculateAvailableToSell.failedGetStore(originalError, inventoryRecord) }
@@ -67,7 +67,7 @@ global.main = async function (params) {
                       availableToSell: inventoryRecord.availableToSell
                     })
                   }
-              }));
+              })));
               styleAts.push({
                 skuId: skuRecord._id,
                 threshold: skuRecord.threshold,
@@ -83,7 +83,7 @@ global.main = async function (params) {
               .catch(originalError => {
                   throw createError.bulkCalculateAvailableToSell.failedUpdateSkuAts(originalError, skuRecord);
               })
-          }))
+          })))
           const styleAtsOperations = await Promise.all([styles.updateOne({ _id: styleToRecalcAts._id }, { $set: { ats: styleAts, onlineAts: styleOnlineAts } })
                               .catch(originalError => {
                                   throw createError.bulkCalculateAvailableToSell.failedUpdateStyleAts(originalError, styleToRecalcAts);
@@ -97,20 +97,29 @@ global.main = async function (params) {
         }))
     )
     .then((results) => {
-        console.log('results', results);
-				console.log(results[0][0].styleToRecalcAts);
-				console.log(results[0][1].styleToRecalcAts);
-				/*styleAvailabilityCheckQueue.updateOne({ _id : atsData.styleId }, { $set : { _id: atsData.styleId, styleId: atsData.styleId } }, { upsert: true })
-				.catch(originalError => {
-						throw createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, atsData);
-				})*/
         const errors = results.filter((res) => res instanceof Error);
+        const successes = results.filter((res) => !(res instanceof Error));
+        const successResults = successes.map((result) => result.map((res) => res.styleToRecalcAts));
+        const successfulStyleIds = successResults.map((result) => result.filter((res, index) => result.indexOf(res) === index)[0]);
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
             e.failedUpdatesErrors = errors;
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
 
-            return { error: e };
+            if (successfulStyleIds.length > 0) {
+              return bulkAtsRecalculateQueue.deleteMany({ _id: { $in: successfulStyleIds } })
+              .then(() => { error: e })
+              .catch(originalError => {
+                  return { error: createError.bulkAtsRecalculateQueue.failedToRemoveFromQueue(originalError, successfulStyleIds) };
+              })
+            } else {
+              return { error: e };
+            }
+        } else {
+            return bulkAtsRecalculateQueue.deleteMany({ _id: { $in: successfulStyleIds } })
+            .catch(originalError => {
+                return { error: createError.bulkAtsRecalculateQueue.failedToRemoveFromQueue(originalError, successfulStyleIds) };
+            })
         }
     })
     .catch(originalError => {

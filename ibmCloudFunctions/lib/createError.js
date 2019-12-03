@@ -194,7 +194,12 @@ module.exports = {
             originalError,
             'failed-style-ats-update',
             `Failed to update style bulk ats; style: ${styleToRecalcAts}.`
-        )
+        ),
+        failedToRemoveFromQueue: (originalError, styleIds) => new CustomError(
+            originalError,
+            'failed-to-remove-from-queue',
+            `Failed to remove from algolia bulk ats mongo queue the following style ids: ${styleIds}`
+        ),
     },
     consumeDep27FulfillMessage: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(
