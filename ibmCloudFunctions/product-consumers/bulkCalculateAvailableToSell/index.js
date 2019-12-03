@@ -27,7 +27,6 @@ global.main = async function (params) {
         });
 
     const stylesToRecalcAts = await bulkAtsRecalculateQueue.find().sort({"insertTimestamp":1}).limit(20).toArray();
-    console.log('stylesToRecalcAts', stylesToRecalcAts);
 
     return Promise.all(stylesToRecalcAts
         .map(addErrorHandling(async (styleToRecalcAts) => {
@@ -36,7 +35,6 @@ global.main = async function (params) {
               return { error: createError.bulkCalculateAvailableToSell.failedGetStyle(originalError, styleToRecalcAts) }
           })
           if (!styleData) return null;
-          console.log('found style');
           const styleAts = [];
           const styleOnlineAts = [];
 
@@ -45,20 +43,16 @@ global.main = async function (params) {
               return { error: createError.bulkCalculateAvailableToSell.failedGetSku(originalError, styleToRecalcAts) }
           })
          
-          console.log('skuRecords', skuRecords); 
-          const skuAtsOperations = Promise.all(skuRecords.map(async (skuRecord) => {
-              console.log('check sku', skuRecord._id);
+          const skuAtsOperations = await Promise.all(skuRecords.map(async (skuRecord) => {
               const skuAts = [];
               const skuOnlineAts = [];
-              console.log('get inv records');
+
               const inventoryRecords = await inventory.find({ skuId: skuRecord._id, availableToSell: { $gt: 0 } }).toArray()
               .catch(originalError => {
-                  console.log('failure?');
                   return { error: createError.bulkCalculateAvailableToSell.failedGetInventory(originalError, skuRecord) }
               })
-              console.log('inventoryRecords', inventoryRecords);
-              await inventoryRecords.forEach(async (inventoryRecord) => {
-                  console.log('check inv', inventoryRecord._id);
+
+              await Promise.all(inventoryRecords.map(async (inventoryRecord) => {
                   const storeData = await stores.findOne({ _id: inventoryRecord.storeId.toString().padStart(5, '0') })
                   .catch(originalError => {
                       return { error: createError.bulkCalculateAvailableToSell.failedGetStore(originalError, inventoryRecord) }
@@ -73,7 +67,7 @@ global.main = async function (params) {
                       availableToSell: inventoryRecord.availableToSell
                     })
                   }
-              });
+              }));
               styleAts.push({
                 skuId: skuRecord._id,
                 threshold: skuRecord.threshold,
@@ -90,19 +84,26 @@ global.main = async function (params) {
                   throw createError.bulkCalculateAvailableToSell.failedUpdateSkuAts(originalError, skuRecord);
               })
           }))
-          console.log('styleAts', styleAts);
-          console.log('styleOnlineAts', styleOnlineAts);
-          console.log('skuAtsOperations', JSON.stringify(skuAtsOperations));
-          return Promise.all([styles.updateOne({ _id: styleToRecalcAts._id }, { ats: styleAts, onlineAts: styleOnlineAts })
+          const styleAtsOperations = await Promise.all([styles.updateOne({ _id: styleToRecalcAts._id }, { $set: { ats: styleAts, onlineAts: styleOnlineAts } })
                               .catch(originalError => {
                                   throw createError.bulkCalculateAvailableToSell.failedUpdateStyleAts(originalError, styleToRecalcAts);
                               })])
                               .catch(originalError => {
                                   return { error: createError.bulkCalculateAvailableToSell.failedAllAtsUpdates(originalError, stylesToRecalcAts) }
                               })
+					styleAtsOperations[0].styleToRecalcAts = styleToRecalcAts._id;
+					skuAtsOperations[0].styleToRecalcAts = styleToRecalcAts._id;
+          return styleAtsOperations.concat(skuAtsOperations);
         }))
     )
     .then((results) => {
+        console.log('results', results);
+				console.log(results[0][0].styleToRecalcAts);
+				console.log(results[0][1].styleToRecalcAts);
+				/*styleAvailabilityCheckQueue.updateOne({ _id : atsData.styleId }, { $set : { _id: atsData.styleId, styleId: atsData.styleId } }, { upsert: true })
+				.catch(originalError => {
+						throw createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, atsData);
+				})*/
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
