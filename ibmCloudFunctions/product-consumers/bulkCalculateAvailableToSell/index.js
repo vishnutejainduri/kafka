@@ -25,6 +25,10 @@ global.main = async function (params) {
         .catch(originalError => {
             return { error: createError.failedDbConnection(originalError) };
         });
+    const styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue)
+        .catch(originalError => {
+            return { error: createError.failedDbConnection(originalError) };
+        });
 
     const stylesToRecalcAts = await bulkAtsRecalculateQueue.find().sort({"insertTimestamp":1}).limit(20).toArray();
 
@@ -101,13 +105,24 @@ global.main = async function (params) {
         const successes = results.filter((res) => !(res instanceof Error));
         const successResults = successes.map((result) => result.map((res) => res.styleToRecalcAts));
         const successfulStyleIds = successResults.map((result) => result.filter((res, index) => result.indexOf(res) === index)[0]);
+
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
             e.failedUpdatesErrors = errors;
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
 
+            const bulkAlgoliaOperations = styleAvailabilityCheckQueue.initializeUnorderedBulkOp();
+            const successfulStylesForAlgolia = successfulStyleIds.map(addErrorHandling((record) => {
+              const algoliaStyle = {
+                _id: record,
+                styleId: record 
+              };
+              bulkAlgoliaOperations.find({ _id: record }).upsert().update({ _id: record, styleId: record });
+            }))
+
             if (successfulStyleIds.length > 0) {
               return bulkAtsRecalculateQueue.deleteMany({ _id: { $in: successfulStyleIds } })
+              .then(() => bulkAlgoliaOperations.execute() )
               .then(() => { 
                 return { error: e }
               })
@@ -119,6 +134,7 @@ global.main = async function (params) {
             }
         } else {
             return bulkAtsRecalculateQueue.deleteMany({ _id: { $in: successfulStyleIds } })
+            .then(() => bulkAlgoliaOperations.execute() )
             .catch(originalError => {
                 return { error: createError.bulkAtsRecalculateQueue.failedToRemoveFromQueue(originalError, successfulStyleIds) };
             })
