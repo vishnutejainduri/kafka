@@ -95,8 +95,8 @@ global.main = async function (params) {
                               .catch(originalError => {
                                   return { error: createError.bulkCalculateAvailableToSell.failedAllAtsUpdates(originalError, stylesToRecalcAts) }
                               })
-					styleAtsOperations[0].styleToRecalcAts = styleToRecalcAts._id;
-					skuAtsOperations[0].styleToRecalcAts = styleToRecalcAts._id;
+					styleAtsOperations[0] ? styleAtsOperations[0].styleToRecalcAts = styleToRecalcAts._id : styleAtsOperations[0];
+					skuAtsOperations[0] ? skuAtsOperations[0].styleToRecalcAts = styleToRecalcAts._id : skuAtsOperations[0];
           return styleAtsOperations.concat(skuAtsOperations);
         }))
     )
@@ -111,32 +111,33 @@ global.main = async function (params) {
             e.failedUpdatesErrors = errors;
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
 
-            const bulkAlgoliaOperations = styleAvailabilityCheckQueue.initializeUnorderedBulkOp();
-            const successfulStylesForAlgolia = successfulStyleIds.map(addErrorHandling((record) => {
-              const algoliaStyle = {
-                _id: record,
-                styleId: record 
-              };
-              bulkAlgoliaOperations.find({ _id: record }).upsert().update({ _id: record, styleId: record });
-            }))
-
             if (successfulStyleIds.length > 0) {
               return bulkAtsRecalculateQueue.deleteMany({ _id: { $in: successfulStyleIds } })
-              .then(() => bulkAlgoliaOperations.execute() )
-              .then(() => { 
-                return { error: e }
+              .catch(originalError => {
+                  return { error: createError.bulkCalculateAvailableToSell.failedToRemoveFromQueue(originalError, successfulStyleIds) };
+              })
+              .then(async () => {
+                return { result: await Promise.all(successfulStyleIds.map(addErrorHandling((record) => styleAvailabilityCheckQueue.updateOne({ _id : record }, { $set : { _id: record, styleId: record } }, { upsert: true })))) }
               })
               .catch(originalError => {
-                  return { error: createError.bulkAtsRecalculateQueue.failedToRemoveFromQueue(originalError, successfulStyleIds) };
+                  return { error: createError.bulkCalculateAvailableToSell.failedToAddToAlgoliaQueue(originalError, successfulStyleIds) };
+              })
+              .then(() => { 
+                return { error: e }
               })
             } else {
               return { error: e };
             }
         } else {
             return bulkAtsRecalculateQueue.deleteMany({ _id: { $in: successfulStyleIds } })
-            .then(() => bulkAlgoliaOperations.execute() )
             .catch(originalError => {
-                return { error: createError.bulkAtsRecalculateQueue.failedToRemoveFromQueue(originalError, successfulStyleIds) };
+                return { error: createError.bulkCalculateAvailableToSell.failedToRemoveFromQueue(originalError, successfulStyleIds) };
+            })
+            .then(async () => {
+              return { result: await Promise.all(successfulStyleIds.map(addErrorHandling((record) => styleAvailabilityCheckQueue.updateOne({ _id : record }, { $set : { _id: record, styleId: record } }, { upsert: true })))) }
+            })
+            .catch(originalError => {
+                return { error: createError.bulkCalculateAvailableToSell.failedToAddToAlgoliaQueue(originalError, successfulStyleIds) };
             })
         }
     })

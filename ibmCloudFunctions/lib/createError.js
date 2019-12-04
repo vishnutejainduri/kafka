@@ -200,6 +200,11 @@ module.exports = {
             'failed-to-remove-from-queue',
             `Failed to remove from algolia bulk ats mongo queue the following style ids: ${styleIds}`
         ),
+        failedToAddToAlgoliaQueue: (originalError, styleIds) => new CustomError(
+            originalError,
+            'failed-to-add-to-queue',
+            `Failed to add to algolia bulk ats mongo queue the following style ids: ${styleIds}`
+        )
     },
     consumeDep27FulfillMessage: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(
