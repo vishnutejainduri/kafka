@@ -1,0 +1,65 @@
+{
+  "totalDebugs": 35,
+  "deleteAll": [{
+    "number": 30,
+    "date": 1575389802244,
+    "env": "dev",
+    "data": [{
+      "success": false
+    }]
+  }],
+  "getAll": [{
+    "number": 3,
+    "date": 1575317345418,
+    "env": "dev",
+    "data": []
+  }, {
+    "number": 5,
+    "date": 1575319048515,
+    "env": "dev",
+    "data": []
+  }, {
+    "number": 21,
+    "date": 1575388828386,
+    "env": "dev",
+    "data": []
+  }],
+  "recreateDeleted": [{
+    "number": 31,
+    "date": 1575390196245,
+    "env": "dev",
+    "data": [{
+      "success": false
+    }]
+  }, {
+    "number": 32,
+    "date": 1575390328161,
+    "env": "dev",
+    "data": [{
+      "success": false
+    }]
+  }, {
+    "number": 33,
+    "date": 1575390559984,
+    "env": "dev",
+    "data": [{
+      "success": false
+    }]
+  }, {
+    "number": 34,
+    "date": 1575390592812,
+    "env": "dev",
+    "data": [{
+      "name": "facets-jdbc-source",
+      "success": false
+    }]
+  }, {
+    "number": 35,
+    "date": 1575391105608,
+    "env": "dev",
+    "data": [{
+      "name": "facets-jdbc-source",
+      "success": false
+    }]
+  }]
+}
