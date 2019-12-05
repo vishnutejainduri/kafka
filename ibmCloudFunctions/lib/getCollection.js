@@ -65,8 +65,8 @@ async function getCollection(params, collectionName = null) {
             useNewUrlParser: true,
             connectTimeoutMS: 60000,
             socketTimeoutMS: 600000,
-            reconnectTries: 30,
-            reconnectInterval: 3000
+            reconnectTries: 60,
+            reconnectInterval: 10000
         };
 
         client = await MongoClient.connect(params.mongoUri, options).catch((err) => {
