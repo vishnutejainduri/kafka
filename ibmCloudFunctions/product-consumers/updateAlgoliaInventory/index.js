@@ -32,16 +32,15 @@ global.main = async function (params) {
     let styleAvailabilityCheckQueue;
     let styles;
     let updateAlgoliaInventoryCount;
-    let stylesToCheck;
     try {
         styleAvailabilityCheckQueue = await getCollection(params);
         styles = await getCollection(params, params.stylesCollectionName)
         updateAlgoliaInventoryCount = await getCollection(params, 'updateAlgoliaInventoryCount');
-        stylesToCheck = await styleAvailabilityCheckQueue.find().limit(40).toArray();
     } catch (originalError) {
         throw createError.failedDbConnection(originalError, params && params.collectionName);
     }
 
+    const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(40).toArray();
     const styleIds = stylesToCheck.map(addErrorHandling((style) => style.styleId));
 
     let styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map(addErrorHandling((style) => styles.findOne({ _id: style.styleId })
