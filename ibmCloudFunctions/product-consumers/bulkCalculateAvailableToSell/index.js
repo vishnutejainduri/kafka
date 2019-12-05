@@ -46,8 +46,10 @@ global.main = async function (params) {
           .catch(originalError => {
               return { error: createError.bulkCalculateAvailableToSell.failedGetSku(originalError, styleToRecalcAts) }
           })
+          
+          const skuAtsOperations = [];
          
-          const skuAtsOperations = await Promise.all(skuRecords.map(addErrorHandling(async (skuRecord) => {
+          await Promise.all(skuRecords.map(addErrorHandling(async (skuRecord) => {
               const skuAts = [];
               const skuOnlineAts = [];
 
@@ -61,46 +63,55 @@ global.main = async function (params) {
                   .catch(originalError => {
                       return { error: createError.bulkCalculateAvailableToSell.failedGetStore(originalError, inventoryRecord) }
                   })
-                  skuAts.push({
-                    storeId: inventoryRecord.storeId,
-                    availableToSell: inventoryRecord.availableToSell
-                  })
-                  if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27")) {
-                    skuOnlineAts.push({
+                  if (inventoryRecord.availableToSell > 0) {
+                    skuAts.push({
                       storeId: inventoryRecord.storeId,
                       availableToSell: inventoryRecord.availableToSell
                     })
+                    if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27")) {
+                      skuOnlineAts.push({
+                        storeId: inventoryRecord.storeId,
+                        availableToSell: inventoryRecord.availableToSell
+                      })
+                    }
                   }
               })));
-              styleAts.push({
-                skuId: skuRecord._id,
-                threshold: skuRecord.threshold,
-                ats: skuAts
-              })
-              styleOnlineAts.push({
-                skuId: skuRecord._id,
-                threshold: skuRecord.threshold,
-                ats: skuOnlineAts
-              })
-              
-              return skus.updateOne({ _id: skuRecord._id }, { $set: { ats: skuAts, onlineAts: skuOnlineAts } })
+              if (skuAts.length > 0) {
+                styleAts.push({
+                  skuId: skuRecord._id,
+                  threshold: skuRecord.threshold,
+                  ats: skuAts
+                })
+              }
+              if (skuOnlineAts.length > 0) {
+                styleOnlineAts.push({
+                  skuId: skuRecord._id,
+                  threshold: skuRecord.threshold,
+                  ats: skuOnlineAts
+                })
+              }
+
+              skuAtsOperations.push(skus.updateOne({ _id: skuRecord._id }, { $set: { ats: skuAts, onlineAts: skuOnlineAts } })
               .catch(originalError => {
                   throw createError.bulkCalculateAvailableToSell.failedUpdateSkuAts(originalError, skuRecord);
-              })
+              }))
           })))
-          const styleAtsOperations = await Promise.all([styles.updateOne({ _id: styleToRecalcAts._id }, { $set: { ats: styleAts, onlineAts: styleOnlineAts } })
+          const operationResults = await Promise.all([styles.updateOne({ _id: styleToRecalcAts._id }, { $set: { ats: styleAts, onlineAts: styleOnlineAts } })
                               .catch(originalError => {
                                   throw createError.bulkCalculateAvailableToSell.failedUpdateStyleAts(originalError, styleToRecalcAts);
-                              })])
+                              })].concat(skuAtsOperations))
                               .catch(originalError => {
                                   return { error: createError.bulkCalculateAvailableToSell.failedAllAtsUpdates(originalError, stylesToRecalcAts) }
                               })
-					styleAtsOperations[0] ? styleAtsOperations[0].styleToRecalcAts = styleToRecalcAts._id : styleAtsOperations[0];
-					skuAtsOperations[0] ? skuAtsOperations[0].styleToRecalcAts = styleToRecalcAts._id : skuAtsOperations[0];
-          return styleAtsOperations.concat(skuAtsOperations);
+
+          operationResults.map((operationResult) => {
+            operationResult.styleToRecalcAts = styleToRecalcAts._id;
+            return operationResult;
+          })
+          return operationResults;
         }))
     )
-    .then((results) => {
+    .then(async (results) => {
         const errors = results.filter((res) => res instanceof Error);
         const successes = results.filter((res) => !(res instanceof Error));
         const successResults = successes.map((result) => result.map((res) => res.styleToRecalcAts));
@@ -112,15 +123,13 @@ global.main = async function (params) {
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
 
             if (successfulStyleIds.length > 0) {
-              return bulkAtsRecalculateQueue.deleteMany({ _id: { $in: successfulStyleIds } })
-              .catch(originalError => {
-                  return { error: createError.bulkCalculateAvailableToSell.failedToRemoveFromQueue(originalError, successfulStyleIds) };
-              })
-              .then(async () => {
-                return { result: await Promise.all(successfulStyleIds.map(addErrorHandling((record) => styleAvailabilityCheckQueue.updateOne({ _id : record }, { $set : { _id: record, styleId: record } }, { upsert: true })))) }
-              })
+               return await Promise.all(successfulStyleIds.map(addErrorHandling((record) => styleAvailabilityCheckQueue.updateOne({ _id : record }, { $set : { _id: record, styleId: record } }, { upsert: true }))))
               .catch(originalError => {
                   return { error: createError.bulkCalculateAvailableToSell.failedToAddToAlgoliaQueue(originalError, successfulStyleIds) };
+              })
+              .then(() => bulkAtsRecalculateQueue.deleteMany({ _id: { $in: successfulStyleIds } }))
+              .catch(originalError => {
+                  return { error: createError.bulkCalculateAvailableToSell.failedToRemoveFromQueue(originalError, successfulStyleIds) };
               })
               .then(() => { 
                 return { error: e }
@@ -129,16 +138,14 @@ global.main = async function (params) {
               return { error: e };
             }
         } else {
-            return bulkAtsRecalculateQueue.deleteMany({ _id: { $in: successfulStyleIds } })
-            .catch(originalError => {
-                return { error: createError.bulkCalculateAvailableToSell.failedToRemoveFromQueue(originalError, successfulStyleIds) };
-            })
-            .then(async () => {
-              return { result: await Promise.all(successfulStyleIds.map(addErrorHandling((record) => styleAvailabilityCheckQueue.updateOne({ _id : record }, { $set : { _id: record, styleId: record } }, { upsert: true })))) }
-            })
-            .catch(originalError => {
-                return { error: createError.bulkCalculateAvailableToSell.failedToAddToAlgoliaQueue(originalError, successfulStyleIds) };
-            })
+						 return await Promise.all(successfulStyleIds.map(addErrorHandling((record) => styleAvailabilityCheckQueue.updateOne({ _id : record }, { $set : { _id: record, styleId: record } }, { upsert: true }))))
+						.catch(originalError => {
+								return { error: createError.bulkCalculateAvailableToSell.failedToAddToAlgoliaQueue(originalError, successfulStyleIds) };
+						})
+						.then(() => bulkAtsRecalculateQueue.deleteMany({ _id: { $in: successfulStyleIds } }))
+						.catch(originalError => {
+								return { error: createError.bulkCalculateAvailableToSell.failedToRemoveFromQueue(originalError, successfulStyleIds) };
+						})
         }
     })
     .catch(originalError => {
