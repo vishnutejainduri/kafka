@@ -1,5 +1,6 @@
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
 
 global.main = async function (params) {
     console.log(JSON.stringify({
@@ -15,8 +16,15 @@ global.main = async function (params) {
         return { error: new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field") }
     }
 
-    const styles = await getCollection(params);
-    const prices = await getCollection(params, params.pricesCollectionName);
+    let styles;
+    let prices;
+    try {
+        styles = await getCollection(params);
+        prices = await getCollection(params, params.pricesCollectionName);
+    } catch (originalError) {
+        return { error: createError.failedDbConnection(originalError) };
+    }
+
     return Promise.all(params.messages
         .filter((msg) => msg.topic === params.topicName)
         .filter(filterStyleMessages)

@@ -1,5 +1,6 @@
 const { parseMediaMessage } = require('../../lib/parseMediaMessage');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
 
 global.main = async function (params) {
     console.log(JSON.stringify({
@@ -15,7 +16,13 @@ global.main = async function (params) {
         return { error: new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field") };
     }
 
-    const medias = await getCollection(params);
+    let medias;
+    try {
+        medias = await getCollection(params);
+    } catch(originalError) {
+        return { error: createError.failedDbConnection(originalError) };
+    }
+
     return Promise.all(params.messages
         .filter((msg) => msg.topic === params.topicName)
         .map(parseMediaMessage)

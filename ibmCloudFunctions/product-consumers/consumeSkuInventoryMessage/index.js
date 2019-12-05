@@ -19,18 +19,16 @@ global.main = async function (params) {
         return { error: new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field") };
     }
 
-    const inventory = await getCollection(params)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const styles = await getCollection(params, params.stylesCollectionName)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const skus = await getCollection(params, params.skusCollectionName)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
+    let inventory;
+    let styles;
+    let skus;
+    try {
+        inventory = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName);
+        skus = await getCollection(params, params.skusCollectionName);
+    } catch (originalError) {
+        return { error: createError.failedDbConnection(originalError) };
+    }
 
     return Promise.all(params.messages
         .filter(addErrorHandling(filterSkuInventoryMessage))

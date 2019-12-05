@@ -42,15 +42,14 @@ global.main = async function (params) {
         }
     }
 
-    const styles = await getCollection(params)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError, params && params.collectionName) };
-        });
-
-    const updateAlgoliaStyleCount = await getCollection(params, 'updateAlgoliaStyleCount')
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError, 'updateAlgoliaStyleCount') };
-        });
+    let styles;
+    let updateAlgoliaStyleCount;
+    try {
+        styles = await getCollection(params);
+        updateAlgoliaStyleCount = await getCollection(params, 'updateAlgoliaStyleCount');
+    } catch (originalError) {
+        return { error: createError.failedDbConnection(originalError) };
+    }
 
     let records = await Promise.all(params.messages
         .filter(addErrorHandling(filterStyleMessages))

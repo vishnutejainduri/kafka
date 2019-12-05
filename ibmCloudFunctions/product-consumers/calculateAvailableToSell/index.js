@@ -13,22 +13,18 @@ global.main = async function (params) {
         return { error: new Error("Invalid arguments. Must include 'messages' JSON array") };
     }
 
-    const styles = await getCollection(params, params.stylesCollectionName)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const skus = await getCollection(params, params.skusCollectionName)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const stores = await getCollection(params, params.storesCollectionName)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
+    let styles;
+    let skus;
+    let stores;
+    let styleAvailabilityCheckQueue;
+    try {
+        styles = await getCollection(params, params.stylesCollectionName);
+        skus = await getCollection(params, params.skusCollectionName);
+        stores = await getCollection(params, params.storesCollectionName);
+        styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue);
+    } catch (originalError) {
+        return { error: createError.failedDbConnection(originalError) };
+    }
 
     return Promise.all(params.messages
         .map(addErrorHandling(async (atsData) => {

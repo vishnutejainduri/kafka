@@ -66,18 +66,16 @@ global.main = async function (params) {
         }
     }
 
-    const styles = await getCollection(params)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError, params && params.collectionName) };
-        });
-    const prices = await getCollection(params, params.pricesCollectionName)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError, params && params.collectionName) };
-        });
-    const updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount')
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError, params && params.collectionName) };
-        });
+    let styles;
+    let prices;
+    let updateAlgoliaPriceCount;
+    try {
+        styles = await getCollection(params);
+        prices = await getCollection(params, params.pricesCollectionName);
+        updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount');
+    } catch (originalError) {
+        return { error: createError.failedDbConnection(originalError) }; 
+    }
 
     let updates = await Promise.all(params.messages
         .filter(addErrorHandling(filterPriceMessages))

@@ -63,10 +63,12 @@ global.main = async function (params) {
         return { error: createError.failedSchemaValidation(validate.errors, 'addFacetsToBulkImportQueue') };
     }
 
-    const algoliaFacetQueue = await getCollection(params)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError, null, params) };
-        });
+    let algoliaFacetQueue;
+    try {
+        await getCollection(params);
+    } catch (originalError) {
+        return { error: createError.failedDbConnection(originalError) };
+    }
 
     return Promise.all(params.messages
         .map(parseFacetMessageWithErrorHandling)
