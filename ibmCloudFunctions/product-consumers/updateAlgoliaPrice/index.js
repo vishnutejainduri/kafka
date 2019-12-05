@@ -36,19 +36,19 @@ global.main = async function (params) {
     log(createLog.params('updateAlgoliaPrice', params));
 
     if (!params.algoliaIndexName) {
-        throw { error: new Error('Requires an Algolia index.') };
+        throw new Error('Requires an Algolia index.');
     }
 
     if (!params.algoliaApiKey) {
-        throw { error: new Error('Requires an API key for writing to Algolia.') };
+        throw new Error('Requires an API key for writing to Algolia.');
     }
 
     if (!params.algoliaAppId) {
-        throw { error: new Error('Requires an App ID for writing to Algolia.') };
+        throw new Error('Requires an App ID for writing to Algolia.');
     }
 
     if (!params.topicName) {
-        throw { error: new Error('Requires an Event Streams topic.') };
+        throw new Error('Requires an Event Streams topic.');
     }
 
     if (index === null) {
@@ -62,7 +62,7 @@ global.main = async function (params) {
             index = client.initIndex(params.algoliaIndexName);
         }
         catch (originalError) {
-            throw { error: createError.failedAlgoliaConnection(originalError) };
+            throw createError.failedAlgoliaConnection(originalError);
         }
     }
 
@@ -74,7 +74,7 @@ global.main = async function (params) {
         prices = await getCollection(params, params.pricesCollectionName);
         updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount');
     } catch (originalError) {
-        throw { error: createError.failedDbConnection(originalError) }; 
+        throw createError.failedDbConnection(originalError); 
     }
 
     let updates = await Promise.all(params.messages
@@ -132,7 +132,7 @@ global.main = async function (params) {
     }
 
     if (messageFailures.length > 0) {
-        throw { error: createError.updateAlgoliaPrice.partialFailure(params.messages, messageFailures) };
+        throw createError.updateAlgoliaPrice.partialFailure(params.messages, messageFailures);
     }
 
     return params;

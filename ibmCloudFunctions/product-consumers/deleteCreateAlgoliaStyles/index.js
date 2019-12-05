@@ -14,7 +14,7 @@ global.main = async function (params) {
     log(createLog.params('deleteCreateAlgoliaStyles', params));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
-        throw { error: new Error('Requires Algolia configuration. See manifest.yml') };
+        throw new Error('Requires Algolia configuration. See manifest.yml');
     }
 
     if (index === null) {
@@ -55,7 +55,7 @@ global.main = async function (params) {
         createAlgoliaStylesCount = await getCollection(params, 'createAlgoliaStylesCount');
         deleteAlgoliaStylesCount = await getCollection(params, 'deleteAlgoliaStylesCount')
     } catch (originalError) {
-        throw { error: createError.failedDbConnection(originalError) };
+        throw createError.failedDbConnection(originalError);
     }
 >>>>>>> HRC-1041: properly throw connection errors
 

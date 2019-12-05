@@ -4,7 +4,7 @@ jest.mock("mongodb");
 
 describe('addFacetsToBulkImportQueue', () => {
     it('will throw if the requires parameters are not provided', async () => {
-        expect((await addFacetsToBulkImportQueue({})).error instanceof Error).toBe(true);
+        await expect(addFacetsToBulkImportQueue({})).rejects.toThrow();
     });
 
     it('will succeed if all of the parameters are provided', async () => {
@@ -22,6 +22,7 @@ describe('addFacetsToBulkImportQueue', () => {
             collectionName: 'addFacetsToBulkImportQueue'
         }
         const response = await addFacetsToBulkImportQueue(params);
+        console.log(response)
         expect(response.results).toEqual([{ _id: 'styleIdstyle' }]);
     });
 });

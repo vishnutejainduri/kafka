@@ -12,19 +12,19 @@ global.main = async function (params) {
     log(createLog.params('updateAlgoliaStyle', params));
 
     if (!params.algoliaIndexName) {
-        throw { error: new Error('Requires an Algolia index.') };
+        throw new Error('Requires an Algolia index.');
     }
 
     if (!params.algoliaApiKey) {
-        throw { error: new Error('Requires an API key for writing to Algolia.') };
+        throw new Error('Requires an API key for writing to Algolia.');
     }
 
     if (!params.algoliaAppId) {
-        throw { error: new Error('Requires an App ID for writing to Algolia.') };
+        throw new Error('Requires an App ID for writing to Algolia.');
     }
 
     if (!params.topicName) {
-        throw { error: new Error('Requires an Event Streams topic.') };
+        throw new Error('Requires an Event Streams topic.');
     }
 
     if (index === null) {
@@ -38,7 +38,7 @@ global.main = async function (params) {
             index = client.initIndex(params.algoliaIndexName);
         }
         catch (originalError) {
-            throw { error: createError.failedAlgoliaConnection(originalError) };
+            throw createError.failedAlgoliaConnection(originalError);
         }
     }
 
@@ -48,7 +48,7 @@ global.main = async function (params) {
         styles = await getCollection(params);
         updateAlgoliaStyleCount = await getCollection(params, 'updateAlgoliaStyleCount');
     } catch (originalError) {
-        throw { error: createError.failedDbConnection(originalError) };
+        throw createError.failedDbConnection(originalError);
     }
 
     let records = await Promise.all(params.messages

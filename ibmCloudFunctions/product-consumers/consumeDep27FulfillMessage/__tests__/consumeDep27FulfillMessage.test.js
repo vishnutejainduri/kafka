@@ -4,7 +4,7 @@ jest.mock("mongodb");
 
 describe('consumeDep27FulfillMessage', () => {
     it('missing all parameters; should fail', async () => {
-        expect((await consumeDep27FulfillMessage({})).error instanceof Error).toBe(true);
+        await expect(consumeDep27FulfillMessage({})).rejects.toThrow();
     });
     it('correct message', async () => {
         const params = {

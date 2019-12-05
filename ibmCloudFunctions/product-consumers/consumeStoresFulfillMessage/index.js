@@ -17,18 +17,18 @@ global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;
 
     if (!params.topicName) {
-        throw { error: new Error('Requires an Event Streams topic.') };
+        throw new Error('Requires an Event Streams topic.');
     }
 
     if (!params.messages || !params.messages[0] || !params.messages[0].value) {
-        throw { error: new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field") };
+        throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
     let stores;
     try {
         stores = await getCollection(params);
     } catch (originalError) {
-        throw { error: createError.failedDbConnection(originalError) }; 
+        throw createError.failedDbConnection(originalError); 
     }
 
     return Promise.all(params.messages
@@ -47,11 +47,11 @@ global.main = async function (params) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
             e.failedUpdatesErrors = errors;
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            throw { error: e };
+            throw e;
         }
     })
     .catch(originalError => {
-        throw { error: createError.consumeStoresFulfillMessage.failed(originalError, paramsExcludingMessages) };
+        throw createError.consumeStoresFulfillMessage.failed(originalError, paramsExcludingMessages);
     });
 }
 

@@ -60,14 +60,14 @@ global.main = async function (params) {
 
     validate(params);
     if (validate.errors) {
-        throw { error: createError.failedSchemaValidation(validate.errors, 'addFacetsToBulkImportQueue') };
+        throw createError.failedSchemaValidation(validate.errors, 'addFacetsToBulkImportQueue');
     }
 
     let algoliaFacetQueue;
     try {
-        await getCollection(params);
+        algoliaFacetQueue = await getCollection(params);
     } catch (originalError) {
-        throw { error: createError.failedDbConnection(originalError) };
+        throw createError.failedDbConnection(originalError);
     }
 
     return Promise.all(params.messages
@@ -76,7 +76,8 @@ global.main = async function (params) {
     ).then((results) => {
         const messageFailures = results.filter((res) => res instanceof Error);
         if (messageFailures.length >= 1) {
-            throw { error: createError.addFacetsToBulkImportQueue.partialFailure(params.messages, messageFailures) };
+            console.log(messageFailures)
+            throw createError.addFacetsToBulkImportQueue.partialFailure(params.messages, messageFailures);
         } else {
             return {
                 results
