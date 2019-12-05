@@ -53,11 +53,9 @@ module.exports = {
         'failed-algolia-connection',
         'Failed to connect to Algolia.'
     ),
-    failedDbConnection: (originalError, collectionName, params) => new CustomError(
+    failedDbConnection: (originalError) => new CustomError(
         originalError,
-        'failed-db-connection',
-        `Failed to connect to db${collectionName ? ` for collection ${collectionName}` : ''}.`,
-        params
+        'failed-db-connection'
     ),
     consumeInventoryMessage: {
         failed: (originalError, params) => new CustomError(
@@ -204,6 +202,11 @@ module.exports = {
             originalError,
             'failed-to-add-to-queue',
             `Failed to add to algolia bulk ats mongo queue the following style ids: ${styleIds}`
+        ),
+        failedToGetRecords: (originalError) => new CustomError(
+            originalError,
+            'failed-to-get-records-from-algolia-mongo-queue',
+            'Failed to get any records from the algolia mongo queue'
         )
     },
     consumeDep27FulfillMessage: {

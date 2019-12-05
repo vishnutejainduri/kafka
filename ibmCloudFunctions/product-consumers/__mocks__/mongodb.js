@@ -31,6 +31,15 @@ const getCollection = (collectionName) => {
             return {
                 updateOne: async ({ _id }) => ({ _id }),
                 findOne: async () => ({ _id: 'success' }),
+                find: () => ({
+                  toArray: async () => ([{ _id: 'success' }])
+                })
+            }; 
+        case 'inventory':
+            return {
+                find: () => ({
+                  toArray: async () => ([{ _id: 'success' }])
+                })
             }; 
         case 'styleAvailabilityCheckQueue':
             return {
@@ -39,6 +48,18 @@ const getCollection = (collectionName) => {
                   limit: () => ({
                     toArray: async () => ([{ _id: 'success', styleId: 'success' }]) 
                   })
+                }),
+                deleteMany: async () => ({})
+            }; 
+        case 'bulkAtsRecalculateQueue':
+            return {
+                updateOne: async ({ _id }) => ({ _id }),
+                find: () => ({ 
+                  sort: () => ({ 
+                    limit: () => ({
+                      toArray: async () => ([{ _id: 'success' }]) 
+                    })
+                  }),
                 }),
                 deleteMany: async () => ({})
             }; 
