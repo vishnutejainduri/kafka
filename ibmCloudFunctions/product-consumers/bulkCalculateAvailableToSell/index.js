@@ -20,19 +20,19 @@ global.main = async function (params) {
       styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue)
     }
 		catch(originalError) {
-      throw { error: createError.failedDbConnection(originalError) };
+      throw createError.failedDbConnection(originalError);
     }
 
     const stylesToRecalcAts = await bulkAtsRecalculateQueue.find().sort({"insertTimestamp":1}).limit(20).toArray()
         .catch(originalError => {
-            throw { error: createError.bulkCalculateAvailableToSell.failedToGetRecords(originalError) }
+            throw createError.bulkCalculateAvailableToSell.failedToGetRecords(originalError);
         });
 
     return Promise.all(stylesToRecalcAts
         .map(addErrorHandling(async (styleToRecalcAts) => {
           const styleData = await styles.findOne({ _id: styleToRecalcAts._id })
           .catch(originalError => {
-              throw { error: createError.bulkCalculateAvailableToSell.failedGetStyle(originalError, styleToRecalcAts) }
+              throw createError.bulkCalculateAvailableToSell.failedGetStyle(originalError, styleToRecalcAts);
           })
           if (!styleData) return null;
           const styleAts = [];
@@ -40,7 +40,7 @@ global.main = async function (params) {
 
           const skuRecords = await skus.find({ styleId: styleToRecalcAts._id }).toArray()
           .catch(originalError => {
-              throw { error: createError.bulkCalculateAvailableToSell.failedGetSku(originalError, styleToRecalcAts) }
+              throw createError.bulkCalculateAvailableToSell.failedGetSku(originalError, styleToRecalcAts);
           })
           
           const skuAtsOperations = [];
@@ -50,13 +50,13 @@ global.main = async function (params) {
 
               const inventoryRecords = await inventory.find({ skuId: skuRecord._id, availableToSell: { $gt: 0 } }).toArray()
               .catch(originalError => {
-                  throw { error: createError.bulkCalculateAvailableToSell.failedGetInventory(originalError, skuRecord) }
+                  throw createError.bulkCalculateAvailableToSell.failedGetInventory(originalError, skuRecord);
               })
 
               await Promise.all(inventoryRecords.map(addErrorHandling(async (inventoryRecord) => {
                   const storeData = await stores.findOne({ _id: inventoryRecord.storeId.toString().padStart(5, '0') })
                   .catch(originalError => {
-                      throw { error: createError.bulkCalculateAvailableToSell.failedGetStore(originalError, inventoryRecord) }
+                      throw createError.bulkCalculateAvailableToSell.failedGetStore(originalError, inventoryRecord);
                   })
                   if (inventoryRecord.availableToSell > 0) {
                     skuAts.push({
@@ -88,15 +88,15 @@ global.main = async function (params) {
 
               skuAtsOperations.push(skus.updateOne({ _id: skuRecord._id }, { $set: { ats: skuAts, onlineAts: skuOnlineAts } })
               .catch(originalError => {
-                  throw { error: createError.bulkCalculateAvailableToSell.failedUpdateSkuAts(originalError, skuRecord) }
+                  throw createError.bulkCalculateAvailableToSell.failedUpdateSkuAts(originalError, skuRecord);
               }))
           })))
           const operationResults = await Promise.all([styles.updateOne({ _id: styleToRecalcAts._id }, { $set: { ats: styleAts, onlineAts: styleOnlineAts } })
                               .catch(originalError => {
-                                  throw { error: createError.bulkCalculateAvailableToSell.failedUpdateStyleAts(originalError, styleToRecalcAts) }
+                                  throw createError.bulkCalculateAvailableToSell.failedUpdateStyleAts(originalError, styleToRecalcAts);
                               })].concat(skuAtsOperations))
                               .catch(originalError => {
-                                  throw { error: createError.bulkCalculateAvailableToSell.failedAllAtsUpdates(originalError, stylesToRecalcAts) }
+                                  throw createError.bulkCalculateAvailableToSell.failedAllAtsUpdates(originalError, stylesToRecalcAts);
                               })
 
           operationResults.map(addErrorHandling((operationResult) => {
@@ -120,31 +120,31 @@ global.main = async function (params) {
             if (successfulStyleIds.length > 0) {
                return await Promise.all(successfulStyleIds.map((record) => styleAvailabilityCheckQueue.updateOne({ _id : record }, { $set : { _id: record, styleId: record } }, { upsert: true })))
               .catch(originalError => {
-                  throw { error: createError.bulkCalculateAvailableToSell.failedToAddToAlgoliaQueue(originalError, successfulStyleIds) };
+                  throw createError.bulkCalculateAvailableToSell.failedToAddToAlgoliaQueue(originalError, successfulStyleIds);
               })
               .then(() => bulkAtsRecalculateQueue.deleteMany({ _id: { $in: successfulStyleIds } }))
               .catch(originalError => {
-                  throw { error: createError.bulkCalculateAvailableToSell.failedToRemoveFromQueue(originalError, successfulStyleIds) };
+                  throw createError.bulkCalculateAvailableToSell.failedToRemoveFromQueue(originalError, successfulStyleIds);
               })
               .then(() => { 
-                throw { error: e }
+                throw e
               })
             } else {
-              throw { error: e };
+              throw e
             }
         } else {
 						return await Promise.all(successfulStyleIds.map((record) => styleAvailabilityCheckQueue.updateOne({ _id : record }, { $set : { _id: record, styleId: record } }, { upsert: true })))
 						.catch(originalError => {
-								throw { error: createError.bulkCalculateAvailableToSell.failedToAddToAlgoliaQueue(originalError, successfulStyleIds) };
+								throw createError.bulkCalculateAvailableToSell.failedToAddToAlgoliaQueue(originalError, successfulStyleIds);
 						})
 						.then(() => bulkAtsRecalculateQueue.deleteMany({ _id: { $in: successfulStyleIds } }))
 						.catch(originalError => {
-								throw { error: createError.bulkCalculateAvailableToSell.failedToRemoveFromQueue(originalError, successfulStyleIds) };
+								throw createError.bulkCalculateAvailableToSell.failedToRemoveFromQueue(originalError, successfulStyleIds);
 						})
         }
     })
     .catch(originalError => {
-        throw { error: createError.bulkCalculateAvailableToSell.failedAllUpdates(originalError, stylesToRecalcAts) }
+        throw createError.bulkCalculateAvailableToSell.failedAllUpdates(originalError, stylesToRecalcAts);
     })
 };
 
