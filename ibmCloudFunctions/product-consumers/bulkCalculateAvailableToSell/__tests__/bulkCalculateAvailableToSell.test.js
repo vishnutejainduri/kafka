@@ -4,7 +4,7 @@ jest.mock("mongodb");
 
 describe('bulkCalculateAvailableToSell', () => {
     it('missing all parameters; should fail', async () => {
-				expect(await bulkCalculateAvailableToSell({}).catch(e => e.error)).toBeInstanceOf(Error)
+        await expect(bulkCalculateAvailableToSell({})).rejects.toThrow();
     });
     it('valid message', async () => {
         const params = {
