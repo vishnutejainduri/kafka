@@ -35,18 +35,18 @@ global.main = async function (params) {
     }));
 
     if (!params.topicName) {
-        return { error: new Error('Requires an Event Streams topic.') };
+        throw { error: new Error('Requires an Event Streams topic.') };
     }
 
     if (!params.messages || !params.messages[0] || !params.messages[0].value) {
-        return { error: new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field") };
+        throw { error: new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field") };
     }
 
     let prices;
     try {
         prices = await getCollection(params, params.pricesCollectionName);
     } catch (originalError) {
-        return { error: createError.failedDbConnection(originalError) };
+        throw { error: createError.failedDbConnection(originalError) };
     }
 
     return Promise.all(params.messages
@@ -76,7 +76,7 @@ global.main = async function (params) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
             e.failedUpdatesErrors = errors;
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            return { error: e };
+            throw { error: e };
         }
     });
 };

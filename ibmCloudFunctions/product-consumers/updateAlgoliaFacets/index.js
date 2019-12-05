@@ -12,7 +12,7 @@ global.main = async function (params) {
     }));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
-        return { error: new Error('Requires Algolia configuration. See manifest.yml') };
+        throw { error: new Error('Requires Algolia configuration. See manifest.yml') };
     }
 
     if (index === null) {
@@ -32,7 +32,7 @@ global.main = async function (params) {
         styles = await getCollection(params, params.stylesCollectionName);
         updateAlgoliaFacetsCount = await getCollection(params, 'updateAlgoliaFacetsCount');
     } catch (originalError) {
-        return { error: createError.failedDbConnection(originalError) };
+        throw { error: createError.failedDbConnection(originalError) };
     }
 
     const styleFacets = await algoliaFacetBulkImportQueue.aggregate([

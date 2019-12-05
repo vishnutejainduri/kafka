@@ -10,7 +10,7 @@ global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;
 
     if (!params.messages || !params.messages[0]) {
-        return { error: new Error("Invalid arguments. Must include 'messages' JSON array") };
+        throw { error: new Error("Invalid arguments. Must include 'messages' JSON array") };
     }
 
     let styles;
@@ -23,7 +23,7 @@ global.main = async function (params) {
         stores = await getCollection(params, params.storesCollectionName);
         styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue);
     } catch (originalError) {
-        return { error: createError.failedDbConnection(originalError) };
+        throw { error: createError.failedDbConnection(originalError) };
     }
 
     return Promise.all(params.messages
@@ -85,11 +85,11 @@ global.main = async function (params) {
             e.failedUpdatesErrors = errors;
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
 
-            return { error: e };
+            throw { error: e };
         }
     })
     .catch(originalError => {
-        return { error: createError.calculateAvailableToSell.failed(originalError, paramsExcludingMessages) }
+        throw { error: createError.calculateAvailableToSell.failed(originalError, paramsExcludingMessages) }
     });
 };
 

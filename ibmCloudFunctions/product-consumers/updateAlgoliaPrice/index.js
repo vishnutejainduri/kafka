@@ -36,19 +36,19 @@ global.main = async function (params) {
     log(createLog.params('updateAlgoliaPrice', params));
 
     if (!params.algoliaIndexName) {
-        return { error: new Error('Requires an Algolia index.') };
+        throw { error: new Error('Requires an Algolia index.') };
     }
 
     if (!params.algoliaApiKey) {
-        return { error: new Error('Requires an API key for writing to Algolia.') };
+        throw { error: new Error('Requires an API key for writing to Algolia.') };
     }
 
     if (!params.algoliaAppId) {
-        return { error: new Error('Requires an App ID for writing to Algolia.') };
+        throw { error: new Error('Requires an App ID for writing to Algolia.') };
     }
 
     if (!params.topicName) {
-        return { error: new Error('Requires an Event Streams topic.') };
+        throw { error: new Error('Requires an Event Streams topic.') };
     }
 
     if (index === null) {
@@ -62,7 +62,7 @@ global.main = async function (params) {
             index = client.initIndex(params.algoliaIndexName);
         }
         catch (originalError) {
-            return { error: createError.failedAlgoliaConnection(originalError) };
+            throw { error: createError.failedAlgoliaConnection(originalError) };
         }
     }
 
@@ -74,7 +74,7 @@ global.main = async function (params) {
         prices = await getCollection(params, params.pricesCollectionName);
         updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount');
     } catch (originalError) {
-        return { error: createError.failedDbConnection(originalError) }; 
+        throw { error: createError.failedDbConnection(originalError) }; 
     }
 
     let updates = await Promise.all(params.messages
@@ -132,7 +132,7 @@ global.main = async function (params) {
     }
 
     if (messageFailures.length > 0) {
-        return { error: createError.updateAlgoliaPrice.partialFailure(params.messages, messageFailures) };
+        throw { error: createError.updateAlgoliaPrice.partialFailure(params.messages, messageFailures) };
     }
 
     return params;
