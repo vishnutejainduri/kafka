@@ -167,12 +167,15 @@ packages:
           memorySize: 128
           timeout: 120000
         inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
           topicName: inventory-connect-jdbc-SKUINVENTORY
+          algoliaApiKey: $ALGOLIA_API_KEY
+          algoliaIndexName: $ALGOLIA_INDEX_NAME
+          algoliaAppId: $ALGOLIA_APP_ID
           stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
-          stylesCollectionName: $STYLES_COLLECTION_NAME
-          productApiClientId: $PRODUCT_API_CLIENT_ID
-          productApiHost: $PRODUCT_API_HOST
       update-algolia-facets:
         location: ./product-consumers/updateAlgoliaFacets/dist/bundle.js
         runtime: nodejs:10
