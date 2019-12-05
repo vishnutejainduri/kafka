@@ -138,7 +138,7 @@ global.main = async function (params) {
               return { error: e };
             }
         } else {
-						 return await Promise.all(successfulStyleIds.map(addErrorHandling((record) => styleAvailabilityCheckQueue.updateOne({ _id : record }, { $set : { _id: record, styleId: record } }, { upsert: true }))))
+						return await Promise.all(successfulStyleIds.map(addErrorHandling((record) => styleAvailabilityCheckQueue.updateOne({ _id : record }, { $set : { _id: record, styleId: record } }, { upsert: true }))))
 						.catch(originalError => {
 								return { error: createError.bulkCalculateAvailableToSell.failedToAddToAlgoliaQueue(originalError, successfulStyleIds) };
 						})
