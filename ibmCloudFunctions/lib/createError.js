@@ -173,6 +173,11 @@ module.exports = {
             'failed-get-store',
             `Failed to get store for bulk ats update; inventory: ${inventoryData}.`
         ),
+        failedCalculateSkuAts: (originalError, skuRecord) => new CustomError(
+            originalError,
+            'failed-to-calculate-sku-ats',
+            `Failed to calculate sku ats; sku: ${skuRecord}.`
+        ),
         failedAllUpdates: (originalError, stylesToRecalcAts) => new CustomError(
             originalError,
             'failed-all-updates',
