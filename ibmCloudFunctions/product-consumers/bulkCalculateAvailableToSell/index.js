@@ -40,10 +40,10 @@ global.main = async function (params) {
                                   throw createError.bulkCalculateAvailableToSell.failedAllAtsUpdates(originalError, stylesToRecalcAts);
                               })
 
-          operationResults.map(addErrorHandling((operationResult) => {
+          operationResults.map((operationResult) => {
             operationResult.styleToRecalcAts = styleToRecalcAts._id;
             return operationResult;
-          }))
+          })
           return operationResults;
         }))
     )
