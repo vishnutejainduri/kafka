@@ -13,7 +13,7 @@ global.main = async function (params) {
     }
 
     if (!params.messages || !params.messages[0] || !params.messages[0].value) {
-        throw { error: new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field") }
+        throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
     let styles;

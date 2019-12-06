@@ -76,7 +76,6 @@ global.main = async function (params) {
     ).then((results) => {
         const messageFailures = results.filter((res) => res instanceof Error);
         if (messageFailures.length >= 1) {
-            console.log(messageFailures)
             throw createError.addFacetsToBulkImportQueue.partialFailure(params.messages, messageFailures);
         } else {
             return {

@@ -22,7 +22,6 @@ describe('addFacetsToBulkImportQueue', () => {
             collectionName: 'addFacetsToBulkImportQueue'
         }
         const response = await addFacetsToBulkImportQueue(params);
-        console.log(response)
         expect(response.results).toEqual([{ _id: 'styleIdstyle' }]);
     });
 });

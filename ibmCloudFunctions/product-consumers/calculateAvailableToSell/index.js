@@ -89,7 +89,7 @@ global.main = async function (params) {
         }
     })
     .catch(originalError => {
-        throw { error: createError.calculateAvailableToSell.failed(originalError, paramsExcludingMessages) }
+        throw createError.calculateAvailableToSell.failed(originalError, paramsExcludingMessages);
     });
 };
 
