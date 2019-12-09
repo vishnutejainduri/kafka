@@ -181,7 +181,6 @@ packages:
           timeout: 600000
         inputs:
           topicName: inventory-connect-jdbc-SKUINVENTORY
-          stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
           stylesCollectionName: $STYLES_COLLECTION_NAME
           productApiClientId: $PRODUCT_API_CLIENT_ID
