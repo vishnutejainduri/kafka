@@ -22,8 +22,8 @@ global.main = async function (params) {
         .filter(filterStyleMessages)
         .map(parseStyleMessage)
         .map((styleData) => styles.findOne({ _id: styleData._id })
-            .then((existingDocument) => (existingDocument && existingDocument.effectiveDate)
-                ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lte: styleData.effectiveDate } }, { $set: styleData })
+            .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
+                ? styles.updateOne({ _id: styleData._id, lastModifiedDate: { $lte: styleData.lastModifiedDate } }, { $set: styleData })
                     .then((result) => result.modifiedCount > 0
                         ? prices.updateOne({ _id: styleData._id }, { $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice } }, { upsert: true })
                         : null
