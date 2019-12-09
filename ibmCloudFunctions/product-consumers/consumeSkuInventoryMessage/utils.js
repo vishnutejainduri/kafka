@@ -31,7 +31,7 @@ const handleStyleUpdate = (
 
                         const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
 
-                        return styles.updateOne({ _id: styleData._id }, updateToProcess, { upsert: true })
+                        return styles.updateOne({ _id: styleId }, updateToProcess, { upsert: true })
                     }
                 });
             }

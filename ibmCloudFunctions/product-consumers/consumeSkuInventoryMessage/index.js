@@ -52,7 +52,7 @@ global.main = async function (params) {
                         skuId: inventoryData.skuId,
                         storeId: inventoryData.storeId,
                         quantityOnHandSellable: inventoryData.quantityOnHandSellable,
-                        styleId: inventory.styleId
+                        styleId: inventoryData.styleId
                     }
                 )))
                 .catch(originalError => {
