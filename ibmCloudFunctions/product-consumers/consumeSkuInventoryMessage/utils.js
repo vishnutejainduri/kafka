@@ -26,7 +26,7 @@ const handleStyleUpdate = (
                         const sizes = styleData.sizes || [];
 
                         const newSizes = quantityOnHandSellable
-                            ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`).concat(`${sku.size}-${storeId}`)
+                            ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`).concat(`${sku.size}`)
                             : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`);
 
                         const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
