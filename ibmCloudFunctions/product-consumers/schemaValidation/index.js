@@ -2,6 +2,7 @@ const Ajv = require('ajv');
 const ajv = new Ajv({ allErrors: true });
 
 const createError = require('../../lib/createError');
+const { log } = require('../utils');
 
 const addFacetsToBulkImportQueueSchema = require('../addFacetsToBulkImportQueue/schema.json');
 const validators = {
@@ -35,13 +36,20 @@ global.main = function(params) {
         }
         return true;
     });
-    return invalidMessages.length
-        ? {
+
+    if (invalidMessages.length) {
+        log(`${invalidMessages.length} invalid messages out of ${params.messages.lenth} messages.`);
+        invalidMessages.forEach(({ message, error }) => {
+            log(`Invalid message ${message} with error: ${error}`);
+        });
+        return {
             ...params,
             messages: validMessages,
             invalidMessages
-        }
-        : params;
+        };
+    }
+
+    return params;
 };
 
 module.exports = global.main;
