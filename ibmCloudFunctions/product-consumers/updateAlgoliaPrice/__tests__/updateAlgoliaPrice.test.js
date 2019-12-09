@@ -55,6 +55,6 @@ describe('updateAlgoliaPrice', () => {
             mongoCertificateBase64: 'mongoCertificateBase64'
         }
 
-        expect((await updateAlgoliaPrice(params)).error instanceof Error).toEqual(true);
+        await expect(updateAlgoliaPrice(params)).rejects.toThrow();
     });
 });

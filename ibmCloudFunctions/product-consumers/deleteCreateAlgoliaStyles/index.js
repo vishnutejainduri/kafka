@@ -11,7 +11,7 @@ global.main = async function (params) {
     log(createLog.params('deleteCreateAlgoliaStyles', params));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
-        return { error: new Error('Requires Algolia configuration. See manifest.yml') };
+        throw new Error('Requires Algolia configuration. See manifest.yml');
     }
 
     if (index === null) {
@@ -24,22 +24,18 @@ global.main = async function (params) {
         index = client.initIndex(params.algoliaIndexName);
     }
 
-    const algoliaDeleteCreateQueue = await getCollection(params)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const styles = await getCollection(params, params.stylesCollectionName)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const createAlgoliaStylesCount = await getCollection(params, 'createAlgoliaStylesCount')
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const deleteAlgoliaStylesCount = await getCollection(params, 'deleteAlgoliaStylesCount')
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
+    let algoliaDeleteCreateQueue;
+    let styles;
+    let createAlgoliaStylesCount;
+    let deleteAlgoliaStylesCount;
+    try {
+        algoliaDeleteCreateQueue = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName);
+        createAlgoliaStylesCount = await getCollection(params, 'createAlgoliaStylesCount');
+        deleteAlgoliaStylesCount = await getCollection(params, 'deleteAlgoliaStylesCount')
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
 
     const recordsToCheck = await algoliaDeleteCreateQueue.find().sort({"insertionTime":1}).limit(200).toArray();
 

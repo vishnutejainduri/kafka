@@ -1,6 +1,7 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
 const { productApiRequest } = require('../../lib/productApi');
+const createError = require('../../lib/createError');
 
 let client = null;
 let index = null;
@@ -24,7 +25,7 @@ global.main = async function (params) {
     }));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
-        return { error: new Error('Requires Algolia configuration. See manifest.yml') };
+        throw new Error('Requires Algolia configuration. See manifest.yml');
     }
 
     if (index === null) {
@@ -37,10 +38,19 @@ global.main = async function (params) {
         index = client.initIndex(params.algoliaIndexName);
     }
 
-    const algoliaImageProcessingQueue = await getCollection(params);
-    const styles = await getCollection(params, params.stylesCollectionName);
-    const updateAlgoliaImageCount = await getCollection(params, 'updateAlgoliaImageCount');
-    const mediaContainers =  await algoliaImageProcessingQueue.find().limit(40).toArray();
+    let algoliaImageProcessingQueue;
+    let styles;
+    let updateAlgoliaImageCount;
+    let mediaContainers;
+    try {
+        algoliaImageProcessingQueue = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName);
+        updateAlgoliaImageCount = await getCollection(params, 'updateAlgoliaImageCount');
+        mediaContainers =  await algoliaImageProcessingQueue.find().limit(40).toArray();
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
+
     const imagesToBeSynced = [];
     const noImagesAvailable = [];
 

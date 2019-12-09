@@ -12,25 +12,23 @@ global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;
 
     if (!params.topicName) {
-        return { error: new Error('Requires an Event Streams topic.') };
+        throw new Error('Requires an Event Streams topic.');
     }
 
     if (!params.messages || !params.messages[0] || !params.messages[0].value) {
-        return { error: new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field") };
+        throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const inventory = await getCollection(params)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const styles = await getCollection(params, params.stylesCollectionName)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const skus = await getCollection(params, params.skusCollectionName)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
+    let inventory;
+    let styles;
+    let skus;
+    try {
+        inventory = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName);
+        skus = await getCollection(params, params.skusCollectionName);
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
 
     return Promise.all(params.messages
         .filter(addErrorHandling(filterSkuInventoryMessage))
@@ -88,7 +86,7 @@ global.main = async function (params) {
         }
     })
     .catch(originalError => {
-        return { error: createError.consumeInventoryMessage.failed(originalError, params) };
+        throw createError.consumeInventoryMessage.failed(originalError, params);
     });
 };
 
