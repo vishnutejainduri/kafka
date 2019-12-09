@@ -293,5 +293,16 @@ module.exports = {
                 messageFailures: JSON.stringify(messageFailures)
             }
         )
+    },
+    deleteCreateAlgoliaStyles: {
+        partialFailure: (messages, messageFailures) => new CustomError(
+            null,
+            'partial-failure-delete-create-algolia-styles',
+            `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
+            {
+                messages: JSON.stringify(messages),
+                messageFailures: JSON.stringify(messageFailures)
+            }
+        )
     }
 }
