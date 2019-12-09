@@ -1,6 +1,8 @@
 const Ajv = require('ajv');
 const ajv = new Ajv({ allErrors: true });
 
+const createError = require('../../lib/createError');
+
 const addFacetsToBulkImportQueueSchema = require('../addFacetsToBulkImportQueue/schema.json');
 const validators = {
     addFacetsToBulkImportQueue: {
@@ -13,7 +15,10 @@ global.main = function(params) {
     const validate = validators[params.cfName];
     validate.params(params);
     if (validate.params.errors) {
-        throw new Error(validate.params.errors);
+        throw createError.failedSchemaValidation(
+            validate.params.errors,
+            params.cfName
+        );
     }
     let invalidMessages = [];
     const validMessages = params.messages.filter(message => {
