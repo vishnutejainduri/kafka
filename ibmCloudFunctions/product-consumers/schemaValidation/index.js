@@ -24,7 +24,13 @@ global.main = function(params) {
     const validMessages = params.messages.filter(message => {
         validate.message(message);
         if (validate.message.errors) {
-            invalidMessages.push({ message, errors: validate.message.errors });
+            invalidMessages.push({
+                message,
+                error: createError.failedSchemaValidation(
+                    validate.message.errors,
+                    `${params.cfName}:message`
+                )
+            });
             return false;
         }
         return true;

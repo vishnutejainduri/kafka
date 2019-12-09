@@ -43,7 +43,7 @@ describe("schemaValidator", function() {
             };
             const returnedParams = schemaValidator(paramsWithInvalidMessages);
             expect(returnedParams.invalidMessages[0].message).toEqual(invalidMessage);
-            expect(returnedParams.invalidMessages[0].errors.length).toBeGreaterThan(0);
+            expect(returnedParams.invalidMessages[0].error.debugInfo.validationErrors.length).toBeGreaterThan(0);
         });
     });
 });
