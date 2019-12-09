@@ -28,14 +28,14 @@ global.main = async function (params) {
     try {
         stores = await getCollection(params);
     } catch (originalError) {
-        throw createError.failedDbConnection(originalError); 
+        throw createError.failedDbConnection(originalError);
     }
 
     return Promise.all(params.messages
         .filter(addErrorHandling((msg) => msg.topic === params.topicName))
         .map(addErrorHandling(parseStoreFulfillMessage))
         .map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $set: storeData })
-            .then(() => console.log('Updated store fulfill ' + storeData._id))
+            .then(() => log('Updated store fulfill ' + storeData._id))
             .catch(originalError => {
                 return createError.consumeStoresFulfillMessage.failedToUpdateStore(originalError, storeData._id);
             })

@@ -84,7 +84,7 @@ global.main = async function (params) {
                   throw createError.updateAlgoliaInventory.failedToRemoveFromQueue(originalError, styleIds);
               }))
             .then(() => updateAlgoliaInventoryCount.insert({ batchSize: styleAvailabilitiesToBeSynced.length }))
-            .then(() => console.log('Updated availability for styles ', styleIds))
+            .then(() => log('Updated availability for styles ', styleIds))
             .catch((error) => {
                 log('Failed to send styles to Algolia.', "ERROR");
                 log(params.messages, "ERROR");
