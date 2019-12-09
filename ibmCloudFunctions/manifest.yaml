@@ -231,6 +231,7 @@ packages:
         inputs:
           collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
           topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
+          cfName: addFacetsToBulkImportQueue
       add-facets-to-bulk-import-queue-with-retry:
         location: ./product-consumers/addFacetsToBulkImportQueueWithRetry/dist/bundle.js
         conductor: true
