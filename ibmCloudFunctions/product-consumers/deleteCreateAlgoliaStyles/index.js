@@ -2,10 +2,7 @@ const algoliasearch = require('algoliasearch');
 
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-<<<<<<< HEAD
 const { createLog, addErrorHandling, log } = require('../utils');
-=======
->>>>>>> HRC-1041: properly throw connection errors
 
 let client = null;
 let index = null;
@@ -27,24 +24,6 @@ global.main = async function (params) {
         index = client.initIndex(params.algoliaIndexName);
     }
 
-<<<<<<< HEAD
-    const algoliaDeleteCreateQueue = await getCollection(params)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const styles = await getCollection(params, params.stylesCollectionName)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const createAlgoliaStylesCount = await getCollection(params, 'createAlgoliaStylesCount')
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-    const deleteAlgoliaStylesCount = await getCollection(params, 'deleteAlgoliaStylesCount')
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError) };
-        });
-=======
     let algoliaDeleteCreateQueue;
     let styles;
     let createAlgoliaStylesCount;
@@ -57,7 +36,6 @@ global.main = async function (params) {
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
->>>>>>> HRC-1041: properly throw connection errors
 
     const recordsToCheck = await algoliaDeleteCreateQueue.find().sort({"insertionTime":1}).limit(200).toArray();
 
