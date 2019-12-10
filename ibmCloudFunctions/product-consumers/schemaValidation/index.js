@@ -67,18 +67,23 @@ global.main = async function(params) {
             log(`Invalid message ${message} with error: ${error}`);
         });
 
-        // Begin logging to kafka
-        const producer = await getProducer({
-            brokers: typeof params.kafkaBrokers === 'string' ? params.kafkaBrokers.split(",") : params.kafkaBrokers,
-            username: params.kafkaUsername,
-            password: params.kafkaPassword
-        });
+        try {
+            // Begin logging to kafka
+            const producer = await getProducer({
+                brokers: typeof params.kafkaBrokers === 'string' ? params.kafkaBrokers.split(",") : params.kafkaBrokers,
+                username: params.kafkaUsername,
+                password: params.kafkaPassword
+            });
 
-        await producer.send({
-            topic: params.kafkainvalidMessagesDlqTopicName,
-            messages: invalidMessages.map(message => ({ value: JSON.stringify(message) }))
-        });
-        // End login to kafka
+            await producer.send({
+                topic: params.kafkainvalidMessagesDlqTopicName,
+                messages: invalidMessages.map(message => ({ value: JSON.stringify(message) }))
+            });
+            // End login to kafka
+        } catch(error) {
+            log(`Failed to log messages to kafka: ${error.message}`);
+        }
+ 
 
         return {
             ...params,
