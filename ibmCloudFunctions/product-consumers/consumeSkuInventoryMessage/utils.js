@@ -6,7 +6,7 @@ const handleStyleUpdate = (
     {
         skuId,
         storeId,
-        quantityOnHandSellable,
+        availableToSell,
         styleId
     }
 ) => skus
@@ -25,7 +25,8 @@ const handleStyleUpdate = (
                     if (styleData) {
                         const sizes = styleData.sizes || [];
 
-                        const newSizes = quantityOnHandSellable
+                        // TODO: can remove ${storeId} when this no longer exists in production
+                        const newSizes = availableToSell 
                             ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`).concat(`${sku.size}`)
                             : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`);
 
