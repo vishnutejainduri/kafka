@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "jest",
+    "test:dev": "jest --watch",
     "pretest": "eslint './lib/**' './product-consumers/**'"
   },
   "author": "",

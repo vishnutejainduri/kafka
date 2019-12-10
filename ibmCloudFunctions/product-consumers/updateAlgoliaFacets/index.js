@@ -1,5 +1,6 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
 
 let client = null;
 let index = null;
@@ -11,7 +12,7 @@ global.main = async function (params) {
     }));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
-        return { error: new Error('Requires Algolia configuration. See manifest.yml') };
+        throw new Error('Requires Algolia configuration. See manifest.yml');
     }
 
     if (index === null) {
@@ -23,10 +24,17 @@ global.main = async function (params) {
         });
         index = client.initIndex(params.algoliaIndexName);
     }
+    let algoliaFacetBulkImportQueue;
+    let styles;
+    let updateAlgoliaFacetsCount;
+    try {
+        algoliaFacetBulkImportQueue = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName);
+        updateAlgoliaFacetsCount = await getCollection(params, 'updateAlgoliaFacetsCount');
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
 
-    const algoliaFacetBulkImportQueue = await getCollection(params);
-    const styles = await getCollection(params, params.stylesCollectionName);
-    const updateAlgoliaFacetsCount = await getCollection(params, 'updateAlgoliaFacetsCount');
     const styleFacets = await algoliaFacetBulkImportQueue.aggregate([
         { $group: {
             _id: "$styleId",

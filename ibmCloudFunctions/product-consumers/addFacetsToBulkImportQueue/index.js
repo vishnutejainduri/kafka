@@ -60,13 +60,15 @@ global.main = async function (params) {
 
     validate(params);
     if (validate.errors) {
-        return { error: createError.failedSchemaValidation(validate.errors, 'addFacetsToBulkImportQueue') };
+        throw createError.failedSchemaValidation(validate.errors, 'addFacetsToBulkImportQueue');
     }
 
-    const algoliaFacetQueue = await getCollection(params)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError, null, params) };
-        });
+    let algoliaFacetQueue;
+    try {
+        algoliaFacetQueue = await getCollection(params);
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
 
     return Promise.all(params.messages
         .map(parseFacetMessageWithErrorHandling)
@@ -74,7 +76,7 @@ global.main = async function (params) {
     ).then((results) => {
         const messageFailures = results.filter((res) => res instanceof Error);
         if (messageFailures.length >= 1) {
-            return { error: createError.addFacetsToBulkImportQueue.partialFailure(params.messages, messageFailures) };
+            throw createError.addFacetsToBulkImportQueue.partialFailure(params.messages, messageFailures);
         } else {
             return {
                 results

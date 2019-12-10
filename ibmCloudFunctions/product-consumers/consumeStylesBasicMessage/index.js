@@ -1,5 +1,6 @@
 const { parseStyleBasicMessage, filterStyleBasicMessage } = require('../../lib/parseStyleBasicMessage');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
 
 const handleError = function (err, msg) {
   console.error('Problem with document ' + msg._id);
@@ -22,15 +23,21 @@ global.main = async function (params) {
     }));
 
     if (!params.topicName) {
-        return { error: new Error('Requires an Event Streams topic.') };
+        throw new Error('Requires an Event Streams topic.');
     }
 
     if (!params.messages || !params.messages[0] || !params.messages[0].value) {
-        return { error: new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field") };
+        throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const styles = await getCollection(params);
-    const algoliaDeleteCreateQueue = await getCollection(params, params.algoliaDeleteCreateQueue);
+    let styles;
+    let algoliaDeleteCreateQueue;
+    try {
+      styles = await getCollection(params);
+      algoliaDeleteCreateQueue = await getCollection(params, params.algoliaDeleteCreateQueue);
+    } catch (originalError) {
+      throw createError.failedDbConnection(originalError); 
+    }
 
     return Promise.all(params.messages
         .filter(filterStyleBasicMessage)
@@ -68,7 +75,7 @@ global.main = async function (params) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
             e.failedUpdatesErrors = errors;
             e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            return { error: e };
+            throw e;
         }
     });
 }

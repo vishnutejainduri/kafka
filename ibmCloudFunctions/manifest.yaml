@@ -160,6 +160,19 @@ packages:
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
           topicName: prices-connect-jdbc
+      bulk-calculate-available-to-sell:
+        location: ./product-consumers/bulkCalculateAvailableToSell/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+          timeout: 600000
+        inputs:
+          collectionName: $BULK_ATS_RECALCULATE_QUEUE
+          styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          skusCollectionName: $SKUS_COLLECTION_NAME
+          storesCollectionName: $STORES_COLLECTION_NAME
+          inventoryCollectionName: $INVENTORY_COLLECTION_NAME
       update-algolia-inventory:
         location: ./product-consumers/updateAlgoliaInventory/dist/bundle.js
         runtime: nodejs:10
@@ -330,6 +343,9 @@ packages:
         trigger: every-minute
       algolia-inventory-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-inventory
+        trigger: every-minute
+      bulk-ats-rule:
+        action: /${ORG}_${SPACE}/product-consumers/bulk-calculate-available-to-sell
         trigger: every-minute
       algolia-delete-create-rule:
         action: /${ORG}_${SPACE}/product-consumers/delete-create-algolia-styles

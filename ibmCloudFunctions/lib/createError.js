@@ -53,11 +53,9 @@ module.exports = {
         'failed-algolia-connection',
         'Failed to connect to Algolia.'
     ),
-    failedDbConnection: (originalError, collectionName, params) => new CustomError(
+    failedDbConnection: (originalError) => new CustomError(
         originalError,
-        'failed-db-connection',
-        `Failed to connect to db${collectionName ? ` for collection ${collectionName}` : ''}.`,
-        params
+        'failed-db-connection'
     ),
     consumeInventoryMessage: {
         failed: (originalError, params) => new CustomError(
@@ -79,16 +77,38 @@ module.exports = {
             originalError,
             'failed-updates',
             `Failed to run inventory updates on style and inventory; inventory data: ${inventoryData}.`
-            ),
-            partialFailure: (messages, messageFailures) => new CustomError(
-                null,
-                'partial-failure-consuming-sku-inventory-messages',
-                `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
-                {
-                    messages,
-                    messageFailures
-                }
-            )
+        ),
+        partialFailure: (messages, messageFailures) => new CustomError(
+            null,
+            'partial-failure-consuming-sku-inventory-messages',
+            `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
+            {
+                messages,
+                messageFailures
+            }
+        )
+    },
+    consumeCatalogMessage: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-catalog-message',
+            `Failure in run of consume catalog message; params: ${params}.`
+        ),
+        failedStyleUpdates: (originalError, styleData) => new CustomError(
+            originalError,
+            'failed-style-updates',
+            `Failed to run styles updates; style data: ${styleData}.`
+        ),
+        failedPriceUpdates: (originalError, styleData) => new CustomError(
+            originalError,
+            'failed-style-price-updates',
+            `Failed to run price updates for a style; style data: ${styleData}.`
+        ),
+        failedBulkAtsInsert: (originalError, styleData) => new CustomError(
+            originalError,
+            'failed-bulk-ats-insert',
+            `Failed to insert a style for bulk ats recalculation; style data: ${styleData}.`
+        )
     },
     calculateAvailableToSell: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(
@@ -130,6 +150,68 @@ module.exports = {
             originalError,
             'failed-all-updates',
             `Failed to run all ats queries; inventory: ${atsData}.`
+        )
+    },
+    bulkCalculateAvailableToSell: {
+        failedGetStyle: (originalError, styleToRecalcAts) => new CustomError(
+            originalError,
+            'failed-get-style',
+            `Failed to get style for bulk ats update; style: ${styleToRecalcAts}.`
+        ),
+        failedGetSku: (originalError, styleToRecalcAts) => new CustomError(
+            originalError,
+            'failed-get-sku',
+            `Failed to get sku for bulk ats update; style: ${styleToRecalcAts}.`
+        ),
+        failedGetInventory: (originalError, skuData) => new CustomError(
+            originalError,
+            'failed-get-inventory',
+            `Failed to get inventory for bulk ats update; sku: ${skuData}.`
+        ),
+        failedGetStore: (originalError, inventoryData) => new CustomError(
+            originalError,
+            'failed-get-store',
+            `Failed to get store for bulk ats update; inventory: ${inventoryData}.`
+        ),
+        failedCalculateSkuAts: (originalError, skuRecord) => new CustomError(
+            originalError,
+            'failed-to-calculate-sku-ats',
+            `Failed to calculate sku ats; sku: ${skuRecord}.`
+        ),
+        failedAllUpdates: (originalError, stylesToRecalcAts) => new CustomError(
+            originalError,
+            'failed-all-updates',
+            `Failed to run all bulk ats updates; style: ${stylesToRecalcAts}.`
+        ),
+        failedAllAtsUpdates: (originalError, stylesToRecalcAts) => new CustomError(
+            originalError,
+            'failed-all-ats-updates',
+            `Failed to run all bulk ats queries; style: ${stylesToRecalcAts}.`
+        ),
+        failedUpdateSkuAts: (originalError, skuData) => new CustomError(
+            originalError,
+            'failed-sku-ats-update',
+            `Failed to update sku bulk ats; sku: ${skuData}.`
+        ),
+        failedUpdateStyleAts: (originalError, styleToRecalcAts) => new CustomError(
+            originalError,
+            'failed-style-ats-update',
+            `Failed to update style bulk ats; style: ${styleToRecalcAts}.`
+        ),
+        failedToRemoveFromQueue: (originalError, styleIds) => new CustomError(
+            originalError,
+            'failed-to-remove-from-queue',
+            `Failed to remove from algolia bulk ats mongo queue the following style ids: ${styleIds}`
+        ),
+        failedToAddToAlgoliaQueue: (originalError, styleIds) => new CustomError(
+            originalError,
+            'failed-to-add-to-queue',
+            `Failed to add to algolia bulk ats mongo queue the following style ids: ${styleIds}`
+        ),
+        failedToGetRecords: (originalError) => new CustomError(
+            originalError,
+            'failed-to-get-records-from-algolia-mongo-queue',
+            'Failed to get any records from the algolia mongo queue'
         )
     },
     consumeDep27FulfillMessage: {
@@ -287,6 +369,17 @@ module.exports = {
         partialFailure: (messages, messageFailures) => new CustomError(
             null,
             'partial-failure-updating-algolia-facet-queue',
+            `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
+            {
+                messages: JSON.stringify(messages),
+                messageFailures: JSON.stringify(messageFailures)
+            }
+        )
+    },
+    deleteCreateAlgoliaStyles: {
+        partialFailure: (messages, messageFailures) => new CustomError(
+            null,
+            'partial-failure-delete-create-algolia-styles',
             `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
             {
                 messages: JSON.stringify(messages),
