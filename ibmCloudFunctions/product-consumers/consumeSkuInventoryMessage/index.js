@@ -49,7 +49,7 @@ global.main = async function (params) {
                     {
                         skuId: inventoryData.skuId,
                         storeId: inventoryData.storeId,
-                        quantityOnHandSellable: inventoryData.quantityOnHandSellable,
+                        availableToSell: inventoryData.availableToSell,
                         styleId: inventory.styleId
                     }
                 );
