@@ -37,7 +37,7 @@ global.main = async function (params) {
         .map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $set: storeData })
             .then(() => console.log('Updated store dep27 status ' + storeData._id))
             .catch(originalError => {
-                return createError.consumeDep27FulfillMessage.failedUpdates(originalError, storeData._id);
+                throw createError.consumeDep27FulfillMessage.failedUpdates(originalError, storeData._id);
             })
         )
     ))

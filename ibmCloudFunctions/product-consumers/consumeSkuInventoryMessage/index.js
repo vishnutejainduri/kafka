@@ -41,20 +41,18 @@ global.main = async function (params) {
                     throw createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
                 });
 
-            const styleUpdatePromise = !inventoryData.skuId
-                ? null
+            return Promise.all([inventoryUpdatePromise].concat(!inventoryData.skuId
+                ? []
                 : handleStyleUpdate(
                     skus,
                     styles,
                     {
                         skuId: inventoryData.skuId,
                         storeId: inventoryData.storeId,
-                        quantityOnHandSellable: inventoryData.quantityOnHandSellable,
+                        availableToSell: inventoryData.availableToSell,
                         styleId: inventory.styleId
                     }
-                );
-
-            return Promise.all([inventoryUpdatePromise].concat(styleUpdatePromise !== null ? [styleUpdatePromise] : []))
+                )))
                 .catch(originalError => {
                     return createError.consumeInventoryMessage.failedUpdates(originalError, inventoryData);
                 });

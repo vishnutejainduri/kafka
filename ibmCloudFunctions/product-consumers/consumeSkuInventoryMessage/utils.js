@@ -6,7 +6,7 @@ const handleStyleUpdate = (
     {
         skuId,
         storeId,
-        quantityOnHandSellable,
+        availableToSell,
         styleId
     }
 ) => skus
@@ -25,8 +25,9 @@ const handleStyleUpdate = (
                     if (styleData) {
                         const sizes = styleData.sizes || [];
 
-                        const newSizes = quantityOnHandSellable
-                            ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`).concat(`${sku.size}-${storeId}`)
+                        // TODO: can remove ${storeId} when this no longer exists in production
+                        const newSizes = availableToSell 
+                            ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`).concat(`${sku.size}`-`${storeId}`)
                             : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`);
 
                         const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
