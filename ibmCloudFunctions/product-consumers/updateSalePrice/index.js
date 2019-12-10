@@ -8,6 +8,7 @@ const {
     IN_STORE_SITE_ID,
     ONLINE_SITE_ID
 } = require('../../lib/parsePriceMessage');
+const createError = require('../../lib/createError');
 
 function generateUpdateFromParsedMessage(priceData) {
     const updateToProcess = {
@@ -41,7 +42,13 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const prices = await getCollection(params, params.pricesCollectionName);
+    let prices;
+    try {
+        prices = await getCollection(params, params.pricesCollectionName);
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
+
     return Promise.all(params.messages
         .filter(filterPriceMessages)
         .map(parsePriceMessage)

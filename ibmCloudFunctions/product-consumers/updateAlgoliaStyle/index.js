@@ -29,7 +29,12 @@ global.main = async function (params) {
 
     if (index === null) {
         try {
-            client = algoliasearch(params.algoliaAppId, params.algoliaApiKey)
+            client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+            client.setTimeouts({
+                connect: 600000,
+                read: 600000,
+                write: 600000
+            });
             index = client.initIndex(params.algoliaIndexName);
         }
         catch (originalError) {
@@ -37,15 +42,14 @@ global.main = async function (params) {
         }
     }
 
-    const styles = await getCollection(params)
-        .catch(originalError => {
-            throw createError.failedDbConnection(originalError, params && params.collectionName);
-        });
-
-    const updateAlgoliaStyleCount = await getCollection(params, 'updateAlgoliaStyleCount')
-        .catch(originalError => {
-            throw createError.failedDbConnection(originalError, 'updateAlgoliaStyleCount');
-        });
+    let styles;
+    let updateAlgoliaStyleCount;
+    try {
+        styles = await getCollection(params);
+        updateAlgoliaStyleCount = await getCollection(params, 'updateAlgoliaStyleCount');
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
 
     let records = await Promise.all(params.messages
         .filter(addErrorHandling(filterStyleMessages))
@@ -83,7 +87,7 @@ global.main = async function (params) {
             .catch((error) => {
                 log('Failed to send styles to Algolia.', "ERROR");
                 error.params = params;
-                throw error;
+                return { error };
             });
     }
 }

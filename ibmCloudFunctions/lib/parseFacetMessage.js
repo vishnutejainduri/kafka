@@ -1,4 +1,9 @@
 'use strict';
+const Ajv = require('ajv');
+const ajv = new Ajv({ allErrors: true });
+
+const { camelCase } = require('./utils');
+const createError = require('../lib/createError');
 
 const facetMap = {
     "Category": "style",
@@ -10,9 +15,50 @@ const facetMap = {
     "Cuff": "cuff",
 };
 
+const facetMessageSchema = {
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "addFacetsToBulkImportQueueMessage",
+    "description": "A message passed to addFacetsToBulkImportQueue",
+    "type": "object",
+    "properties": {
+        "value": {
+            "description": "Value of a message",
+            "type": "object",
+            "properties": {
+                "CATEGORY": {
+                    "type": "string",
+                    "minLength": 1,
+                },
+                "STYLEID": {
+                    "type": "string",
+                    "minLength": 1,
+                },
+                "DESC_ENG": {
+                    "type": "string",
+                    "minLength": 1,
+                },
+                "DESC_FR": {
+                    "type": "string",
+                }
+            },
+            "required": ['CATEGORY', 'STYLEID', 'DESC_ENG']
+        }
+    },
+    "required": ["value"]
+}
+
+const validate = ajv.compile(facetMessageSchema);
+
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.
 function parseFacetMessage(msg) {
-    const facetName = facetMap[msg.value.CATEGORY];
+    validate(msg);
+    if (validate.errors) {
+        throw createError.failedSchemaValidation(
+            validate.errors,
+            'parseFacetMessage'
+        );
+    }
+    const facetName = facetMap[msg.value.CATEGORY] || camelCase(msg.value.CATEGORY);
     return {
         _id: msg.value.STYLEID + facetName,
         id: msg.value.STYLEID + facetName,

@@ -53,7 +53,12 @@ global.main = async function (params) {
 
     if (index === null) {
         try {
-            client = algoliasearch(params.algoliaAppId, params.algoliaApiKey)
+            client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+            client.setTimeouts({
+                connect: 600000,
+                read: 600000,
+                write: 600000
+            });
             index = client.initIndex(params.algoliaIndexName);
         }
         catch (originalError) {
@@ -61,18 +66,16 @@ global.main = async function (params) {
         }
     }
 
-    const styles = await getCollection(params)
-        .catch(originalError => {
-            throw createError.failedDbConnection(originalError, params && params.collectionName);
-        });
-    const prices = await getCollection(params, params.pricesCollectionName)
-        .catch(originalError => {
-            throw createError.failedDbConnection(originalError, params && params.collectionName);
-        });
-    const updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount')
-        .catch(originalError => {
-            throw createError.failedDbConnection(originalError, params && params.collectionName);
-        });
+    let styles;
+    let prices;
+    let updateAlgoliaPriceCount;
+    try {
+        styles = await getCollection(params);
+        prices = await getCollection(params, params.pricesCollectionName);
+        updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount');
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError); 
+    }
 
     let updates = await Promise.all(params.messages
         .filter(addErrorHandling(filterPriceMessages))
@@ -104,7 +107,7 @@ global.main = async function (params) {
     );
     
     const messageFailures = [];
-    updates = updates.filter((update, index) => {
+    updates = updates.filter((update) => {
         if (!update) {
             return false
         }
@@ -124,7 +127,7 @@ global.main = async function (params) {
                     messageFailures,
                     messages: params.messages
                 }
-                throw error;
+                return { error };
         });
     }
 

@@ -1,5 +1,6 @@
 const { parseStyleBasicMessage, filterStyleBasicMessage } = require('../../lib/parseStyleBasicMessage');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
 
 const handleError = function (err, msg) {
   console.error('Problem with document ' + msg._id);
@@ -29,10 +30,15 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const [styles, algoliaDeleteCreateQueue] = await Promise.all([
-        getCollection(params),
-        getCollection(params, params.algoliaDeleteCreateQueue)
-    ]);
+    let styles;
+    let algoliaDeleteCreateQueue;
+    try {
+      styles = await getCollection(params);
+      algoliaDeleteCreateQueue = await getCollection(params, params.algoliaDeleteCreateQueue);
+    } catch (originalError) {
+      throw createError.failedDbConnection(originalError); 
+    }
+
     return Promise.all(params.messages
         .filter(filterStyleBasicMessage)
         .map(parseStyleBasicMessage)

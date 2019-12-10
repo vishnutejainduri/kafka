@@ -1,30 +1,30 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { addErrorHandling, log } = require('../utils');
+const { addErrorHandling, log, createLog } = require('../utils');
 const { handleStyleAtsUpdate, handleSkuAtsUpdate } = require('./utils');
 
 global.main = async function (params) {
+    log(createLog.params('calculateAvailableToSell', params));
+    // messages is not used, but paramsExcludingMessages is used
+    // eslint-disable-next-line no-unused-vars
     const { messages, ...paramsExcludingMessages } = params;
-    const messagesIsArray = Array.isArray(messages);
-    console.log(JSON.stringify({
-        cfName: 'calculateAvailableToSell',
-        paramsExcludingMessages,
-        messagesLength: messagesIsArray ? messages.length : null,
-        messages // outputting messages as the last parameter because if it is too long the rest of the log will be truncated in logDNA
-    }));
 
     if (!params.messages || !params.messages[0]) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array");
     }
 
-    const [styles, skus, stores, styleAvailabilityCheckQueue] = await Promise.all([
-        getCollection(params, params.stylesCollectionName),
-        getCollection(params, params.skusCollectionName),
-        getCollection(params, params.storesCollectionName),
-        getCollection(params, params.styleAvailabilityCheckQueue)
-    ]).catch(originalError => {
+    let styles;
+    let skus;
+    let stores;
+    let styleAvailabilityCheckQueue;
+    try {
+        styles = await getCollection(params, params.stylesCollectionName);
+        skus = await getCollection(params, params.skusCollectionName);
+        stores = await getCollection(params, params.storesCollectionName);
+        styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue);
+    } catch (originalError) {
         throw createError.failedDbConnection(originalError);
-    });
+    }
 
     return Promise.all(params.messages
         .map(addErrorHandling(async (atsData) => {
@@ -41,7 +41,7 @@ global.main = async function (params) {
                                   return createError.calculateAvailableToSell.failedGetStore(originalError, atsData);
                               });
 
-          if (!storeData || storeData.isOutlet) return null;
+          if (!storeData || !skuData || !styleData || storeData.isOutlet) return null;
 
           const styleAts = styleData.ats || [];
           const newStyleAts = handleStyleAtsUpdate(styleAts, atsData, skuData.threshold);

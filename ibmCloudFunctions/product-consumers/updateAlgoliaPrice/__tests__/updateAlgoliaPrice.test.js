@@ -26,7 +26,7 @@ describe('updateAlgoliaPrice', () => {
         expect(response).toEqual(params);
     });
 
-    it('Throw an error if any of the messages are invalid', async () =>{
+    it('Returns an error if any of the messages are invalid', async () =>{
         const messages = [{
             topic: 'prices-connect-jdbc',
             value: {
@@ -55,7 +55,6 @@ describe('updateAlgoliaPrice', () => {
             mongoCertificateBase64: 'mongoCertificateBase64'
         }
 
-        const response = await updateAlgoliaPrice(params).catch(error => error);
-        expect(response instanceof Error).toEqual(true);
+        await expect(updateAlgoliaPrice(params)).rejects.toThrow();
     });
 });

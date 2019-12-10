@@ -7,9 +7,8 @@ jest.mock("mongodb");
 jest.mock("algoliasearch");
 
 describe('updateAlgoliaStyle', () => {
-    it('throws an error if params argument is empty', async () => {
-        const params = {};
-        expect(await updateAlgoliaStyle(params).catch(error => error) instanceof Error).toBe(true);
+    it('returns an error if params argument is empty', async () => {
+        await expect(updateAlgoliaStyle({})).rejects.toThrow();
     });
 
     it('does not throw if all of the parmaeters are provided, regardless of their value', async () => {

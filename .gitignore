@@ -4,3 +4,5 @@
 .idea
 *.swp
 tools/kafka/.env
+*.env
+**/junit.xml

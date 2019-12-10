@@ -1,14 +1,14 @@
 const algoliasearch = require('algoliasearch');
+
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
+const { createLog, addErrorHandling, log } = require('../utils');
 
 let client = null;
 let index = null;
 
 global.main = async function (params) {
-    console.log(JSON.stringify({
-        cfName: 'deleteCreateAlgoliaStyles',
-        params
-    }));
+    log(createLog.params('deleteCreateAlgoliaStyles', params));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
         throw new Error('Requires Algolia configuration. See manifest.yml');
@@ -16,15 +16,27 @@ global.main = async function (params) {
 
     if (index === null) {
         client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+        client.setTimeouts({
+            connect: 600000,
+            read: 600000,
+            write: 600000
+        });
         index = client.initIndex(params.algoliaIndexName);
     }
 
-    const [algoliaDeleteCreateQueue, styles, createAlgoliaStylesCount, deleteAlgoliaStylesCount] = await Promise.all([
-        getCollection(params),
-        getCollection(params, params.stylesCollectionName),
-        getCollection(params, 'createAlgoliaStylesCount'),
-        getCollection(params, 'deleteAlgoliaStylesCount')
-    ]);
+    let algoliaDeleteCreateQueue;
+    let styles;
+    let createAlgoliaStylesCount;
+    let deleteAlgoliaStylesCount;
+    try {
+        algoliaDeleteCreateQueue = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName);
+        createAlgoliaStylesCount = await getCollection(params, 'createAlgoliaStylesCount');
+        deleteAlgoliaStylesCount = await getCollection(params, 'deleteAlgoliaStylesCount')
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
+
     const recordsToCheck = await algoliaDeleteCreateQueue.find().sort({"insertionTime":1}).limit(200).toArray();
 
     const recordsToDelete = recordsToCheck.filter((record) => record.delete);
@@ -38,7 +50,7 @@ global.main = async function (params) {
 
     const algoliaOperations = [];
 
-    let stylesToBeCreated = await Promise.all(algoliaStylesToInsert.map(async (styleId) => {
+    let stylesToBeCreated = await Promise.all(algoliaStylesToInsert.map(addErrorHandling(async (styleId) => {
       let styleDataToSync = {};
       const styleData = await styles.findOne({ _id: styleId }, { projection: {
         isOutlet: 0
@@ -49,8 +61,10 @@ global.main = async function (params) {
       styleDataToSync.objectID = styleId;
 
       return styleDataToSync;
-    }));
-    stylesToBeCreated = stylesToBeCreated.filter((styleData) => styleData);
+    })));
+
+    const failedStylesToBeCreated = stylesToBeCreated.filter(styleData => styleData instanceof Error);
+    stylesToBeCreated = stylesToBeCreated.filter((styleData) => (styleData && !(styleData instanceof Error)));
 
     if (stylesToBeCreated.length) {
         algoliaOperations.push(index.addObjects(stylesToBeCreated, true)
@@ -74,7 +88,13 @@ global.main = async function (params) {
         algoliaOperations.push(algoliaDeleteCreateQueue.deleteMany({ _id: { $in: deletionRecordsToDelete } }));
     }
 
-    return Promise.all(algoliaOperations).then(() => console.log('Finished'));
+    if (failedStylesToBeCreated.length) {
+        const error = createError.deleteCreateAlgoliaStyles.partialFailure(stylesToBeCreated, failedStylesToBeCreated);
+        return { error };
+    }
+
+    await Promise.all(algoliaOperations).catch(error => ({ error }));
+    console.log('Finished');
 }
 
 module.exports = global.main;

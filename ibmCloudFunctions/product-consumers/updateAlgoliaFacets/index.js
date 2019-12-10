@@ -1,5 +1,6 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
 
 let client = null;
 let index = null;
@@ -16,12 +17,24 @@ global.main = async function (params) {
 
     if (index === null) {
         client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+        client.setTimeouts({
+            connect: 600000,
+            read: 600000,
+            write: 600000
+        });
         index = client.initIndex(params.algoliaIndexName);
     }
+    let algoliaFacetBulkImportQueue;
+    let styles;
+    let updateAlgoliaFacetsCount;
+    try {
+        algoliaFacetBulkImportQueue = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName);
+        updateAlgoliaFacetsCount = await getCollection(params, 'updateAlgoliaFacetsCount');
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
 
-    const algoliaFacetBulkImportQueue = await getCollection(params);
-    const styles = await getCollection(params, params.stylesCollectionName);
-    const updateAlgoliaFacetsCount = await getCollection(params, 'updateAlgoliaFacetsCount');
     const styleFacets = await algoliaFacetBulkImportQueue.aggregate([
         { $group: {
             _id: "$styleId",

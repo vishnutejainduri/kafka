@@ -1,5 +1,6 @@
 const { filterSkuMessage, parseSkuMessage } = require('../../lib/parseSkuMessage');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
 
 global.main = async function (params) {
     console.log(JSON.stringify({
@@ -15,8 +16,13 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
+    let skus;
+    try {
+        skus = await getCollection(params);
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
 
-    const skus = await getCollection(params);
     return Promise.all(params.messages
         .filter(filterSkuMessage)
         .map(parseSkuMessage)

@@ -1,4 +1,4 @@
-const {APPROVED_APPROVAL_STATUS, filterMediaContainerMessage, parseMediaContainerMessage} = require('../lib/parseMediaContainerMessage');
+const {APPROVED_APPROVAL_STATUS, filterMediaContainerMessage, parseMediaContainerMessage} = require('../../../lib/parseMediaContainerMessage');
 
 const testData = {
     "key": null,

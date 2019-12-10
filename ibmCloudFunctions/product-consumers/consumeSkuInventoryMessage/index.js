@@ -7,7 +7,8 @@ const { createLog, addErrorHandling, log } = require('../utils');
 
 global.main = async function (params) {
     log(createLog.params('consumeSkuInventoryMessage', params));
-
+    // messages is not used, but paramsExcludingMessages is used
+    // eslint-disable-next-line no-unused-vars
     const { messages, ...paramsExcludingMessages } = params;
 
     if (!params.topicName) {
@@ -18,13 +19,16 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const [inventory, styles, skus] = await Promise.all([
-        getCollection(params),
-        getCollection(params, params.stylesCollectionName),
-        getCollection(params, params.skusCollectionName)
-    ]).catch(originalError => {
+    let inventory;
+    let styles;
+    let skus;
+    try {
+        inventory = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName);
+        skus = await getCollection(params, params.skusCollectionName);
+    } catch (originalError) {
         throw createError.failedDbConnection(originalError);
-    });
+    }
 
     return Promise.all(params.messages
         .filter(addErrorHandling(filterSkuInventoryMessage))
