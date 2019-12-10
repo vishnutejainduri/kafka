@@ -24,10 +24,13 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const stores = await getCollection(params)
-      .catch(originalError => {
-          throw createError.failedDbConnection(originalError);
-      });
+    let stores;
+    try {
+        stores = await getCollection(params);
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
+
     return Promise.all(params.messages
         .filter(addErrorHandling((msg) => msg.topic === params.topicName))
         .map(addErrorHandling(parseDep27FulfillMessage))

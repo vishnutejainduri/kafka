@@ -14,7 +14,6 @@
         "ecmaVersion": 2018
     },
     "rules": {
-        "require-atomic-updates": "off",
-        "no-use-before-define": ["error", { "functions": true, "classes": true }]
+        "require-atomic-updates": "off"
     }
 }

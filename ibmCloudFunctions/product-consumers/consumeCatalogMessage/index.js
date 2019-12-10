@@ -2,37 +2,35 @@ const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyle
 const { addErrorHandling, log, createLog } = require('../utils');
 const createError = require('../../lib/createError');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
 
 global.main = async function (params) {
     log(createLog.params('consumeCatalogMessage', params));
 
     if (!params.topicName) {
-        throw new Error('Requires an Event Streams topic.')
+        throw new Error('Requires an Event Streams topic.');
     }
 
     if (!params.messages || !params.messages[0] || !params.messages[0].value) {
-        throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field")
+        throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const styles = await getCollection(params)
-      .catch(originalError => {
-          throw createError.failedDbConnection(originalError);
-      });
-    const prices = await getCollection(params, params.pricesCollectionName)
-      .catch(originalError => {
-          throw createError.failedDbConnection(originalError);
-      });
-    const bulkAtsRecalculateQueue = await getCollection(params, params.bulkAtsRecalculateQueue)
-      .catch(originalError => {
-          throw createError.failedDbConnection(originalError);
-      });
+    let styles;
+    let prices;
+    try {
+        styles = await getCollection(params);
+        prices = await getCollection(params, params.pricesCollectionName);
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
+
     return Promise.all(params.messages
-        .filter(addErrorHandling((msg) => msg.topic === params.topicName))
-        .filter(addErrorHandling(filterStyleMessages))
-        .map(addErrorHandling(parseStyleMessage))
-        .map(addErrorHandling((styleData) => styles.findOne({ _id: styleData._id })
-            .then((existingDocument) => (existingDocument && existingDocument.effectiveDate)
-                  ? styles.updateOne({ _id: styleData._id, effectiveDate: { $lte: styleData.effectiveDate } }, { $set: styleData })
+        .filter((msg) => msg.topic === params.topicName)
+        .filter(filterStyleMessages)
+        .map(parseStyleMessage)
+        .map((styleData) => styles.findOne({ _id: styleData._id })
+            .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
+                ? styles.updateOne({ _id: styleData._id, lastModifiedDate: { $lte: styleData.lastModifiedDate } }, { $set: styleData })
                     .then((result) => result.modifiedCount > 0
                         ? prices.updateOne({ _id: styleData._id }, { $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice } }, { upsert: true })
                           .then(() => {
@@ -74,7 +72,7 @@ global.main = async function (params) {
                 err.attemptedDocument = styleData;
                 return err;
             })
-        ))
+        )
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {

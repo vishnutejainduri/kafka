@@ -36,19 +36,19 @@ global.main = async function (params) {
     log(createLog.params('updateAlgoliaPrice', params));
 
     if (!params.algoliaIndexName) {
-        return { error: new Error('Requires an Algolia index.') };
+        throw new Error('Requires an Algolia index.');
     }
 
     if (!params.algoliaApiKey) {
-        return { error: new Error('Requires an API key for writing to Algolia.') };
+        throw new Error('Requires an API key for writing to Algolia.');
     }
 
     if (!params.algoliaAppId) {
-        return { error: new Error('Requires an App ID for writing to Algolia.') };
+        throw new Error('Requires an App ID for writing to Algolia.');
     }
 
     if (!params.topicName) {
-        return { error: new Error('Requires an Event Streams topic.') };
+        throw new Error('Requires an Event Streams topic.');
     }
 
     if (index === null) {
@@ -62,22 +62,20 @@ global.main = async function (params) {
             index = client.initIndex(params.algoliaIndexName);
         }
         catch (originalError) {
-            return { error: createError.failedAlgoliaConnection(originalError) };
+            throw createError.failedAlgoliaConnection(originalError);
         }
     }
 
-    const styles = await getCollection(params)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError, params && params.collectionName) };
-        });
-    const prices = await getCollection(params, params.pricesCollectionName)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError, params && params.collectionName) };
-        });
-    const updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount')
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError, params && params.collectionName) };
-        });
+    let styles;
+    let prices;
+    let updateAlgoliaPriceCount;
+    try {
+        styles = await getCollection(params);
+        prices = await getCollection(params, params.pricesCollectionName);
+        updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount');
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError); 
+    }
 
     let updates = await Promise.all(params.messages
         .filter(addErrorHandling(filterPriceMessages))
@@ -134,7 +132,7 @@ global.main = async function (params) {
     }
 
     if (messageFailures.length > 0) {
-        return { error: createError.updateAlgoliaPrice.partialFailure(params.messages, messageFailures) };
+        throw createError.updateAlgoliaPrice.partialFailure(params.messages, messageFailures);
     }
 
     return params;

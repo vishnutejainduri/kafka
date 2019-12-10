@@ -6,7 +6,7 @@ jest.mock("request-promise");
 
 describe('updateAlgoliaInventory', () => {
     it('missing all parameters; should fail', async () => {
-        expect((await updateAlgoliaInventory({})).error instanceof Error).toBe(true);
+        await expect(updateAlgoliaInventory({})).rejects.toThrow();
     });
     it('correct message', async () => {
         const params = {

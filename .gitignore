@@ -5,4 +5,4 @@
 *.swp
 tools/kafka/.env
 *.env
-junit.xml
+**/junit.xml

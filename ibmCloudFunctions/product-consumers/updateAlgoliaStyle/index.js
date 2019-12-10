@@ -12,19 +12,19 @@ global.main = async function (params) {
     log(createLog.params('updateAlgoliaStyle', params));
 
     if (!params.algoliaIndexName) {
-        return { error: new Error('Requires an Algolia index.') };
+        throw new Error('Requires an Algolia index.');
     }
 
     if (!params.algoliaApiKey) {
-        return { error: new Error('Requires an API key for writing to Algolia.') };
+        throw new Error('Requires an API key for writing to Algolia.');
     }
 
     if (!params.algoliaAppId) {
-        return { error: new Error('Requires an App ID for writing to Algolia.') };
+        throw new Error('Requires an App ID for writing to Algolia.');
     }
 
     if (!params.topicName) {
-        return { error: new Error('Requires an Event Streams topic.') };
+        throw new Error('Requires an Event Streams topic.');
     }
 
     if (index === null) {
@@ -38,19 +38,18 @@ global.main = async function (params) {
             index = client.initIndex(params.algoliaIndexName);
         }
         catch (originalError) {
-            return { error: createError.failedAlgoliaConnection(originalError) };
+            throw createError.failedAlgoliaConnection(originalError);
         }
     }
 
-    const styles = await getCollection(params)
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError, params && params.collectionName) };
-        });
-
-    const updateAlgoliaStyleCount = await getCollection(params, 'updateAlgoliaStyleCount')
-        .catch(originalError => {
-            return { error: createError.failedDbConnection(originalError, 'updateAlgoliaStyleCount') };
-        });
+    let styles;
+    let updateAlgoliaStyleCount;
+    try {
+        styles = await getCollection(params);
+        updateAlgoliaStyleCount = await getCollection(params, 'updateAlgoliaStyleCount');
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
 
     let records = await Promise.all(params.messages
         .filter(addErrorHandling(filterStyleMessages))

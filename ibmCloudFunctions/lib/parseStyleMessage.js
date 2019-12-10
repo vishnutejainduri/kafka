@@ -26,7 +26,9 @@ const attributeMap = {
     'WEBSTATUS': 'webStatus',
     'SEASON_CD': 'season',
     'COLORID': 'colourId',
-    'EFFECTIVE_DATE': 'effectiveDate',
+    'CREATED_DATE': 'createdDate',
+    'LAST_MODIFIED_DATE': 'lastModifiedDate',
+    'ONLINEFROMDATE': 'onlineFromDate',
     'UNIT_PRICE': 'originalPrice',
     'SUBDEPT': 'departmentId',
     'VSN': 'vsn'

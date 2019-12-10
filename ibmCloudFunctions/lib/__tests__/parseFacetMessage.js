@@ -44,6 +44,27 @@ describe('parseFacetMessage', () => {
                 })
             });
         });
+
+        it('parses categories that are not mapped', () => {
+            const validMessage = {
+                value: {
+                    CATEGORY: "category not mapped",
+                    STYLEID: "style-id",
+                    DESC_ENG: "english-desc",
+                    DESC_FR: "french-desc"
+                }
+            };
+            const result = parseFacetMessage(validMessage);
+            expect(result).toMatchObject({
+                _id: "style-idcategoryNotMapped",
+                id: expect.any(String),
+                styleId: expect.any(String),
+                facetValue: expect.objectContaining({
+                    en: expect.any(String),
+                    fr: expect.any(String)
+                })
+            });
+        });
     });
 });
 
