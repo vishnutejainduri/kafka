@@ -2,7 +2,6 @@ const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyle
 const { addErrorHandling, log, createLog } = require('../utils');
 const createError = require('../../lib/createError');
 const getCollection = require('../../lib/getCollection');
-const createError = require('../../lib/createError');
 
 global.main = async function (params) {
     log(createLog.params('consumeCatalogMessage', params));
@@ -17,9 +16,11 @@ global.main = async function (params) {
 
     let styles;
     let prices;
+    let bulkAtsRecalculateQueue;
     try {
         styles = await getCollection(params);
         prices = await getCollection(params, params.pricesCollectionName);
+        bulkAtsRecalculateQueue = await getCollection(params, params.bulkAtsRecalculateQueue);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
@@ -28,7 +29,7 @@ global.main = async function (params) {
         .filter((msg) => msg.topic === params.topicName)
         .filter(filterStyleMessages)
         .map(parseStyleMessage)
-        .map((styleData) => styles.findOne({ _id: styleData._id })
+        .map(addErrorHandling((styleData) => styles.findOne({ _id: styleData._id })
             .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
                 ? styles.updateOne({ _id: styleData._id, lastModifiedDate: { $lte: styleData.lastModifiedDate } }, { $set: styleData })
                     .then((result) => result.modifiedCount > 0
@@ -72,7 +73,7 @@ global.main = async function (params) {
                 err.attemptedDocument = styleData;
                 return err;
             })
-        )
+        ))
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {

@@ -1,115 +1,129 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="42" failures="0" time="3.818">
-  <testsuite name="parseStyleMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:08" time="1.276" tests="5">
-    <testcase classname="parseStyleMessage should only work for messages about the relevant topic" name="parseStyleMessage should only work for messages about the relevant topic" time="0.021">
+<testsuites name="jest tests" tests="48" failures="0" time="2.377">
+  <testsuite name="updateAlgoliaPrice" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:14" time="0.623" tests="2">
+    <testcase classname="updateAlgoliaPrice Returns the params if all of the messages are valid" name="updateAlgoliaPrice Returns the params if all of the messages are valid" time="0.004">
     </testcase>
-    <testcase classname="parseStyleMessage should transform translatable fields that are populated" name="parseStyleMessage should transform translatable fields that are populated" time="0.006">
-    </testcase>
-    <testcase classname="parseStyleMessage should generate `{en: null, fr: null}` for translatable fields that are not populated" name="parseStyleMessage should generate `{en: null, fr: null}` for translatable fields that are not populated" time="0.001">
-    </testcase>
-    <testcase classname="parseStyleMessage should remove the dashes from style IDs" name="parseStyleMessage should remove the dashes from style IDs" time="0.002">
-    </testcase>
-    <testcase classname="filterStyleMessages should filter out &quot;pseudo styles&quot;" name="filterStyleMessages should filter out &quot;pseudo styles&quot;" time="0.003">
+    <testcase classname="updateAlgoliaPrice Returns an error if any of the messages are invalid" name="updateAlgoliaPrice Returns an error if any of the messages are invalid" time="0.018">
     </testcase>
   </testsuite>
-  <testsuite name="parseFacetMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:08" time="1.398" tests="4">
-    <testcase classname="parseFacetMessage validation throws an error if an empty message is passed" name="parseFacetMessage validation throws an error if an empty message is passed" time="0.009">
+  <testsuite name="handleStyleUpdate" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:14" time="0.059" tests="2">
+    <testcase classname="handleStyleUpdate returns an instance of error if a function failes" name="handleStyleUpdate returns an instance of error if a function failes" time="0.003">
     </testcase>
-    <testcase classname="parseFacetMessage validation throws an error if an invalid message with empty value is passed" name="parseFacetMessage validation throws an error if an invalid message with empty value is passed" time="0.004">
-    </testcase>
-    <testcase classname="parseFacetMessage validation does not throw an error if a valid message is passed" name="parseFacetMessage validation does not throw an error if a valid message is passed" time="0.003">
-    </testcase>
-    <testcase classname="parseFacetMessage validation parses categories that are not mapped" name="parseFacetMessage validation parses categories that are not mapped" time="0.001">
+    <testcase classname="handleStyleUpdate successfully returns for complete input" name="handleStyleUpdate successfully returns for complete input" time="0.001">
     </testcase>
   </testsuite>
-  <testsuite name="updateAlgoliaPrice" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:08" time="1.444" tests="2">
-    <testcase classname="updateAlgoliaPrice Returns the params if all of the messages are valid" name="updateAlgoliaPrice Returns the params if all of the messages are valid" time="0.013">
+  <testsuite name="addFacetsToBulkImportQueue" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:14" time="0.125" tests="2">
+    <testcase classname="addFacetsToBulkImportQueue will throw if the requires parameters are not provided" name="addFacetsToBulkImportQueue will throw if the requires parameters are not provided" time="0.015">
     </testcase>
-    <testcase classname="updateAlgoliaPrice Returns an error if any of the messages are invalid" name="updateAlgoliaPrice Returns an error if any of the messages are invalid" time="0.043">
-    </testcase>
-  </testsuite>
-  <testsuite name="consumeThresholdMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:08" time="1.449" tests="2">
-    <testcase classname="consumeThresholdMessage missing all parameters; should fail" name="consumeThresholdMessage missing all parameters; should fail" time="0.036">
-    </testcase>
-    <testcase classname="consumeThresholdMessage correct message" name="consumeThresholdMessage correct message" time="0.006">
+    <testcase classname="addFacetsToBulkImportQueue will succeed if all of the parameters are provided" name="addFacetsToBulkImportQueue will succeed if all of the parameters are provided" time="0.001">
     </testcase>
   </testsuite>
-  <testsuite name="updateAlgoliaInventory" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:08" time="1.485" tests="2">
-    <testcase classname="updateAlgoliaInventory missing all parameters; should fail" name="updateAlgoliaInventory missing all parameters; should fail" time="0.052">
+  <testsuite name="calculateAvailableToSell" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:14" time="0.106" tests="6">
+    <testcase classname="calculateAvailableToSell missing all parameters; should fail" name="calculateAvailableToSell missing all parameters; should fail" time="0.008">
     </testcase>
-    <testcase classname="updateAlgoliaInventory correct message" name="updateAlgoliaInventory correct message" time="0.023">
-    </testcase>
-  </testsuite>
-  <testsuite name="addFacetsToBulkImportQueue" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:08" time="1.679" tests="2">
-    <testcase classname="addFacetsToBulkImportQueue will throw if the requires parameters are not provided" name="addFacetsToBulkImportQueue will throw if the requires parameters are not provided" time="0.051">
-    </testcase>
-    <testcase classname="addFacetsToBulkImportQueue will succeed if all of the parameters are provided" name="addFacetsToBulkImportQueue will succeed if all of the parameters are provided" time="0.019">
-    </testcase>
-  </testsuite>
-  <testsuite name="getCollection" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:08" time="1.644" tests="2">
-    <testcase classname="getCollection params validation rejects an incomplete set of inputs" name="getCollection params validation rejects an incomplete set of inputs" time="0.016">
-    </testcase>
-    <testcase classname="getCollection params validation Accepts a complete set of inputs" name="getCollection params validation Accepts a complete set of inputs" time="0.001">
-    </testcase>
-  </testsuite>
-  <testsuite name="parseMediaContainerMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:09" time="0.351" tests="6">
-    <testcase classname="parseMediaContainerMessage should generate multiple output rows for galleryImages that reference multiple containers" name="parseMediaContainerMessage should generate multiple output rows for galleryImages that reference multiple containers" time="0.002">
-    </testcase>
-    <testcase classname="parseMediaContainerMessage should designate the first gallery image as &quot;isMain&quot;" name="parseMediaContainerMessage should designate the first gallery image as &quot;isMain&quot;" time="0.001">
-    </testcase>
-    <testcase classname="parseMediaContainerMessage should no output rows for null galleryImages" name="parseMediaContainerMessage should no output rows for null galleryImages" time="0">
-    </testcase>
-    <testcase classname="filterMediaContainerMessage should only work for messages about the relevant topic" name="filterMediaContainerMessage should only work for messages about the relevant topic" time="0.005">
-    </testcase>
-    <testcase classname="filterMediaContainerMessage should filter out non-approved media containers" name="filterMediaContainerMessage should filter out non-approved media containers" time="0.001">
-    </testcase>
-    <testcase classname="filterMediaContainerMessage should filter out &quot;pseudo styles&quot;" name="filterMediaContainerMessage should filter out &quot;pseudo styles&quot;" time="0.002">
-    </testcase>
-  </testsuite>
-  <testsuite name="handleStyleUpdate" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:09" time="0.357" tests="2">
-    <testcase classname="handleStyleUpdate returns an instance of error if a function failes" name="handleStyleUpdate returns an instance of error if a function failes" time="0.023">
-    </testcase>
-    <testcase classname="handleStyleUpdate successfully returns for complete input" name="handleStyleUpdate successfully returns for complete input" time="0.002">
-    </testcase>
-  </testsuite>
-  <testsuite name="calculateAvailableToSell" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:09" time="0.437" tests="6">
-    <testcase classname="calculateAvailableToSell missing all parameters; should fail" name="calculateAvailableToSell missing all parameters; should fail" time="0.026">
-    </testcase>
-    <testcase classname="calculateAvailableToSell correct message to update ats" name="calculateAvailableToSell correct message to update ats" time="0.005">
+    <testcase classname="calculateAvailableToSell correct message to update ats" name="calculateAvailableToSell correct message to update ats" time="0.001">
     </testcase>
     <testcase classname="handleSyleAtsUpdate missing all params; should fail" name="handleSyleAtsUpdate missing all params; should fail" time="0.001">
     </testcase>
     <testcase classname="handleSyleAtsUpdate add to empty ats" name="handleSyleAtsUpdate add to empty ats" time="0">
     </testcase>
-    <testcase classname="handleSkuAtsUpdate missing all params; should fail" name="handleSkuAtsUpdate missing all params; should fail" time="0.001">
+    <testcase classname="handleSkuAtsUpdate missing all params; should fail" name="handleSkuAtsUpdate missing all params; should fail" time="0">
     </testcase>
-    <testcase classname="handleSkuAtsUpdate add to empty ats" name="handleSkuAtsUpdate add to empty ats" time="0.001">
-    </testcase>
-  </testsuite>
-  <testsuite name="updateAlgoliaStyle" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:09" time="0.43" tests="3">
-    <testcase classname="updateAlgoliaStyle returns an error if params argument is empty" name="updateAlgoliaStyle returns an error if params argument is empty" time="0.012">
-    </testcase>
-    <testcase classname="updateAlgoliaStyle does not throw if all of the parmaeters are provided, regardless of their value" name="updateAlgoliaStyle does not throw if all of the parmaeters are provided, regardless of their value" time="0.032">
-    </testcase>
-    <testcase classname="updateAlgoliaStyle Successfully returns the results if all of the parmaeters and messages are provided" name="updateAlgoliaStyle Successfully returns the results if all of the parmaeters and messages are provided" time="0.002">
+    <testcase classname="handleSkuAtsUpdate add to empty ats" name="handleSkuAtsUpdate add to empty ats" time="0">
     </testcase>
   </testsuite>
-  <testsuite name="consumeStoresMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:09" time="0.38" tests="2">
-    <testcase classname="consumeStoresMessage missing all parameters; should fail" name="consumeStoresMessage missing all parameters; should fail" time="0.016">
+  <testsuite name="updateAlgoliaInventory" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:15" time="0.114" tests="2">
+    <testcase classname="updateAlgoliaInventory missing all parameters; should fail" name="updateAlgoliaInventory missing all parameters; should fail" time="0.007">
     </testcase>
-    <testcase classname="consumeStoresMessage correct message" name="consumeStoresMessage correct message" time="0.005">
-    </testcase>
-  </testsuite>
-  <testsuite name="consumeDep27FulfillMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:09" time="0.289" tests="2">
-    <testcase classname="consumeDep27FulfillMessage missing all parameters; should fail" name="consumeDep27FulfillMessage missing all parameters; should fail" time="0.006">
-    </testcase>
-    <testcase classname="consumeDep27FulfillMessage correct message" name="consumeDep27FulfillMessage correct message" time="0.009">
+    <testcase classname="updateAlgoliaInventory correct message" name="updateAlgoliaInventory correct message" time="0.007">
     </testcase>
   </testsuite>
-  <testsuite name="consumeStoresFulfillMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-05T20:53:09" time="0.311" tests="2">
-    <testcase classname="consumeStoresFulfillMessage missing all parameters; should fail" name="consumeStoresFulfillMessage missing all parameters; should fail" time="0.007">
+  <testsuite name="updateAlgoliaStyle" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:15" time="0.106" tests="3">
+    <testcase classname="updateAlgoliaStyle returns an error if params argument is empty" name="updateAlgoliaStyle returns an error if params argument is empty" time="0.007">
     </testcase>
-    <testcase classname="consumeStoresFulfillMessage correct message" name="consumeStoresFulfillMessage correct message" time="0.008">
+    <testcase classname="updateAlgoliaStyle does not throw if all of the parmaeters are provided, regardless of their value" name="updateAlgoliaStyle does not throw if all of the parmaeters are provided, regardless of their value" time="0.005">
+    </testcase>
+    <testcase classname="updateAlgoliaStyle Successfully returns the results if all of the parmaeters and messages are provided" name="updateAlgoliaStyle Successfully returns the results if all of the parmaeters and messages are provided" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="consumeThresholdMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:15" time="0.063" tests="2">
+    <testcase classname="consumeThresholdMessage missing all parameters; should fail" name="consumeThresholdMessage missing all parameters; should fail" time="0.007">
+    </testcase>
+    <testcase classname="consumeThresholdMessage correct message" name="consumeThresholdMessage correct message" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="bulkCalculateAvailableToSell" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:15" time="0.167" tests="4">
+    <testcase classname="bulkCalculateAvailableToSell missing all parameters; should fail" name="bulkCalculateAvailableToSell missing all parameters; should fail" time="0.016">
+    </testcase>
+    <testcase classname="bulkCalculateAvailableToSell valid message" name="bulkCalculateAvailableToSell valid message" time="0.001">
+    </testcase>
+    <testcase classname="bulkCalculateAvailableToSell valid calculateStyleAts execution" name="bulkCalculateAvailableToSell valid calculateStyleAts execution" time="0.001">
+    </testcase>
+    <testcase classname="bulkCalculateAvailableToSell valid calculateSkuAts execution" name="bulkCalculateAvailableToSell valid calculateSkuAts execution" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="getCollection" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:15" time="0.053" tests="2">
+    <testcase classname="getCollection params validation rejects an incomplete set of inputs" name="getCollection params validation rejects an incomplete set of inputs" time="0.001">
+    </testcase>
+    <testcase classname="getCollection params validation Accepts a complete set of inputs" name="getCollection params validation Accepts a complete set of inputs" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="consumeStoresFulfillMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:15" time="0.059" tests="2">
+    <testcase classname="consumeStoresFulfillMessage missing all parameters; should fail" name="consumeStoresFulfillMessage missing all parameters; should fail" time="0.004">
+    </testcase>
+    <testcase classname="consumeStoresFulfillMessage correct message" name="consumeStoresFulfillMessage correct message" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="parseFacetMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:15" time="0.057" tests="4">
+    <testcase classname="parseFacetMessage validation throws an error if an empty message is passed" name="parseFacetMessage validation throws an error if an empty message is passed" time="0.001">
+    </testcase>
+    <testcase classname="parseFacetMessage validation throws an error if an invalid message with empty value is passed" name="parseFacetMessage validation throws an error if an invalid message with empty value is passed" time="0">
+    </testcase>
+    <testcase classname="parseFacetMessage validation does not throw an error if a valid message is passed" name="parseFacetMessage validation does not throw an error if a valid message is passed" time="0.001">
+    </testcase>
+    <testcase classname="parseFacetMessage validation parses categories that are not mapped" name="parseFacetMessage validation parses categories that are not mapped" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="consumeStoresMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:15" time="0.064" tests="2">
+    <testcase classname="consumeStoresMessage missing all parameters; should fail" name="consumeStoresMessage missing all parameters; should fail" time="0.006">
+    </testcase>
+    <testcase classname="consumeStoresMessage correct message" name="consumeStoresMessage correct message" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="parseStyleMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:15" time="0.131" tests="7">
+    <testcase classname="parseStyleMessage should only work for messages about the relevant topic" name="parseStyleMessage should only work for messages about the relevant topic" time="0.004">
+    </testcase>
+    <testcase classname="parseStyleMessage should transform translatable fields that are populated" name="parseStyleMessage should transform translatable fields that are populated" time="0.001">
+    </testcase>
+    <testcase classname="parseStyleMessage should generate `{en: null, fr: null}` for translatable fields that are not populated" name="parseStyleMessage should generate `{en: null, fr: null}` for translatable fields that are not populated" time="0">
+    </testcase>
+    <testcase classname="parseStyleMessage should remove the dashes from style IDs" name="parseStyleMessage should remove the dashes from style IDs" time="0">
+    </testcase>
+    <testcase classname="filterStyleMessages should filter out &quot;pseudo styles&quot;" name="filterStyleMessages should filter out &quot;pseudo styles&quot;" time="0">
+    </testcase>
+    <testcase classname="consumeCatalogMessage missing all parameters; should fail" name="consumeCatalogMessage missing all parameters; should fail" time="0.008">
+    </testcase>
+    <testcase classname="consumeCatalogMessage correct message to update style" name="consumeCatalogMessage correct message to update style" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="parseMediaContainerMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:15" time="0.076" tests="6">
+    <testcase classname="parseMediaContainerMessage should generate multiple output rows for galleryImages that reference multiple containers" name="parseMediaContainerMessage should generate multiple output rows for galleryImages that reference multiple containers" time="0.001">
+    </testcase>
+    <testcase classname="parseMediaContainerMessage should designate the first gallery image as &quot;isMain&quot;" name="parseMediaContainerMessage should designate the first gallery image as &quot;isMain&quot;" time="0">
+    </testcase>
+    <testcase classname="parseMediaContainerMessage should no output rows for null galleryImages" name="parseMediaContainerMessage should no output rows for null galleryImages" time="0.001">
+    </testcase>
+    <testcase classname="filterMediaContainerMessage should only work for messages about the relevant topic" name="filterMediaContainerMessage should only work for messages about the relevant topic" time="0.003">
+    </testcase>
+    <testcase classname="filterMediaContainerMessage should filter out non-approved media containers" name="filterMediaContainerMessage should filter out non-approved media containers" time="0">
+    </testcase>
+    <testcase classname="filterMediaContainerMessage should filter out &quot;pseudo styles&quot;" name="filterMediaContainerMessage should filter out &quot;pseudo styles&quot;" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="consumeDep27FulfillMessage" errors="0" failures="0" skipped="0" timestamp="2019-12-10T18:38:15" time="0.095" tests="2">
+    <testcase classname="consumeDep27FulfillMessage missing all parameters; should fail" name="consumeDep27FulfillMessage missing all parameters; should fail" time="0.004">
+    </testcase>
+    <testcase classname="consumeDep27FulfillMessage correct message" name="consumeDep27FulfillMessage correct message" time="0.003">
     </testcase>
   </testsuite>
 </testsuites>
