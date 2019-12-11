@@ -76,7 +76,7 @@ global.main = async function(params) {
             });
 
             await producer.send({
-                topic: params.kafkainvalidMessagesDlqTopicName,
+                topic: params.kafkaInvalidMessagesDlqTopicName,
                 messages: invalidMessages.map(message => ({ value: JSON.stringify(message) }))
             });
             // End login to kafka
