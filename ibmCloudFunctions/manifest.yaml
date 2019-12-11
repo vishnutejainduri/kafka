@@ -394,7 +394,7 @@ packages:
         action: /${ORG}_${SPACE}/product-consumers/consume-storesfulfill-message-with-retry
         trigger: storefulfill-trigger
       dep27fulfill-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-dep27fulfill-message
+        action: /${ORG}_${SPACE}/product-consumers/consume-dep27fulfill-message-with-retry
         trigger: dep27fulfill-trigger
       media-containers-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-media-containers-message-with-retry
