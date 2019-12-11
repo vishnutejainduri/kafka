@@ -67,6 +67,9 @@ packages:
         inputs:
           collectionName: $STORES_COLLECTION_NAME
           topicName: stores-connect-jdbc
+      consume-stores-message-with-retry:
+        location: ./product-consumers/consumeStoresMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-storesfulfill-message:
         location: ./product-consumers/consumeStoresFulfillMessage/dist/bundle.js
         runtime: nodejs:10
@@ -358,7 +361,7 @@ packages:
         action: /${ORG}_${SPACE}/product-consumers/consume-medias-message-with-retry
         trigger: medias-trigger
       stores-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-stores-message
+        action: /${ORG}_${SPACE}/product-consumers/consume-stores-message-with-retry
         trigger: stores-trigger
       storefulfill-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-storesfulfill-message-with-retry
