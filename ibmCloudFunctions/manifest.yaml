@@ -38,6 +38,9 @@ packages:
           collectionName: $STYLES_COLLECTION_NAME
           algoliaDeleteCreateQueue: $ALGOLIA_DELETE_CREATE_QUEUE
           topicName: styles-basic-connect-jdbc
+      consume-styles-basic-message-with-retry:
+        location: ./product-consumers/consumeStylesBasicMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-threshold-message:
         location: ./product-consumers/consumeThresholdMessage/dist/bundle.js
         runtime: nodejs:10
@@ -349,7 +352,7 @@ packages:
         action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message-with-retry
         trigger: catalog-trigger
       styles-basic-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-styles-basic-message
+        action: /${ORG}_${SPACE}/product-consumers/consume-styles-basic-message-with-retry
         trigger: styles-basic-trigger
       threshold-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-threshold-message
