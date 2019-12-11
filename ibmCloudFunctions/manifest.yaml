@@ -126,6 +126,9 @@ packages:
           storesCollectionName: $STORES_COLLECTION_NAME
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: inventory-connect-jdbc-SKUINVENTORY
+      calculate-available-to-sell-with-retry:
+        location: ./product-consumers/calculateAvailableToSellWithRetry/dist/bundle.js
+        conductor: true
       update-algolia-style:
         location: ./product-consumers/updateAlgoliaStyle/dist/bundle.js
         runtime: nodejs:10
@@ -251,7 +254,7 @@ packages:
       update-pricing-sequence:
         actions: update-algolia-price,update-sale-price
       update-inventory-sequence:
-        actions: consume-sku-inventory-message,calculate-available-to-sell
+        actions: consume-sku-inventory-message,calculate-available-to-sell-with-retry
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
