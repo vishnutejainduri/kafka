@@ -222,9 +222,11 @@ packages:
         inputs:
           topicName: inventory-connect-jdbc-SKUINVENTORY
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
-          stylesCollectionName: $STYLES_COLLECTION_NAME
           productApiClientId: $PRODUCT_API_CLIENT_ID
           productApiHost: $PRODUCT_API_HOST
+      update-algolia-inventory-with-retry:
+        location: ./product-consumers/updateAlgoliaInventoryWithRetry/dist/bundle.js
+        conductor: true
       update-algolia-facets:
         location: ./product-consumers/updateAlgoliaFacets/dist/bundle.js
         runtime: nodejs:10
@@ -397,7 +399,7 @@ packages:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-image-with-retry
         trigger: every-minute
       algolia-inventory-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-algolia-inventory
+        action: /${ORG}_${SPACE}/product-consumers/update-algolia-inventory-with-inventory
         trigger: every-minute
       bulk-ats-rule:
         action: /${ORG}_${SPACE}/product-consumers/bulk-calculate-available-to-sell-with-retry
