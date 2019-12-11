@@ -103,6 +103,9 @@ packages:
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
           topicName: skus-connect-jdbc
+      consume-sku-message-with-retry:
+        location: ./product-consumers/consumeSkuMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-sku-inventory-message:
         location: ./product-consumers/consumeSkuInventoryMessage/dist/bundle.js
         runtime: nodejs:10
@@ -346,7 +349,7 @@ packages:
         action: /${ORG}_${SPACE}/product-consumers/consume-threshold-message
         trigger: threshold-trigger
       sku-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-sku-message
+        action: /${ORG}_${SPACE}/product-consumers/consume-sku-message-with-retry
         trigger: sku-trigger
       medias-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-medias-message-with-retry
