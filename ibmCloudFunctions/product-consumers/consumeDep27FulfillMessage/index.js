@@ -35,7 +35,7 @@ global.main = async function (params) {
         .filter(addErrorHandling((msg) => msg.topic === params.topicName))
         .map(addErrorHandling(parseDep27FulfillMessage))
         .map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $set: storeData })
-            .then(() => console.log('Updated store dep27 status ' + storeData._id))
+            .then(() => log('Updated store dep27 status ' + storeData._id))
             .catch(originalError => {
                 throw createError.consumeDep27FulfillMessage.failedUpdates(originalError, storeData._id);
             })

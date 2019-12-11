@@ -57,7 +57,7 @@ global.main = async function (params) {
         .filter(addErrorHandling((msg) => msg.topic === params.topicName))
         .map(addErrorHandling(parseStoreMessage))
         .map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $set: storeData }, { upsert: true })
-            .then(() => console.log('Updated/inserted store ' + storeData._id))
+            .then(() => log('Updated/inserted store ' + storeData._id))
             .catch(originalError => {
                 return createError.consumeStoresMessage.failedToUpdateStore(originalError, storeData._id);
             })

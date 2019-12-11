@@ -10,6 +10,10 @@ packages:
       algoliaAppId: $ALGOLIA_APP_ID
       productApiClientId: $PRODUCT_API_CLIENT_ID
       productApiHost: $PRODUCT_API_HOST
+      kafkaBrokers: $KAFKA_BROKERS
+      kafkaUsername: $KAFKA_USERNAME
+      kafkaPassword: $KAFKA_PASSWORD
+      kafkaInvalidMessagesDlqTopicName: $KAFKA_INVALID_MESSAGES_DLQ_TOPIC_NAME
     actions:
       consume-catalog-message:
         location: ./product-consumers/consumeCatalogMessage/dist/bundle.js
@@ -181,7 +185,6 @@ packages:
           timeout: 600000
         inputs:
           topicName: inventory-connect-jdbc-SKUINVENTORY
-          stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
           stylesCollectionName: $STYLES_COLLECTION_NAME
           productApiClientId: $PRODUCT_API_CLIENT_ID
@@ -234,6 +237,10 @@ packages:
       add-facets-to-bulk-import-queue-with-retry:
         location: ./product-consumers/addFacetsToBulkImportQueueWithRetry/dist/bundle.js
         conductor: true
+        inputs:
+          cfName: addFacetsToBulkImportQueue
+      schema-validation:
+        location: ./product-consumers/schemaValidation/dist/bundle.js
     sequences:
       update-pricing-sequence:
         actions: update-algolia-price,update-sale-price
