@@ -172,6 +172,9 @@ packages:
           topicName: styles-basic-connect-jdbc
           stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $ALGOLIA_DELETE_CREATE_QUEUE
+      delete-create-algolia-styles-with-retry:
+        location: ./product-consumers/deleteCreateAlgoliaStylesWithRetry/dist/bundle.js
+        conductor: true
       update-algolia-image:
         location: ./product-consumers/updateAlgoliaImage/dist/bundle.js
         runtime: nodejs:10
@@ -394,7 +397,7 @@ packages:
         action: /${ORG}_${SPACE}/product-consumers/bulk-calculate-available-to-sell-with-retry
         trigger: every-minute
       algolia-delete-create-rule:
-        action: /${ORG}_${SPACE}/product-consumers/delete-create-algolia-styles
+        action: /${ORG}_${SPACE}/product-consumers/delete-create-algolia-styles-with-retry
         trigger: every-minute
       algolia-catalog-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-style
