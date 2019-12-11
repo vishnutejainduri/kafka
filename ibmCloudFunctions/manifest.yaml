@@ -219,6 +219,9 @@ packages:
         inputs:
           collectionName: $MEDIAS_COLLECTION_NAME
           topicName: medias-connect-jdbc
+      consume-medias-message-with-retry:
+        location: ./product-consumers/consumeMediasMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-media-containers-message:
         location: ./product-consumers/consumeMediaContainersMessage/dist/bundle.js
         runtime: nodejs:10
@@ -343,7 +346,7 @@ packages:
         action: /${ORG}_${SPACE}/product-consumers/consume-sku-message
         trigger: sku-trigger
       medias-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-medias-message
+        action: /${ORG}_${SPACE}/product-consumers/consume-medias-message-with-retry
         trigger: medias-trigger
       stores-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-stores-message
