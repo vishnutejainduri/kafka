@@ -25,6 +25,9 @@ packages:
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
+      consume-catalog-message-with-retry:
+        location: ./product-consumers/consumeCatalogMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-styles-basic-message:
         location: ./product-consumers/consumeStylesBasicMessage/dist/bundle.js
         runtime: nodejs:10
@@ -322,7 +325,7 @@ packages:
           cron: "*/1 * * * *"
     rules:
       catalog-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message
+        action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message-with-retry
         trigger: catalog-trigger
       styles-basic-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-styles-basic-message
