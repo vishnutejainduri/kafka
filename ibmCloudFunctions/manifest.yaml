@@ -177,6 +177,9 @@ packages:
           skusCollectionName: $SKUS_COLLECTION_NAME
           storesCollectionName: $STORES_COLLECTION_NAME
           inventoryCollectionName: $INVENTORY_COLLECTION_NAME
+      bulk-calculate-available-to-sell-with-retry:
+        location: ./product-consumers/bulkCalculateAvailableToSellWithRetry/dist/bundle.js
+        conductor: true
       update-algolia-inventory:
         location: ./product-consumers/updateAlgoliaInventory/dist/bundle.js
         runtime: nodejs:10
@@ -355,7 +358,7 @@ packages:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-inventory
         trigger: every-minute
       bulk-ats-rule:
-        action: /${ORG}_${SPACE}/product-consumers/bulk-calculate-available-to-sell
+        action: /${ORG}_${SPACE}/product-consumers/bulk-calculate-available-to-sell-with-retry
         trigger: every-minute
       algolia-delete-create-rule:
         action: /${ORG}_${SPACE}/product-consumers/delete-create-algolia-styles
