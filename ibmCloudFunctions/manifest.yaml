@@ -91,6 +91,9 @@ packages:
           dbName: $DB_NAME
           collectionName: $STORES_COLLECTION_NAME
           topicName: stores-dep27fulfill-connect-jdbc
+      consume-dep27fulfill-message-with-retry:
+        location: ./product-consumers/consumeDep27FulfillMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-sku-message:
         location: ./product-consumers/consumeSkuMessage/dist/bundle.js
         runtime: nodejs:10
