@@ -225,6 +225,9 @@ packages:
         inputs:
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
           topicName: media-containers-connect-jdbc
+      add-media-container-to-queue-message-with-retry:
+        location: ./product-consumers/addMediaContainerToQueueWithRetry/dist/bundle.js
+        conductor: true
       add-facets-to-bulk-import-queue:
         location: ./product-consumers/addFacetsToBulkImportQueue/dist/bundle.js
         runtime: nodejs:10
@@ -340,7 +343,7 @@ packages:
         action: /${ORG}_${SPACE}/product-consumers/consume-media-containers-message
         trigger: media-containers-trigger
       add-media-container-to-queue-message-rule:
-        action: /${ORG}_${SPACE}/product-consumers/add-media-container-to-queue-message
+        action: /${ORG}_${SPACE}/product-consumers/add-media-container-to-queue-message-with-retry
         trigger: media-containers-trigger
       sale-price-sequence-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-pricing-sequence
