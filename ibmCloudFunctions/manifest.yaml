@@ -162,6 +162,9 @@ packages:
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
+      update-algolia-style-with-retry:
+        location: ./product-consumers/updateAlgoliaStyleWithRetry/dist/bundle.js
+        conductor: true
       delete-create-algolia-styles:
         location: ./product-consumers/deleteCreateAlgoliaStyles/dist/bundle.js
         runtime: nodejs:10
@@ -411,7 +414,7 @@ packages:
         action: /${ORG}_${SPACE}/product-consumers/delete-create-algolia-styles-with-retry
         trigger: every-minute
       algolia-catalog-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-algolia-style
+        action: /${ORG}_${SPACE}/product-consumers/update-algolia-style-with-retry
         trigger: catalog-trigger
       update-inventory-sequence-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-inventory-sequence
