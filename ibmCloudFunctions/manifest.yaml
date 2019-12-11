@@ -228,6 +228,9 @@ packages:
         inputs:
           collectionName: $MEDIA_CONTAINERS_COLLECTION_NAME
           topicName: media-containers-connect-jdbc
+      consume-media-containers-message-with-retry:
+        location: ./product-consumers/consumeMediaContainersMessageWithRetry/dist/bundle.js
+        conductor: true
       add-media-container-to-queue-message:
         location: ./product-consumers/addMediaContainerToQueue/dist/bundle.js
         runtime: nodejs:10
@@ -352,7 +355,7 @@ packages:
         action: /${ORG}_${SPACE}/product-consumers/consume-dep27fulfill-message
         trigger: dep27fulfill-trigger
       media-containers-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-media-containers-message
+        action: /${ORG}_${SPACE}/product-consumers/consume-media-containers-message-with-retry
         trigger: media-containers-trigger
       add-media-container-to-queue-message-rule:
         action: /${ORG}_${SPACE}/product-consumers/add-media-container-to-queue-message-with-retry
