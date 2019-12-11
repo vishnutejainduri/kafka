@@ -303,7 +303,7 @@ packages:
         location: ./product-consumers/schemaValidation/dist/bundle.js
     sequences:
       update-pricing-sequence:
-        actions: update-algolia-price-with-retry,update-sale-price-with-retry
+        actions: update-algolia-price,update-sale-price
       update-inventory-sequence:
         actions: consume-sku-inventory-message-with-retry,calculate-available-to-sell-with-retry
     triggers:
