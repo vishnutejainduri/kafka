@@ -184,6 +184,9 @@ packages:
         inputs:
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
           stylesCollectionName: $STYLES_COLLECTION_NAME
+      update-algolia-image-with-retry:
+        location: ./product-consumers/updateAlgoliaImageWithRetry/dist/bundle.js
+        conductor: true
       update-algolia-price:
         location: ./product-consumers/updateAlgoliaPrice/dist/bundle.js
         runtime: nodejs:10
@@ -391,7 +394,7 @@ packages:
         action: /${ORG}_${SPACE}/product-consumers/update-pricing-sequence
         trigger: /${ORG}_${SPACE}/sale-price-trigger
       algolia-images-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-algolia-image
+        action: /${ORG}_${SPACE}/product-consumers/update-algolia-image-with-retry
         trigger: every-minute
       algolia-inventory-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-inventory
