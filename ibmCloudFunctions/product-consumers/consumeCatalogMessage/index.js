@@ -26,9 +26,9 @@ global.main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter((msg) => msg.topic === params.topicName)
-        .filter(filterStyleMessages)
-        .map(parseStyleMessage)
+        .filter(addErrorHandling((msg) => msg.topic === params.topicName))
+        .filter(addErrorHandling(filterStyleMessages))
+        .map(addErrorHandling(parseStyleMessage))
         .map(addErrorHandling((styleData) => styles.findOne({ _id: styleData._id })
             .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
                 ? styles.updateOne({ _id: styleData._id, lastModifiedDate: { $lte: styleData.lastModifiedDate } }, { $set: styleData })
