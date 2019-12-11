@@ -79,6 +79,9 @@ packages:
           dbName: $DB_NAME
           collectionName: $STORES_COLLECTION_NAME
           topicName: stores-fulfill-connect-jdbc
+      consume-storesfulfill-message-with-retry:
+        location: ./product-consumers/consumeStoresFulfillMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-dep27fulfill-message:
         location: ./product-consumers/consumeDep27FulfillMessage/dist/bundle.js
         runtime: nodejs:10
@@ -358,7 +361,7 @@ packages:
         action: /${ORG}_${SPACE}/product-consumers/consume-stores-message
         trigger: stores-trigger
       storefulfill-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-storesfulfill-message
+        action: /${ORG}_${SPACE}/product-consumers/consume-storesfulfill-message-with-retry
         trigger: storefulfill-trigger
       dep27fulfill-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-dep27fulfill-message
