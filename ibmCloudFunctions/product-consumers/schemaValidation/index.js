@@ -5,19 +5,18 @@ const { Kafka } = require('kafkajs');
 const createError = require('../../lib/createError');
 const { log } = require('../utils');
 
-const addFacetsToBulkImportQueueSchema = require('../addFacetsToBulkImportQueue/schema.json');
-const addMediaContainerToQueueSchema = require('../addMediaContainerToQueue/schema.json');
-
-const validators = {
-    addFacetsToBulkImportQueue: {
-        params: ajv.compile(addFacetsToBulkImportQueueSchema.params),
-        message: ajv.compile(addFacetsToBulkImportQueueSchema.message)
-    },
-    addMediaContainerToQueue: {
-        params: ajv.compile(addMediaContainerToQueueSchema.params),
-        message: ajv.compile(addMediaContainerToQueueSchema.message)
-    }
-};
+const validators = [
+    'addFacetsToBulkImportQueue',
+    'addMediaContainerToQueue'
+].reduce((_validators, cfName) => {
+    const { params, message } = require(`../${cfName}/schema.json`);
+    _validators[cfName] = {
+        params: ajv.compile(params),
+        message: ajv.compile(message)
+    };
+    return _validators;
+}, {});
+// e.g. -> validators = { addFacetsToBulkImportQueue: { params: ..., message: ... } };
 
 let cachedProducer = null;
 
