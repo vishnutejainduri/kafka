@@ -26,8 +26,11 @@ const attributeMap = {
     'WEBSTATUS': 'webStatus',
     'SEASON_CD': 'season',
     'COLORID': 'colourId',
-    'EFFECTIVE_DATE': 'effectiveDate',
+    'CREATED_DATE': 'createdDate',
+    'LAST_MODIFIED_DATE': 'lastModifiedDate',
+    'ONLINEFROMDATE': 'onlineFromDate',
     'UNIT_PRICE': 'originalPrice',
+    'SUBDEPT': 'departmentId',
     'VSN': 'vsn'
 };
 
@@ -43,14 +46,6 @@ function filterStyleMessages(msg) {
     // We want to filter out any "pseudo styles" until a later release. That is, any style with a suffix greater than -00. eg. -10 or -05
     const hasStyleSuffixGreaterThan00 = /^\d+-(1\d|0[1-9])$/;
     return !msg.value.STYLEID.match(hasStyleSuffixGreaterThan00);
-}
-
-// https://stackoverflow.com/a/2970667/10777917
-function camelCase(str) {
-    return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
-        if (+match === 0) return ""; // or if (/\s+/.test(match)) for white spaces
-        return index == 0 ? match.toLowerCase() : match.toUpperCase();
-    });
 }
 
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.

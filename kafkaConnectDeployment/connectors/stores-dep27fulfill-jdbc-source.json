@@ -1,0 +1,20 @@
+{
+  "name": "stores-dep27fulfill-jdbc-source",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "mode": "timestamp",
+    "batch.max.rows": 100,
+    "timestamp.column.name": "MODIFIEDDATE",
+    "topic.prefix": "stores-dep27fulfill-connect-jdbc",
+    "validate.non.null": "false",
+    "errors.log.enable": true,
+    "numeric.mapping": "best_fit",
+    "query": "SELECT STORE_CD AS SITE_ID, DEPT27FF AS FULFILL_STATUS, MODIFIEDDATE FROM ELCAT.DEPT27INV",
+    "poll.interval.ms": 120000,
+    "offset.flush.timeout.ms": 120000,
+    "request.timeout.ms": 900000,
+    "producer.request.timeout.ms": 900000
+  }
+}

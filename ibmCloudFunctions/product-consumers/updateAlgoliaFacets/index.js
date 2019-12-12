@@ -1,21 +1,40 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
 
 let client = null;
 let index = null;
 
 global.main = async function (params) {
+    console.log(JSON.stringify({
+        cfName: 'updateAlgoliaFacets',
+        params
+    }));
+
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
         throw new Error('Requires Algolia configuration. See manifest.yml');
     }
 
     if (index === null) {
         client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+        client.setTimeouts({
+            connect: 600000,
+            read: 600000,
+            write: 600000
+        });
         index = client.initIndex(params.algoliaIndexName);
     }
+    let algoliaFacetBulkImportQueue;
+    let styles;
+    let updateAlgoliaFacetsCount;
+    try {
+        algoliaFacetBulkImportQueue = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName);
+        updateAlgoliaFacetsCount = await getCollection(params, 'updateAlgoliaFacetsCount');
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
 
-    const algoliaFacetBulkImportQueue = await getCollection(params);
-    const styles = await getCollection(params, params.stylesCollectionName);
     const styleFacets = await algoliaFacetBulkImportQueue.aggregate([
         { $group: {
             _id: "$styleId",
@@ -52,19 +71,21 @@ global.main = async function (params) {
         };
     });
 
+    const styleIds = algoliaUpdates.map((algoliaUpdate) => algoliaUpdate.objectID);
+
     let algoliaUpdatesWithoutOutlet = await Promise.all(algoliaUpdates.map((algoliaUpdate) => styles.findOne({ _id: algoliaUpdate.objectID })
         .then((styleData) => {
-            return styleData.isOutlet
+            return !styleData || styleData.isOutlet
                 ? null
                 : algoliaUpdate
         })
     ));
     algoliaUpdatesWithoutOutlet = algoliaUpdatesWithoutOutlet.filter((algoliaUpdate) => algoliaUpdate);
-    const styleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
 
     return index.partialUpdateObjects(algoliaUpdatesWithoutOutlet, true)
         .then(() => styles.bulkWrite(styleUpdates, { ordered : false })
         .then(() => algoliaFacetBulkImportQueue.deleteMany({ styleId: { $in: styleIds } }))
+        .then(() => updateAlgoliaFacetsCount.insert({ batchSize: algoliaUpdatesWithoutOutlet.length }))
         .then(() => console.log('updated styles', styleIds)));
 }
 

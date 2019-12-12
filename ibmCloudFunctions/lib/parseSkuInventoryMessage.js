@@ -1,6 +1,7 @@
 'use strict';
 
 const TOPIC_NAME = 'inventory-connect-jdbc-SKUINVENTORY';
+const { HIDDEN_STORES } = require('./constants');
 
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
@@ -11,6 +12,7 @@ const attributeMap = {
     'QOO': 'quantityOnOrder',
     'QBO': 'quantityBackOrder',
     'QIT': 'quantityInTransit',
+    'QIP': 'quantityInPicking',
     'QOHSELLABLE': 'quantityOnHandSellable',
     'QOHNOTSELLABLE': 'quantityOnHandNotSellable',
     'LASTMODIFIEDDATE': 'lastModifiedDate'
@@ -35,6 +37,11 @@ function parseSkuInventoryMessage(msg) {
     for (let sourceAttributeName in attributeMap) {
         inventoryData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
     }
+
+    inventoryData['availableToSell'] = (inventoryData.quantityOnHandSellable - inventoryData.quantityInPicking) > 0
+      ? (inventoryData.quantityOnHandSellable - inventoryData.quantityInPicking)
+      : 0
+    inventoryData['isVisible'] = !HIDDEN_STORES.includes(`${inventoryData.storeId}`.padStart(5, '0'))
 
     // Add _id for mongo
     inventoryData.id = `${inventoryData.styleId}-${inventoryData.skuId}-${inventoryData.storeId}`;

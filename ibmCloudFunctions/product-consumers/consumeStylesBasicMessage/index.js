@@ -1,5 +1,6 @@
 const { parseStyleBasicMessage, filterStyleBasicMessage } = require('../../lib/parseStyleBasicMessage');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
 
 const handleError = function (err, msg) {
   console.error('Problem with document ' + msg._id);
@@ -16,6 +17,11 @@ const handleError = function (err, msg) {
 };
 
 global.main = async function (params) {
+  console.log(JSON.stringify({
+      cfName: 'consumeStylesBasicMessage',
+      params
+    }));
+
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
     }
@@ -24,10 +30,15 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const [styles, algoliaDeleteCreateQueue] = await Promise.all([
-        getCollection(params),
-        getCollection(params, params.algoliaDeleteCreateQueue)
-    ]);
+    let styles;
+    let algoliaDeleteCreateQueue;
+    try {
+      styles = await getCollection(params);
+      algoliaDeleteCreateQueue = await getCollection(params, params.algoliaDeleteCreateQueue);
+    } catch (originalError) {
+      throw createError.failedDbConnection(originalError); 
+    }
+
     return Promise.all(params.messages
         .filter(filterStyleBasicMessage)
         .map(parseStyleBasicMessage)
@@ -61,8 +72,9 @@ global.main = async function (params) {
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
-            const e = new Error('Some updates failed. See `results`.');
-            e.results = results;
+            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
+            e.failedUpdatesErrors = errors;
+            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
             throw e;
         }
     });

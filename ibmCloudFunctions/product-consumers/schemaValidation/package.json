@@ -1,0 +1,21 @@
+{
+  "name": "schema-validation",
+  "version": "1.0.0",
+  "description": "Schema validation for all the cloud functions",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config webpack.config.js --mode=production",
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ajv": "^6.10.2",
+    "kafkajs": "^1.11.0"
+  },
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0"
+  }
+}

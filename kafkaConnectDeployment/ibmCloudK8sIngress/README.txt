@@ -21,7 +21,10 @@ You will require the IBM Cloud CLI. See the root README in this repo for more in
 3a. Set the context of kubectl to the cluster hosting Kafka Connect. Run `ibmcloud ks cluster-config --cluster <cluster_id>`
 The output will contain an "export KUBECONFIG=..." statement. Copy and run that statement in terminal.
 
-3b. Run `kubectl apply -f configs/ingress.yaml`
+3b. For Dev: 
+    Run `kubectl apply -f configs/ingress-dev.yaml`
+    For Prod:
+    Run `kubectl apply -f configs/ingress-prod.yaml`
 
 
 Accessing Kafka Connect over the ingress

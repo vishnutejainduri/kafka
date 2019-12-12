@@ -8,7 +8,7 @@
     "table.poll.interval.ms": 3600000,
     "mode": "timestamp",
     "timestamp.column.name": "LAST_MODIFIED_DATE",
-    "query": "SELECT STYLE_ID, BRAND_ID, LAST_MODIFIED_DATE FROM MERCH.STYLES",
+    "query": "SELECT sc.IMAGE_STYLEID AS STYLE_ID, BRAND_ID, LAST_MODIFIED_DATE FROM MERCH.STYLES INNER JOIN STYLE_COLOURS sc ON SUBSTR(sc.STYLEID,1,8) = STYLE_ID",
     "topic.prefix": "styles-basic-connect-jdbc",
     "validate.non.null": "false",
     "numeric.mapping": "best_fit",

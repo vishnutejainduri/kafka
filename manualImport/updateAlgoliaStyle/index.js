@@ -75,6 +75,11 @@ global.main = async function () {
     stream.write('[');
     if (index === null) {
         client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+        client.setTimeouts({
+            connect: 600000,
+            read: 600000,
+            write: 600000
+        });
         index = client.initIndex(params.algoliaIndexName);
     }
 

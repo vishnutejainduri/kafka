@@ -8,7 +8,7 @@
     "table.poll.interval.ms": 3600000,
     "mode": "timestamp",
     "timestamp.column.name": "LASTMODIFIEDDATE",
-    "query": "SELECT s.LASTMODIFIEDDATE, s.FKORGANIZATIONNO, sx.pkproductno as id, s.fkstyleno as styleId, s.skusize as \"SIZE\", s.fksizeno as sizeId, s.skudimension as dimension, s.skucolor as colorId FROM vstore.sku s JOIN (SELECT FKSKU, PKPRODUCTNO, FKORGANIZATIONNO FROM vstore.skuxref) sx ON s.pksku = sx.fksku AND s.fkorganizationno = sx.fkorganizationno",
+    "query": "SELECT s.LASTMODIFIEDDATE, s.FKORGANIZATIONNO, sx.pkproductno as id, sc.IMAGE_STYLEID as styleId, s.skusize as \"SIZE\", s.fksizeno as sizeId, s.skudimension as dimension, s.skucolor as colorId FROM vstore.sku s JOIN (SELECT FKSKU, PKPRODUCTNO, FKORGANIZATIONNO FROM vstore.skuxref) sx  ON s.pksku = sx.fksku AND s.fkorganizationno = sx.fkorganizationno LEFT JOIN STYLE_COLOURS sc ON SUBSTR(sc.STYLEID,1,8) = s.fkstyleno AND sc.COLOUR_ID = s.skucolor",
     "topic.prefix": "skus-connect-jdbc",
     "validate.non.null": "false",
     "numeric.mapping": "best_fit",
