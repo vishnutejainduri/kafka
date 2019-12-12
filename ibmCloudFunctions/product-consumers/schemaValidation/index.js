@@ -64,7 +64,7 @@ global.main = async function(params) {
     if (invalidMessages.length) {
         log(`${invalidMessages.length} invalid messages out of ${params.messages.lenth} messages.`);
         invalidMessages.forEach(({ message, error }) => {
-            log(`Invalid message ${message} with error: ${error}`);
+            log(`Invalid message ${JSON.stringify(message)} with error: ${error}`);
         });
 
         try {
