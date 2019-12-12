@@ -263,6 +263,7 @@ packages:
       add-media-container-to-queue-message-with-retry:
         location: ./product-consumers/addMediaContainerToQueueWithRetry/dist/bundle.js
         conductor: true
+        cfName: addMediaContainerToQueue
       add-facets-to-bulk-import-queue:
         location: ./product-consumers/addFacetsToBulkImportQueue/dist/bundle.js
         runtime: nodejs:10
