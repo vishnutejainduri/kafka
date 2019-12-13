@@ -16,7 +16,7 @@
                 "type": "array"
             }
         },
-        "required": ["messages"]
+        "required": ["messages", "cfName", "topicName"]
     },
     "message": {
         "$schema": "http://json-schema.org/draft-07/schema",

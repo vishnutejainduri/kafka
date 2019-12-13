@@ -2,6 +2,22 @@ const schemaValidator = require('../index.js');
 
 describe("schemaValidator", function() {
     jest.setTimeout(60000);
+    describe("validates addMediaContainerToQueue", function() {
+        it("returns params as is if the params is valid", async function() {
+            const validMessage = {
+                value: {
+                    CODE: ""
+                }
+            };
+            const validParams = {
+                messages: [validMessage],
+                topicName: "media-containers-connect-jdbc",
+                cfName: "addMediaContainerToQueue"
+            };
+            expect(await schemaValidator(validParams)).toEqual(validParams);
+        });
+    });
+
     describe("validates addFacetsToBulkImportQueue", function() {
         it("throws an error if params is not valid", async function() {
             const invalidParams = {
