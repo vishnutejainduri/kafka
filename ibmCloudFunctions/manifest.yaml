@@ -241,7 +241,7 @@ packages:
       update-pricing-sequence:
         actions: update-algolia-price,update-sale-price
       update-inventory-sequence:
-        actions: consume-sku-inventory-message
+        actions: consume-sku-inventory-message,calculate-available-to-sell
     triggers:
       catalog-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
