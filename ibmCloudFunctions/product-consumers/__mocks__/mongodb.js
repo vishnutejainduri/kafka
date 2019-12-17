@@ -35,6 +35,10 @@ const getCollection = (collectionName) => {
                   toArray: async () => ([{ _id: 'success' }])
                 })
             }; 
+        case 'barcode':
+            return {
+                updateOne: async ({ _id }) => ({ _id })
+            }; 
         case 'inventory':
             return {
                 find: () => ({
