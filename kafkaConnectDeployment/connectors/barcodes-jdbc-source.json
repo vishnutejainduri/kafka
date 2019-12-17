@@ -1,0 +1,18 @@
+{
+  "name": "barcodes-jdbc-source",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "schema.pattern": "VSTORE",
+    "table.poll.interval.ms": 3600000,
+    "mode": "timestamp",
+    "timestamp.column.name": "LASTMODIFIEDDATE",
+    "query": "SELECT COUNT(*)OVER(), sx.LASTMODIFIEDDATE, sx.FKORGANIZATIONNO, sx.PKPRODUCTNO as barcode, sx.SUBTYPE, s.PKSKU AS SKU_ID, sc.IMAGE_STYLEID as styleId FROM vstore.skuxref sx INNER JOIN VSTORE.SKU s ON sx.FKSKU = s.PKSKU LEFT JOIN ELCAT.STYLE_COLOURS sc ON SUBSTR(sc.STYLEID,1,8) = s.fkstyleno AND sc.COLOUR_ID = s.skucolor",
+    "topic.prefix": "barcodes-connect-jdbc",
+    "validate.non.null": "false",
+    "numeric.mapping": "best_fit",
+    "poll.interval.ms": 60000,
+    "offset.flush.timeout.ms": 60000
+  }
+}
