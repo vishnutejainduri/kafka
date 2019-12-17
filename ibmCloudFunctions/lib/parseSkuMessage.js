@@ -9,7 +9,7 @@ const attributeMap = {
     'COLORID': 'colorId',
     'SIZEID': 'sizeId',
     'SIZE': 'size',
-    'DIMENSION': 'dimension',
+    'DIMENSION': 'dimension'
 };
 
 function filterSkuMessage(msg) {
