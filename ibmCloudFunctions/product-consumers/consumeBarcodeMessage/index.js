@@ -4,7 +4,7 @@ const createError = require('../../lib/createError');
 
 global.main = async function (params) {
     console.log(JSON.stringify({
-        cfName: 'consumeSkuMessage',
+        cfName: 'consumeBarcodeMessage',
         params
     }));
 
