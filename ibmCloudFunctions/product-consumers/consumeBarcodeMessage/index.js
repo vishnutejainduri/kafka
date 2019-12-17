@@ -1,12 +1,10 @@
-const { filterSkuMessage, parseSkuMessage } = require('../../lib/parseSkuMessage');
+const { filterBarcodeMessage, parseBarcodeMessage } = require('../../lib/parseBarcodeMessage');
+const { createLog, addErrorHandling, log } = require('../utils');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 
 global.main = async function (params) {
-    console.log(JSON.stringify({
-        cfName: 'consumeBarcodeMessage',
-        params
-    }));
+    log(createLog.params('consumeBarcodeMessage', params));
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
@@ -16,35 +14,35 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    let skus;
+    let barcodes;
     try {
-        skus = await getCollection(params);
+        barcodes = await getCollection(params);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
 
     return Promise.all(params.messages
-        .filter(filterSkuMessage)
-        .map(parseSkuMessage)
-        .map((skuData) => skus.findOne({ _id: skuData._id })
-            .then((existingDocument) => existingDocument
-                ? skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, { $set: skuData })
-                : skus.updateOne({ _id: skuData._id }, { $set: skuData }, { upsert: true }) // fix race condition
-            ).then(() => "Updated/inserted document " + skuData._id)
+        .filter(filterBarcodeMessage)
+        .map(parseBarcodeMessage)
+        .map(addErrorHandling((barcodeData) => barcodes.findOne({ _id: barcodeData._id })
+            .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
+                ? barcodes.updateOne({ _id: barcodeData._id, lastModifiedDate: { $lt: barcodeData.lastModifiedDate } }, { $set: barcodeData })
+                : barcodes.updateOne({ _id: barcodeData._id }, { $set: barcodeData }, { upsert: true })
+            ).then(() => "Updated/inserted document " + barcodeData._id)
             .catch((err) => {
-                console.error('Problem with SKU ' + skuData._id);
+                console.error('Problem with barcode ' + barcodeData._id);
                 console.error(err);
                 if (!(err instanceof Error)) {
                     const e = new Error();
                     e.originalError = err;
-                    e.attemptedDocument = skuData;
+                    e.attemptedDocument = barcodeData;
                     return e;
                 }
 
-                err.attemptedDocument = skuData;
+                err.attemptedDocument = barcodeData;
                 return err;
             })
-        )
+        ))
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
