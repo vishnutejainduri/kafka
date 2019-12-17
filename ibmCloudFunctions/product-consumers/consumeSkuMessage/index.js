@@ -27,9 +27,9 @@ global.main = async function (params) {
         .filter(filterSkuMessage)
         .map(parseSkuMessage)
         .map((skuData) => skus.findOne({ _id: skuData._id })
-            .then((existingDocument) => existingDocument
-                ? skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, { $set: skuData })
-                : skus.updateOne({ _id: skuData._id }, { $set: skuData }, { upsert: true }) // fix race condition
+            .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
+                  ? skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, { $set: skuData })
+                  : skus.updateOne({ _id: skuData._id }, { $set: skuData }, { upsert: true }) // fix race condition
             ).then(() => "Updated/inserted document " + skuData._id)
             .catch((err) => {
                 console.error('Problem with SKU ' + skuData._id);
