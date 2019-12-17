@@ -10,6 +10,7 @@ const attributeMap = {
     'SIZEID': 'sizeId',
     'SIZE': 'size',
     'DIMENSION': 'dimension',
+    'LASTMODIFIEDDATE': 'lastModifiedDate'
 };
 
 function filterSkuMessage(msg) {
