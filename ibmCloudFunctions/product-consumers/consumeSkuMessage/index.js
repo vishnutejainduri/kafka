@@ -24,7 +24,7 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(filterSkuMessage)
         .map(parseSkuMessage)
-        .map((skuData) => skus.findOne({ _id: skuData._id })
+        .map(addErrorHandling((skuData) => skus.findOne({ _id: skuData._id })
             .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
                   ? skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, { $set: skuData })
                   : skus.updateOne({ _id: skuData._id }, { $set: skuData }, { upsert: true }) // fix race condition
