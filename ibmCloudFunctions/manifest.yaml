@@ -118,6 +118,18 @@ packages:
       consume-sku-message-with-retry:
         location: ./product-consumers/consumeSkuMessageWithRetry/dist/bundle.js
         conductor: true
+      consume-barcode-message:
+        location: ./product-consumers/consumeBarcodeMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+          timeout: 600000
+        inputs:
+          collectionName: $BARCODES_COLLECTION_NAME
+          topicName: barcodes-connect-jdbc
+      consume-barcode-message-with-retry:
+        location: ./product-consumers/consumeBarcodeMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-sku-inventory-message:
         location: ./product-consumers/consumeSkuInventoryMessage/dist/bundle.js
         runtime: nodejs:10
@@ -301,6 +313,11 @@ packages:
         inputs:
           isJSONData: true
           topic: thresholds-connect-jdbc
+      barcode-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: barcodes-connect-jdbc
       sku-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
@@ -363,6 +380,9 @@ packages:
       sku-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-sku-message-with-retry
         trigger: sku-trigger
+      barcode-rule:
+        action: /${ORG}_${SPACE}/product-consumers/consume-barcode-message-with-retry
+        trigger: barcode-trigger
       medias-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-medias-message-with-retry
         trigger: medias-trigger
