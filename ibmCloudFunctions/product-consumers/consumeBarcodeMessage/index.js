@@ -28,7 +28,7 @@ global.main = async function (params) {
             .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
                 ? barcodes.updateOne({ _id: barcodeData._id, lastModifiedDate: { $lt: barcodeData.lastModifiedDate } }, { $set: barcodeData })
                 : barcodes.updateOne({ _id: barcodeData._id }, { $set: barcodeData }, { upsert: true })
-            ).then(() => "Updated/inserted document " + barcodeData._id)
+            )
             .catch((err) => {
                 console.error('Problem with barcode ' + barcodeData._id);
                 console.error(err);
