@@ -41,7 +41,7 @@ global.main = async function (params) {
             facets: { $push: { name: "$facetName", value: "$facetValue" } }
         }},
         { $limit: 750 }
-    ]).toArray();
+    ], { allowDiskUse: true }).toArray();
 
     if (!styleFacets.length) {
         return;
