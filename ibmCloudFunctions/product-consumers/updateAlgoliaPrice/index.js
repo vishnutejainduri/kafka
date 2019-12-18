@@ -122,7 +122,6 @@ global.main = async function (params) {
         }
         return true
     });
-    const failedMessagesIndices = messageFailures.map(({ index }) => index);
 
     if (updates.length > 0) {
         await index.partialUpdateObjects(updates)
@@ -139,6 +138,9 @@ global.main = async function (params) {
 
     if (messageFailures.length) {
         log.messageFailures(messageFailures);
+        
+        // we only need to keep the messages that have not failed
+        const failedMessagesIndices = messageFailures.map(({ index }) => index);
         return {
             ...params,
             messageFailures,
