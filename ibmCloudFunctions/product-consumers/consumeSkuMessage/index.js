@@ -1,12 +1,10 @@
 const { filterSkuMessage, parseSkuMessage } = require('../../lib/parseSkuMessage');
+const { addErrorHandling, log, createLog } = require('../utils');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 
 global.main = async function (params) {
-    console.log(JSON.stringify({
-        cfName: 'consumeSkuMessage',
-        params
-    }));
+    log(createLog.params('consumeSkuMessage', params));
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
@@ -26,7 +24,7 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(filterSkuMessage)
         .map(parseSkuMessage)
-        .map((skuData) => skus.findOne({ _id: skuData._id })
+        .map(addErrorHandling((skuData) => skus.findOne({ _id: skuData._id })
             .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
                   ? skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, { $set: skuData })
                   : skus.updateOne({ _id: skuData._id }, { $set: skuData }, { upsert: true }) // fix race condition
@@ -44,7 +42,7 @@ global.main = async function (params) {
                 err.attemptedDocument = skuData;
                 return err;
             })
-        )
+        ))
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
