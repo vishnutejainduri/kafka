@@ -85,7 +85,8 @@ global.main = async function (params) {
             // Ensure that the price update is for an available style
             const styleData = await styles.findOne({ _id: update.objectID });
             const priceData = await prices.findOne({ _id: update.objectID });
-            if (!styleData 
+            if (!styleData
+                || !priceData
                 || styleData.isOutlet
                 || (update.onlineSalePrice == priceData.onlineSalePrice && update.inStoreSalePrice == priceData.inStoreSalePrice)) {
                 return null;
