@@ -108,12 +108,16 @@ global.main = async function (params) {
     );
     
     const messageFailures = [];
-    updates = updates.filter((update) => {
+    updates = updates.filter((update, index) => {
         if (!update) {
             return false
         }
         if ((update instanceof Error)) {
-            messageFailures.push(update);
+            messageFailures.push({
+                index,
+                error: update,
+                message: params.messages[index]
+            });
             return false;
         }
         return true
@@ -132,10 +136,18 @@ global.main = async function (params) {
         });
     }
 
-    if (messageFailures.length > 0) {
-        throw createError.updateAlgoliaPrice.partialFailure(params.messages, messageFailures);
+    if (messageFailures.length) {
+        log.messageFailures(messageFailures);
+        
+        // we only need to keep the messages that have not failed
+        const failedMessagesIndices = messageFailures.map(({ index }) => index);
+        return {
+            ...params,
+            messageFailures,
+            messages: params.messages.filter((_, index) => !failedMessagesIndices.includes(index))
+        };
     }
-
+    
     return params;
 };
 
