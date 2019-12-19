@@ -56,7 +56,7 @@ global.main = async function (params) {
         .map((update) => {
                 return prices.updateOne(
                     { _id: update._id },
-                    { $set: update },
+                    { $currentDate: { lastModifiedInternalSalePrice: { $type:"timestamp" } }, $set: update },
                     { upsert: true }
                 ).catch((err) => {
                     console.error('Problem with sale price ' + update.styleId, update);

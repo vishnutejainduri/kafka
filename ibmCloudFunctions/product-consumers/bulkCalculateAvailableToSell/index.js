@@ -32,7 +32,7 @@ global.main = async function (params) {
     return Promise.all(stylesToRecalcAts
         .map(addErrorHandling(async (styleToRecalcAts) => {
           const { skuAtsOperations, styleAts, styleOnlineAts } = await calculateStyleAts(styleToRecalcAts, styles, skus, stores, inventory);
-          const operationResults = await Promise.all([styles.updateOne({ _id: styleToRecalcAts._id }, { $set: { ats: styleAts, onlineAts: styleOnlineAts } })
+          const operationResults = await Promise.all([styles.updateOne({ _id: styleToRecalcAts._id }, { $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } }, $set: { ats: styleAts, onlineAts: styleOnlineAts } })
                               .catch(originalError => {
                                   throw createError.bulkCalculateAvailableToSell.failedUpdateStyleAts(originalError, styleToRecalcAts);
                               })].concat(skuAtsOperations))
@@ -54,7 +54,7 @@ global.main = async function (params) {
         const successfulStyleIds = successResults.map((result) => result.filter((res, index) => result.indexOf(res) === index)[0]);
 
         if (successfulStyleIds.length > 0) {
-          await Promise.all(successfulStyleIds.map((record) => styleAvailabilityCheckQueue.updateOne({ _id : record }, { $set : { _id: record, styleId: record } }, { upsert: true })))
+          await Promise.all(successfulStyleIds.map((record) => styleAvailabilityCheckQueue.updateOne({ _id : record }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: record, styleId: record } }, { upsert: true })))
           .catch(originalError => {
               throw createError.bulkCalculateAvailableToSell.failedToAddToAlgoliaQueue(originalError, successfulStyleIds);
           })

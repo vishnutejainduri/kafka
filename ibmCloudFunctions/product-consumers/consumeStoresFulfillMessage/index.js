@@ -34,7 +34,7 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(addErrorHandling((msg) => msg.topic === params.topicName))
         .map(addErrorHandling(parseStoreFulfillMessage))
-        .map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $set: storeData })
+        .map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $currentDate: { lastModifiedInternalOnlineFulfill: { $type:"timestamp" } }, $set: storeData })
             .then(() => log('Updated store fulfill ' + storeData._id))
             .catch(originalError => {
                 return createError.consumeStoresFulfillMessage.failedToUpdateStore(originalError, storeData._id);

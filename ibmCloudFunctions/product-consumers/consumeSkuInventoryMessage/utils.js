@@ -30,7 +30,7 @@ const handleStyleUpdate = (
                             ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`).concat(`${sku.size}-${storeId}`)
                             : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`);
 
-                        const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
+                        const updateToProcess = { $currentDate: { lastModifiedInternalSizes: { $type:"timestamp" } }, $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
 
                         return styles.updateOne({ _id: styleId }, updateToProcess, { upsert: true })
                     }
