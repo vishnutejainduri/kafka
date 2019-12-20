@@ -5,9 +5,19 @@ const Ajv = require('ajv');
 
 const createError = require('./createError');
 
+const instances = {
+    DEFAULT: 'DEFAULT',
+    MESSAGES: 'MESSAGES'
+};
+
+const clients = {
+    [instances.DEFAULT]: null,
+    [instances.MESSAGES]: null
+};
+
 const mongoParametersSchema = {
     "$schema": "http://json-schema.org/draft-07/schema",
-    title: "getcollection",
+    title: "getcollectionParams",
     description: "Parameters for obtaining a mongodb connection",
     type: "object",
     properties: {
@@ -31,18 +41,17 @@ const mongoParametersSchema = {
     "required": ["mongoUri", "dbName", "collectionName", "mongoCertificateBase64"]
  };
 
+const mongoInstanceSchema = {
+    "$schema": "http://json-schema.org/draft-07/schema",
+    title: "getcollectionInstance",
+    description: "Instance of mongodb",
+    "type": "string",
+    "enum": ["DEFAULT", "MESSAGES"]
+};
+
 const ajv = new Ajv({ allErrors: true });
-const validate = ajv.compile(mongoParametersSchema);
-
-const instances = {
-    DEFAULT: 'DEFAULT',
-    MESSAGES: 'MESSAGES'
-};
-
-const clients = {
-    [instances.DEFAULT]: null,
-    [instances.MESSAGES]: null
-};
+const validateParams = ajv.compile(mongoParametersSchema);
+const validateInstance = ajv.compile(mongoInstanceSchema)
 
 /**
  * Returns a Mongo Collection,
@@ -52,14 +61,22 @@ const clients = {
  * @param {String} params.collectionName Name of the collection to use
  * @returns {MongoCollection}
  */
-async function getCollection(params, collectionName = null, instance) {
-    instance = instance === instances.MESSAGES ? instances.MESSAGES : instances.DEFAULT;
+async function getCollection(params, collectionName = null, instance = instances.DEFAULT) {
+    validateInstance(instance);
+    if (validateInstance.errors) {
+        throw createError.failedSchemaValidation(
+            validateInstance.errors,
+            'getCollection',
+            `Instance should be one of ${Object.keys(instances)}`
+        );
+    }
+
     // do not use this function in Promise.all: https://stackoverflow.com/q/58919867/12144949
     if (clients[instance] == null) {
-        validate(params)
-        if (validate.errors) {
+        validateParams(params)
+        if (validateParams.errors) {
             throw createError.failedSchemaValidation(
-                validate.errors,
+                validateParams.errors,
                 'getCollection',
                 'MongoUri, mongoCertificateBase64, dbName, and collectionName are required action params. See manifest.yaml.'
             )
