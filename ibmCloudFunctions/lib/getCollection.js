@@ -53,9 +53,9 @@ const clients = {
  * @returns {MongoCollection}
  */
 async function getCollection(params, collectionName = null, instance) {
-    let client = clients[instance === instances.MESSAGES ? instances.MESSAGES : instances.DEFAULT];
+    instance = instance === instances.MESSAGES ? instances.MESSAGES : instances.DEFAULT;
     // do not use this function in Promise.all: https://stackoverflow.com/q/58919867/12144949
-    if (client == null) {
+    if (clients[instance] == null) {
         validate(params)
         if (validate.errors) {
             throw createError.failedSchemaValidation(
@@ -78,13 +78,13 @@ async function getCollection(params, collectionName = null, instance) {
             reconnectInterval: 10000
         };
 
-        client = await MongoClient.connect(params.mongoUri, options).catch((err) => {
+        clients[instance] = await MongoClient.connect(params.mongoUri, options).catch((err) => {
             throw new Error('Couldn\'t connect to Mongo: ' + err);
         });
     }
 
     const collection = collectionName || params.collectionName;
-    return client.db(params.dbName).collection(collection);
+    return clients[instance].db(params.dbName).collection(collection);
 }
 
 getCollection.instances = instances;
