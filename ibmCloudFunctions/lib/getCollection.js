@@ -67,7 +67,7 @@ async function getCollection(params, collectionName = null, instance = instances
         throw createError.failedSchemaValidation(
             validateInstance.errors,
             'getCollection',
-            `Instance should be one of ${Object.keys(instances)}`
+            `Instance should be one of ${Object.values(instances)}`
         );
     }
 
