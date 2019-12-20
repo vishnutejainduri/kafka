@@ -34,7 +34,15 @@ const mongoParametersSchema = {
 const ajv = new Ajv({ allErrors: true });
 const validate = ajv.compile(mongoParametersSchema);
 
-let client = null;
+const instances = {
+    DEFAULT: 'DEFAULT',
+    MESSAGES: 'MESSAGES'
+};
+
+const clients = {
+    [instances.DEFAULT]: null,
+    [instances.MESSAGES]: null
+};
 
 /**
  * Returns a Mongo Collection,
@@ -44,7 +52,8 @@ let client = null;
  * @param {String} params.collectionName Name of the collection to use
  * @returns {MongoCollection}
  */
-async function getCollection(params, collectionName = null) {
+async function getCollection(params, collectionName = null, instance) {
+    let client = clients[instance === instances.MESSAGES ? instances.MESSAGES : instances.DEFAULT];
     // do not use this function in Promise.all: https://stackoverflow.com/q/58919867/12144949
     if (client == null) {
         validate(params)
@@ -78,4 +87,5 @@ async function getCollection(params, collectionName = null) {
     return client.db(params.dbName).collection(collection);
 }
 
+getCollection.instances = instances;
 module.exports = getCollection;
