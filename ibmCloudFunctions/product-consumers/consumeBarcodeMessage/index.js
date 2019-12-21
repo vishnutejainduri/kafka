@@ -1,10 +1,25 @@
 const { filterBarcodeMessage, parseBarcodeMessage } = require('../../lib/parseBarcodeMessage');
 const { createLog, addErrorHandling, log } = require('../utils');
 const getCollection = require('../../lib/getCollection');
+const storeMessages = require('../../lib/storeMessages');
 const createError = require('../../lib/createError');
 
 global.main = async function (params) {
     log(createLog.params('consumeBarcodeMessage', params));
+    try {
+        await storeMessages(
+            {
+                ...params,
+                mongoUri: params.messagesMongoUri,
+            },
+            {
+                activationId: process.env.__OW_ACTIVATION_ID,
+                messages: params.messages
+            }
+        );
+    } catch (error) {
+        log(createLog.failedToStoreMessages(error));
+    }
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
