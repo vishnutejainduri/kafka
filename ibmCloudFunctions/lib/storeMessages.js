@@ -1,13 +1,18 @@
 const getCollection = require('./getCollection');
 
-async function storeMessages(params, { messages, activationId }) {
+async function storeMessages(
+    { mongoUri, mongoCertificateBase64, collectionName, dbName },
+    { messages, activationId }
+) {
     const collection = await getCollection(
         {
-            ...params,
-            mongoUri: params.messagesMongoUri
+            mongoUri,
+            mongoCertificateBase64,
+            collectionName,
+            dbName,
+            instance: getCollection.instances.MESSAGES
         },
-        null,
-        getCollection.instances.MESSAGES
+        null
     );
     return collection.insert({
         activationId,

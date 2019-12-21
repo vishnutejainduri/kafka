@@ -37,21 +37,16 @@ const mongoParametersSchema = {
             type: "string",
             minLength: 1
         },
+        instance: {
+            type: "string",
+            enum: ["DEFAULT", "MESSAGES"]
+        }
     },
-    "required": ["mongoUri", "dbName", "collectionName", "mongoCertificateBase64"]
+    "required": ["mongoUri", "dbName", "collectionName", "mongoCertificateBase64", "instance"]
  };
-
-const mongoInstanceSchema = {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    title: "getcollectionInstance",
-    description: "Instance of mongodb",
-    "type": "string",
-    "enum": ["DEFAULT", "MESSAGES"]
-};
 
 const ajv = new Ajv({ allErrors: true });
 const validateParams = ajv.compile(mongoParametersSchema);
-const validateInstance = ajv.compile(mongoInstanceSchema)
 
 /**
  * Returns a Mongo Collection,
@@ -61,19 +56,14 @@ const validateInstance = ajv.compile(mongoInstanceSchema)
  * @param {String} params.collectionName Name of the collection to use
  * @returns {MongoCollection}
  */
-async function getCollection(params, collectionName = null, instance = instances.DEFAULT) {
-    validateInstance(instance);
-    if (validateInstance.errors) {
-        throw createError.failedSchemaValidation(
-            validateInstance.errors,
-            'getCollection',
-            `Instance should be one of ${Object.values(instances)}`
-        );
-    }
-
+async function getCollection(
+    params,
+    collectionName = null
+) {
+    const instance = params.instance || instances.DEFAULT;
     // do not use this function in Promise.all: https://stackoverflow.com/q/58919867/12144949
     if (clients[instance] == null) {
-        validateParams(params)
+        validateParams({ ...params, instance })
         if (validateParams.errors) {
             throw createError.failedSchemaValidation(
                 validateParams.errors,
