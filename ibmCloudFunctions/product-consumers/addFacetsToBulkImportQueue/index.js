@@ -34,10 +34,16 @@ const updateAlgoliaFacetQueueWithErrorHandling = algoliaFacetQueue => addErrorHa
 global.main = async function (params) {
     log(createLog.params("addFacetsToBulkImportQueue", params));
     try {
-        log(await storeMessages({
-            activationId: process.env.activationId,
-            messages: params.messages
-        }));
+        log(await storeMessages(
+            {
+                ...params,
+                mongoUri: params.messagesMongoUri,
+            },
+            {
+                activationId: process.env.activationId,
+                messages: params.messages
+            }
+        ));
     } catch (error) {
         log(createLog.failedToStoreMessages(error));
     }
