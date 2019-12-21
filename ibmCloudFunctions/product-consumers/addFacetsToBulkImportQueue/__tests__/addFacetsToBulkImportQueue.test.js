@@ -6,6 +6,7 @@ const storeMessages = require('../../../lib/storeMessages');
 describe('addFacetsToBulkImportQueue', function() {
     const params = {
         mongoUri: 'mongo-uri',
+        messagesMongoUri: 'messages-mongo-uri',
         mongoCertificateBase64: 'mongo-certificate-64',
         collectionName: 'collection-name',
         dbName: 'db-name',
@@ -16,7 +17,7 @@ describe('addFacetsToBulkImportQueue', function() {
     });
     it('Calls storeMessages with params and messages', async function() {
         expect(storeMessages).toBeCalledWith(
-            { ...params, mongoUri: params.messagesMongoUri },
+            { ...params, mongoUri: 'messages-mongo-uri' },
             { activationId: undefined, messages: [] }
         );
     });
