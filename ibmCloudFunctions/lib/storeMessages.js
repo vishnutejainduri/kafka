@@ -14,7 +14,7 @@ async function storeMessages(
         },
         null
     );
-    return collection.insert({
+    return collection.insertOne({
         activationId,
         messages
     });
