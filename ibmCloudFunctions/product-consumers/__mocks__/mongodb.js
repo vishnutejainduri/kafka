@@ -8,7 +8,8 @@ const getCollection = (collectionName) => {
     switch(collectionName) {
         case 'messagesByActivationIds':
             return {
-                insertOne: async document => document
+                insertOne: async document => document,
+                updateOne: async document => document
             };
         case 'addFacetsToBulkImportQueue':
             return {
