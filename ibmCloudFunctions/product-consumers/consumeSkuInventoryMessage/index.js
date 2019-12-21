@@ -1,4 +1,5 @@
 const getCollection = require('../../lib/getCollection');
+const storeMessages = require('../../lib/storeMessages');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 const createError = require('../../lib/createError');
 
@@ -7,6 +8,21 @@ const { createLog, addErrorHandling, log } = require('../utils');
 
 global.main = async function (params) {
     log(createLog.params('consumeSkuInventoryMessage', params));
+    try {
+        await storeMessages(
+            {
+                ...params,
+                mongoUri: params.messagesMongoUri,
+            },
+            {
+                activationId: process.env.__OW_ACTIVATION_ID,
+                messages: params.messages
+            }
+        );
+    } catch (error) {
+        log(createLog.failedToStoreMessages(error));
+    }
+
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
     const { messages, ...paramsExcludingMessages } = params;
