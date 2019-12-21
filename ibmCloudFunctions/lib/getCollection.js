@@ -79,6 +79,7 @@ async function getCollection(
             sslValidate: true,
             sslCA: ca,
             useNewUrlParser: true,
+            useUnifiedTopology: true,
             connectTimeoutMS: 60000,
             socketTimeoutMS: 600000,
             reconnectTries: 60,
