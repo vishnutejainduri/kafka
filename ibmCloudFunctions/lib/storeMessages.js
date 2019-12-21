@@ -2,7 +2,7 @@ const getCollection = require('./getCollection');
 
 async function storeMessages(
     { mongoUri, mongoCertificateBase64, collectionName, dbName },
-    { messages, activationId }
+    messagesRecord
 ) {
     const collection = await getCollection(
         {
@@ -14,10 +14,7 @@ async function storeMessages(
         },
         null
     );
-    return collection.insertOne({
-        activationId,
-        messages
-    });
+    return collection.insertOne(messagesRecord);
 }
 
 module.exports = storeMessages;

@@ -40,7 +40,7 @@ global.main = async function (params) {
                 mongoUri: params.messagesMongoUri,
             },
             {
-                activationId: process.env.activationId,
+                activationId: process.env.__OW_ACTIVATION_ID,
                 messages: params.messages
             }
         ));
