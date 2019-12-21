@@ -6,7 +6,7 @@
 
 const getCollection = (collectionName) => {
     switch(collectionName) {
-        case 'storeMessages':
+        case 'messagesByActivationIds':
             return {
                 insertOne: async document => document
             };

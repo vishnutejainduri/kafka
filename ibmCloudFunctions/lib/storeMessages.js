@@ -8,13 +8,13 @@ async function storeMessages(
         {
             mongoUri,
             mongoCertificateBase64,
-            collectionName,
+            collectionName: 'messagesByActivationIds',
             dbName,
             instance: getCollection.instances.MESSAGES
         },
         null
     );
-    return collection.insertOne(messagesRecord);
+    return collection.insertOne({ ...messagesRecord, collectionName });
 }
 
 module.exports = storeMessages;
