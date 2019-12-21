@@ -6,6 +6,10 @@
 
 const getCollection = (collectionName) => {
     switch(collectionName) {
+        case 'storeMessages':
+            return {
+                insert: async document => document
+            };
         case 'addFacetsToBulkImportQueue':
             return {
                 updateOne: async ({ _id }) => ({ _id })
