@@ -39,7 +39,9 @@ log.messageFailures = (messageFailures) => {
 }
 
 const createLog = {
-    failedToStoreMessages: (error) => `Failed to store messages: ${error}`,
+    messagesLog: {
+        failedToStoreBatch: (error) => `Failed to store batch of messages: ${error}`,
+    },
     params: (cfName, params) => {
         const { messages, ...paramsExcludingMessages } = params;
         const messagesIsArray = Array.isArray(messages);

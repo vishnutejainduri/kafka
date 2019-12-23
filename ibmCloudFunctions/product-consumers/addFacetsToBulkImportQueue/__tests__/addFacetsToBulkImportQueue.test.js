@@ -1,7 +1,6 @@
 const addFacetsToBulkImportQueue = require('../index');
 
-jest.mock('../../../lib/storeMessages');
-const storeMessages = require('../../../lib/storeMessages');
+jest.mock('../../../lib/messagesLogs');
 
 describe('addFacetsToBulkImportQueue', function() {
     const params = {
@@ -14,11 +13,5 @@ describe('addFacetsToBulkImportQueue', function() {
     };
     it('Returns result if all required params are passed', async function() {
         expect((await addFacetsToBulkImportQueue(params)).results.length).toBe(0);
-    });
-    it('Calls storeMessages with params and messages', async function() {
-        expect(storeMessages).toBeCalledWith(
-            { ...params, mongoUri: 'messages-mongo-uri' },
-            { activationId: undefined, messages: [] }
-        );
     });
 });
