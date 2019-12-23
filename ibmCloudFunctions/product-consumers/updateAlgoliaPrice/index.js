@@ -85,18 +85,10 @@ global.main = async function (params) {
             // Ensure that the price update is for an available style
             const styleData = await styles.findOne({ _id: update.objectID });
             const priceData = await prices.findOne({ _id: update.objectID });
-            if (!styleData
-                || !priceData
+            if (!styleData 
                 || styleData.isOutlet
-                || (update.onlineSalePrice == priceData.onlineSalePrice && update.inStoreSalePrice == priceData.inStoreSalePrice)) {
+                || priceData && (update.onlineSalePrice === priceData.onlineSalePrice && update.inStoreSalePrice === priceData.inStoreSalePrice)) {
                 return null;
-            }
-
-            if (update.onlineSalePrice !== priceData.onlineSalePrice && update.onlineSalePrice == priceData.onlineSalePrice) {
-              log(`HRC-978: online price unexpected discrepancy. HR price ${update.onlineSalePrice}. Mongo price ${priceData.onlineSalePrice}`);
-            }
-            if (update.inStoreSalePrice !== priceData.inStoreSalePrice && update.inStoreSalePrice == priceData.inStoreSalePrice) {
-              log(`HRC-978: in store price unexpected discrepancy. HR price ${update.inStoreSalePrice}. Mongo price ${priceData.inStoreSalePrice}`);
             }
 
             update.currentPrice = update.onlineSalePrice || styleData.originalPrice;
@@ -108,20 +100,18 @@ global.main = async function (params) {
     );
     
     const messageFailures = [];
-    updates = updates.filter((update, index) => {
+    updates = updates.filter((update) => {
         if (!update) {
             return false
         }
         if ((update instanceof Error)) {
-            messageFailures.push({
-                index,
-                error: update,
-                message: params.messages[index]
-            });
+            messageFailures.push(update);
             return false;
         }
         return true
     });
+
+    console.log('updates', updates);
 
     if (updates.length > 0) {
         await index.partialUpdateObjects(updates)
@@ -136,18 +126,10 @@ global.main = async function (params) {
         });
     }
 
-    if (messageFailures.length) {
-        log.messageFailures(messageFailures);
-        
-        // we only need to keep the messages that have not failed
-        const failedMessagesIndices = messageFailures.map(({ index }) => index);
-        return {
-            ...params,
-            messageFailures,
-            messages: params.messages.filter((_, index) => !failedMessagesIndices.includes(index))
-        };
+    if (messageFailures.length > 0) {
+        throw createError.updateAlgoliaPrice.partialFailure(params.messages, messageFailures);
     }
-    
+
     return params;
 };
 

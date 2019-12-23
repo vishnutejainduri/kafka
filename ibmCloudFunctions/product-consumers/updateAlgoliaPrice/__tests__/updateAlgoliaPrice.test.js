@@ -1,5 +1,8 @@
 const updateAlgoliaPrice = require('../');
 
+jest.mock("mongodb");
+jest.mock("algoliasearch");
+
 describe('updateAlgoliaPrice', () => {
     const validParams = {
         algoliaIndexName: 'algoliaIndexName',
@@ -8,7 +11,8 @@ describe('updateAlgoliaPrice', () => {
         topicName: 'topicName',
         mongoUri: 'mongoUri',
         dbName: 'dbName',
-        collectionName: 'collectionName',
+        collectionName: 'styles',
+        pricesCollectionName: 'prices',
         mongoCertificateBase64: 'mongoCertificateBase64'
     };
 
@@ -52,7 +56,8 @@ describe('updateAlgoliaPrice', () => {
             messages
         };
 
-        expect((await updateAlgoliaPrice(params)).messageFailures.length).toBe(1);
+        const error = await updateAlgoliaPrice(params).catch(error => error)
+        expect(error.debugInfo.messageFailures.length).toBe(1);
     });
 
     it('Returns an array of failed messages if any of the messages are invalid', async () =>{
@@ -66,8 +71,14 @@ describe('updateAlgoliaPrice', () => {
             messages
         };
 
-        expect((await updateAlgoliaPrice(params)).messageFailures.length).toBe(1);
-        expect((await updateAlgoliaPrice(params)).messageFailures[0].message).toEqual(invalidMessage);
+        const error = await updateAlgoliaPrice(params).catch(error => error)
+        console.log('error', error);
+        expect(error.debugInfo.messageFailures.length).toBe(1);
+        console.log(error.debugInfo.messageFailures[0])
+        expect(error.debugInfo.messageFailures[0].message).toEqual(invalidMessage);
+
+        //expect((await updateAlgoliaPrice(params)).messageFailures.length).toBe(1);
+        //expect((await updateAlgoliaPrice(params))
     });
 
     it('Filters out invalid messages from response messages property', async () =>{
@@ -81,7 +92,9 @@ describe('updateAlgoliaPrice', () => {
             messages
         };
 
-        expect((await updateAlgoliaPrice(params)).messages.length).toBe(1);
-        expect((await updateAlgoliaPrice(params)).messages[0]).toEqual(validMessage);
+        const error = await updateAlgoliaPrice(params).catch(error => error)
+        console.log('error', error);
+        expect(error.debugInfo.messageFailures.length).toBe(1);
+        expect(error.debugInfo.messageFailures[0].message).toEqual(validMessage);
     });
 });
