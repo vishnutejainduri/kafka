@@ -6,27 +6,10 @@ const {
     filterPriceMessages,
     parsePriceMessage,
     IN_STORE_SITE_ID,
-    ONLINE_SITE_ID
+    ONLINE_SITE_ID,
+    generateUpdateFromParsedMessage
 } = require('../../lib/parsePriceMessage');
 const createError = require('../../lib/createError');
-
-function generateUpdateFromParsedMessage(priceData) {
-    const updateToProcess = {
-        _id: priceData.styleId,
-        id: priceData.styleId
-    };
-    switch (priceData.siteId) {
-        case ONLINE_SITE_ID:
-            updateToProcess.onlineSalePrice = priceData.newRetailPrice;
-            break;
-        case IN_STORE_SITE_ID:
-            updateToProcess.inStoreSalePrice = priceData.newRetailPrice;
-            break;
-        default:
-            break;
-    }
-    return updateToProcess;
-}
 
 global.main = async function (params) {
     console.log(JSON.stringify({
@@ -43,7 +26,9 @@ global.main = async function (params) {
     }
 
     let prices;
+    let styles;
     try {
+        styles = await getCollection(params);
         prices = await getCollection(params, params.pricesCollectionName);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
@@ -53,21 +38,22 @@ global.main = async function (params) {
         .filter(filterPriceMessages)
         .map(parsePriceMessage)
         .map(generateUpdateFromParsedMessage)
-        .map((update) => {
-                return prices.updateOne(
-                    { _id: update._id },
-                    { $set: update },
-                    { upsert: true }
-                ).catch((err) => {
-                    console.error('Problem with sale price ' + update.styleId, update);
-                    if (!(err instanceof Error)) {
-                        const e = new Error();
-                        e.originalError = err;
-                        e.attemptedUpdate = update;
-                        return e;
-                    }
-                    return err;
-                })
+        .map((update) => styles.findOne({ _id: update.styleId })
+                .then((styleData) => {
+                  return prices.updateOne(
+                      { _id: update._id },
+                      { $set: update },
+                      { upsert: true }
+                  ).catch((err) => {
+                      console.error('Problem with sale price ' + update.styleId, update);
+                      if (!(err instanceof Error)) {
+                          const e = new Error();
+                          e.originalError = err;
+                          e.attemptedUpdate = update;
+                          return e;
+                      }
+                      return err;
+                  })
             }
         )
     ).then((results) => {

@@ -38,9 +38,32 @@ function parsePriceMessage(msg) {
     return priceData;
 }
 
+function generateUpdateFromParsedMessage(priceData, styleData) {
+    const updateToProcess = {
+        _id: priceData.styleId,
+        id: priceData.styleId
+    };
+    switch (priceData.siteId) {
+        case ONLINE_SITE_ID:
+            updateToProcess.onlineSalePrice = priceData.newRetailPrice;
+            break;
+        case IN_STORE_SITE_ID:
+            updateToProcess.inStoreSalePrice = priceData.newRetailPrice;
+            break;
+        default:
+            break;
+    }
+    update.currentPrice = update.onlineSalePrice || styleData.originalPrice;
+    const priceString = update.currentPrice ? update.currentPrice.toString() : '';
+    const priceArray = priceString.split('.');
+    update.isSale = priceArray.length > 1 ? priceArray[1] === '99' : false;
+    return updateToProcess;
+}
+
 module.exports = {
     parsePriceMessage,
     filterPriceMessages,
     IN_STORE_SITE_ID,
-    ONLINE_SITE_ID
+    ONLINE_SITE_ID,
+    generateUpdateFromParsedMessage
 };
