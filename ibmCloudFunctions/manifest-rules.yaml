@@ -59,3 +59,6 @@
       algolia-facets-rule:
         action: /${ORG}_${SPACE}/product-consumers/update-algolia-facets
         trigger: every-minute
+      resolve-messages-logs-rule:
+        action: /${ORG}_${SPACE}/product-consumers/resolve-messages-logs
+        trigger: every-minute
