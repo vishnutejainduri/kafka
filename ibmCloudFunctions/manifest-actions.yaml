@@ -278,11 +278,6 @@
           cfName: addFacetsToBulkImportQueue
       schema-validation:
         location: ./product-consumers/schemaValidation/dist/bundle.js
-      update-messages-records-from-logdna:
-        location: ./product-consumers/updateMessagesRecordsFromLogdna/dist/bundle.js
-      update-messages-records-from-logdna-with-retry:
-        location: ./product-consumers/updateMessagesRecordsFromLogdnaWithRetry/dist/bundle.js
-        web-export: true
     sequences:
       update-pricing-sequence:
         actions: update-algolia-price,update-sale-price
