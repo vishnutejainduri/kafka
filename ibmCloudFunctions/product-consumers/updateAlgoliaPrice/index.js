@@ -98,7 +98,7 @@ global.main = async function (params) {
             return update;
         }))
     );
-    
+
     const messageFailures = [];
     updates = updates.filter((update) => {
         if (!update) {
@@ -110,8 +110,6 @@ global.main = async function (params) {
         }
         return true
     });
-
-    console.log('updates', updates);
 
     if (updates.length > 0) {
         await index.partialUpdateObjects(updates)
