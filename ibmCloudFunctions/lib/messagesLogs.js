@@ -1,5 +1,6 @@
 const getCollection = require('./getCollection');
 const { log, createLog } = require('../product-consumers/utils');
+const createError = require('../lib/createError');
 
 // TODO create proper indexes on mongo
 async function getMessagesCollection({
@@ -12,6 +13,40 @@ async function getMessagesCollection({
             mongoUri: messagesMongoUri,
             mongoCertificateBase64,
             collectionName: 'messagesByActivationIds',
+            dbName,
+            instance: getCollection.instances.MESSAGES
+        },
+        null
+    );
+}
+
+async function getDlqCollection({
+    messagesMongoUri,
+    mongoCertificateBase64,
+    dbName
+}) {
+    return getCollection(
+        {
+            mongoUri: messagesMongoUri,
+            mongoCertificateBase64,
+            collectionName: 'dlqMessagesByActivationIds',
+            dbName,
+            instance: getCollection.instances.MESSAGES
+        },
+        null
+    );
+}
+
+async function getRetryCollection({
+    messagesMongoUri,
+    mongoCertificateBase64,
+    dbName
+}) {
+    return getCollection(
+        {
+            mongoUri: messagesMongoUri,
+            mongoCertificateBase64,
+            collectionName: 'retryMessagesByActivationIds',
             dbName,
             instance: getCollection.instances.MESSAGES
         },
@@ -52,6 +87,22 @@ async function storeBatch(params) {
     }
 }
 
+async function getStoreDlqMessages(params) {
+    const collection = getDlqCollection(params);
+    return async function(messages, metadata ) {
+        const result = await collection.insertOne({ messages, metadata });
+        return result;
+    }
+}
+
+async function getStoreRetryMessages(params) {
+    const collection = getRetryCollection(params);
+    return async function(messages, metadata ) {
+        const result = await collection.insertOne({ messages, metadata });
+        return result;
+    }
+}
+
 async function findUnresolvedBatches(params, limit = 100) {
     const collection = await getMessagesCollection(params);
     const result = await collection
@@ -73,21 +124,36 @@ async function findTimedoutBatchesActivationIds(params, limit = 100) {
     return result.map(({ activationId }) => activationId);
 }
 
-async function getFindMessagesValuesAndTopic(params) {
+async function getFindMessages(params) {
     const collection = await getMessagesCollection(params);
     return async function (activationId) {
         const { messages } = await collection.findOne({ activationId }, { projection: { messages: 1 } });
-        return {
-            topic: messages[0].topic,
-            values: messages.map(({ value }) => value)
-        } 
+        return messages;
     };
+}
+
+async function getRetryBatches(params, limit = 100) {
+    const collection = await getRetryCollection(params);
+    const result = await collection
+        .find()
+        .limit(limit)
+        .toArray();
+    return result;
 }
 
 async function getStoreValues(params) {
     const valuesCollection = await getValuesCollection(params);
     return async function(values) {
-        return valuesCollection.insertMany(values);
+        try {
+            const result = await valuesCollection.insertMany(values, { ordered: false, wtimeout: 600000 });
+            return result;
+        } catch (bulkWriteError) {
+            throw createError.messagesLogs.storeValues.partialFailure(
+                bulkWriteError,
+                values.length,
+                bulkWriteError.writeErrors.map(({ index }) => index)
+            )
+        }
     }
 }
 
@@ -99,12 +165,33 @@ async function getDeleteBatch(params) {
     }
 }
 
+async function getUpdateRetryBatch(params) {
+    const collection = await getRetryCollection(params);
+    return async function(activationId, updates) {
+        const result = await collection.updateOne({ activationId }, { $set: updates });
+        return result;
+    }
+}
+
+async function getDeleteRetryBatch(params) {
+    const collection = await getRetryCollection(params);
+    return async function(activationId) {
+        const result = await collection.deleteOne({ activationId });
+        return result;
+    }
+}
+
 module.exports = {
     getMessagesCollection,
     storeBatch,
     findUnresolvedBatches,
     findTimedoutBatchesActivationIds,
-    getFindMessagesValuesAndTopic,
+    getFindMessages,
     getDeleteBatch,
-    getStoreValues
+    getStoreValues,
+    getStoreDlqMessages,
+    getStoreRetryMessages,
+    getRetryBatches,
+    getUpdateRetryBatch,
+    getDeleteRetryBatch
 };

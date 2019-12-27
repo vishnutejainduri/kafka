@@ -1,9 +1,9 @@
 const { Kafka } = require('kafkajs');
 
 const {
-    findTimedoutBatchesActivationIds,
-    getFindMessagesValuesAndTopic,
-    getDeleteBatch
+    getRetryBatches,
+    getUpdateRetryBatch,
+    getDeleteRetryBatch,
 } = require('../../lib/messagesLogs');
 const { addErrorHandling } = require('../utils');
 
@@ -27,70 +27,83 @@ async function getProducer({ brokers, username, password }){
     return cachedProducer;
 }
 
-global.main = async function(params) {
-    const time = new Date().getTime();
-    const timedoutMessagesActivationIds = await findTimedoutBatchesActivationIds(params);
-    
-    const findMessagesValues = await getFindMessagesValuesAndTopic(params);
+function getValuesWithUpdatedMetadataByTopic (messages) {
+    return messages.reduce((byTopic, { value, topic }) => {
+        const valueWithUpdatedMetadata = {
+            ...value,
+            metadata: {
+                ...value.metadata,
+                retries: value.metadata.retries + 1
+            }
+        };
+        if (byTopic[topic]) {
+            byTopic[topic].push(valueWithUpdatedMetadata);
+        } else {
+            byTopic[topic] = [valueWithUpdatedMetadata];
+        }
+        return byTopic;
+    }, {});
+}
 
+async function requeueMessages(params, messages) {
     const producer = await getProducer({
         brokers: typeof params.kafkaBrokers === 'string' ? params.kafkaBrokers.split(",") : params.kafkaBrokers,
         username: params.kafkaUsername,
         password: params.kafkaPassword
     });
 
-    function valueShouldBeRetried({ metadata }) {
-        if (!metadata) return true;
-        const { lastRetry, retries } = metadata;
-        const retryIntervalMinutes = 10 * retries;
-        const maximumRetries = 120;
-        if ((time - lastRetry)/(60 * 1000) < retryIntervalMinutes) return false;
-        if (retries === maximumRetries) return false;
+    const valuesByTopic = getValuesWithUpdatedMetadataByTopic(messages);
+
+    const topicMessages = Object.entries(valuesByTopic)
+        .reduce((reduced, [topic, values]) => {
+            reduced.push({
+                topic,
+                values: values.map(JSON.stringify)
+            })
+        }, []);
+        
+    return producer.sendBatch({ topicMessages })
+}
+
+// if some of the messages should be later we keep those,
+// otherwise we delete the batch record 
+async function deleteOrUpdateRetryBatch(params, activationId, retryLater) {
+    if (retryLater.length === 0) {
+        const deleteRetryBatch = await getDeleteRetryBatch(params);
+        return deleteRetryBatch(activationId);
+    } else {
+        const updateRetryBatch = await getUpdateRetryBatch(params);
+        return updateRetryBatch(activationId, { messages: retryLater });
     }
+}
 
-    function updateValueMetadata(value) {
-        const metadata = value.metadata || {};
-        const retries = metadata.retries;
-        return {
-            ...value,
-            metadata: {
-                ...metadata,
-                retries: retries ? retries + 1 : 1,
-                lastRetry: time
-            }
-        }
-    }
+function groupMessagesByRetryTime(messages) {
+    const time = new Date().getTime();
+    return messages.reduce(function ({ now, later }, message) {
+        const nextRetry = message.value.metadata.nextRetry;
+        (time >= nextRetry ? now : later).push(message);
+        return { now, later }
+    }, { now: [], later: [] });
+}
 
-    async function requeueMessagesByActivationId(activationId) {
-        // all the messages in a cloud function should come from the same topic
-        // if a cloud function is fed with messages from two different topics, this should be reimplemented
-        const { topic, values } = (await findMessagesValues(activationId));
-        const stringifiedValues = values
-            .filter(valueShouldBeRetried)
-            .map(updateValueMetadata)
-            .map(JSON.stringify);
+async function handleBatch({ activationId, messages }, params) {
+    const { now, later } = groupMessagesByRetryTime(messages);
+    await requeueMessages(params, now);
+    await deleteOrUpdateRetryBatch(params, activationId, later);
+}
 
-        const produceResult = await producer.send({
-            topic,
-            messages: stringifiedValues.map(stringifiedValue => ({ value: stringifiedValue }))
-        });
-        const deleteBatch = await getDeleteBatch(params);
-        const deleteResult = await deleteBatch(activationId);
-        return {
-            produceResult,
-            deleteResult
-        };
-    }
+function groupResultByStatus(result) {
+    return result
+        .reduce(function ({ success, failure }, response) {
+            (response instanceof Error ? failure : success).push(response);
+            return { success, failure }
+        },{ success: [], failure: []});
+}
 
-    const requeueResult = await Promise.all(
-        timedoutMessagesActivationIds.map(addErrorHandling(requeueMessagesByActivationId))
-    );
-
-    const failures = requeueResult.filter(result => result instanceof Error);
-    if (failures.length) throw failures;
-    return {
-        requeueResult
-    }; 
+global.main = async function(params) {    
+    const retryBatches = await getRetryBatches(params);
+    const result = await Promise.all(retryBatches.map(addErrorHandling(handleBatch)));
+    return groupResultByStatus(result)
 }
 
 module.exports = global.main;
