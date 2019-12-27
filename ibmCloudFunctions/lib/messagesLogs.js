@@ -107,8 +107,7 @@ async function findUnresolvedBatches(params, limit = 100) {
     const collection = await getMessagesCollection(params);
     const result = await collection
         .find({ resolved: false }, { projection: { activationId: 1 } })
-        .limit(limit)
-        .toArray();
+        .limit(limit);
     return result;
 }
 
@@ -119,8 +118,7 @@ async function findTimedoutBatchesActivationIds(params, limit = 100) {
             { "activationInfo.annotations.3.value": true },
             { projection: { activationId: 1 } }
         )
-        .limit(limit)
-        .toArray();
+        .limit(limit);
     return result.map(({ activationId }) => activationId);
 }
 
@@ -136,8 +134,7 @@ async function getRetryBatches(params, limit = 100) {
     const collection = await getRetryCollection(params);
     const result = await collection
         .find()
-        .limit(limit)
-        .toArray();
+        .limit(limit);
     return result;
 }
 
