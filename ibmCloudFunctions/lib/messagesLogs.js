@@ -19,6 +19,23 @@ async function getMessagesCollection({
     );
 }
 
+async function getValuesCollection({
+    messagesMongoUri,
+    mongoCertificateBase64,
+    dbName
+}) {
+    return getCollection(
+        {
+            mongoUri: messagesMongoUri,
+            mongoCertificateBase64,
+            collectionName: 'valuesByActivationIds',
+            dbName,
+            instance: getCollection.instances.MESSAGES
+        },
+        null
+    );
+}
+
 async function storeBatch(params) {
     try {
         const collection = await getMessagesCollection(params);
@@ -67,15 +84,10 @@ async function getFindMessagesValuesAndTopic(params) {
     };
 }
 
-// will merge new metadata with the current metadate
-async function getResolveBatch(params) {
-    const collection = await getMessagesCollection(params);
-    return async function(activationId, activationInfo) {
-        if (activationInfo.response.success) {
-            return collection.deleteOne({ activationId });
-        }
-        return collection
-            .updateOne({ activationId }, { $set: { resolved: true, activationInfo } });
+async function getStoreValues(params) {
+    const valuesCollection = await getValuesCollection(params);
+    return async function(values) {
+        return valuesCollection.insertMany(values);
     }
 }
 
@@ -91,8 +103,8 @@ module.exports = {
     getMessagesCollection,
     storeBatch,
     findUnresolvedBatches,
-    getResolveBatch,
     findTimedoutBatchesActivationIds,
     getFindMessagesValuesAndTopic,
-    getDeleteBatch
+    getDeleteBatch,
+    getStoreValues
 };
