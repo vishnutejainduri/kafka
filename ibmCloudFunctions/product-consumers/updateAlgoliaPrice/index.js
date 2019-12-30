@@ -70,28 +70,23 @@ global.main = async function (params) {
             const priceUpdate = generateUpdateFromParsedMessage (update, styleData);
             priceUpdate.objectID = styleData._id;
 
-            if (!styleData
-                || !priceData
+            if (!styleData 
                 || styleData.isOutlet
-                || (priceUpdate.onlineSalePrice == priceData.onlineSalePrice && priceUpdate.inStoreSalePrice == priceData.inStoreSalePrice)) {
+                || priceData && (priceUpdate.onlineSalePrice === priceData.onlineSalePrice && priceUpdate.inStoreSalePrice === priceData.inStoreSalePrice)) {
                 return null;
             }
 
             return priceUpdate;
         }))
     );
-    
+
     const messageFailures = [];
-    updates = updates.filter((update, index) => {
+    updates = updates.filter((update) => {
         if (!update) {
             return false
         }
         if ((update instanceof Error)) {
-            messageFailures.push({
-                index,
-                error: update,
-                message: params.messages[index]
-            });
+            messageFailures.push(update);
             return false;
         }
         return true
@@ -110,18 +105,10 @@ global.main = async function (params) {
         });
     }
 
-    if (messageFailures.length) {
-        log.messageFailures(messageFailures);
-        
-        // we only need to keep the messages that have not failed
-        const failedMessagesIndices = messageFailures.map(({ index }) => index);
-        return {
-            ...params,
-            messageFailures,
-            messages: params.messages.filter((_, index) => !failedMessagesIndices.includes(index))
-        };
+    if (messageFailures.length > 0) {
+        throw createError.updateAlgoliaPrice.partialFailure(params.messages, messageFailures);
     }
-    
+
     return params;
 };
 
