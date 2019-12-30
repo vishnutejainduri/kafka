@@ -89,7 +89,7 @@ function groupMessagesByRetryTime(messages) {
 async function handleBatch({ activationId, messages }, params) {
     const { now, later } = groupMessagesByRetryTime(messages);
     await requeueMessages(params, now);
-    await deleteOrUpdateRetryBatch(params, activationId, later);
+    return deleteOrUpdateRetryBatch(params, activationId, later);
 }
 
 function groupResultByStatus(result) {
