@@ -8,43 +8,7 @@ const {
     getStoreDlqMessages,
     getStoreRetryMessages
 } = require('../../lib/messagesLogs');
-
-const MAX_RETRIES = 24;
-const INTERVAL_PER_RETRY = 10 * 60 * 1000;
-
-function getValueWithUpdatedMetadata(value, activationEnd) {
-    const metadata = value.metadata || {};
-    const retries = metadata.retries || 0;
-    return {
-            ...value,
-            metadata: {
-                ...metadata,
-                retries,
-                lastRetry: activationEnd,
-                nextRetry: activationEnd + INTERVAL_PER_RETRY * retries
-            }
-    };
-}
-
-function groupMessages(messages, activationEnd ) {
-    return messages.reduce(function ({ retry, dlq }, message) {
-        if (message.value.metadata && messages.value.metadata.retries >= MAX_RETRIES) {
-            dlq.push(message);
-        } else {
-            retry.push({
-                ...message,
-                value: getValueWithUpdatedMetadata(message.value, activationEnd)
-            });
-        }
-        return {
-            retry,
-            dlq
-        }
-    }, {
-        retries: [],
-        dlq: []
-    });
-}
+const { groupMessages } = require('../utils');
 
 global.main = async function(params) {
     const unresolvedBatches = await findUnresolvedBatches(params);
