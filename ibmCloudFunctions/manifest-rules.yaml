@@ -62,3 +62,6 @@
       resolve-messages-logs-rule:
         action: /${ORG}_${SPACE}/product-consumers/resolve-messages-logs
         trigger: every-minute
+      handle-messages-logs-rule:
+        action: /${ORG}_${SPACE}/product-consumers/handle-messages-logs
+        trigger: every-minute
