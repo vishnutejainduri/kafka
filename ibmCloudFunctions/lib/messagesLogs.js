@@ -88,7 +88,7 @@ async function storeBatch(params) {
 }
 
 async function getStoreDlqMessages(params) {
-    const collection = getDlqCollection(params);
+    const collection = await getDlqCollection(params);
     return async function(messages, metadata ) {
         const result = await collection.insertOne({ messages, metadata });
         return result;
@@ -96,7 +96,7 @@ async function getStoreDlqMessages(params) {
 }
 
 async function getStoreRetryMessages(params) {
-    const collection = getRetryCollection(params);
+    const collection = await getRetryCollection(params);
     return async function(messages, metadata ) {
         const result = await collection.insertOne({ messages, metadata });
         return result;
@@ -157,7 +157,7 @@ async function getStoreValues(params) {
 async function getDeleteBatch(params) {
     const collection = await getMessagesCollection(params);
     return async function(activationId) {
-        const result = await collection.deleteOne({ activationId });
+        const result = await collection.deleteOne({ activationId });        
         return result;
     }
 }

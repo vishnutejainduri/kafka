@@ -36,10 +36,14 @@ global.main = async function(params) {
             dlq: [],
             retry: []
         };
+        let storeMessagesByNextActionResult = {
+            dlq: null,
+            retry: null
+        };
         // TODO HRC-1184: implement a mechanism to handle partial failures
         if (!activationInfo.response.success) {
             const findMessages = await getFindMessages(params);
-            const messages = findMessages(activationId);
+            const messages = await findMessages(activationId);
             const activationTimedout = activationInfo.annotations.find(({ key }) => key === 'timeout').value === true;
             // if an activation has failed for any reason but timeout, send all of its messages to DLQ
             if (!activationTimedout) {
@@ -50,34 +54,37 @@ global.main = async function(params) {
                 messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end );
             }
             if (messagesByNextAction.dlq.length) {
-                const storeDlqMessages = getStoreDlqMessages(params);
-                await storeDlqMessages(messagesByNextAction.dlq, { activationInfo });
+                const storeDlqMessages = await getStoreDlqMessages(params);
+                storeMessagesByNextActionResult.dlq = await storeDlqMessages(messagesByNextAction.dlq, { activationInfo });
             }
             if (messagesByNextAction.retry.length) {
-                const storeRetryMessages = getStoreRetryMessages(params);
-                await storeRetryMessages(messagesByNextAction.retry, { activationInfo });
+                const storeRetryMessages = await getStoreRetryMessages(params);
+                storeMessagesByNextActionResult.retry = await storeRetryMessages(messagesByNextAction.retry, { activationInfo });
             }
         }
         // if a batch was successful or if we successfuly DLQed or requeued all of its messages for retry,
         // we delete the activation record
-        await getDeleteBatch(params);
+        const deleteBatch = await getDeleteBatch(params);
+        const deleteBatchResult = await deleteBatch(activationId);
+
         return {
-            [activationId]: {
-                activationInfo,
-                messagesByNextAction
-            }  
+            activationId,
+            activationInfo,
+            messagesByNextAction,
+            storeMessagesByNextActionResult,
+            deleteBatchResult
         };
     }
 
     const unresolvedBatches = await findUnresolvedBatches(params);
 
-    const resolveBatchesInfo = await Promise.all(
+    const resolveBatchesResult = await Promise.all(
         unresolvedBatches.map(addErrorHandling(resolveBatchWithActivationInfo))
     );
 
     return {
         unresolvedBatches,
-        resolveBatchesInfo
+        resolveBatchesResult
     };
 }
 
