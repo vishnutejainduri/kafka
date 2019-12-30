@@ -73,6 +73,7 @@ global.main = async function (params) {
             if (!styleData 
                 || styleData.isOutlet
                 || priceData && (priceUpdate.onlineSalePrice === priceData.onlineSalePrice && priceUpdate.inStoreSalePrice === priceData.inStoreSalePrice)) {
+                console.log('vibe check failed');
                 return null;
             }
 
