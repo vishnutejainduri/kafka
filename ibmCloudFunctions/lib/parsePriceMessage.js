@@ -39,10 +39,7 @@ function parsePriceMessage(msg) {
 }
 
 function generateUpdateFromParsedMessage(priceData, styleData) {
-    const updateToProcess = {
-        _id: priceData.styleId,
-        id: priceData.styleId
-    };
+    const updateToProcess = {};
     switch (priceData.siteId) {
         case ONLINE_SITE_ID:
             updateToProcess.onlineSalePrice = priceData.newRetailPrice;
@@ -53,17 +50,26 @@ function generateUpdateFromParsedMessage(priceData, styleData) {
         default:
             break;
     }
-    update.currentPrice = update.onlineSalePrice || styleData.originalPrice;
-    const priceString = update.currentPrice ? update.currentPrice.toString() : '';
+
+    updateToProcess.currentPrice = updateToProcess.onlineSalePrice || styleData.originalPrice;
+    updateToProcess.lowestOnlinePrice = updateToProcess.onlineSalePrice > styleData.originalPrice
+                             ? styleData.originalPrice
+                             : updateToProcess.onlineSalePrice
+
+    updateToProcess.lowestPrice = updateToProcess.lowestOnlinePrice > styleData.inStoreSalePrice
+                        ? styleData.inStoreSalePrice
+                        : updateToProcess.lowestOnlinePrice 
+
+    const priceString = updateToProcess.currentPrice ? updateToProcess.currentPrice.toString() : '';
     const priceArray = priceString.split('.');
-    update.isSale = priceArray.length > 1 ? priceArray[1] === '99' : false;
+    updateToProcess.isSale = priceArray.length > 1 ? priceArray[1] === '99' : false;
     return updateToProcess;
 }
 
 module.exports = {
     parsePriceMessage,
     filterPriceMessages,
+    generateUpdateFromParsedMessage,
     IN_STORE_SITE_ID,
-    ONLINE_SITE_ID,
-    generateUpdateFromParsedMessage
+    ONLINE_SITE_ID
 };

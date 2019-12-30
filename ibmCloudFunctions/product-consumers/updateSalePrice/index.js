@@ -5,9 +5,9 @@ const getCollection = require('../../lib/getCollection');
 const {
     filterPriceMessages,
     parsePriceMessage,
+    generateUpdateFromParsedMessage,
     IN_STORE_SITE_ID,
-    ONLINE_SITE_ID,
-    generateUpdateFromParsedMessage
+    ONLINE_SITE_ID
 } = require('../../lib/parsePriceMessage');
 const createError = require('../../lib/createError');
 
@@ -37,12 +37,15 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(filterPriceMessages)
         .map(parsePriceMessage)
-        .map(generateUpdateFromParsedMessage)
         .map((update) => styles.findOne({ _id: update.styleId })
                 .then((styleData) => {
+                  const priceUpdate = generateUpdateFromParsedMessage (update, styleData);
+                  priceUpdate._id = styleData._id;
+                  priceUpdate.id = styleData._id;
+
                   return prices.updateOne(
-                      { _id: update._id },
-                      { $set: update },
+                      { _id: priceUpdate._id },
+                      { $set: priceUpdate },
                       { upsert: true }
                   ).catch((err) => {
                       console.error('Problem with sale price ' + update.styleId, update);
@@ -54,7 +57,7 @@ global.main = async function (params) {
                       }
                       return err;
                   })
-            }
+            })
         )
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
