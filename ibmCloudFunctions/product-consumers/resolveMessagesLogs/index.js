@@ -11,8 +11,6 @@ const {
 const { groupMessagesByNextAction } = require('./utils');
 
 global.main = async function(params) {
-    const unresolvedBatches = await findUnresolvedBatches(params);
-
     async function fetchActivationInfo(activationId) {
         return rp({
             uri: encodeURI(`${params.ibmcloudFunctionsRestEndpoint}/namespaces/${params.ibmcloudFunctionsRestNamespace}/activations/${activationId}`),
@@ -27,18 +25,22 @@ global.main = async function(params) {
 
     async function resolveBatchWithActivationInfo({ activationId }) {
         const activationInfo = await fetchActivationInfo(activationId);
-        if (!activationInfo) return null;
+        if (!activationInfo) {
+            return {
+                [activationId]: activationInfo
+            };
+        }
         if (activationInfo.error) throw new Error(activationInfo.error);
         // if an activation has failed, the messages in the batch should be either DLQed or retried
+        let messagesByNextAction = {
+            dlq: [],
+            retry: []
+        };
         // TODO HRC-1184: implement a mechanism to handle partial failures
         if (!activationInfo.response.success) {
             const findMessages = await getFindMessages(params);
             const messages = findMessages(activationId);
             const activationTimedout = activationInfo.annotations.find(({ key }) => key === 'timeout').value === true;
-            let messagesByNextAction = {
-                dlq: [],
-                retry: []
-            }
             // if an activation has failed for any reason but timeout, send all of its messages to DLQ
             if (!activationTimedout) {
                 messagesByNextAction.dlq = messages;
@@ -58,9 +60,16 @@ global.main = async function(params) {
         }
         // if a batch was successful or if we successfuly DLQed or requeued all of its messages for retry,
         // we delete the activation record
-        const deleteBatch = await getDeleteBatch(params);
-        return deleteBatch(activationId);
+        await getDeleteBatch(params);
+        return {
+            [activationId]: {
+                activationInfo,
+                messagesByNextAction
+            }  
+        };
     }
+
+    const unresolvedBatches = await findUnresolvedBatches(params);
 
     const resolveBatchesInfo = await Promise.all(
         unresolvedBatches.map(addErrorHandling(resolveBatchWithActivationInfo))
