@@ -20,7 +20,7 @@ function getValueWithUpdatedMetadata(value, activationEndTime) {
     };
 }
 
-function groupMessages(messages, activationEndTime ) {
+function groupMessagesByNextAction(messages, activationEndTime ) {
     return messages.reduce(function ({ retry, dlq }, message) {
         if (message.value.metadata && message.value.metadata.retries >= MAX_RETRIES) {
             dlq.push(message);
@@ -40,8 +40,8 @@ function groupMessages(messages, activationEndTime ) {
     });
 }
 
-groupMessages.getValueWithUpdatedMetadata = getValueWithUpdatedMetadata;
+groupMessagesByNextAction.getValueWithUpdatedMetadata = getValueWithUpdatedMetadata;
 
 module.exports = {
-    groupMessages
+    groupMessagesByNextAction
 };

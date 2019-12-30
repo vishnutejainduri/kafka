@@ -1,10 +1,10 @@
-const { groupMessages } = require('../utils');
+const { groupMessagesByNextAction } = require('../utils');
 
-describe('groupMessages', function() {
+describe('groupMessagesByNextAction', function() {
     const activationEndTime  = 0;
 
     describe('getValueWithUpdatedMetadata', function() {
-        const getValueWithUpdatedMetadata = groupMessages.getValueWithUpdatedMetadata;
+        const getValueWithUpdatedMetadata = groupMessagesByNextAction.getValueWithUpdatedMetadata;
         it('updates a value with no metadata', function() {
             const value = {};
             const valueWithMetadata = getValueWithUpdatedMetadata(value, activationEndTime);
@@ -58,7 +58,7 @@ describe('groupMessages', function() {
                 }
             }
         };
-        expect(groupMessages([dlqMessages], activationEndTime)).toEqual({
+        expect(groupMessagesByNextAction([dlqMessages], activationEndTime)).toEqual({
             retry: [],
             dlq: [dlqMessages]
         })
@@ -72,7 +72,7 @@ describe('groupMessages', function() {
                 }
             }
         };
-        expect(groupMessages([retryMessage], activationEndTime)).toEqual({
+        expect(groupMessagesByNextAction([retryMessage], activationEndTime)).toEqual({
             retry: [{
                 id: 'retryValue',
                 value: {

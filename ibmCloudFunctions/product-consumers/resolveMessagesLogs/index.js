@@ -8,7 +8,7 @@ const {
     getStoreDlqMessages,
     getStoreRetryMessages
 } = require('../../lib/messagesLogs');
-const { groupMessages } = require('../utils');
+const { groupMessagesByNextAction } = require('./utils');
 
 global.main = async function(params) {
     const unresolvedBatches = await findUnresolvedBatches(params);
@@ -35,25 +35,25 @@ global.main = async function(params) {
             const findMessages = await getFindMessages(params);
             const messages = findMessages(activationId);
             const activationTimedout = activationInfo.annotations.find(({ key }) => key === 'timeout').value === true;
-            let groupedMessages = {
+            let messagesByNextAction = {
                 dlq: [],
                 retry: []
             }
             // if an activation has failed for any reason but timeout, send all of its messages to DLQ
             if (!activationTimedout) {
-                groupedMessages.dlq = messages;
+                messagesByNextAction.dlq = messages;
             } else {
                 // if an activation has timedout, we retry the messages that has not been retried MAX_RETRIES times
                 // and send the rest to be DLQed
-                groupedMessages = groupMessages(messages, activationInfo.end );
+                messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end );
             }
-            if (groupedMessages.dlq.length) {
+            if (messagesByNextAction.dlq.length) {
                 const storeDlqMessages = getStoreDlqMessages(params);
-                await storeDlqMessages(groupedMessages.dlq, { activationInfo });
+                await storeDlqMessages(messagesByNextAction.dlq, { activationInfo });
             }
-            if (groupedMessages.retry.length) {
+            if (messagesByNextAction.retry.length) {
                 const storeRetryMessages = getStoreRetryMessages(params);
-                await storeRetryMessages(groupedMessages.retry, { activationInfo });
+                await storeRetryMessages(messagesByNextAction.retry, { activationInfo });
             }
         }
         // if a batch was successful or if we successfuly DLQed or requeued all of its messages for retry,
