@@ -7,8 +7,12 @@ function mockModules(mockRetryBatches) {
                 // used in getRetryBatches
                 find() {
                     return {
-                        async limit() {
-                            return mockRetryBatches;
+                        limit() {
+                            return {
+                                async forEach(fn) {
+                                    mockRetryBatches.forEach(fn);
+                                }
+                            }
                         }
                     }
                 },

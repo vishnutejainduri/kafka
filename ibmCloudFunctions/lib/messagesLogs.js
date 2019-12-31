@@ -105,20 +105,29 @@ async function getStoreRetryMessages(params) {
 
 async function findUnresolvedBatches(params, limit = 100) {
     const collection = await getMessagesCollection(params);
-    const result = await collection
+    let result = [];
+    await collection
         .find({ resolved: false }, { projection: { activationId: 1 } })
-        .limit(limit);
+        .limit(limit)
+        .forEach(document => {
+            result.push(document);
+        });
+
     return result;
 }
 
 async function findTimedoutBatchesActivationIds(params, limit = 100) {
     const collection = await getMessagesCollection(params);
-    const result = await collection
+    let result = [];
+    await collection
         .find(
             { "activationInfo.annotations.3.value": true },
             { projection: { activationId: 1 } }
         )
-        .limit(limit);
+        .limit(limit)
+        .forEach(document => {
+            result.push(document);
+        });
     return result.map(({ activationId }) => activationId);
 }
 
@@ -132,9 +141,13 @@ async function getFindMessages(params) {
 
 async function getRetryBatches(params, limit = 100) {
     const collection = await getRetryCollection(params);
-    const result = await collection
+    const result = [];
+    await collection
         .find()
-        .limit(limit);
+        .limit(limit)
+        .forEach(document => {
+            result.push(document);
+        });
     return result;
 }
 

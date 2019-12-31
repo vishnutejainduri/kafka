@@ -11,8 +11,12 @@ function mockModules({
                 // used in findUnresolvedBatches
                 find() {
                     return {
-                        async limit() {
-                            return mockBatch ? [mockBatch] : []
+                        limit() {
+                            return {
+                                async forEach(fn) {
+                                    (mockBatch ? [mockBatch] : []).forEach(fn);
+                                }
+                            }
                         }
                     };
                 },
