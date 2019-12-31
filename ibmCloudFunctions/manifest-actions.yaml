@@ -212,6 +212,7 @@
         inputs:
           topicName: inventory-connect-jdbc-SKUINVENTORY
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
+          stylesCollectionName: $STYLES_COLLECTION_NAME
           productApiClientId: $PRODUCT_API_CLIENT_ID
           productApiHost: $PRODUCT_API_HOST
       update-algolia-facets:
