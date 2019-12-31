@@ -42,7 +42,7 @@ async function requeueMessages(params, messages) {
         username: params.kafkaUsername,
         password: params.kafkaPassword
     });
-        
+
     return producer.sendBatch({
         topicMessages: getTopicMessages(getTopicValuesWithUpdatedRetriesMetadata(messages))
     })
@@ -53,23 +53,34 @@ async function requeueMessages(params, messages) {
 async function cleanupRetryBatch(params, activationId, messages) {
     if (messages.length === 0) {
         const deleteRetryBatch = await getDeleteRetryBatch(params);
-        return deleteRetryBatch(activationId);
+        return {
+            deleted: await deleteRetryBatch(activationId)
+        };
     } else {
         const updateRetryBatch = await getUpdateRetryBatch(params);
-        return updateRetryBatch(activationId, { messages });
+        return {
+            updated: await updateRetryBatch(activationId, { messages })
+        };
     }
 }
 
-async function requeueMessagesAndCleanupRetryBatch({ activationId, messages }, params) {
-    const { now, later } = groupMessagesByRetryTime(messages);
-    await requeueMessages(params, now);
-    return cleanupRetryBatch(params, activationId, later);
+function getRequeueMessagesAndCleanupRetryBatch(params) {
+    return async function({ activationId, messages }) {
+        const { now, later } = groupMessagesByRetryTime(messages);
+        const requeueResult = await requeueMessages(params, now);
+        const cleanupResult = await cleanupRetryBatch(params, activationId, later);
+        return {
+            requeueResult,
+            cleanupResult
+        };
+    }
 }
 
 global.main = async function(params) {    
     const retryBatches = await getRetryBatches(params);
-    const result = await Promise.all(retryBatches.map(addErrorHandling(requeueMessagesAndCleanupRetryBatch)));
-    return groupResultByStatus(result)
+    const requeueMessagesAndCleanupRetryBatch = getRequeueMessagesAndCleanupRetryBatch(params);
+    const results = await Promise.all(retryBatches.map(addErrorHandling(requeueMessagesAndCleanupRetryBatch)));
+    return groupResultByStatus(results)
 }
 
 module.exports = global.main;
