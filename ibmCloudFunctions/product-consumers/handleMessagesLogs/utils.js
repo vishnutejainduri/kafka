@@ -39,7 +39,11 @@ function groupMessagesByRetryTime(messages) {
 function groupResultByStatus(result) {
     return result
         .reduce(function ({ success, failure }, response) {
-            (response instanceof Error ? failure : success).push(response);
+            if (response instanceof Error) {
+                failure.push({ error: true, message: response.message });
+            } else {
+                success.push(response);
+            }
             return { success, failure }
         },{ success: [], failure: []});
 }

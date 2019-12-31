@@ -125,10 +125,10 @@ describe('groupMessagesByRetryTime', function() {
 
 describe('groupResultByStatus', function() {
     it('filters out instances of error', function() {
-        const error = new Error();
+        const error = new Error('some error');
         const result = [error];
-        expect(groupResultByStatus(result).failure[0])
-            .toBe(error);
+        expect(groupResultByStatus(result).failure[0].message)
+            .toBe(error.message);
     });
     it('filters out instances of error', function() {
         const response = {};
