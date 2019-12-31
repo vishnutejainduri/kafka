@@ -21,7 +21,7 @@ function getTopicMessages(topicValues) {
         .reduce((reduced, [topic, values]) => {
             reduced.push({
                 topic,
-                values: values.map(JSON.stringify)
+                messages: values.map(value => ({ value: JSON.stringify(value) }))
             });
             return reduced;
         }, []);

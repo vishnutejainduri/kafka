@@ -69,11 +69,13 @@ describe('getTopicMessages', function() {
         const topicMessages = [
             {
                 topic: someTopicMessage.topic,
-                values: valuesByTopicWithUpdatedRetriesMetadata[someTopicMessage.topic].map(JSON.stringify)
+                messages: valuesByTopicWithUpdatedRetriesMetadata[someTopicMessage.topic]
+                    .map(value => ({ value: JSON.stringify(value) }))
             },
             {
                 topic: anotherTopicMessage.topic,
-                values: valuesByTopicWithUpdatedRetriesMetadata[anotherTopicMessage.topic].map(JSON.stringify)
+                messages: valuesByTopicWithUpdatedRetriesMetadata[anotherTopicMessage.topic]
+                    .map(value => ({ value: JSON.stringify(value) }))
             }
         ];
         expect(getTopicMessages(valuesByTopicWithUpdatedRetriesMetadata))

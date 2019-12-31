@@ -104,8 +104,8 @@ describe('handleMessagesLogs', function() {
         expect(results.success[0].cleanupResult.updated).toBeTruthy();
         expect(results.success[0].cleanupResult.updated.activationId).toBe(batch.activationId);
         expect(results.success[0].cleanupResult.updated.updates.messages[0]).toBe(messageForLater);
-        expect(results.success[0].requeueResult.topicMessages[0].values.length).toEqual(1);
-        expect(results.success[0].requeueResult.topicMessages[0].values[0])
+        expect(results.success[0].requeueResult.topicMessages[0].messages.length).toEqual(1);
+        expect(results.success[0].requeueResult.topicMessages[0].messages[0].value)
             .toEqual(JSON.stringify(valueWithUpdateRetriesMetadata));
         expect(results.failure.length).toBe(0);
     });
