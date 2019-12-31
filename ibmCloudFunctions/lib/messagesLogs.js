@@ -139,7 +139,7 @@ async function getFindMessages(params) {
     };
 }
 
-async function getRetryBatches(params, limit = 100) {
+async function getRetryBatches(params, limit = 50) {
     const collection = await getRetryCollection(params);
     const result = [];
     await collection
