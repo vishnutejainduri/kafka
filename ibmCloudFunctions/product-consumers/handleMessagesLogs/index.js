@@ -86,7 +86,7 @@ function groupMessagesByRetryTime(messages) {
     }, { now: [], later: [] });
 }
 
-async function handleBatch({ activationId, messages }, params) {
+async function requeueMessagesAndCleanupBatch({ activationId, messages }, params) {
     const { now, later } = groupMessagesByRetryTime(messages);
     await requeueMessages(params, now);
     return deleteOrUpdateRetryBatch(params, activationId, later);
@@ -102,7 +102,7 @@ function groupResultByStatus(result) {
 
 global.main = async function(params) {    
     const retryBatches = await getRetryBatches(params);
-    const result = await Promise.all(retryBatches.map(addErrorHandling(handleBatch)));
+    const result = await Promise.all(retryBatches.map(addErrorHandling(requeueMessagesAndCleanupBatch)));
     return groupResultByStatus(result)
 }
 
