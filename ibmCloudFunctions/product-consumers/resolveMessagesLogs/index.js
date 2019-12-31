@@ -84,7 +84,11 @@ global.main = async function(params) {
 
     return {
         unresolvedBatches,
-        resolveBatchesResult
+        resolveBatchesResult: resolveBatchesResult
+            .map(result => result instanceof Error
+                ? { error: true, message: result.message }
+                : result
+            )
     };
 }
 
