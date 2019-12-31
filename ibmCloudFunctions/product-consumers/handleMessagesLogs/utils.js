@@ -25,7 +25,7 @@ async function getProducer({ brokers, username, password }){
     return cachedProducer;
 }
 
-function getValuesWithUpdatedMetadataByTopic (messages) {
+function getTopicValuesWithUpdatedRetriesMetadata (messages) {
     return messages.reduce((byTopic, { value, topic }) => {
         const valueWithUpdatedMetadata = {
             ...value,
@@ -43,35 +43,38 @@ function getValuesWithUpdatedMetadataByTopic (messages) {
     }, {});
 }
 
+function getTopicMessages(topicValues) {
+    return Object.entries(topicValues)
+        .reduce((reduced, [topic, values]) => {
+            reduced.push({
+                topic,
+                values: values.map(JSON.stringify)
+            });
+            return reduced;
+        }, []);
+}
+
 async function requeueMessages(params, messages) {
     const producer = await getProducer({
         brokers: typeof params.kafkaBrokers === 'string' ? params.kafkaBrokers.split(",") : params.kafkaBrokers,
         username: params.kafkaUsername,
         password: params.kafkaPassword
     });
-
-    const valuesByTopic = getValuesWithUpdatedMetadataByTopic(messages);
-
-    const topicMessages = Object.entries(valuesByTopic)
-        .reduce((reduced, [topic, values]) => {
-            reduced.push({
-                topic,
-                values: values.map(JSON.stringify)
-            })
-        }, []);
         
-    return producer.sendBatch({ topicMessages })
+    return producer.sendBatch({
+        topicMessages: getTopicMessages(getTopicValuesWithUpdatedRetriesMetadata(messages))
+    })
 }
 
 // if some of the messages should be later we keep those,
 // otherwise we delete the batch record 
-async function deleteOrUpdateRetryBatch(params, activationId, retryLater) {
-    if (retryLater.length === 0) {
+async function cleanupRetryBatch(params, activationId, messages) {
+    if (messages.length === 0) {
         const deleteRetryBatch = await getDeleteRetryBatch(params);
         return deleteRetryBatch(activationId);
     } else {
         const updateRetryBatch = await getUpdateRetryBatch(params);
-        return updateRetryBatch(activationId, { messages: retryLater });
+        return updateRetryBatch(activationId, { messages });
     }
 }
 
@@ -84,10 +87,10 @@ function groupMessagesByRetryTime(messages) {
     }, { now: [], later: [] });
 }
 
-async function requeueMessagesAndCleanupBatch({ activationId, messages }, params) {
+async function requeueMessagesAndCleanupRetryBatch({ activationId, messages }, params) {
     const { now, later } = groupMessagesByRetryTime(messages);
     await requeueMessages(params, now);
-    return deleteOrUpdateRetryBatch(params, activationId, later);
+    return cleanupRetryBatch(params, activationId, later);
 }
 
 function groupResultByStatus(result) {
@@ -100,10 +103,11 @@ function groupResultByStatus(result) {
 
 module.exports = {
     groupResultByStatus,
-    requeueMessagesAndCleanupBatch,
+    requeueMessagesAndCleanupRetryBatch,
     groupMessagesByRetryTime,
-    deleteOrUpdateRetryBatch,
+    cleanupRetryBatch,
     requeueMessages,
-    getValuesWithUpdatedMetadataByTopic,
+    getTopicValuesWithUpdatedRetriesMetadata,
+    getTopicMessages,
     getProducer
 }
