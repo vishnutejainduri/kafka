@@ -15,3 +15,4 @@ packages:
       kafkaPassword: $KAFKA_PASSWORD
       kafkaInvalidMessagesDlqTopicName: $KAFKA_INVALID_MESSAGES_DLQ_TOPIC_NAME
       messagesMongoUri: $MESSAGES_MONGO_URI
+      messagesMongoCertificateBase64: $MESSAGES_MONGO_CERTIFICATE_BASE64
