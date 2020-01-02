@@ -5,7 +5,7 @@ describe('messagesLogs', function() {
         const params = {
             mongoUri: 'uri',
             messagesMongoUri: 'messages-uri',
-            mongoCertificateBase64: 'certificate',
+            messagesMongoCertificateBase64: 'messages-certificate',
             // collectionName is always set to "messagesByActivationIds"
             collectionName: 'some-collection',
             dbName: 'db-name'

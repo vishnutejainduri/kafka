@@ -5,13 +5,13 @@ const createError = require('../lib/createError');
 // TODO create proper indexes on mongo
 async function getMessagesCollection({
     messagesMongoUri,
-    mongoCertificateBase64,
+    messagesMongoCertificateBase64,
     dbName
 }) {
     return getCollection(
         {
             mongoUri: messagesMongoUri,
-            mongoCertificateBase64,
+            mongoCertificateBase64: messagesMongoCertificateBase64,
             collectionName: 'messagesByActivationIds',
             dbName,
             instance: getCollection.instances.MESSAGES
@@ -22,13 +22,13 @@ async function getMessagesCollection({
 
 async function getDlqCollection({
     messagesMongoUri,
-    mongoCertificateBase64,
+    messagesMongoCertificateBase64,
     dbName
 }) {
     return getCollection(
         {
             mongoUri: messagesMongoUri,
-            mongoCertificateBase64,
+            mongoCertificateBase64: messagesMongoCertificateBase64,
             collectionName: 'dlqMessagesByActivationIds',
             dbName,
             instance: getCollection.instances.MESSAGES
@@ -39,13 +39,13 @@ async function getDlqCollection({
 
 async function getRetryCollection({
     messagesMongoUri,
-    mongoCertificateBase64,
+    messagesMongoCertificateBase64,
     dbName
 }) {
     return getCollection(
         {
             mongoUri: messagesMongoUri,
-            mongoCertificateBase64,
+            mongoCertificateBase64: messagesMongoCertificateBase64,
             collectionName: 'retryMessagesByActivationIds',
             dbName,
             instance: getCollection.instances.MESSAGES
@@ -56,13 +56,13 @@ async function getRetryCollection({
 
 async function getValuesCollection({
     messagesMongoUri,
-    mongoCertificateBase64,
+    messagesMongoCertificateBase64,
     dbName
 }) {
     return getCollection(
         {
             mongoUri: messagesMongoUri,
-            mongoCertificateBase64,
+            mongoCertificateBase64: messagesMongoCertificateBase64,
             collectionName: 'valuesByActivationIds',
             dbName,
             instance: getCollection.instances.MESSAGES
