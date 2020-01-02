@@ -20,6 +20,23 @@ async function getMessagesCollection({
     );
 }
 
+async function getInvalidMessagesCollection({
+    messagesMongoUri,
+    messagesMongoCertificateBase64,
+    dbName
+}) {
+    return getCollection(
+        {
+            mongoUri: messagesMongoUri,
+            mongoCertificateBase64: messagesMongoCertificateBase64,
+            collectionName: 'invalidMessagesByActivationIds',
+            dbName,
+            instance: getCollection.instances.MESSAGES
+        },
+        null
+    );
+}
+
 async function getDlqCollection({
     messagesMongoUri,
     messagesMongoCertificateBase64,
@@ -191,6 +208,22 @@ async function getDeleteRetryBatch(params) {
     }
 }
 
+async function storeInvalidMessages(params, invalidMessages) {
+    try {
+        const collection = await getInvalidMessagesCollection(params);
+        const result = await collection
+            .insertOne({
+                activationId: process.env.__OW_ACTIVATION_ID,
+                trasactionId: process.env.__OW_TRANSACTION_ID,
+                invalidMessages
+            });
+        return result;
+    } catch (error) {
+        log(createLog.messagesLog.failedToStoreBatch(error));
+        return error;
+    }
+}
+
 module.exports = {
     getMessagesCollection,
     storeBatch,
@@ -203,5 +236,6 @@ module.exports = {
     getStoreRetryMessages,
     getRetryBatches,
     getUpdateRetryBatch,
-    getDeleteRetryBatch
+    getDeleteRetryBatch,
+    storeInvalidMessages
 };

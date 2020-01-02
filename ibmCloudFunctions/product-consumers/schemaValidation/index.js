@@ -1,9 +1,10 @@
 const Ajv = require('ajv');
 const ajv = new Ajv({ allErrors: true });
-const { Kafka } = require('kafkajs');
 
 const createError = require('../../lib/createError');
 const { log } = require('../utils');
+
+const { storeInvalidMessages } = require('../../lib/messagesLogs');
 
 const validators = [
     'addFacetsToBulkImportQueue',
@@ -17,27 +18,6 @@ const validators = [
     return _validators;
 }, {});
 // e.g. -> validators = { addFacetsToBulkImportQueue: { params: ..., message: ... } };
-
-let cachedProducer = null;
-
-async function getProducer({ brokers, username, password }){
-    if (!cachedProducer) {
-        const kafka = new Kafka({
-            clientId: 'schemaValidation',
-            brokers,
-            ssl: true,
-            sasl: {
-                mechanism: 'plain', // scram-sha-256 or scram-sha-512
-                username,
-                password
-            },
-        });
-        cachedProducer = kafka.producer();
-    }
-    await cachedProducer.connect();
-    return cachedProducer;
-}
-
 
 global.main = async function(params) {
     const validate = validators[params.cfName];
@@ -72,28 +52,13 @@ global.main = async function(params) {
             log(`Invalid message ${JSON.stringify(message)} with error: ${error}`);
         });
 
-        try {
-            // Begin logging to kafka
-            const producer = await getProducer({
-                brokers: typeof params.kafkaBrokers === 'string' ? params.kafkaBrokers.split(",") : params.kafkaBrokers,
-                username: params.kafkaUsername,
-                password: params.kafkaPassword
-            });
-
-            await producer.send({
-                topic: params.kafkaInvalidMessagesDlqTopicName,
-                messages: invalidMessages.map(message => ({ value: JSON.stringify(message) }))
-            });
-            // End login to kafka
-        } catch(error) {
-            log(`Failed to log messages to kafka: ${error.message}`);
-        }
- 
+        const storeInvalidMessagesResult = await storeInvalidMessages(params, invalidMessages);
 
         return {
             ...params,
             messages: validMessages,
-            invalidMessages
+            invalidMessages,
+            storeInvalidMessagesResult
         };
     }
 
