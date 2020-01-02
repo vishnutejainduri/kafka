@@ -60,7 +60,7 @@ function generateUpdateFromParsedMessage(update, priceData, styleData) {
                              : updateToProcess.currentPrice
 
     updateToProcess.lowestPrice = updateToProcess.lowestOnlinePrice > priceData.inStoreSalePrice
-                        ? priceData.inStoreSalePrice
+                        ? priceData.inStoreSalePrice || updateToProcess.lowestOnlinePrice
                         : updateToProcess.lowestOnlinePrice 
 
     const priceString = updateToProcess.currentPrice ? updateToProcess.currentPrice.toString() : '';
