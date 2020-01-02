@@ -43,21 +43,24 @@ function generateUpdateFromParsedMessage(update, priceData, styleData) {
     switch (update.siteId) {
         case ONLINE_SITE_ID:
             updateToProcess.onlineSalePrice = update.newRetailPrice;
+            priceData.onlineSalePrice = updateToProcess.onlineSalePrice;
             break;
         case IN_STORE_SITE_ID:
             updateToProcess.inStoreSalePrice = update.newRetailPrice;
+            priceData.inStoreSalePrice = updateToProcess.inStoreSalePrice;
             break;
         default:
             break;
     }
 
-    updateToProcess.currentPrice = updateToProcess.onlineSalePrice || priceData.onlineSalePrice || styleData.originalPrice;
+
+    updateToProcess.currentPrice = priceData.onlineSalePrice || styleData.originalPrice;
     updateToProcess.lowestOnlinePrice = updateToProcess.currentPrice > styleData.originalPrice
                              ? styleData.originalPrice
                              : updateToProcess.currentPrice
 
-    updateToProcess.lowestPrice = updateToProcess.lowestOnlinePrice > styleData.inStoreSalePrice
-                        ? styleData.inStoreSalePrice
+    updateToProcess.lowestPrice = updateToProcess.lowestOnlinePrice > priceData.inStoreSalePrice
+                        ? priceData.inStoreSalePrice
                         : updateToProcess.lowestOnlinePrice 
 
     const priceString = updateToProcess.currentPrice ? updateToProcess.currentPrice.toString() : '';
