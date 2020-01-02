@@ -67,13 +67,12 @@ global.main = async function (params) {
         .map(addErrorHandling(async (update) => {
             const styleData = await styles.findOne({ _id: update._id });
             const priceData = await prices.findOne({ _id: update._id });
-            const priceUpdate = generateUpdateFromParsedMessage (update, styleData);
+            const priceUpdate = generateUpdateFromParsedMessage (update, priceData, styleData);
             priceUpdate.objectID = styleData._id;
 
             if (!styleData 
                 || styleData.isOutlet
                 || priceData && (priceUpdate.onlineSalePrice === priceData.onlineSalePrice && priceUpdate.inStoreSalePrice === priceData.inStoreSalePrice)) {
-                console.log('vibe check failed');
                 return null;
             }
 

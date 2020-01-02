@@ -38,23 +38,23 @@ function parsePriceMessage(msg) {
     return priceData;
 }
 
-function generateUpdateFromParsedMessage(priceData, styleData) {
+function generateUpdateFromParsedMessage(update, priceData, styleData) {
     const updateToProcess = {};
-    switch (priceData.siteId) {
+    switch (update.siteId) {
         case ONLINE_SITE_ID:
-            updateToProcess.onlineSalePrice = priceData.newRetailPrice;
+            updateToProcess.onlineSalePrice = update.newRetailPrice;
             break;
         case IN_STORE_SITE_ID:
-            updateToProcess.inStoreSalePrice = priceData.newRetailPrice;
+            updateToProcess.inStoreSalePrice = update.newRetailPrice;
             break;
         default:
             break;
     }
 
-    updateToProcess.currentPrice = updateToProcess.onlineSalePrice || styleData.originalPrice;
-    updateToProcess.lowestOnlinePrice = updateToProcess.onlineSalePrice > styleData.originalPrice
+    updateToProcess.currentPrice = updateToProcess.onlineSalePrice || priceData.onlineSalePrice || styleData.originalPrice;
+    updateToProcess.lowestOnlinePrice = updateToProcess.currentPrice > styleData.originalPrice
                              ? styleData.originalPrice
-                             : updateToProcess.onlineSalePrice
+                             : updateToProcess.currentPrice
 
     updateToProcess.lowestPrice = updateToProcess.lowestOnlinePrice > styleData.inStoreSalePrice
                         ? styleData.inStoreSalePrice

@@ -38,8 +38,9 @@ global.main = async function (params) {
         .filter(filterPriceMessages)
         .map(parsePriceMessage)
         .map((update) => styles.findOne({ _id: update.styleId })
-                .then((styleData) => {
-                  const priceUpdate = generateUpdateFromParsedMessage (update, styleData);
+                .then(async (styleData) => {
+                  const priceData = await prices.findOne({ _id: update.styleId });
+                  const priceUpdate = generateUpdateFromParsedMessage (update, priceData, styleData);
                   priceUpdate._id = styleData._id;
                   priceUpdate.id = styleData._id;
 
