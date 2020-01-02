@@ -5,9 +5,7 @@ const algoliasearch = require('algoliasearch');
 const {
     filterPriceMessages,
     parsePriceMessage,
-    generateUpdateFromParsedMessage,
-    IN_STORE_SITE_ID,
-    ONLINE_SITE_ID
+    generateUpdateFromParsedMessage
 } = require('../../lib/parsePriceMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');

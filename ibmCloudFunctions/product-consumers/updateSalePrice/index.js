@@ -5,9 +5,7 @@ const getCollection = require('../../lib/getCollection');
 const {
     filterPriceMessages,
     parsePriceMessage,
-    generateUpdateFromParsedMessage,
-    IN_STORE_SITE_ID,
-    ONLINE_SITE_ID
+    generateUpdateFromParsedMessage
 } = require('../../lib/parsePriceMessage');
 const createError = require('../../lib/createError');
 
