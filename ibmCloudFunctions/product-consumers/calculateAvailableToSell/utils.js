@@ -23,12 +23,7 @@ const handleStyleAtsUpdate = (
                       storeId: atsData.storeId,
                       availableToSell: atsData.availableToSell
                     }]
-                  : atsData.availableToSell > 0
-                    ? originalSkuAts.concat({
-                        storeId: atsData.storeId,
-                        availableToSell: atsData.availableToSell
-                      })
-                    : originalSkuAts
+                  : atsData.availableToSell > 0 ? originalSkuAts.concat({ storeId: atsData.storeId, availableToSell: atsData.availableToSell }) : originalSkuAts
             };
             return originalAtsRecords.concat(newAtsRecord);
         }
