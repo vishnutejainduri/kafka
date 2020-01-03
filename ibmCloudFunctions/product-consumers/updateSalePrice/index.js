@@ -7,6 +7,7 @@ const {
     parsePriceMessage,
     generateUpdateFromParsedMessage
 } = require('../../lib/parsePriceMessage');
+const { addErrorHandling } = require('../utils');
 const createError = require('../../lib/createError');
 
 global.main = async function (params) {
