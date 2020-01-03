@@ -132,6 +132,8 @@ kubectl create secret generic eventstreams-kafka-connect \
 Create the image (see /kafka-connect-image) and deploy a workload with it
 kubectl apply -f kafka-connect-deployment/kafka-connect-deployment.yaml
 
+*Note* Remember to specify Kafka Connect image tag in 'kafka-connect-deployment.yaml'
+
 TODO remove all this and replace with tooling
 Create a connector by using the REST API:
 
