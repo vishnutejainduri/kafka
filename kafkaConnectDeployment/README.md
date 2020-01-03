@@ -24,6 +24,21 @@ You must create the following topics in the target Event Streams:
 To configure the connection to our Event Streams, you'll need to have already created a set of service credentials
 in the dashboard for the Event Streams service we're targeting.
 
+# Configuring Kafka Connect
+Kafka Connect docker image reads environmental variables starting with 'CONNECT' to set its configuration:
+- implementation: https://github.com/confluentinc/cp-docker-images/blob/5.3.1-post/debian/kafka-connect-base/include/etc/confluent/docker/kafka-connect.properties.template
+- guide: https://docs.confluent.io/current/installation/docker/config-reference.html#kafka-connect-configuration
+ 
+To set the environmental variables, we create a secret called 'eventstreams-kafka-connect' inside our cluster which is then referenced by 'kafka-connect-deployment.yaml'.
+
+*Note* Secret should be created before deploying the manifest. To define a container environment variable with data from a single Secret see:
+- guide: https://kubernetes.io/docs/tasks/inject-data-application/distribute-credentials-secure/#define-a-container-environment-variable-with-data-from-a-single-secret
+
+*Note* Kafka Connect docker deployments uses Distributed Mode, so all of the properties relevant to this mode can be set:
+- implementation: https://github.com/confluentinc/cp-docker-images/blob/fec6d0a8635cea1dd860e610ac19bd3ece8ad9f4/debian/kafka-connect-base/include/etc/confluent/docker/launch#L42
+- guide: https://docs.confluent.io/current/connect/userguide.html#distributed-mode
+- guide: https://docs.confluent.io/current/connect/userguide.html#distributed-worker-configuration
+
 Use the following command to create a secret in the cluster for the credentials and config. Remember to replace
 - <user>
 - <password>
@@ -32,6 +47,7 @@ Use the following command to create a secret in the cluster for the credentials 
 below with those from the service credentials for Event Streams.
 TODO: Change this to a script
 
+```bash
 kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_BOOTSTRAP_SERVERS="kafka03-prod02.messagehub.services.us-south.bluemix.net:9093,kafka04-prod02.messagehub.services.us-south.bluemix.net:9093,kafka05-prod02.messagehub.services.us-south.bluemix.net:9093,kafka01-prod02.messagehub.services.us-south.bluemix.net:9093,kafka02-prod02.messagehub.services.us-south.bluemix.net:9093"   \
   --from-literal=CONNECT_REST_PORT=28083   \
@@ -69,8 +85,10 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_PRODUCER_REQUEST_TIMEOUT_MS=900000 \
   --from-literal=CONNECT_BUFFER_MEMORY=4000000 \
   --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=1
+```
 
 # staging
+```bash
 kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_BOOTSTRAP_SERVERS="kafka01-prod02.messagehub.services.us-south.bluemix.net:9093,kafka04-prod02.messagehub.services.us-south.bluemix.net:9093,kafka03-prod02.messagehub.services.us-south.bluemix.net:9093,kafka05-prod02.messagehub.services.us-south.bluemix.net:9093,kafka02-prod02.messagehub.services.us-south.bluemix.net:9093"   \
   --from-literal=CONNECT_REST_PORT=28083   \
@@ -108,7 +126,9 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_PRODUCER_REQUEST_TIMEOUT_MS=900000 \
   --from-literal=CONNECT_BUFFER_MEMORY=4000000 \
   --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=1
+```
 
+# Deploying Kafka Connect
 Create the image (see /kafka-connect-image) and deploy a workload with it
 kubectl apply -f kafka-connect-deployment/kafka-connect-deployment.yaml
 
