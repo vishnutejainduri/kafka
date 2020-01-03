@@ -63,8 +63,7 @@ global.main = async function (params) {
         .filter(addErrorHandling(filterPriceMessages))
         .map(addErrorHandling(parsePriceMessage))
         .map(addErrorHandling(async (update) => {
-            const styleData = await styles.findOne({ _id: update._id });
-            const priceData = await prices.findOne({ _id: update._id });
+            const [styleData, priceData] = await Promise.all([styles.findOne({ _id: update._id }), prices.findOne({ _id: update._id })]);
             const priceUpdate = generateUpdateFromParsedMessage (update, priceData, styleData);
             priceUpdate.objectID = styleData._id;
 

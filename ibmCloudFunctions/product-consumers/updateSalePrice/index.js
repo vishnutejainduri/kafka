@@ -35,7 +35,7 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(filterPriceMessages)
         .map(parsePriceMessage)
-        .map((update) => styles.findOne({ _id: update.styleId })
+        .map(addErrorHandling((update) => styles.findOne({ _id: update.styleId })
                 .then(async (styleData) => {
                   const priceData = await prices.findOne({ _id: update.styleId });
                   const priceUpdate = generateUpdateFromParsedMessage (update, priceData, styleData);
@@ -54,11 +54,11 @@ global.main = async function (params) {
                           e.attemptedUpdate = update;
                           return e;
                       }
-                      return err;
+                      throw err;
                   })
             })
         )
-    ).then((results) => {
+    )).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);

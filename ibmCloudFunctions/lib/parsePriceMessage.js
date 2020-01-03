@@ -59,9 +59,9 @@ function generateUpdateFromParsedMessage(update, priceData, styleData) {
                              ? styleData.originalPrice
                              : updateToProcess.currentPrice
 
-    updateToProcess.lowestPrice = updateToProcess.lowestOnlinePrice > priceData.inStoreSalePrice
-                        ? priceData.inStoreSalePrice || updateToProcess.lowestOnlinePrice
-                        : updateToProcess.lowestOnlinePrice 
+    updateToProcess.lowestPrice = priceData.inStoreSalePrice 
+                             ? Math.min(updateToProcess.lowestOnlinePrice, updateToProcess.lowestOnlinePrice)
+                             : updateToProcess.lowestOnlinePrice
 
     const priceString = updateToProcess.currentPrice ? updateToProcess.currentPrice.toString() : '';
     const priceArray = priceString.split('.');
