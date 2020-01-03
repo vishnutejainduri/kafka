@@ -329,6 +329,11 @@ module.exports = {
             originalError,
             'failed-store-update',
             `Failed to update store; store Id: ${storeId}.`
+        ),
+        failedBulkAtsInsert: (originalError, recalcAtsStyleIds) => new CustomError(
+            originalError,
+            'failed-to-bulk-ats-insert',
+            `Failed to bulk ats insert styles; styles: ${recalcAtsStyleIds}.`
         )
     },
     updateAlgoliaPrice: {
