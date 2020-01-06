@@ -12,7 +12,7 @@ In this directory you'll find:
 - `logging` - resources and instructions for setting up logging with LogDNA
 
 When starting with a new cluster, you must:
-1. set up VPN connectivity with the resources in the `ibmCloudK8sVPN` folder
+1. set up VPN connectivity with the resources in the `ibmCloudK8sVPN` folder (Note: optional at the moment, since we have a public IP for JESTA)
 2. set up Ingress with the resources in the `ibmCloudK8sIngress` folder.
 3. deploy the connectors with the instructions below.
 
@@ -48,6 +48,53 @@ Use the following command to create a secret in the cluster for the credentials 
 below with those from the service credentials for Event Streams.
 TODO: Change this to a script
 
+*Note* Parameters that change by the environment:
+- CONNECT_BOOTSTRAP_SERVERS
+- CONNECT_SASL_JAAS_CONFIG
+- CONNECT_PRODUCER_SASL_JAAS_CONFIG
+
+## development
+```bash
+kubectl create secret generic eventstreams-kafka-connect \
+  --from-literal=CONNECT_BOOTSTRAP_SERVERS="broker-1-2tfntg0sj88sy590.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-3-2tfntg0sj88sy590.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-0-2tfntg0sj88sy590.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-4-2tfntg0sj88sy590.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-2-2tfntg0sj88sy590.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-5-2tfntg0sj88sy590.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093"   \
+  --from-literal=CONNECT_REST_PORT=28083   \
+  --from-literal=CONNECT_GROUP_ID="platform"   \
+  --from-literal=CONNECT_CONFIG_STORAGE_TOPIC="platform-connect-config"   \
+  --from-literal=CONNECT_OFFSET_STORAGE_TOPIC="platform-connect-offsets"   \
+  --from-literal=CONNECT_STATUS_STORAGE_TOPIC="platform-connect-status"   \
+  --from-literal=CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=3   \
+  --from-literal=CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=3   \
+  --from-literal=CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=3   \
+  --from-literal=CONNECT_KEY_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
+  --from-literal=CONNECT_VALUE_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
+  --from-literal=CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE=false  \
+  --from-literal=CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE=false  \
+  --from-literal=CONNECT_INTERNAL_KEY_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
+  --from-literal=CONNECT_INTERNAL_VALUE_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
+  --from-literal=CONNECT_LOG4J_ROOT_LOGLEVEL=INFO   \
+  --from-literal=CONNECT_KAFKA_LOG4J_ROOT_LOGLEVEL=INFO \
+  --from-literal=CONNECT_CONNECT_LOG4J_ROOT_LOGLEVEL=INFO   \
+  --from-literal=CONNECT_PLUGIN_PATH=/usr/share/java,/etc/kafka-connect/jars \
+  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="py_8snyJNHisgbKpvebwD4aSrMO3VzqG_Lz6zR8eDkwo";'  \
+  --from-literal=CONNECT_SECURITY_PROTOCOL=SASL_SSL  \
+  --from-literal=CONNECT_SASL_MECHANISM=PLAIN  \
+  --from-literal=CONNECT_SSL_PROTOCOL=TLSv1.2  \
+  --from-literal=CONNECT_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
+  --from-literal=CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS  \
+  --from-literal=CONNECT_REQUEST_TIMEOUT_MS=900000 \
+  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="user" password="py_8snyJNHisgbKpvebwD4aSrMO3VzqG_Lz6zR8eDkwo";'  \
+  --from-literal=CONNECT_PRODUCER_SECURITY_PROTOCOL=SASL_SSL  \
+  --from-literal=CONNECT_PRODUCER_SASL_MECHANISM=PLAIN  \
+  --from-literal=CONNECT_PRODUCER_SSL_PROTOCOL=TLSv1.2  \
+  --from-literal=CONNECT_PRODUCER_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
+  --from-literal=CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS \
+  --from-literal=CONNECT_PRODUCER_BUFFER_MEMORY=4000000 \
+  --from-literal=CONNECT_PRODUCER_REQUEST_TIMEOUT_MS=900000 \
+  --from-literal=CONNECT_BUFFER_MEMORY=4000000 \
+  --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=1
+```
+
+## dev
 ```bash
 kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_BOOTSTRAP_SERVERS="kafka03-prod02.messagehub.services.us-south.bluemix.net:9093,kafka04-prod02.messagehub.services.us-south.bluemix.net:9093,kafka05-prod02.messagehub.services.us-south.bluemix.net:9093,kafka01-prod02.messagehub.services.us-south.bluemix.net:9093,kafka02-prod02.messagehub.services.us-south.bluemix.net:9093"   \
@@ -88,7 +135,7 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=1
 ```
 
-# staging
+## staging
 ```bash
 kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_BOOTSTRAP_SERVERS="kafka01-prod02.messagehub.services.us-south.bluemix.net:9093,kafka04-prod02.messagehub.services.us-south.bluemix.net:9093,kafka03-prod02.messagehub.services.us-south.bluemix.net:9093,kafka05-prod02.messagehub.services.us-south.bluemix.net:9093,kafka02-prod02.messagehub.services.us-south.bluemix.net:9093"   \
@@ -135,6 +182,9 @@ kubectl apply -f kafka-connect-deployment/kafka-connect-deployment.yaml
 
 *Note* Remember to specify Kafka Connect image tag in 'kafka-connect-deployment.yaml'
 
+*Note* To allow the cluster pull images from IBM container registry, 'Image Pull Secrets' from 'Overview' tab of the cluster on IBM Cloud UI should be enabled. Alaternatively, follow:
+- https://cloud.ibm.com/docs/containers?topic=containers-images#imagePullSecret_migrate_api_key
+
 TODO remove all this and replace with tooling
 Create a connector by using the REST API:
 
@@ -147,3 +197,4 @@ example calls:
 *restart connector (does not reset offsets)* curl -X POST http://$CONNECT_HOST:$CONNECT_PORT/connectors/online-prices-jdbc-source/restart
 
 VERY IMPORTANT - Delete the NodePort ingress when setup is complete!
+*Note* There is no need to deploy NodePort if you have successfully setup Ingress; NodePort is only for testing purposes.
