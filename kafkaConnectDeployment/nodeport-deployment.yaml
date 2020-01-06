@@ -9,5 +9,7 @@ spec:
     app: kafka-connect
   type: NodePort
   ports:
+   # Kafka Connect REST port set by the environmental variable CONNECT_REST_PORT
+   # The node port is selected from the port range 30000-32767 by default. But this range can be changed in Kubernetes configuration: https://kubernetes.io/docs/concepts/services-networking/service/#nodeport
    - port: 28083
      nodePort: 31514

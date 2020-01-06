@@ -38,6 +38,7 @@ To set the environmental variables, we create a secret called 'eventstreams-kafk
 - implementation: https://github.com/confluentinc/cp-docker-images/blob/fec6d0a8635cea1dd860e610ac19bd3ece8ad9f4/debian/kafka-connect-base/include/etc/confluent/docker/launch#L42
 - guide: https://docs.confluent.io/current/connect/userguide.html#distributed-mode
 - guide: https://docs.confluent.io/current/connect/userguide.html#distributed-worker-configuration
+- guide: https://gerardnico.com/dit/kafka/connect/distributed
 
 Use the following command to create a secret in the cluster for the credentials and config. Remember to replace
 - <user>
