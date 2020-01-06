@@ -12,7 +12,6 @@ const parseStoreFulfillMessage = function (msg) {
 };
 
 global.main = async function (params) {
-    console.log('test');
     log(createLog.params('consumeStoresFulfillMessage', params));
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
@@ -45,8 +44,6 @@ global.main = async function (params) {
             const currentStoreData = await stores.findOne({ _id: storeData._id });
             let bulkStyleAtsUpdates = bulkAtsRecalculateQueue.initializeUnorderedBulkOp();
 
-            console.log(currentStoreData, storeData);
-
             if (currentStoreData.canOnlineFulfill !== storeData.canOnlineFulfill) {
               bulkStyleAtsUpdates = await handleStyleAtsRecalc(bulkStyleAtsUpdates, storeData, inventory);
 
@@ -66,7 +63,6 @@ global.main = async function (params) {
         }))
     )
     .then((results) => {
-        console.log('how', results);
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
