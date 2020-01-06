@@ -1,6 +1,7 @@
 const getCollection = require('../../lib/getCollection');
 const { addErrorHandling, log, createLog } = require('../utils');
 const createError = require('../../lib/createError');
+const { handleStyleAtsRecalc } = require('./utils');
 
 const parseStoreFulfillMessage = function (msg) {
     return {
@@ -11,6 +12,7 @@ const parseStoreFulfillMessage = function (msg) {
 };
 
 global.main = async function (params) {
+    console.log('test');
     log(createLog.params('consumeStoresFulfillMessage', params));
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
@@ -39,38 +41,32 @@ global.main = async function (params) {
         .filter(addErrorHandling((msg) => msg.topic === params.topicName))
         .map(addErrorHandling(parseStoreFulfillMessage))
         .map(addErrorHandling(async (storeData) => {
+            const storeFulfillOperations = [];
             const currentStoreData = await stores.findOne({ _id: storeData._id });
+            let bulkStyleAtsUpdates = bulkAtsRecalculateQueue.initializeUnorderedBulkOp();
+
+            console.log(currentStoreData, storeData);
 
             if (currentStoreData.canOnlineFulfill !== storeData.canOnlineFulfill) {
-              const unpaddedStoreId = parseInt(storeData._id, 10) 
-              console.log('unpaddedStoreId', unpaddedStoreId);
-              
-              const recalcAtsStyles = await inventory.aggregate([{ $match: { storeId: unpaddedStoreId, availableToSell: { $gt:0 } } }, { $group: { _id: '$styleId' } } ]).toArray()
-              const recalcAtsStyleIds = recalcAtsStyles.map((style) => {
-                return {
-                  _id: style._id,
-                  insertTimestamp: (new Date()).getTime()
-                };
-              });
-              console.log('recalcAtsStyleIds', recalcAtsStyleIds, recalcAtsStyleIds.length);
+              bulkStyleAtsUpdates = await handleStyleAtsRecalc(bulkStyleAtsUpdates, storeData, inventory);
 
-              await bulkAtsRecalculateQueue.insertMany(recalcAtsStyleIds)
-              .then(result => {
-                  console.log(`Successfully inserted ${result.insertedIds.length} items!`);
-              })
-              .catch(originalError => {
-                  throw createError.consumeStoresFulfillMessage.failedBulkAtsInsert(originalError, recalcAtsStyleIds);
-              })
+              storeFulfillOperations.push(bulkStyleAtsUpdates.execute()
+                                          .catch(originalError => {
+                                              throw createError.consumeStoresFulfillMessage.failedBulkAtsInsert(originalError, bulkStyleAtsUpdates);
+                                          }));
             }
 
-            return stores.updateOne({ _id: storeData._id }, { $set: storeData })
-            .then(() => log('Updated store fulfill ' + storeData._id))
-            .catch(originalError => {
-                return createError.consumeStoresFulfillMessage.failedToUpdateStore(originalError, storeData._id);
-            })
+            storeFulfillOperations.push(stores.updateOne({ _id: storeData._id }, { $set: storeData })
+                                .then(() => log('Updated store fulfill ' + storeData._id))
+                                .catch(originalError => {
+                                    return createError.consumeStoresFulfillMessage.failedToUpdateStore(originalError, storeData._id);
+                                }));
+
+            return Promise.all(storeFulfillOperations);
         }))
     )
     .then((results) => {
+        console.log('how', results);
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);

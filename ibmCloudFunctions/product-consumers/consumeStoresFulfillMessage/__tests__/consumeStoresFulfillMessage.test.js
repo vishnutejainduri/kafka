@@ -13,14 +13,16 @@ describe('consumeStoresFulfillMessage', () => {
                 topic: 'stores-fulfill-connect-jdbc',
                 value: {
                     SITE_ID: 'siteId',
-                    FULFILL_STATUS: 'fulfillStatus',
+                    FULFILL_STATUS: 'Y',
                     LAST_MODIFIED: 1000000000000
                 },
             }],
             mongoUri: 'mongo-uri',
             dbName: 'db-name',
             mongoCertificateBase64: 'mong-certificate',
-            collectionName: 'stores'
+            collectionName: 'stores',
+            inventoryCollectionName: 'inventory',
+            bulkAtsRecalculateQueue: 'bulkAtsRecalculateQueue' 
         }
         const response = await consumeStoresFulfillMessage(params);
         // returns nothing/undefined if successfully run
