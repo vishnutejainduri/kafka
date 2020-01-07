@@ -176,9 +176,12 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=1
 ```
 
+# Creating Kafka Connect Service 
+kubectl apply -f ./kafka-connect-service.yaml
+
 # Deploying Kafka Connect
 Create the image (see /kafka-connect-image) and deploy a workload with it
-kubectl apply -f kafka-connect-deployment/kafka-connect-deployment.yaml
+kubectl apply -f /kafka-connect-deployment.yaml
 
 *Note* Remember to specify Kafka Connect image tag in 'kafka-connect-deployment.yaml'
 
