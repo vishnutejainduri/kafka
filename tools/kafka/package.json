@@ -17,6 +17,7 @@
   "scripts": {
     "pretest": "eslint . ",
     "test": "jest",
+    "connectors:getAll:development": "node debugConnectors getAll development",
     "connectors:getAll:dev": "node debugConnectors getAll dev",
     "connectors:deleteAll:dev": "node debugConnectors deleteAll dev",
     "connectors:getAll:prod": "node debugConnectors getAll prod",

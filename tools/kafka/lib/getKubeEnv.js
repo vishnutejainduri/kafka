@@ -17,5 +17,14 @@ module.exports = function (platformEnv) {
         }
     }
 
+    if (platformEnv === "development") {
+        return {
+            username: process.env.KUBE_DEVELOPMENT_USERNAME,
+            password: process.env.KUBE_DEVELOPMENT_PASSWORD,
+            tenant: process.env.KUBE_DEVELOPMENT_TENANT,
+            host: process.env.KUBE_DEVELOPMENT_HOST            
+        }
+    }
+
     throw new Error("No environment provided");
 };
