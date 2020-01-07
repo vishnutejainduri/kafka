@@ -1,5 +1,5 @@
 # Overview
-Our Kafka Connect instance consists of a kafka-connect deployment, a kafka-connect service, a kafka-connect Ingress, and optionally, if VPN is needed, a static-routes daemonset .
+Our Kafka Connect instance consists of a kafka-connect deployment, a kafka-connect service, a kafka-connect Ingress, and optionally, if VPN is needed, a static-routes daemonset, and if logging is needed, a logDNA daemonset.
 
 - Deployment: the Kafka Connect process running inside a docker container inside a pod.
 - Service: an abstract way to expose our Kafka Connect instance to traffic out of the cluster.
