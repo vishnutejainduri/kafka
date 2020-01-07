@@ -5,6 +5,13 @@ Our Kafka Connect instance consists of a kafka-connect deployment, a kafka-conne
 - Service: an abstract way to expose our Kafka Connect instance to traffic out of the cluster.
 - Ingress: is API object that manages external access to the Kafka Connect service in the cluster.
 
+# Kafka Connect
+## Distributed Mode
+### Guides
+- https://rmoff.net/2019/11/22/common-mistakes-made-when-configuring-multiple-kafka-connect-workers/
+- https://stackoverflow.com/questions/51335621/kafka-connect-cluster-setup-or-launching-connect-workers
+- https://www.confluent.io/resources/apache-kafka-confluent-enterprise-reference-architecture/ (USE SAFARI)
+
 # Networking
 ## Guides
 - Choosing an exposure service: https://cloud.ibm.com/docs/containers?topic=containers-cs_network_planning
