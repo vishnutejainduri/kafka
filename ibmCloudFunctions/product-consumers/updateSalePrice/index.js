@@ -9,6 +9,7 @@ const {
     ONLINE_SITE_ID
 } = require('../../lib/parsePriceMessage');
 const createError = require('../../lib/createError');
+const { log, createLog, addErrorHandling } = require('../utils');
 
 function generateUpdateFromParsedMessage(priceData) {
     const updateToProcess = {
@@ -29,10 +30,7 @@ function generateUpdateFromParsedMessage(priceData) {
 }
 
 global.main = async function (params) {
-    console.log(JSON.stringify({
-        cfName: 'updateSalePrice',
-        params
-    }));
+    log(createLog.params("updateSalePrice", params));
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
@@ -50,33 +48,19 @@ global.main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter(filterPriceMessages)
-        .map(parsePriceMessage)
-        .map(generateUpdateFromParsedMessage)
-        .map((update) => {
-                return prices.updateOne(
-                    { _id: update._id },
-                    { $set: update },
-                    { upsert: true }
-                ).catch((err) => {
-                    console.error('Problem with sale price ' + update.styleId, update);
-                    if (!(err instanceof Error)) {
-                        const e = new Error();
-                        e.originalError = err;
-                        e.attemptedUpdate = update;
-                        return e;
-                    }
-                    return err;
-                })
-            }
-        )
+        .filter(addErrorHandling(filterPriceMessages))
+        .map(addErrorHandling(parsePriceMessage))
+        .map(addErrorHandling(generateUpdateFromParsedMessage))
+        .map(addErrorHandling(async update => prices.updateOne({ _id: update._id }, { $set: update }, { upsert: true })))
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
-            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
-            e.failedUpdatesErrors = errors;
-            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            throw e;
+            const error = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
+            error.failedUpdatesErrors = errors;
+            error.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
+            return {
+                error
+            };
         }
     });
 };
