@@ -1,15 +1,3 @@
-packages:
-  product-consumers:
-    inputs:
-      nameSpace: $SPACE
-      mongoUri: $MONGO_URI
-      mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
-      dbName: $DB_NAME
-      algoliaApiKey: $ALGOLIA_API_KEY
-      algoliaIndexName: $ALGOLIA_INDEX_NAME
-      algoliaAppId: $ALGOLIA_APP_ID
-      productApiClientId: $PRODUCT_API_CLIENT_ID
-      productApiHost: $PRODUCT_API_HOST
     actions:
       consume-catalog-message:
         location: ./product-consumers/consumeCatalogMessage/dist/bundle.js
@@ -21,6 +9,9 @@ packages:
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
+      consume-catalog-message-with-retry:
+        location: ./product-consumers/consumeCatalogMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-styles-basic-message:
         location: ./product-consumers/consumeStylesBasicMessage/dist/bundle.js
         runtime: nodejs:10
@@ -31,6 +22,9 @@ packages:
           collectionName: $STYLES_COLLECTION_NAME
           algoliaDeleteCreateQueue: $ALGOLIA_DELETE_CREATE_QUEUE
           topicName: styles-basic-connect-jdbc
+      consume-styles-basic-message-with-retry:
+        location: ./product-consumers/consumeStylesBasicMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-threshold-message:
         location: ./product-consumers/consumeThresholdMessage/dist/bundle.js
         runtime: nodejs:10
@@ -42,6 +36,9 @@ packages:
           stylesCollectionName: $STYLES_COLLECTION_NAME
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: thresholds-connect-jdbc
+      consume-threshold-message-with-retry:
+        location: ./product-consumers/consumeThresholdMessageWithRetry/dist/bundle.js
+        conductor: true
       update-sale-price:
         location: ./product-consumers/updateSalePrice/dist/bundle.js
         runtime: nodejs:10
@@ -60,6 +57,9 @@ packages:
         inputs:
           collectionName: $STORES_COLLECTION_NAME
           topicName: stores-connect-jdbc
+      consume-stores-message-with-retry:
+        location: ./product-consumers/consumeStoresMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-storesfulfill-message:
         location: ./product-consumers/consumeStoresFulfillMessage/dist/bundle.js
         runtime: nodejs:10
@@ -72,6 +72,9 @@ packages:
           dbName: $DB_NAME
           collectionName: $STORES_COLLECTION_NAME
           topicName: stores-fulfill-connect-jdbc
+      consume-storesfulfill-message-with-retry:
+        location: ./product-consumers/consumeStoresFulfillMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-dep27fulfill-message:
         location: ./product-consumers/consumeDep27FulfillMessage/dist/bundle.js
         runtime: nodejs:10
@@ -84,6 +87,9 @@ packages:
           dbName: $DB_NAME
           collectionName: $STORES_COLLECTION_NAME
           topicName: stores-dep27fulfill-connect-jdbc
+      consume-dep27fulfill-message-with-retry:
+        location: ./product-consumers/consumeDep27FulfillMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-sku-message:
         location: ./product-consumers/consumeSkuMessage/dist/bundle.js
         runtime: nodejs:10
@@ -93,6 +99,21 @@ packages:
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
           topicName: skus-connect-jdbc
+      consume-sku-message-with-retry:
+        location: ./product-consumers/consumeSkuMessageWithRetry/dist/bundle.js
+        conductor: true
+      consume-barcode-message:
+        location: ./product-consumers/consumeBarcodeMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 128
+          timeout: 600000
+        inputs:
+          collectionName: $BARCODES_COLLECTION_NAME
+          topicName: barcodes-connect-jdbc
+      consume-barcode-message-with-retry:
+        location: ./product-consumers/consumeBarcodeMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-sku-inventory-message:
         location: ./product-consumers/consumeSkuInventoryMessage/dist/bundle.js
         runtime: nodejs:10
@@ -106,6 +127,9 @@ packages:
           storesCollectionName: $STORES_COLLECTION_NAME
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: inventory-connect-jdbc-SKUINVENTORY
+      consume-sku-inventory-message-with-retry:
+        location: ./product-consumers/consumeSkuInventoryMessageWithRetry/dist/bundle.js
+        conductor: true
       calculate-available-to-sell:
         location: ./product-consumers/calculateAvailableToSell/dist/bundle.js
         runtime: nodejs:10
@@ -122,6 +146,9 @@ packages:
           storesCollectionName: $STORES_COLLECTION_NAME
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: inventory-connect-jdbc-SKUINVENTORY
+      calculate-available-to-sell-with-retry:
+        location: ./product-consumers/calculateAvailableToSellWithRetry/dist/bundle.js
+        conductor: true
       update-algolia-style:
         location: ./product-consumers/updateAlgoliaStyle/dist/bundle.js
         runtime: nodejs:10
@@ -131,6 +158,9 @@ packages:
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
+      update-algolia-style-with-retry:
+        location: ./product-consumers/updateAlgoliaStyleWithRetry/dist/bundle.js
+        conductor: true
       delete-create-algolia-styles:
         location: ./product-consumers/deleteCreateAlgoliaStyles/dist/bundle.js
         runtime: nodejs:10
@@ -207,6 +237,9 @@ packages:
         inputs:
           collectionName: $MEDIAS_COLLECTION_NAME
           topicName: medias-connect-jdbc
+      consume-medias-message-with-retry:
+        location: ./product-consumers/consumeMediasMessageWithRetry/dist/bundle.js
+        conductor: true
       consume-media-containers-message:
         location: ./product-consumers/consumeMediaContainersMessage/dist/bundle.js
         runtime: nodejs:10
@@ -216,6 +249,9 @@ packages:
         inputs:
           collectionName: $MEDIA_CONTAINERS_COLLECTION_NAME
           topicName: media-containers-connect-jdbc
+      consume-media-containers-message-with-retry:
+        location: ./product-consumers/consumeMediaContainersMessageWithRetry/dist/bundle.js
+        conductor: true
       add-media-container-to-queue-message:
         location: ./product-consumers/addMediaContainerToQueue/dist/bundle.js
         runtime: nodejs:10
@@ -225,6 +261,11 @@ packages:
         inputs:
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
           topicName: media-containers-connect-jdbc
+      add-media-container-to-queue-message-with-retry:
+        location: ./product-consumers/addMediaContainerToQueueWithRetry/dist/bundle.js
+        conductor: true
+        inputs:
+          cfName: addMediaContainerToQueue
       add-facets-to-bulk-import-queue:
         location: ./product-consumers/addFacetsToBulkImportQueue/dist/bundle.js
         runtime: nodejs:10
@@ -237,131 +278,12 @@ packages:
       add-facets-to-bulk-import-queue-with-retry:
         location: ./product-consumers/addFacetsToBulkImportQueueWithRetry/dist/bundle.js
         conductor: true
+        inputs:
+          cfName: addFacetsToBulkImportQueue
+      schema-validation:
+        location: ./product-consumers/schemaValidation/dist/bundle.js
     sequences:
       update-pricing-sequence:
         actions: update-algolia-price,update-sale-price
       update-inventory-sequence:
-        actions: consume-sku-inventory-message,calculate-available-to-sell
-    triggers:
-      catalog-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: styles-connect-jdbc-CATALOG
-      styles-basic-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: styles-basic-connect-jdbc
-      threshold-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: thresholds-connect-jdbc
-      sku-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: skus-connect-jdbc
-      medias-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: medias-connect-jdbc
-      stores-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: stores-connect-jdbc
-      storefulfill-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: stores-fulfill-connect-jdbc
-      dep27fulfill-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: stores-dep27fulfill-connect-jdbc
-      media-containers-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: media-containers-connect-jdbc
-      sale-price-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: prices-connect-jdbc
-      sku-inventory-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: inventory-connect-jdbc-SKUINVENTORY
-      facets-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
-      every-minute:
-        feed: /whisk.system/alarms/alarm
-        inputs:
-          cron: "*/1 * * * *"
-    rules:
-      catalog-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message
-        trigger: catalog-trigger
-      styles-basic-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-styles-basic-message
-        trigger: styles-basic-trigger
-      threshold-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-threshold-message
-        trigger: threshold-trigger
-      sku-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-sku-message
-        trigger: sku-trigger
-      medias-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-medias-message
-        trigger: medias-trigger
-      stores-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-stores-message
-        trigger: stores-trigger
-      storefulfill-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-storesfulfill-message
-        trigger: storefulfill-trigger
-      dep27fulfill-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-dep27fulfill-message
-        trigger: dep27fulfill-trigger
-      media-containers-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-media-containers-message
-        trigger: media-containers-trigger
-      add-media-container-to-queue-message-rule:
-        action: /${ORG}_${SPACE}/product-consumers/add-media-container-to-queue-message
-        trigger: media-containers-trigger
-      sale-price-sequence-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-pricing-sequence
-        trigger: /${ORG}_${SPACE}/sale-price-trigger
-      algolia-images-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-algolia-image
-        trigger: every-minute
-      algolia-inventory-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-algolia-inventory
-        trigger: every-minute
-      bulk-ats-rule:
-        action: /${ORG}_${SPACE}/product-consumers/bulk-calculate-available-to-sell
-        trigger: every-minute
-      algolia-delete-create-rule:
-        action: /${ORG}_${SPACE}/product-consumers/delete-create-algolia-styles
-        trigger: every-minute
-      algolia-catalog-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-algolia-style
-        trigger: catalog-trigger
-      update-inventory-sequence-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-inventory-sequence
-        trigger: /${ORG}_${SPACE}/sku-inventory-trigger
-      add-facets-to-queue-rule:
-        action: /${ORG}_${SPACE}/product-consumers/add-facets-to-bulk-import-queue-with-retry
-        trigger: /${ORG}_${SPACE}/facets-trigger
-      algolia-facets-rule:
-        action: /${ORG}_${SPACE}/product-consumers/update-algolia-facets
-        trigger: every-minute
+        actions: consume-sku-inventory-message-with-retry,calculate-available-to-sell-with-retry

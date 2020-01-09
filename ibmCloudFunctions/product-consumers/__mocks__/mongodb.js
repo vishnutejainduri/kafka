@@ -16,6 +16,12 @@ const getCollection = (collectionName) => {
                     id: 'success'
                 })
             };
+        case 'updateAlgoliaPriceCount':
+            return {
+                insert: async () => ({
+                    id: 'success'
+                })
+            };
         case 'updateAlgoliaInventoryCount':
             return {
                 insert: async () => ({
@@ -34,6 +40,10 @@ const getCollection = (collectionName) => {
                 find: () => ({
                   toArray: async () => ([{ _id: 'success' }])
                 })
+            }; 
+        case 'barcode':
+            return {
+                updateOne: async ({ _id }) => ({ _id })
             }; 
         case 'inventory':
             return {
@@ -67,6 +77,11 @@ const getCollection = (collectionName) => {
             return {
                 updateOne: async ({ _id }) => ({ _id }),
                 findOne: async () => ({ _id: 'success', styleId: 'success', ats: [] }),
+            }; 
+        case 'prices':
+            return {
+                updateOne: async ({ _id }) => ({ _id }),
+                findOne: async () => ({ _id: 'success', styleId: 'styleId', onlineSalePrice: 'onlineSalePrice', inStoreSalePrice: 'inStoreSalePrice' }),
             }; 
         default:
             return {

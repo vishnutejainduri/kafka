@@ -1,0 +1,49 @@
+{
+    "params": {
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "title": "addFacetsToBulkImportQueue",
+        "description": "Parameters passed to addFacetsToBulkImportQueue",
+        "type": "object",
+        "properties": {
+            "cfName": {
+                "const": "addFacetsToBulkImportQueue"
+            },
+            "messages": {
+                "description": "Batch of messages",
+                "type": "array"
+            }
+        },
+        "required": ["messages"]
+    },
+    "message": {
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "title": "addFacetsToBulkImportQueueMessage",
+        "description": "A message passed to addFacetsToBulkImportQueue",
+        "type": "object",
+        "properties": {
+            "value": {
+                "description": "Value of a message",
+                "type": "object",
+                "properties": {
+                    "CATEGORY": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "STYLEID": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "DESC_ENG": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "DESC_FR": {
+                        "type": "string"
+                    }
+                },
+                "required": ["CATEGORY", "STYLEID", "DESC_ENG"]
+            }
+        },
+        "required": ["value"]
+    }
+}

@@ -98,7 +98,7 @@ global.main = async function (params) {
             return update;
         }))
     );
-    
+
     const messageFailures = [];
     updates = updates.filter((update) => {
         if (!update) {

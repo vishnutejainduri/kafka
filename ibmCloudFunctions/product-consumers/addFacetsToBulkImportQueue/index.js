@@ -1,32 +1,7 @@
-const Ajv = require('ajv');
-const ajv = new Ajv({ allErrors: true });
-
 const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling } = require('../utils');
 const { parseFacetMessage } = require('../../lib/parseFacetMessage');
 const getCollection = require('../../lib/getCollection');
-
-const schema = {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    title: "addFacetsToBulkImportQueue",
-    description: "Parameters passed to addFacetsToBulkImportQueue",
-    type: "object",
-    properties: {
-        messages: {
-            description: "Batch of messages",
-            type: "array",
-            minItems: 1,
-            items: {
-                type: "object",
-                required: ["value"]
-          }
-       }
-    },
-     
-    "required": ["messages"]
- }
-
-const validate = ajv.compile(schema);
 
 const parseFacetMessageWithErrorHandling = addErrorHandling(
     parseFacetMessage,
@@ -57,11 +32,6 @@ const updateAlgoliaFacetQueueWithErrorHandling = algoliaFacetQueue => addErrorHa
 
 global.main = async function (params) {
     log(createLog.params("addFacetsToBulkImportQueue", params));
-
-    validate(params);
-    if (validate.errors) {
-        throw createError.failedSchemaValidation(validate.errors, 'addFacetsToBulkImportQueue');
-    }
 
     let algoliaFacetQueue;
     try {
