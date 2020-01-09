@@ -1,5 +1,6 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
+const { log } = require('../utils');
 
 let client = null;
 let index = null;
