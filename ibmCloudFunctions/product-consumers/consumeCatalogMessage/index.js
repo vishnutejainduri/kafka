@@ -33,7 +33,7 @@ global.main = async function (params) {
             .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
                 ? styles.updateOne({ _id: styleData._id, lastModifiedDate: { $lte: styleData.lastModifiedDate } }, { $set: styleData })
                     .then((result) => result.modifiedCount > 0
-                        ? prices.updateOne({ _id: styleData._id }, { $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice } }, { upsert: true })
+                        ? prices.updateOne({ _id: styleData._id }, { $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice } }, { upsert: true })
                           .then(() => {
                             if (existingDocument.departmentId && existingDocument.departmentId !== styleData.departmentId && (styleData.departmentId === '27' || existingDocument.departmentId === '27')) {
                               bulkAtsRecalculateQueue.insertOne({ _id: styleData._id, insertTimestamp: styleData.effectiveDate })
@@ -51,7 +51,7 @@ global.main = async function (params) {
                         throw createError.consumeCatalogMessage.failedStyleUpdates(originalError, styleData);
                     })
                   : styles.updateOne({ _id: styleData._id }, { $set: styleData }, { upsert: true })
-                    .then(() => prices.updateOne({ _id: styleData._id }, { $set:{ _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice, price: styleData.originalPrice } }, { upsert: true })
+                    .then(() => prices.updateOne({ _id: styleData._id }, { $set:{ _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice } }, { upsert: true })
                                 .catch(originalError => {
                                     throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
                                 })
