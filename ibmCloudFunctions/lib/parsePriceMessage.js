@@ -13,6 +13,19 @@ const attributeMap = {
     NEW_RETAIL_PRICE: 'newRetailPrice'
 };
 
+const calcDiscount = (originalPrice, salePrice) => {
+    // If the sales price is null or 0 there is no discount.
+    // If the original price is null or 0, we cannot calculate the discount.
+    // If both prices are equal there is no discount.
+    // In all cases we represent the discount as 0.
+    if (!salePrice || !originalPrice || salePrice === originalPrice) {
+        return 0
+    }
+
+    const discount = Math.round(((1 - salePrice/originalPrice) * 100));
+    return Number.isNaN(discount) ? 0 : discount;
+}
+
 function filterPriceMessages(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Price update messages');
@@ -60,12 +73,15 @@ function generateUpdateFromParsedMessage(update, priceData, styleData) {
                              : updateToProcess.currentPrice
 
     updateToProcess.lowestPrice = priceData.inStoreSalePrice 
-                             ? Math.min(updateToProcess.lowestOnlinePrice, updateToProcess.lowestOnlinePrice)
+                             ? Math.min(updateToProcess.lowestOnlinePrice, priceData.inStoreSalePrice)
                              : updateToProcess.lowestOnlinePrice
 
-    const priceString = updateToProcess.currentPrice ? updateToProcess.currentPrice.toString() : '';
-    const priceArray = priceString.split('.');
-    updateToProcess.isSale = priceArray.length > 1 ? priceArray[1] === '99' : false;
+    updateToProcess.isSale = !!(priceData.onlineSalePrice || priceData.inStoreSalePrice);
+    updateToProcess.isOnlineSale = !!(priceData.onlineSalePrice);
+
+    updateToProcess.inStoreDiscount = calcDiscount(styleData.originalPrice, priceData.inStoreSalePrice);
+    updateToProcess.onlineDiscount = calcDiscount(styleData.originalPrice, priceData.onlineSalePrice);
+
     return updateToProcess;
 }
 
