@@ -39,6 +39,11 @@ global.main = async function (params) {
         .map(addErrorHandling((update) => styles.findOne({ _id: update.styleId })
                 .then(async (styleData) => {
                   const priceData = await prices.findOne({ _id: update.styleId });
+
+                  if (!styleData) {
+                    return null;
+                  }
+
                   const priceUpdate = generateUpdateFromParsedMessage (update, priceData, styleData);
                   priceUpdate._id = styleData._id;
                   priceUpdate.id = styleData._id;
