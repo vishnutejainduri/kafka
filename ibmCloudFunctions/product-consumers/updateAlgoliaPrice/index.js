@@ -67,7 +67,7 @@ global.main = async function (params) {
 
             if (!styleData 
                 || styleData.isOutlet
-                || priceData && (priceUpdate.onlineSalePrice === priceData.onlineSalePrice && priceUpdate.inStoreSalePrice === priceData.inStoreSalePrice)) {
+                || priceData && (update.onlineSalePrice === priceData.onlineSalePrice && update.inStoreSalePrice === priceData.inStoreSalePrice)) {
                 return null;
             }
 
