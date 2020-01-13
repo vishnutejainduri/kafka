@@ -64,14 +64,15 @@ global.main = async function (params) {
         .map(addErrorHandling(parsePriceMessage))
         .map(addErrorHandling(async (update) => {
             const [styleData, priceData] = await Promise.all([styles.findOne({ _id: update._id }), prices.findOne({ _id: update._id })]);
-            const priceUpdate = generateUpdateFromParsedMessage (update, priceData, styleData);
-            priceUpdate.objectID = styleData._id;
 
             if (!styleData 
                 || styleData.isOutlet
                 || priceData && (priceUpdate.onlineSalePrice === priceData.onlineSalePrice && priceUpdate.inStoreSalePrice === priceData.inStoreSalePrice)) {
                 return null;
             }
+
+            const priceUpdate = generateUpdateFromParsedMessage (update, priceData, styleData);
+            priceUpdate.objectID = styleData._id;
 
             return priceUpdate;
         }))
