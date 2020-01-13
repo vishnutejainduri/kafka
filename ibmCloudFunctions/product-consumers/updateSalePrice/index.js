@@ -45,8 +45,8 @@ global.main = async function (params) {
                   }
 
                   const priceUpdate = generateUpdateFromParsedMessage (update, priceData, styleData);
-                  priceUpdate._id = update.styleId;
-                  priceUpdate.id = update.styleId;
+                  priceUpdate._id = styleData._id;
+                  priceUpdate.id = styleData._id;
 
                   return prices.updateOne(
                       { _id: priceUpdate._id },
