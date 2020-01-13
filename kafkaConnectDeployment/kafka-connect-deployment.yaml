@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: kafka-connect-host
-          image: us.icr.io/hrretailplatform/kafkaconnecthost:latest
+          image: us.icr.io/hrretailplatform/kafkaconnecthost:5.3.2
           ports:
             - containerPort: 28083
           env:
@@ -182,20 +182,3 @@ spec:
                 secretKeyRef:
                   name: eventstreams-kafka-connect
                   key: CONNECT_BUFFER_MEMORY
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: kafka-connect
-  labels:
-    app: kafka-connect
-spec:
-  selector:
-    app: kafka-connect
-  ports:
-    - protocol: "TCP"
-      port: 80
-      targetPort: 28083
-  type: NodePort
