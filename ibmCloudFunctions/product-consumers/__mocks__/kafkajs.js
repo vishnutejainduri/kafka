@@ -2,7 +2,8 @@ class Kafka {
     constructor() {
         this.producer = () => ({
             connect: () => {},
-            send: () => {}
+            send: () => {},
+            sendBatch: topicMessages => topicMessages
         });
     }
 }

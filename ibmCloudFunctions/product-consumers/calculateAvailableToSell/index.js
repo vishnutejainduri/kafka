@@ -61,6 +61,8 @@ global.main = async function (params) {
             skuUpdateToProcess['$set']['onlineAts'] = newSkuOnlineAts;
           }
 
+          styleUpdateToProcess['$currentDate'] = { lastModifiedInternalAts: { $type:"timestamp" } };
+          skuUpdateToProcess['$currentDate'] = { lastModifiedInternalAts: { $type:"timestamp" } };
           return Promise.all([styles.updateOne({ _id: atsData.styleId }, styleUpdateToProcess)
                               .catch(originalError => {
                                   throw createError.calculateAvailableToSell.failedUpdateStyleAts(originalError, atsData);
@@ -69,7 +71,7 @@ global.main = async function (params) {
                               .catch(originalError => {
                                   throw createError.calculateAvailableToSell.failedUpdateSkuAts(originalError, atsData);
                               }),
-                              styleAvailabilityCheckQueue.updateOne({ _id : atsData.styleId }, { $set : { _id: atsData.styleId, styleId: atsData.styleId } }, { upsert: true })
+                              styleAvailabilityCheckQueue.updateOne({ _id : atsData.styleId }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: atsData.styleId, styleId: atsData.styleId } }, { upsert: true })
                               .catch(originalError => {
                                   throw createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, atsData);
                               })])

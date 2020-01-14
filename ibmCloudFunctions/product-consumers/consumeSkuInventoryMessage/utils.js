@@ -24,13 +24,20 @@ const handleStyleUpdate = (
 
                     if (styleData) {
                         const sizes = styleData.sizes || [];
+                        const storeInventory = styleData.storeInventory || {};
 
-                        // TODO: can remove ${storeId} when this no longer exists in production
-                        const newSizes = availableToSell 
-                            ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`).concat(`${sku.size}-${storeId}`)
-                            : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${storeId}`);
+                        const newSizes = availableToSell
+                            ? sizes.filter((size) => size !== `${sku.size}` && size !== `${sku.size}-${storeId}`).concat(`${sku.size}`)
+                            : sizes.filter((size) => size !== `${sku.size}` && size !== `${sku.size}-${storeId}`);
 
-                        const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
+                        const storeInventorySizes = storeInventory[storeId] || [];
+                        const newStoreInventorySizes = availableToSell
+                            ? storeInventorySizes.filter((size) => size !== sku.size).concat(sku.size)
+                            : storeInventorySizes.filter((size) => size !== sku.size)
+
+                        storeInventory[storeId] = newStoreInventorySizes;
+
+                        const updateToProcess = { $currentDate: { lastModifiedInternalSizes: { $type:"timestamp" } }, $set: { sizes: newSizes, storeInventory: storeInventory }, $setOnInsert: { effectiveDate: 0 } };
 
                         return styles.updateOne({ _id: styleId }, updateToProcess, { upsert: true })
                     }

@@ -5,29 +5,10 @@ const getCollection = require('../../lib/getCollection');
 const {
     filterPriceMessages,
     parsePriceMessage,
-    IN_STORE_SITE_ID,
-    ONLINE_SITE_ID
+    generateUpdateFromParsedMessage
 } = require('../../lib/parsePriceMessage');
 const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling } = require('../utils');
-
-function generateUpdateFromParsedMessage(priceData) {
-    const updateToProcess = {
-        _id: priceData.styleId,
-        id: priceData.styleId
-    };
-    switch (priceData.siteId) {
-        case ONLINE_SITE_ID:
-            updateToProcess.onlineSalePrice = priceData.newRetailPrice;
-            break;
-        case IN_STORE_SITE_ID:
-            updateToProcess.inStoreSalePrice = priceData.newRetailPrice;
-            break;
-        default:
-            break;
-    }
-    return updateToProcess;
-}
 
 global.main = async function (params) {
     log(createLog.params("updateSalePrice", params));
@@ -41,7 +22,9 @@ global.main = async function (params) {
     }
 
     let prices;
+    let styles;
     try {
+        styles = await getCollection(params);
         prices = await getCollection(params, params.pricesCollectionName);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
@@ -50,9 +33,35 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(addErrorHandling(filterPriceMessages))
         .map(addErrorHandling(parsePriceMessage))
-        .map(addErrorHandling(generateUpdateFromParsedMessage))
-        .map(addErrorHandling(async update => prices.updateOne({ _id: update._id }, { $set: update }, { upsert: true })))
-    ).then((results) => {
+        .map(addErrorHandling((update) => styles.findOne({ _id: update.styleId })
+                .then(async (styleData) => {
+                  const priceData = await prices.findOne({ _id: update.styleId });
+
+                  if (!styleData) {
+                    return null;
+                  }
+
+                  const priceUpdate = generateUpdateFromParsedMessage (update, priceData, styleData);
+                  priceUpdate._id = styleData._id;
+                  priceUpdate.id = styleData._id;
+
+                  return prices.updateOne(
+                      { _id: priceUpdate._id },
+                    { $currentDate: { lastModifiedInternalSalePrice: { $type:"timestamp" } }, $set: update },
+                      { upsert: true }
+                  ).catch((err) => {
+                      console.error('Problem with sale price ' + update.styleId, update);
+                      if (!(err instanceof Error)) {
+                          const e = new Error();
+                          e.originalError = err;
+                          e.attemptedUpdate = update;
+                          return e;
+                      }
+                      throw err;
+                  })
+            })
+        )
+    )).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
             const error = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);

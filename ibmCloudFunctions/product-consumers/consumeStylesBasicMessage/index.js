@@ -47,7 +47,7 @@ global.main = async function (params) {
             const existingDoc = await styles.findOne({ _id: styleData._id });
 
             if (existingDoc) {
-              operations.push(styles.updateOne({ _id: styleData._id }, { $set: { isOutlet: styleData.isOutlet } }, { upsert: true })
+              operations.push(styles.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOutlet: { $type:"timestamp" } }, $set: { isOutlet: styleData.isOutlet } }, { upsert: true })
                 .catch((err) => {
                   return handleError(err, styleData)
                 })
