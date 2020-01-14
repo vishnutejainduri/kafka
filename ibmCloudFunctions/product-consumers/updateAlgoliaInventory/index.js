@@ -53,6 +53,7 @@ global.main = async function (params) {
                     isAvailableToSell: styleAts.ats > 0,
                     isOnlineAvailableToSell: styleAts.onlineAts > 0,
                     sizes: styleData.sizes,
+                    storeInventory: styleData.storeInventory,
                     objectID: styleData._id
                 };
             })
