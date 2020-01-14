@@ -7,14 +7,11 @@ const {
     parsePriceMessage,
     generateUpdateFromParsedMessage
 } = require('../../lib/parsePriceMessage');
-const { addErrorHandling } = require('../utils');
 const createError = require('../../lib/createError');
+const { log, createLog, addErrorHandling } = require('../utils');
 
 global.main = async function (params) {
-    console.log(JSON.stringify({
-        cfName: 'updateSalePrice',
-        params
-    }));
+    log(createLog.params("updateSalePrice", params));
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
@@ -34,8 +31,8 @@ global.main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter(filterPriceMessages)
-        .map(parsePriceMessage)
+        .filter(addErrorHandling(filterPriceMessages))
+        .map(addErrorHandling(parsePriceMessage))
         .map(addErrorHandling((update) => styles.findOne({ _id: update.styleId })
                 .then(async (styleData) => {
                   const priceData = await prices.findOne({ _id: update.styleId });
@@ -67,10 +64,12 @@ global.main = async function (params) {
     )).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
-            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
-            e.failedUpdatesErrors = errors;
-            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            throw e;
+            const error = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
+            error.failedUpdatesErrors = errors;
+            error.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
+            return {
+                error
+            };
         }
     });
 };
