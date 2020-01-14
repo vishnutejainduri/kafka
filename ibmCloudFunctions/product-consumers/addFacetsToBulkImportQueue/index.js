@@ -2,6 +2,7 @@ const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling } = require('../utils');
 const { parseFacetMessage } = require('../../lib/parseFacetMessage');
 const getCollection = require('../../lib/getCollection');
+const messagesLogs = require('../../lib/messagesLogs');
 
 const parseFacetMessageWithErrorHandling = addErrorHandling(
     parseFacetMessage,
@@ -32,6 +33,7 @@ const updateAlgoliaFacetQueueWithErrorHandling = algoliaFacetQueue => addErrorHa
 
 global.main = async function (params) {
     log(createLog.params("addFacetsToBulkImportQueue", params));
+    messagesLogs.storeBatch(params);
 
     let algoliaFacetQueue;
     try {

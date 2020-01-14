@@ -391,5 +391,21 @@ module.exports = {
                 messageFailures: JSON.stringify(messageFailures)
             }
         )
+    },
+    messagesLogs: {
+        storeValues: {
+            partialFailure: (originalError, totalInsertLength, failedIndices) => new CustomError(
+                originalError,
+                'partial-failure-messagesLogs-storeValues',
+                `Failed to insert ${failedIndices.length} of ${totalInsertLength}`,
+                {
+                    insertStatus: failedIndices
+                        .reduce((status, failedIndex) => {
+                            status[failedIndex] = false;
+                            return status;
+                        }, {})
+                }
+            )
+        }
     }
 }

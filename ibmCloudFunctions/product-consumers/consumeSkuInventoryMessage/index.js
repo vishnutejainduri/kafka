@@ -1,4 +1,5 @@
 const getCollection = require('../../lib/getCollection');
+const messagesLogs = require('../../lib/messagesLogs');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 const createError = require('../../lib/createError');
 
@@ -7,6 +8,8 @@ const { createLog, addErrorHandling, log } = require('../utils');
 
 global.main = async function (params) {
     log(createLog.params('consumeSkuInventoryMessage', params));
+    messagesLogs.storeBatch(params);
+
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
     const { messages, ...paramsExcludingMessages } = params;

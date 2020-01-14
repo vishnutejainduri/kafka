@@ -278,6 +278,16 @@
           cfName: addFacetsToBulkImportQueue
       schema-validation:
         location: ./product-consumers/schemaValidation/dist/bundle.js
+      resolve-messages-logs:
+        location: ./product-consumers/resolveMessagesLogs/dist/bundle.js
+        limits:
+          memorySize: 512
+          timeout: 600000
+      handle-messages-logs:
+        location: ./product-consumers/handleMessagesLogs/dist/bundle.js
+        limits:
+          memorySize: 512
+          timeout: 600000
     sequences:
       update-pricing-sequence:
         actions: update-algolia-price,update-sale-price

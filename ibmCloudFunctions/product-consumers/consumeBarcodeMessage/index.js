@@ -1,10 +1,12 @@
 const { filterBarcodeMessage, parseBarcodeMessage } = require('../../lib/parseBarcodeMessage');
 const { createLog, addErrorHandling, log } = require('../utils');
 const getCollection = require('../../lib/getCollection');
+const messagesLogs = require('../../lib/messagesLogs');
 const createError = require('../../lib/createError');
 
 global.main = async function (params) {
     log(createLog.params('consumeBarcodeMessage', params));
+    messagesLogs.storeBatch(params);
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
