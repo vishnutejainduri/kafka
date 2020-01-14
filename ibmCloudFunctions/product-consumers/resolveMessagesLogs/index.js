@@ -43,7 +43,7 @@ global.main = async function(params) {
         // TODO HRC-1184: implement a mechanism to handle partial failures
         if (!activationInfo.response.success) {
             const findMessages = await getFindMessages(params);
-            const messages = await findMessages(activationId);
+            const messages = await findMessages(activationId) || [];
             const activationTimedout = activationInfo.annotations.find(({ key }) => key === 'timeout').value === true;
             // if an activation has failed for any reason but timeout, send all of its messages to DLQ
             if (!activationTimedout) {
@@ -77,7 +77,6 @@ global.main = async function(params) {
     }
 
     const unresolvedBatches = await findUnresolvedBatches(params);
-
     const resolveBatchesResult = await Promise.all(
         unresolvedBatches.map(addErrorHandling(resolveBatchWithActivationInfo))
     );
