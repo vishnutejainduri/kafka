@@ -35,7 +35,7 @@ global.main = async function (params) {
         .map(addErrorHandling(parseSkuInventoryMessage))
         .map(addErrorHandling((inventoryData) => {
             const inventoryUpdatePromise = inventory
-                .updateOne({ _id: inventoryData._id }, { $set: inventoryData }, { upsert: true })
+                .updateOne({ _id: inventoryData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: inventoryData }, { upsert: true })
                 .then(() => inventoryData)
                 .catch(originalError => {
                     throw createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);

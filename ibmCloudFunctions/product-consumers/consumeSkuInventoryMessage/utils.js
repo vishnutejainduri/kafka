@@ -37,7 +37,7 @@ const handleStyleUpdate = (
 
                         storeInventory[storeId] = newStoreInventorySizes;
 
-                        const updateToProcess = { $set: { sizes: newSizes, storeInventory: storeInventory }, $setOnInsert: { effectiveDate: 0 } };
+                        const updateToProcess = { $currentDate: { lastModifiedInternalSizes: { $type:"timestamp" } }, $set: { sizes: newSizes, storeInventory: storeInventory }, $setOnInsert: { effectiveDate: 0 } };
 
                         return styles.updateOne({ _id: styleId }, updateToProcess, { upsert: true })
                     }

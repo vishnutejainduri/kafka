@@ -82,7 +82,7 @@ module.exports = {
                   })
                 }
 
-                skuAtsOperations.push(skus.updateOne({ _id: skuRecord._id }, { $set: { ats: skuAts, onlineAts: skuOnlineAts } })
+                skuAtsOperations.push(skus.updateOne({ _id: skuRecord._id }, { $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } }, $set: { ats: skuAts, onlineAts: skuOnlineAts } })
                 .catch(originalError => {
                     throw createError.bulkCalculateAvailableToSell.failedUpdateSkuAts(originalError, skuRecord);
                 }))

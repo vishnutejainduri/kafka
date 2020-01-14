@@ -50,7 +50,7 @@ global.main = async function (params) {
 
                   return prices.updateOne(
                       { _id: priceUpdate._id },
-                      { $set: priceUpdate },
+                    { $currentDate: { lastModifiedInternalSalePrice: { $type:"timestamp" } }, $set: update },
                       { upsert: true }
                   ).catch((err) => {
                       console.error('Problem with sale price ' + update.styleId, update);
