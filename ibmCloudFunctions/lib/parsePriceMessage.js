@@ -13,6 +13,19 @@ const attributeMap = {
     NEW_RETAIL_PRICE: 'newRetailPrice'
 };
 
+const calcDiscount = (originalPrice, salePrice) => {
+    // If the sales price is null or 0 there is no discount.
+    // If the original price is null or 0, we cannot calculate the discount.
+    // If both prices are equal there is no discount.
+    // In all cases we represent the discount as 0.
+    if (!salePrice || !originalPrice || salePrice === originalPrice) {
+        return 0
+    }
+
+    const discount = Math.round(((1 - salePrice/originalPrice) * 100));
+    return Number.isNaN(discount) ? 0 : discount;
+}
+
 function filterPriceMessages(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Price update messages');
@@ -38,9 +51,42 @@ function parsePriceMessage(msg) {
     return priceData;
 }
 
+function generateUpdateFromParsedMessage(update, priceData, styleData) {
+    const updateToProcess = {};
+    switch (update.siteId) {
+        case ONLINE_SITE_ID:
+            updateToProcess.onlineSalePrice = update.newRetailPrice;
+            priceData.onlineSalePrice = updateToProcess.onlineSalePrice;
+            break;
+        case IN_STORE_SITE_ID:
+            updateToProcess.inStoreSalePrice = update.newRetailPrice;
+            priceData.inStoreSalePrice = updateToProcess.inStoreSalePrice;
+            break;
+        default:
+            break;
+    }
+
+
+    updateToProcess.currentPrice = priceData.onlineSalePrice || styleData.originalPrice;
+    updateToProcess.lowestOnlinePrice = updateToProcess.currentPrice > styleData.originalPrice
+                             ? styleData.originalPrice
+                             : updateToProcess.currentPrice
+
+    updateToProcess.lowestPrice = priceData.inStoreSalePrice 
+                             ? Math.min(updateToProcess.lowestOnlinePrice, priceData.inStoreSalePrice)
+                             : updateToProcess.lowestOnlinePrice
+
+    updateToProcess.isSale = !!(priceData.onlineSalePrice || priceData.inStoreSalePrice);
+    updateToProcess.isOnlineSale = !!(priceData.onlineSalePrice);
+
+    updateToProcess.inStoreDiscount = calcDiscount(styleData.originalPrice, priceData.inStoreSalePrice);
+    updateToProcess.onlineDiscount = calcDiscount(styleData.originalPrice, priceData.onlineSalePrice);
+
+    return updateToProcess;
+}
+
 module.exports = {
     parsePriceMessage,
     filterPriceMessages,
-    IN_STORE_SITE_ID,
-    ONLINE_SITE_ID
+    generateUpdateFromParsedMessage
 };

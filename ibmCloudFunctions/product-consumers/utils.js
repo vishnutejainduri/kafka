@@ -29,6 +29,15 @@ const log = (msg, level) => {
     else {  console.log(msg); }
 }
 
+/**
+ * @param {{ index: number, error: Object, message: Object }[]}  messageFailures
+ */
+log.messageFailures = (messageFailures) => {
+    messageFailures.forEach(({ message, error }) => {
+        log(`Message failure: ${JSON.stringify(message)} failed with error: ${error}`);
+    });
+}
+
 const createLog = {
     params: (cfName, params) => {
         const { messages, ...paramsExcludingMessages } = params;

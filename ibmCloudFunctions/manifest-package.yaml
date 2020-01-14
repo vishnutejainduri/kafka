@@ -1,0 +1,16 @@
+packages:
+  product-consumers:
+    inputs:
+      nameSpace: $SPACE
+      mongoUri: $MONGO_URI
+      mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+      dbName: $DB_NAME
+      algoliaApiKey: $ALGOLIA_API_KEY
+      algoliaIndexName: $ALGOLIA_INDEX_NAME
+      algoliaAppId: $ALGOLIA_APP_ID
+      productApiClientId: $PRODUCT_API_CLIENT_ID
+      productApiHost: $PRODUCT_API_HOST
+      kafkaBrokers: $KAFKA_BROKERS
+      kafkaUsername: $KAFKA_USERNAME
+      kafkaPassword: $KAFKA_PASSWORD
+      kafkaInvalidMessagesDlqTopicName: $KAFKA_INVALID_MESSAGES_DLQ_TOPIC_NAME

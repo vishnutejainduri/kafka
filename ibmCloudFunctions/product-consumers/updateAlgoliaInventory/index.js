@@ -52,6 +52,7 @@ global.main = async function (params) {
                 return {
                     isAvailableToSell: styleAts.ats > 0,
                     isOnlineAvailableToSell: styleAts.onlineAts > 0,
+                    sizes: styleData.sizes,
                     objectID: styleData._id
                 };
             })
@@ -69,7 +70,7 @@ global.main = async function (params) {
 
     const recordsWithError = styleAvailabilitiesToBeSynced.filter(rec => rec instanceof Error);
     if (recordsWithError.length > 0) {
-        log(createError.updateAlgoliaInventory.failedRecords(null, recordsWithError.length, recordsWithError.length), "ERROR");
+        log(createError.updateAlgoliaInventory.failedRecords(null, recordsWithError.length, styleAvailabilitiesToBeSynced.length), "ERROR");
         recordsWithError.forEach(originalError => {
             log(createError.updateAlgoliaInventory.failedRecord(originalError), "ERROR");
         });

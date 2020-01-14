@@ -5,8 +5,7 @@ const algoliasearch = require('algoliasearch');
 const {
     filterPriceMessages,
     parsePriceMessage,
-    IN_STORE_SITE_ID,
-    ONLINE_SITE_ID
+    generateUpdateFromParsedMessage
 } = require('../../lib/parsePriceMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
@@ -14,23 +13,6 @@ const { createLog, addErrorHandling, log } = require('../utils');
 
 let client = null;
 let index = null;
-
-function generateUpdateFromParsedMessage(priceData) {
-    const updateToProcess = {
-        objectID: priceData.styleId
-    };
-    switch (priceData.siteId) {
-        case ONLINE_SITE_ID:
-            updateToProcess.onlineSalePrice = priceData.newRetailPrice;
-            break;
-        case IN_STORE_SITE_ID:
-            updateToProcess.inStoreSalePrice = priceData.newRetailPrice;
-            break;
-        default:
-            break;
-    }
-    return updateToProcess;
-}
 
 global.main = async function (params) {
     log(createLog.params('updateAlgoliaPrice', params));
@@ -80,32 +62,22 @@ global.main = async function (params) {
     let updates = await Promise.all(params.messages
         .filter(addErrorHandling(filterPriceMessages))
         .map(addErrorHandling(parsePriceMessage))
-        .map(addErrorHandling(generateUpdateFromParsedMessage))
         .map(addErrorHandling(async (update) => {
-            // Ensure that the price update is for an available style
-            const styleData = await styles.findOne({ _id: update.objectID });
-            const priceData = await prices.findOne({ _id: update.objectID });
+            const [styleData, priceData] = await Promise.all([styles.findOne({ _id: update._id }), prices.findOne({ _id: update._id })]);
+
             if (!styleData 
                 || styleData.isOutlet
-                || (update.onlineSalePrice == priceData.onlineSalePrice && update.inStoreSalePrice == priceData.inStoreSalePrice)) {
+                || priceData && (update.onlineSalePrice === priceData.onlineSalePrice && update.inStoreSalePrice === priceData.inStoreSalePrice)) {
                 return null;
             }
 
-            if (update.onlineSalePrice !== priceData.onlineSalePrice && update.onlineSalePrice == priceData.onlineSalePrice) {
-              log(`HRC-978: online price unexpected discrepancy. HR price ${update.onlineSalePrice}. Mongo price ${priceData.onlineSalePrice}`);
-            }
-            if (update.inStoreSalePrice !== priceData.inStoreSalePrice && update.inStoreSalePrice == priceData.inStoreSalePrice) {
-              log(`HRC-978: in store price unexpected discrepancy. HR price ${update.inStoreSalePrice}. Mongo price ${priceData.inStoreSalePrice}`);
-            }
+            const priceUpdate = generateUpdateFromParsedMessage (update, priceData, styleData);
+            priceUpdate.objectID = styleData._id;
 
-            update.currentPrice = update.onlineSalePrice || styleData.originalPrice;
-            const priceString = update.currentPrice ? update.currentPrice.toString() : '';
-            const priceArray = priceString.split('.');
-            update.isSale = priceArray.length > 1 ? priceArray[1] === '99' : false;
-            return update;
+            return priceUpdate;
         }))
     );
-    
+
     const messageFailures = [];
     updates = updates.filter((update) => {
         if (!update) {
