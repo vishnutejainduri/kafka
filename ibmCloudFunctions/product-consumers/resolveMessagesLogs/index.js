@@ -13,11 +13,11 @@ const { groupMessagesByNextAction } = require('./utils');
 global.main = async function(params) {
     async function fetchActivationInfo(activationId) {
         return rp({
-            uri: encodeURI(`${params.ibmcloudFunctionsRestEndpoint}/namespaces/${params.ibmcloudFunctionsRestNamespace}/activations/${activationId}`),
+            uri: encodeURI(`${params.cloudFunctionsRestEndpoint}/namespaces/${params.cloudFunctionsNamespace}/activations/${activationId}`),
             method: 'GET',
             auth: {
-                user: params.ibmcloudFunctionsRestUsername,
-                pass: params.ibmcloudFunctionsRestPassword,
+                user: params.cloudFunctionsRestUsername,
+                pass: params.cloudFunctionsRestPassword,
             },
             json: true
         });
