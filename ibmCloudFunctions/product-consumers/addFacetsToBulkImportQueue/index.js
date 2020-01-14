@@ -2,6 +2,7 @@ const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling } = require('../utils');
 const { parseFacetMessage } = require('../../lib/parseFacetMessage');
 const getCollection = require('../../lib/getCollection');
+const messagesLogs = require('../../lib/messagesLogs');
 
 const parseFacetMessageWithErrorHandling = addErrorHandling(
     parseFacetMessage,
@@ -9,7 +10,7 @@ const parseFacetMessageWithErrorHandling = addErrorHandling(
 );
 
 const updateAlgoliaFacetQueue = algoliaFacetQueue => (facetData) => {
-    return algoliaFacetQueue.updateOne({ _id: facetData._id }, { $set: facetData }, { upsert: true })
+    return algoliaFacetQueue.updateOne({ _id: facetData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: facetData }, { upsert: true })
         .catch((err) => {
             console.error('Problem with facet ' + facetData._id);
             console.error(err);
@@ -32,6 +33,7 @@ const updateAlgoliaFacetQueueWithErrorHandling = algoliaFacetQueue => addErrorHa
 
 global.main = async function (params) {
     log(createLog.params("addFacetsToBulkImportQueue", params));
+    messagesLogs.storeBatch(params);
 
     let algoliaFacetQueue;
     try {

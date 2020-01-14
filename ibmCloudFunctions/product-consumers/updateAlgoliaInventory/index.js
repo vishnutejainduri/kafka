@@ -29,19 +29,54 @@ global.main = async function (params) {
     let styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map((style) => styles.findOne({ _id: style.styleId })
         // for some reason we don't have style data in the DPM for certain styles referenced in inventory data
         .then((styleData) => {
+<<<<<<< HEAD
             return !styleData || !styleData.sizes || styleData.isOutlet
                 ? null
                 : {
                     isSellable: !!styleData.sizes.length,
                     sizes: styleData.sizes,
+=======
+            if (!styleData || !styleData.ats || styleData.isOutlet) return null;
+            return productApiRequest(params, `/inventory/ats/${styleData._id}`)
+              .then((styleAts) => {
+                return {
+                    isAvailableToSell: styleAts.ats > 0,
+                    isOnlineAvailableToSell: styleAts.onlineAts > 0,
+                    sizes: styleData.sizes,
+                    storeInventory: styleData.storeInventory,
+>>>>>>> 48f3983ba2f28c00d3c1bd1a4935d7c0339485aa
                     objectID: styleData._id
                 };
         })
+<<<<<<< HEAD
     ));
     styleAvailabilitiesToBeSynced = styleAvailabilitiesToBeSynced.filter((styleData) => styleData);
     if (styleAvailabilitiesToBeSynced.length) {
         return index.partialUpdateObjects(styleAvailabilitiesToBeSynced, true)
             .then(() => styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } }))
+=======
+    )))
+    .catch(originalError => {
+        throw createError.updateAlgoliaInventory.failedToGetStyleAtsData(originalError, stylesToCheck);
+    });
+
+    const recordsWithError = styleAvailabilitiesToBeSynced.filter(rec => rec instanceof Error);
+    if (recordsWithError.length > 0) {
+        log(createError.updateAlgoliaInventory.failedRecords(null, recordsWithError.length, styleAvailabilitiesToBeSynced.length), "ERROR");
+        recordsWithError.forEach(originalError => {
+            log(createError.updateAlgoliaInventory.failedRecord(originalError), "ERROR");
+        });
+    }
+
+    let recordsToUpdate = styleAvailabilitiesToBeSynced.filter((record) => record && !(record instanceof Error));
+
+    if (recordsToUpdate.length) {
+        return index.partialUpdateObjects(recordsToUpdate, true)
+            .then(() => styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } })
+              .catch(originalError => {
+                  throw createError.updateAlgoliaInventory.failedToRemoveFromQueue(originalError, styleIds);
+              }))
+>>>>>>> 48f3983ba2f28c00d3c1bd1a4935d7c0339485aa
             .then(() => updateAlgoliaInventoryCount.insert({ batchSize: styleAvailabilitiesToBeSynced.length }))
             .then(() => log('Updated availability for styles ', styleIds))
             .catch((error) => {

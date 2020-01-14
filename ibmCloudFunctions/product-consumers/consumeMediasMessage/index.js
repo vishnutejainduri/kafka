@@ -28,7 +28,7 @@ global.main = async function (params) {
         .map(parseMediaMessage)
         .map(async (mediaData) => {
             await medias.deleteMany({ containerId: mediaData.containerId, qualifier: mediaData.qualifier });
-            return medias.updateOne({ _id: mediaData._id }, { $set: mediaData }, { upsert: true })
+            return medias.updateOne({ _id: mediaData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: mediaData }, { upsert: true })
               .then(() => console.log('Updated/inserted media ' + mediaData._id))
               .catch((err) => {
                   console.error('Problem with media ' + mediaData._id);

@@ -67,7 +67,7 @@ global.main = async function (params) {
             updateOne :
                 {
                     "filter" : { _id : styleUpdate._id },
-                    "update" : { $set : styleUpdate },
+                    "update" : { $currentDate: { lastModifiedInternalFacets: { $type:"timestamp" } }, $set : styleUpdate },
                     "upsert": true
                 }
         };

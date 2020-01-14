@@ -60,17 +60,19 @@ global.main = async function (params) {
                     return atsRecord;
                   });
                 }
+        
+                styleUpdates['$current'] = { lastModifiedInternalThreshold: { $type:"timestamp" } };
                 thresholdOperations.push(styles.updateOne({ _id: styleData._id }, styleUpdates)
                                   .catch(originalError => {
                                       throw createError.consumeThresholdMessage.failedToUpdateStyleThreshold(originalError, styleData);
                                   }),
-                                  styleAvailabilityCheckQueue.updateOne({ _id : styleData._id }, { $set : { _id: styleData._id, styleId: styleData._id } }, { upsert: true })
+                                  styleAvailabilityCheckQueue.updateOne({ _id : styleData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: styleData._id, styleId: styleData._id } }, { upsert: true })
                                   .catch(originalError => {
                                       throw createError.consumeThresholdMessage.failedAddToAlgoliaQueue(originalError, styleData);
                                   }));
               }
   
-              thresholdOperations.push(skus.updateOne({ _id: thresholdData.skuId }, { $set: { threshold: thresholdData.threshold } })
+              thresholdOperations.push(skus.updateOne({ _id: thresholdData.skuId }, { $currentDate: { lastModifiedInternalThreshold: { $type:"timestamp" } }, $set: { threshold: thresholdData.threshold } })
                                   .catch(originalError => {
                                       throw createError.consumeThresholdMessage.failedToUpdateSkuThreshold(originalError, thresholdData);
                                   }));

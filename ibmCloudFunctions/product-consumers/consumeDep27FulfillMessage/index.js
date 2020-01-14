@@ -34,7 +34,7 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(addErrorHandling((msg) => msg.topic === params.topicName))
         .map(addErrorHandling(parseDep27FulfillMessage))
-        .map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $set: storeData })
+        .map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: storeData })
             .then(() => log('Updated store dep27 status ' + storeData._id))
             .catch(originalError => {
                 throw createError.consumeDep27FulfillMessage.failedUpdates(originalError, storeData._id);

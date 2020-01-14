@@ -17,10 +17,12 @@
   "scripts": {
     "pretest": "eslint . ",
     "test": "jest",
+    "connectors:getAll:development": "node debugConnectors getAll development",
     "connectors:getAll:dev": "node debugConnectors getAll dev",
     "connectors:deleteAll:dev": "node debugConnectors deleteAll dev",
     "connectors:getAll:prod": "node debugConnectors getAll prod",
     "connectors:deleteAll:prod:iknowhatiamdoing": "node debugConnectors deleteAll prod",
+    "connectors:recreateDeleted:development": "node debugConnectors recreateDeleted development",
     "connectors:recreateDeleted:dev": "node debugConnectors recreateDeleted dev",
     "connectors:recreateDeleted:prod": "node debugConnectors recreateDeleted prod"
   },

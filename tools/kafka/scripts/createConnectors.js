@@ -57,7 +57,7 @@ function getCreateConnector(kubeHost, token) {
     if (statusCode < 200 || statusCode >= 300) {
       const errorMessage = `Server responded with status code ${statusCode} and could not create connector: ${connectorObject.name}.`
       log(errorMessage, 'error');
-      throw new Error(errorMessage);
+      throw new Error(body);
     }
     log(`Success: connector created: ${connectorObject.name}`);
     return body;

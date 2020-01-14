@@ -5,9 +5,19 @@ const Ajv = require('ajv');
 
 const createError = require('./createError');
 
+const instances = {
+    DEFAULT: 'DEFAULT',
+    MESSAGES: 'MESSAGES'
+};
+
+const clients = {
+    [instances.DEFAULT]: null,
+    [instances.MESSAGES]: null
+};
+
 const mongoParametersSchema = {
     "$schema": "http://json-schema.org/draft-07/schema",
-    title: "getcollection",
+    title: "getcollectionParams",
     description: "Parameters for obtaining a mongodb connection",
     type: "object",
     properties: {
@@ -27,14 +37,16 @@ const mongoParametersSchema = {
             type: "string",
             minLength: 1
         },
+        instance: {
+            type: "string",
+            enum: ["DEFAULT", "MESSAGES"]
+        }
     },
-    "required": ["mongoUri", "dbName", "collectionName", "mongoCertificateBase64"]
+    "required": ["mongoUri", "dbName", "collectionName", "mongoCertificateBase64", "instance"]
  };
 
 const ajv = new Ajv({ allErrors: true });
-const validate = ajv.compile(mongoParametersSchema);
-
-let client = null;
+const validateParams = ajv.compile(mongoParametersSchema);
 
 /**
  * Returns a Mongo Collection,
@@ -44,13 +56,17 @@ let client = null;
  * @param {String} params.collectionName Name of the collection to use
  * @returns {MongoCollection}
  */
-async function getCollection(params, collectionName = null) {
+async function getCollection(
+    params,
+    collectionName = null
+) {
+    const instance = params.instance || instances.DEFAULT;
     // do not use this function in Promise.all: https://stackoverflow.com/q/58919867/12144949
-    if (client == null) {
-        validate(params)
-        if (validate.errors) {
+    if (clients[instance] == null) {
+        validateParams({ ...params, instance })
+        if (validateParams.errors) {
             throw createError.failedSchemaValidation(
-                validate.errors,
+                validateParams.errors,
                 'getCollection',
                 'MongoUri, mongoCertificateBase64, dbName, and collectionName are required action params. See manifest.yaml.'
             )
@@ -63,19 +79,21 @@ async function getCollection(params, collectionName = null) {
             sslValidate: true,
             sslCA: ca,
             useNewUrlParser: true,
+            useUnifiedTopology: true,
             connectTimeoutMS: 60000,
             socketTimeoutMS: 600000,
             reconnectTries: 60,
             reconnectInterval: 10000
         };
 
-        client = await MongoClient.connect(params.mongoUri, options).catch((err) => {
+        clients[instance] = await MongoClient.connect(params.mongoUri, options).catch((err) => {
             throw new Error('Couldn\'t connect to Mongo: ' + err);
         });
     }
 
     const collection = collectionName || params.collectionName;
-    return client.db(params.dbName).collection(collection);
+    return clients[instance].db(params.dbName).collection(collection);
 }
 
+getCollection.instances = instances;
 module.exports = getCollection;
