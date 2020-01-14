@@ -86,7 +86,7 @@ global.main = async function(params) {
         resolveBatchesResult: resolveBatchesResult
             .map(result => result instanceof Error
                 ? { error: true, message: result.message }
-                : result
+                : { activationId: result.activationId, success: true }
             )
     };
 }

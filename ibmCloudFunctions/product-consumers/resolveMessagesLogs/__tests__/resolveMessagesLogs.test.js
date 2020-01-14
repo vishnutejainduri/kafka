@@ -78,16 +78,7 @@ describe('resolveMessagesLogs', function() {
         expect(await resolveMessagesLogs({})).toEqual({
             resolveBatchesResult: [{
                 activationId: mockBatch.activationId,
-                activationInfo: mockActivationInfo,
-                messagesByNextAction: {
-                    dlq: [],
-                    retry: []
-                },
-                deleteBatchResult: { ...mockBatch },
-                storeMessagesByNextActionResult: {
-                    dlq: null,
-                    retry: null
-                }
+                success: true
             }],
             unresolvedBatches: [mockBatch]
         });
@@ -117,19 +108,7 @@ describe('resolveMessagesLogs', function() {
         expect(await resolveMessagesLogs({})).toEqual({
             resolveBatchesResult: [{
                 activationId: mockBatch.activationId,
-                activationInfo: mockActivationInfo,
-                messagesByNextAction: {
-                    dlq: [mockMessage],
-                    retry: []
-                },
-                deleteBatchResult: { ...mockBatch },
-                storeMessagesByNextActionResult: {
-                    dlq: {
-                        metadata: { activationInfo: mockActivationInfo },
-                        messages: [mockMessage]
-                    },
-                    retry: null
-                }
+                success: true
             }],
             unresolvedBatches: [{
                 ...mockBatch
@@ -167,19 +146,7 @@ describe('resolveMessagesLogs', function() {
         expect(await resolveMessagesLogs({})).toEqual({
             resolveBatchesResult: [{
                 activationId: mockBatch.activationId,
-                activationInfo: mockActivationInfo,
-                messagesByNextAction: {
-                    dlq: [],
-                    retry: [mockMessage]
-                },
-                deleteBatchResult: { ...mockBatch },
-                storeMessagesByNextActionResult: {
-                    dlq: null,
-                    retry: {
-                        metadata: { activationInfo: mockActivationInfo },
-                        messages: [mockMessage]
-                    }
-                }
+                success: true
             }],
             unresolvedBatches: [{
                 ...mockBatch
