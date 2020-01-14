@@ -1,41 +1,51 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
-const { log } = require('../utils');
+const createError = require('../../lib/createError');
+const { productApiRequest } = require('../../lib/productApi');
+const { createLog, log, addErrorHandling } = require('../utils');
 
 let client = null;
 let index = null;
 
 global.main = async function (params) {
-    console.log(JSON.stringify({
-        cfName: 'updateAlgoliaInventory',
-        params
-    }));
+    log(createLog.params('updateAlgoliaInventory', params));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
         throw new Error('Requires Algolia configuration. See manifest.yml');
     }
 
     if (index === null) {
-        client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
-        index = client.initIndex(params.algoliaIndexName);
+        try {
+            client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+            client.setTimeouts({
+                connect: 600000,
+                read: 600000,
+                write: 600000
+            });
+            index = client.initIndex(params.algoliaIndexName);
+        }
+        catch (originalError) {
+            throw createError.failedAlgoliaConnection(originalError);
+        }
     }
 
-    const styleAvailabilityCheckQueue = await getCollection(params);
-    const styles = await getCollection(params, params.stylesCollectionName);
-    const updateAlgoliaInventoryCount = await getCollection(params, 'updateAlgoliaInventoryCount');
-    const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(200).toArray();
-    const styleIds = stylesToCheck.map((style) => style.styleId);
+    let styleAvailabilityCheckQueue;
+    let styles;
+    let updateAlgoliaInventoryCount;
+    try {
+        styleAvailabilityCheckQueue = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName)
+        updateAlgoliaInventoryCount = await getCollection(params, 'updateAlgoliaInventoryCount');
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError, params && params.collectionName);
+    }
 
-    let styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map((style) => styles.findOne({ _id: style.styleId })
+    const stylesToCheck = await styleAvailabilityCheckQueue.find().limit(40).toArray();
+    const styleIds = stylesToCheck.map(addErrorHandling((style) => style.styleId));
+
+    let styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map(addErrorHandling((style) => styles.findOne({ _id: style.styleId })
         // for some reason we don't have style data in the DPM for certain styles referenced in inventory data
         .then((styleData) => {
-<<<<<<< HEAD
-            return !styleData || !styleData.sizes || styleData.isOutlet
-                ? null
-                : {
-                    isSellable: !!styleData.sizes.length,
-                    sizes: styleData.sizes,
-=======
             if (!styleData || !styleData.ats || styleData.isOutlet) return null;
             return productApiRequest(params, `/inventory/ats/${styleData._id}`)
               .then((styleAts) => {
@@ -44,17 +54,16 @@ global.main = async function (params) {
                     isOnlineAvailableToSell: styleAts.onlineAts > 0,
                     sizes: styleData.sizes,
                     storeInventory: styleData.storeInventory,
->>>>>>> 48f3983ba2f28c00d3c1bd1a4935d7c0339485aa
                     objectID: styleData._id
                 };
+            })
+            .catch(originalError => {
+                return createError.updateAlgoliaInventory.failedToGetApiResponse(originalError, styleData._id);
+            });
         })
-<<<<<<< HEAD
-    ));
-    styleAvailabilitiesToBeSynced = styleAvailabilitiesToBeSynced.filter((styleData) => styleData);
-    if (styleAvailabilitiesToBeSynced.length) {
-        return index.partialUpdateObjects(styleAvailabilitiesToBeSynced, true)
-            .then(() => styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } }))
-=======
+        .catch(originalError => {
+            return createError.updateAlgoliaInventory.failedToGetStyle(originalError, style);
+        })
     )))
     .catch(originalError => {
         throw createError.updateAlgoliaInventory.failedToGetStyleAtsData(originalError, stylesToCheck);
@@ -76,7 +85,6 @@ global.main = async function (params) {
               .catch(originalError => {
                   throw createError.updateAlgoliaInventory.failedToRemoveFromQueue(originalError, styleIds);
               }))
->>>>>>> 48f3983ba2f28c00d3c1bd1a4935d7c0339485aa
             .then(() => updateAlgoliaInventoryCount.insert({ batchSize: styleAvailabilitiesToBeSynced.length }))
             .then(() => log('Updated availability for styles ', styleIds))
             .catch((error) => {
@@ -85,8 +93,10 @@ global.main = async function (params) {
                 return { error };
             });
     } else {
-        console.log('No updates to process.');
-        return styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } });
+        return styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } })
+          .catch(originalError => {
+              throw createError.updateAlgoliaInventory.failedToRemoveFromQueue(originalError, styleIds);
+          });
     }
 }
 
