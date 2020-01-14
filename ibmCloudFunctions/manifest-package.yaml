@@ -2,6 +2,7 @@ packages:
   product-consumers:
     inputs:
       nameSpace: $SPACE
+      cloudFunctionsNamespace: $CLOUD_FUNCTIONS_NAMESPACE
       mongoUri: $MONGO_URI
       mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
       dbName: $DB_NAME
@@ -16,3 +17,7 @@ packages:
       kafkaInvalidMessagesDlqTopicName: $KAFKA_INVALID_MESSAGES_DLQ_TOPIC_NAME
       messagesMongoUri: $MESSAGES_MONGO_URI
       messagesMongoCertificateBase64: $MESSAGES_MONGO_CERTIFICATE_BASE64
+      cloudFunctionsRestEndpoint: $CLOUD_FUNCTIONS_REST_ENDPOINT
+      cloudFunctionsRestUsername: $CLOUD_FUNCTIONS_REST_USERNAME
+      cloudFunctionsRestPassword: $CLOUD_FUNCTIONS_REST_PASSWORD
+
