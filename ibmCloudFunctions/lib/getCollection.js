@@ -80,10 +80,9 @@ async function getCollection(
             sslCA: ca,
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            connectTimeoutMS: 60000,
+            connectTimeoutMS: 600000,
             socketTimeoutMS: 600000,
-            reconnectTries: 60,
-            reconnectInterval: 10000
+            serverSelectionTimeoutMS: 600000
         };
 
         clients[instance] = await MongoClient.connect(params.mongoUri, options).catch((err) => {
