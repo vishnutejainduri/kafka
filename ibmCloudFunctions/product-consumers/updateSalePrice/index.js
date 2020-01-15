@@ -33,7 +33,7 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(addErrorHandling(filterPriceMessages))
         .map(addErrorHandling(parsePriceMessage))
-        .map(addErrorHandling((update) => styles.findOne({ _id: update.styleId })
+        .map(addErrorHandling(async (update) => styles.findOne({ _id: update.styleId })
                 .then(async (styleData) => {
                   const priceData = await prices.findOne({ _id: update.styleId });
 
@@ -67,11 +67,12 @@ global.main = async function (params) {
             const error = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
             error.failedUpdatesErrors = errors;
             error.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            return {
-                error
-            };
+            throw error;
         }
-    });
+    })
+    .catch(error => ({
+        error
+    }));
 };
 
 module.exports = global.main;
