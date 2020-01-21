@@ -244,6 +244,11 @@ module.exports = {
             'failed-record',
             'Failed to update algolia ats'
         ),
+        failedRecords: (_, failed, total) => new CustomError(
+            null,
+            'failed-prepare-styles-for-algolia',
+            `Failed to prepare ${failed} of ${total} styles for Algolia.`
+        ),
         failedToGetApiResponse: (originalError, styleId) => new CustomError(
             originalError,
             'failed-to-get-api-response',
@@ -391,5 +396,21 @@ module.exports = {
                 messageFailures: JSON.stringify(messageFailures)
             }
         )
+    },
+    messagesLogs: {
+        storeValues: {
+            partialFailure: (originalError, totalInsertLength, failedIndices) => new CustomError(
+                originalError,
+                'partial-failure-messagesLogs-storeValues',
+                `Failed to insert ${failedIndices.length} of ${totalInsertLength}`,
+                {
+                    insertStatus: failedIndices
+                        .reduce((status, failedIndex) => {
+                            status[failedIndex] = false;
+                            return status;
+                        }, {})
+                }
+            )
+        }
     }
 }

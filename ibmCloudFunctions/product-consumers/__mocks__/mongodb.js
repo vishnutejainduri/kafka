@@ -6,6 +6,10 @@
 
 const getCollection = (collectionName) => {
     switch(collectionName) {
+        case 'messagesByActivationIds':
+            return {
+                testId: 'messagesByActivationIds',
+            };
         case 'addFacetsToBulkImportQueue':
             return {
                 updateOne: async ({ _id }) => ({ _id })

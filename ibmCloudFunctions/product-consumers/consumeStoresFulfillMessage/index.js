@@ -54,9 +54,8 @@ global.main = async function (params) {
             }
 
             storeFulfillOperations.push(stores.updateOne({ _id: storeData._id }, { $set: storeData })
-                                .then(() => log('Updated store fulfill ' + storeData._id))
                                 .catch(originalError => {
-                                    return createError.consumeStoresFulfillMessage.failedToUpdateStore(originalError, storeData._id);
+                                    throw createError.consumeStoresFulfillMessage.failedToUpdateStore(originalError, storeData._id);
                                 }));
 
             return Promise.all(storeFulfillOperations);
