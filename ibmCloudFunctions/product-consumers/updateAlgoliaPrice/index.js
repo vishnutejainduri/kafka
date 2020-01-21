@@ -70,7 +70,15 @@ global.main = async function (params) {
                 || priceData && (update.onlineSalePrice === priceData.onlineSalePrice && update.inStoreSalePrice === priceData.inStoreSalePrice)) {
                 return null;
             }
-
+            // TODO remove logs after debugging
+            log("update: ", update);
+            log("styleData: ", styleData);
+            log("priceData: ", priceData);
+            if (priceData) {
+                log("update.onlineSalePrice: ", update.onlineSalePrice, "priceData.onlineSalePrice: ", priceData.onlineSalePrice);
+                log("update.inStoreSalePrice: ", update.inStoreSalePrice, "priceData.inStoreSalePrice: ", priceData.inStoreSalePrice);
+                log("(update.onlineSalePrice === priceData.onlineSalePrice && update.inStoreSalePrice === priceData.inStoreSalePrice)", (update.onlineSalePrice === priceData.onlineSalePrice && update.inStoreSalePrice === priceData.inStoreSalePrice))
+            }
             const priceUpdate = generateUpdateFromParsedMessage (update, priceData, styleData);
             priceUpdate.objectID = styleData._id;
 
