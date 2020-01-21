@@ -1,6 +1,7 @@
 const getCollection = require('../../lib/getCollection');
 const { addErrorHandling, log, createLog } = require('../utils');
 const createError = require('../../lib/createError');
+const { handleStyleAtsRecalc } = require('./utils');
 
 const parseStoreFulfillMessage = function (msg) {
     return {
@@ -25,8 +26,12 @@ global.main = async function (params) {
     }
 
     let stores;
+    let inventory;
+    let bulkAtsRecalculateQueue;
     try {
         stores = await getCollection(params);
+        inventory = await getCollection(params, params.inventoryCollectionName);
+        bulkAtsRecalculateQueue = await getCollection(params, params.bulkAtsRecalculateQueue);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
@@ -34,12 +39,27 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(addErrorHandling((msg) => msg.topic === params.topicName))
         .map(addErrorHandling(parseStoreFulfillMessage))
-        .map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $currentDate: { lastModifiedInternalOnlineFulfill: { $type:"timestamp" } }, $set: storeData })
-            .then(() => log('Updated store fulfill ' + storeData._id))
-            .catch(originalError => {
-                return createError.consumeStoresFulfillMessage.failedToUpdateStore(originalError, storeData._id);
-            })
-        ))
+        .map(addErrorHandling(async (storeData) => {
+            const storeFulfillOperations = [];
+            const currentStoreData = await stores.findOne({ _id: storeData._id });
+            let bulkStyleAtsUpdates = bulkAtsRecalculateQueue.initializeUnorderedBulkOp();
+
+            if (currentStoreData.canOnlineFulfill !== storeData.canOnlineFulfill) {
+              bulkStyleAtsUpdates = await handleStyleAtsRecalc(bulkStyleAtsUpdates, storeData, inventory);
+
+              storeFulfillOperations.push(bulkStyleAtsUpdates.execute()
+                                          .catch(originalError => {
+                                              throw createError.consumeStoresFulfillMessage.failedBulkAtsInsert(originalError, bulkStyleAtsUpdates);
+                                          }));
+            }
+
+            storeFulfillOperations.push(stores.updateOne({ _id: storeData._id }, { $set: storeData })
+                                .catch(originalError => {
+                                    throw createError.consumeStoresFulfillMessage.failedToUpdateStore(originalError, storeData._id);
+                                }));
+
+            return Promise.all(storeFulfillOperations);
+        }))
     )
     .then((results) => {
         const errors = results.filter((res) => res instanceof Error);
