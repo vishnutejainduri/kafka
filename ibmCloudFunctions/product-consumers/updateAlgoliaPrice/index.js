@@ -64,25 +64,21 @@ global.main = async function (params) {
         .map(addErrorHandling(parsePriceMessage))
         .map(addErrorHandling(async (update) => {
             const [styleData, priceData] = await Promise.all([styles.findOne({ _id: update._id }), prices.findOne({ _id: update._id })]);
-
-            if (!styleData 
-                || styleData.isOutlet
-                || priceData && (update.onlineSalePrice === priceData.onlineSalePrice && update.inStoreSalePrice === priceData.inStoreSalePrice)) {
+            if (!styleData || styleData.isOutlet) {
                 return null;
             }
-            // TODO remove logs after debugging
-            console.log("update: ", update);
-            console.log("styleData: ", styleData);
-            console.log("priceData: ", priceData);
-            if (priceData) {
-                console.log("update.onlineSalePrice: ", update.onlineSalePrice, "priceData.onlineSalePrice: ", priceData.onlineSalePrice);
-                console.log("update.inStoreSalePrice: ", update.inStoreSalePrice, "priceData.inStoreSalePrice: ", priceData.inStoreSalePrice);
-                console.log("(update.onlineSalePrice === priceData.onlineSalePrice && update.inStoreSalePrice === priceData.inStoreSalePrice)", (update.onlineSalePrice === priceData.onlineSalePrice && update.inStoreSalePrice === priceData.inStoreSalePrice))
+            const algoliaUpdatedPayload = generateUpdateFromParsedMessage (update, priceData, styleData);
+            const priceHasNotChanged = priceData
+                ? (algoliaUpdatedPayload.onlineSalePrice === priceData.onlineSalePrice
+                    && algoliaUpdatedPayload.inStoreSalePrice === priceData.inStoreSalePrice)
+                : (algoliaUpdatedPayload.onlineSalePrice === null
+                    && algoliaUpdatedPayload.inStoreSalePrice === null);
+            if (priceHasNotChanged) {
+                return null;
             }
-            const priceUpdate = generateUpdateFromParsedMessage (update, priceData, styleData);
-            priceUpdate.objectID = styleData._id;
+            algoliaUpdatedPayload.objectID = styleData._id;
 
-            return priceUpdate;
+            return algoliaUpdatedPayload;
         }))
     );
 
