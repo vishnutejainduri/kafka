@@ -33,8 +33,8 @@ describe('bulkCalculateAvailableToSell', () => {
         const styleToRecalcAts = 'styleId';
 
         const { skuAtsOperations, styleAts, styleOnlineAts } = await calculateStyleAts(styleToRecalcAts, styles, skus, stores, inventory);
-        expect(styleAts).toEqual([]);
-        expect(styleOnlineAts).toEqual([]);
+        expect(styleAts[0].ats).toEqual([]);
+        expect(styleOnlineAts[0].ats).toEqual([]);
         expect(skuAtsOperations[0]).toBeInstanceOf(Promise);
     });
     it('valid calculateSkuAts execution', async () => {
