@@ -43,41 +43,27 @@ global.main = async function (params) {
 
           if (!storeData || !skuData || !styleData || storeData.isOutlet) return null;
 
-          const styleAts = styleData.ats || [];
-          //const newStyleAts = handleStyleAtsUpdate(styleAts, atsData, skuData.threshold);
-          const styleUpdateToProcess = { $set: { ats: newStyleAts } };
+          let atsUpdates = [];
 
-          const skuAts = skuData.ats || [];
-          const newSkuAts = handleSkuAtsUpdate(skuAts, atsData);
-          const skuUpdateToProcess = { $set: { ats: newSkuAts } };
+          // Regular ats operations
+          atsUpdates = await handleStyleAtsUpdate(atsData, styles, atsUpdates, false);
+          atsUpdates = await handleSkuAtsUpdate(atsData, skus, atsUpdates, false);
 
-        if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27")) {
-            const styleOnlineAts = styleData.onlineAts || [];
-            const newStyleOnlineAts = handleStyleAtsUpdate(styleOnlineAts, atsData, skuData.threshold);
-            styleUpdateToProcess['$set']['onlineAts'] = newStyleOnlineAts;
-
-            const skuOnlineAts = skuData.onlineAts || [];
-            const newSkuOnlineAts = handleSkuAtsUpdate(skuOnlineAts, atsData);
-            skuUpdateToProcess['$set']['onlineAts'] = newSkuOnlineAts;
+          if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27")) {
+              // Online ats operations
+              atsUpdates = await handleStyleAtsUpdate(atsData, styles, atsUpdates, true);
+              atsUpdates = await handleSkuAtsUpdate(atsData, skus, atsUpdates, true);
           }
 
-          styleUpdateToProcess['$currentDate'] = { lastModifiedInternalAts: { $type:"timestamp" } };
-          skuUpdateToProcess['$currentDate'] = { lastModifiedInternalAts: { $type:"timestamp" } };
-          return Promise.all([styles.updateOne({ _id: atsData.styleId }, styleUpdateToProcess)
-                              .catch(originalError => {
-                                  throw createError.calculateAvailableToSell.failedUpdateStyleAts(originalError, atsData);
-                              }),
-                              skus.updateOne({ _id: atsData.skuId }, skuUpdateToProcess)
-                              .catch(originalError => {
-                                  throw createError.calculateAvailableToSell.failedUpdateSkuAts(originalError, atsData);
-                              }),
-                              styleAvailabilityCheckQueue.updateOne({ _id : atsData.styleId }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: atsData.styleId, styleId: atsData.styleId } }, { upsert: true })
-                              .catch(originalError => {
-                                  throw createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, atsData);
-                              })])
-                              .catch(originalError => {
-                                  return createError.calculateAvailableToSell.failedAllUpdates(originalError, atsData);
-                              })
+          // Algolia ats operation
+          atsUpdates.push(styleAvailabilityCheckQueue.updateOne({ _id : atsData.styleId }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: atsData.styleId, styleId: atsData.styleId } }, { upsert: true })
+                          .catch(originalError => {
+                                throw createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, atsData);
+                          }))
+          return Promise.all(atsUpdates)
+                            .catch(originalError => {
+                                return createError.calculateAvailableToSell.failedAllUpdates(originalError, atsData);
+                            })
         }))
     )
     .then((results) => {
