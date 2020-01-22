@@ -60,10 +60,12 @@ function generateUpdateFromParsedMessage(update, priceData, styleData) {
         case ONLINE_SITE_ID:
             updateToProcess.onlineSalePrice = update.newRetailPrice;
             onlineSalePrice = updateToProcess.onlineSalePrice;
+            updateToProcess.inStoreSalePrice = inStoreSalePrice;
             break;
         case IN_STORE_SITE_ID:
             updateToProcess.inStoreSalePrice = update.newRetailPrice;
             inStoreSalePrice = updateToProcess.inStoreSalePrice;
+            updateToProcess.onlineSalePrice = onlineSalePrice;
             break;
         default:
             break;
