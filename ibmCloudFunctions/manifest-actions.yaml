@@ -343,7 +343,7 @@
       resolve-messages-logs:
         location: ./product-consumers/resolveMessagesLogs/dist/bundle.js
         limits:
-          memorySize: 512
+          memorySize: 2048
           timeout: 600000
       handle-messages-logs:
         location: ./product-consumers/handleMessagesLogs/dist/bundle.js
