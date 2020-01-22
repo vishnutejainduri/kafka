@@ -12,6 +12,10 @@
       consume-catalog-message-with-retry:
         location: ./product-consumers/consumeCatalogMessageWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       consume-styles-basic-message:
         location: ./product-consumers/consumeStylesBasicMessage/dist/bundle.js
         runtime: nodejs:10
@@ -25,6 +29,10 @@
       consume-styles-basic-message-with-retry:
         location: ./product-consumers/consumeStylesBasicMessageWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       consume-threshold-message:
         location: ./product-consumers/consumeThresholdMessage/dist/bundle.js
         runtime: nodejs:10
@@ -39,6 +47,10 @@
       consume-threshold-message-with-retry:
         location: ./product-consumers/consumeThresholdMessageWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       update-sale-price:
         location: ./product-consumers/updateSalePrice/dist/bundle.js
         runtime: nodejs:10
@@ -60,6 +72,10 @@
       consume-stores-message-with-retry:
         location: ./product-consumers/consumeStoresMessageWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       consume-storesfulfill-message:
         location: ./product-consumers/consumeStoresFulfillMessage/dist/bundle.js
         runtime: nodejs:10
@@ -77,6 +93,10 @@
       consume-storesfulfill-message-with-retry:
         location: ./product-consumers/consumeStoresFulfillMessageWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       consume-dep27fulfill-message:
         location: ./product-consumers/consumeDep27FulfillMessage/dist/bundle.js
         runtime: nodejs:10
@@ -92,6 +112,10 @@
       consume-dep27fulfill-message-with-retry:
         location: ./product-consumers/consumeDep27FulfillMessageWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       consume-sku-message:
         location: ./product-consumers/consumeSkuMessage/dist/bundle.js
         runtime: nodejs:10
@@ -104,6 +128,10 @@
       consume-sku-message-with-retry:
         location: ./product-consumers/consumeSkuMessageWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       consume-barcode-message:
         location: ./product-consumers/consumeBarcodeMessage/dist/bundle.js
         runtime: nodejs:10
@@ -116,6 +144,10 @@
       consume-barcode-message-with-retry:
         location: ./product-consumers/consumeBarcodeMessageWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       consume-sku-inventory-message:
         location: ./product-consumers/consumeSkuInventoryMessage/dist/bundle.js
         runtime: nodejs:10
@@ -132,6 +164,10 @@
       consume-sku-inventory-message-with-retry:
         location: ./product-consumers/consumeSkuInventoryMessageWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       calculate-available-to-sell:
         location: ./product-consumers/calculateAvailableToSell/dist/bundle.js
         runtime: nodejs:10
@@ -151,6 +187,10 @@
       calculate-available-to-sell-with-retry:
         location: ./product-consumers/calculateAvailableToSellWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       update-algolia-style:
         location: ./product-consumers/updateAlgoliaStyle/dist/bundle.js
         runtime: nodejs:10
@@ -163,6 +203,10 @@
       update-algolia-style-with-retry:
         location: ./product-consumers/updateAlgoliaStyleWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       delete-create-algolia-styles:
         location: ./product-consumers/deleteCreateAlgoliaStyles/dist/bundle.js
         runtime: nodejs:10
@@ -238,6 +282,10 @@
       consume-medias-message-with-retry:
         location: ./product-consumers/consumeMediasMessageWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       consume-media-containers-message:
         location: ./product-consumers/consumeMediaContainersMessage/dist/bundle.js
         runtime: nodejs:10
@@ -250,6 +298,10 @@
       consume-media-containers-message-with-retry:
         location: ./product-consumers/consumeMediaContainersMessageWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       add-media-container-to-queue-message:
         location: ./product-consumers/addMediaContainerToQueue/dist/bundle.js
         runtime: nodejs:10
@@ -262,8 +314,12 @@
       add-media-container-to-queue-message-with-retry:
         location: ./product-consumers/addMediaContainerToQueueWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
         inputs:
           cfName: addMediaContainerToQueue
+        limits:
+          memorySize: 512
+          timeout: 600000
       add-facets-to-bulk-import-queue:
         location: ./product-consumers/addFacetsToBulkImportQueue/dist/bundle.js
         runtime: nodejs:10
@@ -276,8 +332,12 @@
       add-facets-to-bulk-import-queue-with-retry:
         location: ./product-consumers/addFacetsToBulkImportQueueWithRetry/dist/bundle.js
         conductor: true
+        runtime: nodejs:10
         inputs:
           cfName: addFacetsToBulkImportQueue
+        limits:
+          memorySize: 512
+          timeout: 600000
       schema-validation:
         location: ./product-consumers/schemaValidation/dist/bundle.js
       resolve-messages-logs:
