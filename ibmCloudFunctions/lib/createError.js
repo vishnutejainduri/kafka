@@ -150,6 +150,11 @@ module.exports = {
             originalError,
             'failed-all-updates',
             `Failed to run all ats queries; inventory: ${atsData}.`
+        ),
+        failedBulkAtsInsert: (originalError, atsData) => new CustomError(
+            originalError,
+            'failed-bulk-ats-insert',
+            `Failed to insert a style for bulk ats recalculation; ats data: ${atsData}.`
         )
     },
     bulkCalculateAvailableToSell: {

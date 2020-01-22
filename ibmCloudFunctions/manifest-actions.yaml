@@ -147,6 +147,7 @@
           skusCollectionName: $SKUS_COLLECTION_NAME
           storesCollectionName: $STORES_COLLECTION_NAME
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
+          bulkAtsRecalculateQueue: $BULK_ATS_RECALCULATE_QUEUE
           topicName: inventory-connect-jdbc-SKUINVENTORY
       calculate-available-to-sell-with-retry:
         location: ./product-consumers/calculateAvailableToSellWithRetry/dist/bundle.js
