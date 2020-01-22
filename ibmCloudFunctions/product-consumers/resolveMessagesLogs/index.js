@@ -76,19 +76,32 @@ global.main = async function(params) {
         };
     }
 
-    const unresolvedBatches = await findUnresolvedBatches(params);
-    const resolveBatchesResult = await Promise.all(
-        unresolvedBatches.map(addErrorHandling(resolveBatchWithActivationInfo))
-    );
-
-    return {
-        unresolvedBatches,
-        resolveBatchesResult: resolveBatchesResult
-            .map(result => result instanceof Error
-                ? { error: true, message: result.message }
-                : { activationId: result.activationId, success: true }
-            )
-    };
+    try {
+        const unresolvedBatches = await findUnresolvedBatches(params);
+        const resolveBatchesResult = await Promise.all(
+            unresolvedBatches.map(addErrorHandling(resolveBatchWithActivationInfo))
+        );
+    
+        return {
+            unresolvedBatches,
+            resolveBatchesResult: resolveBatchesResult
+                .map(result => result instanceof Error
+                    ? {
+                        error: true,
+                        errorMessage: result.message,
+                        activationId: result.activationId
+                    }
+                    : {
+                        success: true,
+                        activationId: result.activationId
+                    }
+                )
+        };
+    } catch (error) {
+        return {
+            error
+        }
+    }
 }
 
 module.exports = global.main;
