@@ -44,7 +44,7 @@ global.main = async function (params) {
           if (!storeData || !skuData || !styleData || storeData.isOutlet) return null;
 
           const styleAts = styleData.ats || [];
-          const newStyleAts = handleStyleAtsUpdate(styleAts, atsData, skuData.threshold);
+          //const newStyleAts = handleStyleAtsUpdate(styleAts, atsData, skuData.threshold);
           const styleUpdateToProcess = { $set: { ats: newStyleAts } };
 
           const skuAts = skuData.ats || [];
