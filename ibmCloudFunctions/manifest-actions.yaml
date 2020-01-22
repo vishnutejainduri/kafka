@@ -3,7 +3,7 @@
         location: ./product-consumers/consumeCatalogMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
@@ -16,7 +16,7 @@
         location: ./product-consumers/consumeStylesBasicMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
@@ -29,7 +29,7 @@
         location: ./product-consumers/consumeThresholdMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
@@ -43,7 +43,7 @@
         location: ./product-consumers/updateSalePrice/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           collectionName: $PRICES_COLLECTION_NAME
@@ -52,7 +52,7 @@
         location: ./product-consumers/consumeStoresMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           collectionName: $STORES_COLLECTION_NAME
@@ -64,7 +64,7 @@
         location: ./product-consumers/consumeStoresFulfillMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           mongoUri: $MONGO_URI
@@ -81,7 +81,7 @@
         location: ./product-consumers/consumeDep27FulfillMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           mongoUri: $MONGO_URI
@@ -96,7 +96,7 @@
         location: ./product-consumers/consumeSkuMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
@@ -108,7 +108,7 @@
         location: ./product-consumers/consumeBarcodeMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           collectionName: $BARCODES_COLLECTION_NAME
@@ -155,7 +155,7 @@
         location: ./product-consumers/updateAlgoliaStyle/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
@@ -167,7 +167,7 @@
         location: ./product-consumers/deleteCreateAlgoliaStyles/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           topicName: styles-basic-connect-jdbc
@@ -177,7 +177,7 @@
         location: ./product-consumers/updateAlgoliaImage/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
@@ -196,7 +196,7 @@
         location: ./product-consumers/bulkCalculateAvailableToSell/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           collectionName: $BULK_ATS_RECALCULATE_QUEUE
@@ -209,7 +209,7 @@
         location: ./product-consumers/updateAlgoliaInventory/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           topicName: inventory-connect-jdbc-SKUINVENTORY
@@ -221,7 +221,7 @@
         location: ./product-consumers/updateAlgoliaFacets/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           stylesCollectionName: $STYLES_COLLECTION_NAME
@@ -230,7 +230,7 @@
         location: ./product-consumers/consumeMediasMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           collectionName: $MEDIAS_COLLECTION_NAME
@@ -242,7 +242,7 @@
         location: ./product-consumers/consumeMediaContainersMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           collectionName: $MEDIA_CONTAINERS_COLLECTION_NAME
@@ -254,7 +254,7 @@
         location: ./product-consumers/addMediaContainerToQueue/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 128
+          memorySize: 512
           timeout: 600000
         inputs:
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
