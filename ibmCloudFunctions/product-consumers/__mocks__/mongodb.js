@@ -35,7 +35,7 @@ const getCollection = (collectionName) => {
         case 'stores':
             return {
                 updateOne: async ({ _id }) => ({ _id }),
-                findOne: async () => ({ _id: 'success' }),
+                findOne: async () => ({ _id: 'success', canOnlineFulfill: true }),
             }; 
         case 'skus':
             return {
@@ -75,7 +75,8 @@ const getCollection = (collectionName) => {
                     })
                   }),
                 }),
-                deleteMany: async () => ({})
+                deleteMany: async () => ({}),
+                initializeUnorderedBulkOp: async () => ({})
             }; 
         case 'styles':
             return {

@@ -71,6 +71,8 @@
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
           dbName: $DB_NAME
           collectionName: $STORES_COLLECTION_NAME
+          inventoryCollectionName: $INVENTORY_COLLECTION_NAME
+          bulkAtsRecalculateQueue: $BULK_ATS_RECALCULATE_QUEUE
           topicName: stores-fulfill-connect-jdbc
       consume-storesfulfill-message-with-retry:
         location: ./product-consumers/consumeStoresFulfillMessageWithRetry/dist/bundle.js
