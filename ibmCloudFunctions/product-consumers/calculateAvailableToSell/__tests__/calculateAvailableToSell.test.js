@@ -33,7 +33,8 @@ const params = {
 
 describe('calculateAvailableToSell', () => {
     it('missing all parameters; should fail', async () => {
-        await expect(calculateAvailableToSell({})).rejects.toThrow();
+        const result = await expect(calculateAvailableToSell({}));
+        expect(result).toBeInstanceOf(Object);
     });
     it('correct message to update ats', async () => {
         const response = await calculateAvailableToSell(params);

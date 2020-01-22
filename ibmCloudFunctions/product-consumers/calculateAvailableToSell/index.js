@@ -10,7 +10,7 @@ global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;
 
     if (!params.messages || !params.messages[0]) {
-        throw new Error("Invalid arguments. Must include 'messages' JSON array");
+        return { result: "No valid inventory messages sent to process" }
     }
 
     let styles;

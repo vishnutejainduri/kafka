@@ -36,7 +36,10 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(addErrorHandling(filterSkuInventoryMessage))
         .map(addErrorHandling(parseSkuInventoryMessage))
-        .map(addErrorHandling((inventoryData) => {
+        .map(addErrorHandling(async (inventoryData) => {
+            const inventoryLastModifiedDate = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1 } );
+            if (inventoryData.lastModifiedDate <= inventoryLastModifiedDate.lastModifiedDate) return null;
+
             const inventoryUpdatePromise = inventory
                 .updateOne({ _id: inventoryData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: inventoryData }, { upsert: true })
                 .then(() => inventoryData)
@@ -64,7 +67,7 @@ global.main = async function (params) {
     )
     .then((results) => {
         const errors = results.filter((res) => res instanceof Error);
-        const successes = results.filter((res) => !(res instanceof Error));
+        const successes = results.filter((res) => !(res instanceof Error) && res);
         const successResults = successes.map((results) => results[0]);
 
         if (errors.length > 0) {
