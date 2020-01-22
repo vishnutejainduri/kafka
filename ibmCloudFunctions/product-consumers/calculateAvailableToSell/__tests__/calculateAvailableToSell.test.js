@@ -28,7 +28,8 @@ const params = {
     stylesCollectionName: 'styles',
     skusCollectionName: 'skus',
     storesCollectionName: 'stores',
-    styleAvailabilityCheckQueue: 'styleAvailabilityCheckQueue'
+    styleAvailabilityCheckQueue: 'styleAvailabilityCheckQueue',
+    bulkAtsRecalculateQueue: 'bulkAtsRecalculateQueue' 
 }
 
 describe('calculateAvailableToSell', () => {
