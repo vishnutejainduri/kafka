@@ -60,7 +60,7 @@ global.main = async function (params) {
                     }
                 )))
                 .catch(originalError => {
-                    return createError.consumeInventoryMessage.failedUpdates(originalError, inventoryData);
+                    throw createError.consumeInventoryMessage.failedUpdates(originalError, inventoryData);
                 });
             })
         )

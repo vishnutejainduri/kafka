@@ -56,13 +56,13 @@ global.main = async function (params) {
           let atsUpdates = [];
 
           // Regular ats operations
-          atsUpdates = await handleStyleAtsUpdate(atsData, styles, atsUpdates, false);
-          atsUpdates = await handleSkuAtsUpdate(atsData, skus, atsUpdates, false);
+          atsUpdates.push(await handleStyleAtsUpdate(atsData, styles, false))
+          atsUpdates.push(await handleSkuAtsUpdate(atsData, skus, false))
 
           if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27")) {
               // Online ats operations
-              atsUpdates = await handleStyleAtsUpdate(atsData, styles, atsUpdates, true);
-              atsUpdates = await handleSkuAtsUpdate(atsData, skus, atsUpdates, true);
+              atsUpdates.push(await handleStyleAtsUpdate(atsData, styles, true))
+              atsUpdates.push(await handleSkuAtsUpdate(atsData, skus, true))
           }
 
           // Algolia ats operation
@@ -70,6 +70,8 @@ global.main = async function (params) {
                           .catch(originalError => {
                                 throw createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, atsData);
                           }))
+
+          atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
           return Promise.all(atsUpdates)
                             .catch(originalError => {
                                 return createError.calculateAvailableToSell.failedAllUpdates(originalError, atsData);

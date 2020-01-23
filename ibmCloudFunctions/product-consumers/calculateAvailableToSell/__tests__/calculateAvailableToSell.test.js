@@ -48,14 +48,16 @@ describe('handleSyleAtsUpdate', () => {
     it('missing all params; should fail', async () => {
         const styles = await getCollection(params, params.stylesCollectionName);
 
-        const atsUpdates = await handleStyleAtsUpdate({}, styles, [], false);
+        let atsUpdates = [await handleStyleAtsUpdate({}, styles, false)];
+        atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
         expect(atsUpdates.length).toBe(0);
     });
 
     it('add to empty ats', async () => {
         const styles = await getCollection(params, params.stylesCollectionName);
 
-        const atsUpdates = await handleStyleAtsUpdate(increaseAtsTestData, styles, [], false);
+        let atsUpdates = [await handleStyleAtsUpdate(increaseAtsTestData, styles, false)];
+        atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
         expect(atsUpdates.length).toBe(1);
     });
 });
@@ -64,14 +66,16 @@ describe('handleSkuAtsUpdate', () => {
     it('missing all params; should fail', async () => {
         const skus = await getCollection(params, params.skusCollectionName);
 
-        const atsUpdates = await handleSkuAtsUpdate({}, skus, [], false);
+        let atsUpdates = [await handleSkuAtsUpdate({}, skus, false)];
+        atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
         expect(atsUpdates.length).toBe(0);
     });
 
     it('add to empty ats', async () => {
         const skus = await getCollection(params, params.skusCollectionName);
 
-        const atsUpdates = await handleSkuAtsUpdate(increaseAtsTestData, skus, [], false);
+        let atsUpdates = [await handleSkuAtsUpdate(increaseAtsTestData, skus, false)];
+        atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
         expect(atsUpdates.length).toBe(1);
     });
 });

@@ -3,56 +3,46 @@ const createError = require('../../lib/createError');
 const handleStyleAtsUpdate = async (
     atsData,
     styles,
-    atsUpdates,
     isOnline
 ) => {
-          isOnline
-            ? await styles.updateOne({ _id: atsData.styleId, 'onlineAts.skuId': atsData.skuId, 'onlineAts.ats.storeId': atsData.storeId }, { $pull: { 'onlineAts.$.ats': { 'storeId': atsData.storeId } } })
-            : await styles.updateOne({ _id: atsData.styleId, 'ats.skuId': atsData.skuId, 'ats.ats.storeId': atsData.storeId }, { $pull: { 'ats.$.ats': { 'storeId': atsData.storeId } } });
+          const atsKey = isOnline ? 'onlineAts' : 'ats';
+          const findSkuIdKey = atsKey + '.skuId';
+          const findSkuIdStoreIdKey = atsKey + '.ats.storeId';
+          const updateAtsKey = atsKey + '.$.ats'; 
+
+          await styles.updateOne({ _id: atsData.styleId, [findSkuIdKey] : atsData.skuId, [findSkuIdStoreIdKey] : atsData.storeId }, { $pull: { [updateAtsKey] : { 'storeId': atsData.storeId } } })
+                      .catch(originalError => {
+                          throw createError.calculateAvailableToSell.failedRemoveStyleAts(originalError, atsData);
+                      })
           if (atsData.availableToSell > 0) {
-              isOnline
-                ? atsUpdates.push(
-                                styles.updateOne({ _id: atsData.styleId, 'onlineAts.skuId': atsData.skuId }, { $push: { 'onlineAts.$.ats': { 'storeId': atsData.storeId, 'availableToSell': atsData.availableToSell } }, $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } } })
-                                    .catch(originalError => {
-                                        throw createError.calculateAvailableToSell.failedUpdateStyleAts(originalError, atsData);
-                                    })
-                )
-                : atsUpdates.push(
-                                styles.updateOne({ _id: atsData.styleId, 'ats.skuId': atsData.skuId }, { $push: { 'ats.$.ats': { 'storeId': atsData.storeId, 'availableToSell': atsData.availableToSell } }, $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } } })
-                                    .catch(originalError => {
-                                        throw createError.calculateAvailableToSell.failedUpdateStyleAts(originalError, atsData);
-                                    })
-                )
+            return styles.updateOne({ _id: atsData.styleId, [findSkuIdKey]: atsData.skuId }, { $push: { [updateAtsKey]: { 'storeId': atsData.storeId, 'availableToSell': atsData.availableToSell } }, $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } } })
+                .catch(originalError => {
+                    throw createError.calculateAvailableToSell.failedUpdateStyleAts(originalError, atsData);
+                })
           }
-          return atsUpdates;
+          return null;
      }
 
 const handleSkuAtsUpdate = async (
     atsData,
     skus,
-    atsUpdates,
     isOnline
 ) => {
-          isOnline
-            ? await skus.updateOne({ _id: atsData.skuId, 'onlineAts.storeId': atsData.storeId }, { $pull: { 'onlineAts': { 'storeId': atsData.storeId } } })
-            : await skus.updateOne({ _id: atsData.skuId, 'ats.storeId': atsData.storeId }, { $pull: { 'ats': { 'storeId': atsData.storeId } } })
+          const atsKey = isOnline ? 'onlineAts' : 'ats';
+          const findStoreIdKey = atsKey + '.storeId';
+
+          await skus.updateOne({ _id: atsData.skuId, [findStoreIdKey] : atsData.storeId }, { $pull: { [atsKey] : { 'storeId': atsData.storeId } } })
+                      .catch(originalError => {
+                          throw createError.calculateAvailableToSell.failedRemoveSkuAts(originalError, atsData);
+                      })
           
           if (atsData.availableToSell > 0) {
-              isOnline
-                ? atsUpdates.push(
-                            skus.updateOne({ _id: atsData.skuId }, { $push: { 'onlineAts': { 'storeId': atsData.storeId, 'availableToSell': atsData.availableToSell } }, $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } } })
-                              .catch(originalError => {
-                                  throw createError.calculateAvailableToSell.failedUpdateSkuAts(originalError, atsData);
-                              })
-                )
-                : atsUpdates.push(
-                            skus.updateOne({ _id: atsData.skuId }, { $push: { 'ats': { 'storeId': atsData.storeId, 'availableToSell': atsData.availableToSell } }, $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } } })
-                              .catch(originalError => {
-                                  throw createError.calculateAvailableToSell.failedUpdateSkuAts(originalError, atsData);
-                              })
-                )
+            return skus.updateOne({ _id: atsData.skuId }, { $push: { [atsKey] : { 'storeId': atsData.storeId, 'availableToSell': atsData.availableToSell } }, $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } } })
+              .catch(originalError => {
+                  throw createError.calculateAvailableToSell.failedUpdateSkuAts(originalError, atsData);
+              })
           }
-          return atsUpdates;
+          return null;
      }
 
 module.exports = {
