@@ -10,18 +10,20 @@ global.main = async function (params) {
     const { messages, ...paramsExcludingMessages } = params;
 
     if (!params.messages || !params.messages[0]) {
-        throw new Error("Invalid arguments. Must include 'messages' JSON array");
+        return { result: "No valid inventory messages sent to process" }
     }
 
     let styles;
     let skus;
     let stores;
     let styleAvailabilityCheckQueue;
+    let bulkAtsRecalculateQueue;
     try {
         styles = await getCollection(params, params.stylesCollectionName);
         skus = await getCollection(params, params.skusCollectionName);
         stores = await getCollection(params, params.storesCollectionName);
         styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue);
+        bulkAtsRecalculateQueue = await getCollection(params, params.bulkAtsRecalculateQueue);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
@@ -43,41 +45,37 @@ global.main = async function (params) {
 
           if (!storeData || !skuData || !styleData || storeData.isOutlet) return null;
 
-          const styleAts = styleData.ats || [];
-          const newStyleAts = handleStyleAtsUpdate(styleAts, atsData, skuData.threshold);
-          const styleUpdateToProcess = { $set: { ats: newStyleAts } };
-
-          const skuAts = skuData.ats || [];
-          const newSkuAts = handleSkuAtsUpdate(skuAts, atsData);
-          const skuUpdateToProcess = { $set: { ats: newSkuAts } };
-
-        if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27")) {
-            const styleOnlineAts = styleData.onlineAts || [];
-            const newStyleOnlineAts = handleStyleAtsUpdate(styleOnlineAts, atsData, skuData.threshold);
-            styleUpdateToProcess['$set']['onlineAts'] = newStyleOnlineAts;
-
-            const skuOnlineAts = skuData.onlineAts || [];
-            const newSkuOnlineAts = handleSkuAtsUpdate(skuOnlineAts, atsData);
-            skuUpdateToProcess['$set']['onlineAts'] = newSkuOnlineAts;
+          // Check if ats and sku ats have been initialized, if not, add to the bulk ats queue to do so
+          if (!styleData.ats || !skuData.ats || styleData.ats.filter((atsRecord) => atsRecord.skuId === atsData.skuId).length < 0) {
+            return bulkAtsRecalculateQueue.updateOne({ _id: atsData.styleId }, { $set: { _id: atsData.styleId, insertTimestamp: atsData.lastModifiedDate } }, { upsert: true })
+              .catch(originalError => {
+                  throw createError.calculateAvailableToSell.failedBulkAtsInsert(originalError, atsData);
+              })
           }
 
-          styleUpdateToProcess['$currentDate'] = { lastModifiedInternalAts: { $type:"timestamp" } };
-          skuUpdateToProcess['$currentDate'] = { lastModifiedInternalAts: { $type:"timestamp" } };
-          return Promise.all([styles.updateOne({ _id: atsData.styleId }, styleUpdateToProcess)
-                              .catch(originalError => {
-                                  throw createError.calculateAvailableToSell.failedUpdateStyleAts(originalError, atsData);
-                              }),
-                              skus.updateOne({ _id: atsData.skuId }, skuUpdateToProcess)
-                              .catch(originalError => {
-                                  throw createError.calculateAvailableToSell.failedUpdateSkuAts(originalError, atsData);
-                              }),
-                              styleAvailabilityCheckQueue.updateOne({ _id : atsData.styleId }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: atsData.styleId, styleId: atsData.styleId } }, { upsert: true })
-                              .catch(originalError => {
-                                  throw createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, atsData);
-                              })])
-                              .catch(originalError => {
-                                  return createError.calculateAvailableToSell.failedAllUpdates(originalError, atsData);
-                              })
+          let atsUpdates = [];
+
+          // Regular ats operations
+          atsUpdates.push(await handleStyleAtsUpdate(atsData, styles, false))
+          atsUpdates.push(await handleSkuAtsUpdate(atsData, skus, false))
+
+          if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27")) {
+              // Online ats operations
+              atsUpdates.push(await handleStyleAtsUpdate(atsData, styles, true))
+              atsUpdates.push(await handleSkuAtsUpdate(atsData, skus, true))
+          }
+
+          // Algolia ats operation
+          atsUpdates.push(styleAvailabilityCheckQueue.updateOne({ _id : atsData.styleId }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: atsData.styleId, styleId: atsData.styleId } }, { upsert: true })
+                          .catch(originalError => {
+                                throw createError.calculateAvailableToSell.failedAddToAlgoliaQueue(originalError, atsData);
+                          }))
+
+          atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
+          return Promise.all(atsUpdates)
+                            .catch(originalError => {
+                                return createError.calculateAvailableToSell.failedAllUpdates(originalError, atsData);
+                            })
         }))
     )
     .then((results) => {

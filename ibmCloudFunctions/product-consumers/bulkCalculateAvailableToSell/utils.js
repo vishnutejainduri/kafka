@@ -67,20 +67,16 @@ module.exports = {
               try {
                 const { skuAts, skuOnlineAts } = await calculateSkuAts(skuRecord, styleData, stores, inventory);
 
-                if (skuAts.length > 0) {
-                  styleAts.push({
-                    skuId: skuRecord._id,
-                    threshold: skuRecord.threshold,
-                    ats: skuAts
-                  })
-                }
-                if (skuOnlineAts.length > 0) {
-                  styleOnlineAts.push({
-                    skuId: skuRecord._id,
-                    threshold: skuRecord.threshold,
-                    ats: skuOnlineAts
-                  })
-                }
+                styleAts.push({
+                  skuId: skuRecord._id,
+                  threshold: skuRecord.threshold,
+                  ats: skuAts
+                })
+                styleOnlineAts.push({
+                  skuId: skuRecord._id,
+                  threshold: skuRecord.threshold,
+                  ats: skuOnlineAts
+                })
 
                 skuAtsOperations.push(skus.updateOne({ _id: skuRecord._id }, { $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } }, $set: { ats: skuAts, onlineAts: skuOnlineAts } })
                 .catch(originalError => {

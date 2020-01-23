@@ -116,10 +116,20 @@ module.exports = {
             'failed-calculate-available-to-sell',
             `Failure in run of calculate available to sell; params excluding messages: ${paramsExcludingMessages}.`
         ),
+        failedRemoveStyleAts: (originalError, atsData) => new CustomError(
+            originalError,
+            'failed-style-ats-remove',
+            `Failed to remove style ats; inventory: ${atsData}.`
+        ),
         failedUpdateStyleAts: (originalError, atsData) => new CustomError(
             originalError,
             'failed-style-ats-update',
             `Failed to update style ats; inventory: ${atsData}.`
+        ),
+        failedRemoveSkuAts: (originalError, atsData) => new CustomError(
+            originalError,
+            'failed-sku-ats-remove',
+            `Failed to remove sku ats; inventory: ${atsData}.`
         ),
         failedUpdateSkuAts: (originalError, atsData) => new CustomError(
             originalError,
@@ -150,6 +160,11 @@ module.exports = {
             originalError,
             'failed-all-updates',
             `Failed to run all ats queries; inventory: ${atsData}.`
+        ),
+        failedBulkAtsInsert: (originalError, atsData) => new CustomError(
+            originalError,
+            'failed-bulk-ats-insert',
+            `Failed to insert a style for bulk ats recalculation; ats data: ${atsData}.`
         )
     },
     bulkCalculateAvailableToSell: {
