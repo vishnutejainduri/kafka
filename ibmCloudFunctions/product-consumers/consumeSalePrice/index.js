@@ -11,7 +11,7 @@ const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling } = require('../utils');
 
 global.main = async function (params) {
-    log(createLog.params("updateSalePrice", params));
+    log(createLog.params("consumeSalePrice", params));
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
@@ -45,20 +45,15 @@ global.main = async function (params) {
                   updatedPrice._id = styleData._id;
                   updatedPrice.id = styleData._id;
 
-                  return prices.updateOne(
-                      { _id: updatedPrice._id },
-                    { $currentDate: { lastModifiedInternalSalePrice: { $type:"timestamp" } }, $set: updatedPrice },
-                      { upsert: true }
-                  ).catch((err) => {
-                      console.error('Problem with sale price: ', updatedPrice);
-                      if (!(err instanceof Error)) {
-                          const e = new Error();
-                          e.originalError = err;
-                          e.attemptedUpdate = update;
-                          return e;
-                      }
-                      throw err;
-                  })
+                  return prices
+                    .updateOne(
+                        { _id: updatedPrice._id },
+                        { $currentDate: { lastModifiedInternalSalePrice: { $type:"timestamp" } }, $set: updatedPrice },
+                        { upsert: true }
+                    )
+                    .catch((originalError) => {
+                        throw createError(originalError,updatedPrice)
+                    });
             })
         )
     )).then((results) => {
