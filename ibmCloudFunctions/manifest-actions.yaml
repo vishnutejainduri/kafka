@@ -51,8 +51,8 @@
         limits:
           memorySize: 512
           timeout: 600000
-      update-sale-price:
-        location: ./product-consumers/updateSalePrice/dist/bundle.js
+      consume-sale-price:
+        location: ./product-consumers/consumeSalePrice/dist/bundle.js
         runtime: nodejs:10
         limits:
           memorySize: 512
@@ -353,6 +353,6 @@
           timeout: 600000
     sequences:
       update-pricing-sequence:
-        actions: update-algolia-price,update-sale-price
+        actions: update-algolia-price,consume-sale-price
       update-inventory-sequence:
         actions: consume-sku-inventory-message-with-retry,calculate-available-to-sell-with-retry

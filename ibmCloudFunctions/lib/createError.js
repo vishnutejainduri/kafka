@@ -367,6 +367,16 @@ module.exports = {
             }
         )
     },
+    consumeSalePrice: {
+        failedSalePriceUpdate: (originalError, updatedPrice) => new CustomError(
+            originalError,
+            'failed-sale-price-update',
+            `Failed to update price for ${updatedPrice.id}: ${updatedPrice}`,
+            {
+                updatedPrice
+            }
+        )
+    },
     parsePriceMessage: {
         noStyleId: () => new CustomError(
             null,
