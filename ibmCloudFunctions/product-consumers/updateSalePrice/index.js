@@ -41,16 +41,16 @@ global.main = async function (params) {
                     return null;
                   }
 
-                  const priceUpdate = generateUpdateFromParsedMessage (update, priceData, styleData);
-                  priceUpdate._id = styleData._id;
-                  priceUpdate.id = styleData._id;
+                  const updatedPrice = generateUpdateFromParsedMessage (update, priceData, styleData);
+                  updatedPrice._id = styleData._id;
+                  updatedPrice.id = styleData._id;
 
                   return prices.updateOne(
-                      { _id: priceUpdate._id },
-                    { $currentDate: { lastModifiedInternalSalePrice: { $type:"timestamp" } }, $set: update },
+                      { _id: updatedPrice._id },
+                    { $currentDate: { lastModifiedInternalSalePrice: { $type:"timestamp" } }, $set: updatedPrice },
                       { upsert: true }
                   ).catch((err) => {
-                      console.error('Problem with sale price ' + update.styleId, update);
+                      console.error('Problem with sale price: ', updatedPrice);
                       if (!(err instanceof Error)) {
                           const e = new Error();
                           e.originalError = err;
