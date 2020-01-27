@@ -15,6 +15,7 @@ function handleWriteError(error) {
 
 async function debug({
   command,
+  connectionUrl,
   env,
   options,
   writeHistory,
@@ -72,11 +73,17 @@ async function debug({
             return deletedConnectors;
         }
         case 'recreateDeleted': {
+          // accepts two optional arguments:
+          // a. a list of connector names separated by comma
+          // b. a number denoting the increase in version
+          // e.g. passing "medias-jdbc-source-v8, skus-jdbc-source 1"
+          // will create "medias-jdbc-source-v9" and "skus-jdbc-source-v1"
+          const connectorInstancesPassedAsArgument = options[0] && options[0].split(',');
+          const versionIncrease = options[1] ? Number(options[1]) : null;
           const deletedConnectorsFilenamesAndVersions = (
-            options && options.split(",")
+            connectorInstancesPassedAsArgument 
             || debugLog.deleteAll.data.map(data => data.name)
-          ).map(extractFilenameAndVersion);
-          const connectionUrl = process.env[env === 'prod' ? 'JESTA_PROD' : 'JESTA_DEV'];
+          ).map(connectorInstances => extractFilenameAndVersion(connectorInstances, versionIncrease));
           const createdConnectors = await createConnectors(env, deletedConnectorsFilenamesAndVersions, connectionUrl);
           const previousHistory = debugHistory.recreateDeleted || [];
           const data = createdConnectors.map((result, index) => ({
@@ -116,13 +123,21 @@ function writeToDebugLog(data) {
   return fs.writeFile('./debugLog.json', data, handleWriteError);
 }
 
+const connectionUrls = {
+  'prod': process.env['JESTA_PROD'],
+  'dev': process.env['JESTA_DEV'],
+  'development': process.env['JESTA_DEVELOPMENT']
+};
+
 (async function() {
     const command = process.argv[2];
     const env = process.argv[3];
-    const options = process.argv[4];
+    const connectionUrl = connectionUrls[env];
+    const options = process.argv.slice(4);
     const totalDebugs = debugHistory.totalDebugs + 1;
     const result = await debug({
       command,
+      connectionUrl,
       env,
       options,
       writeHistory: writeToDebugHistory,
