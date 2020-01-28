@@ -37,10 +37,26 @@ describe('getConnectorFilenameAndVersion', () => {
     expect(version).toEqual(expectedVersion);
   });
 
+  it('extracts the version from name with version and versionIncrease', () => {
+    const instanceName = 'style-basic-jdbc-source-v16';
+    const versionIncrease = 1;
+    const expectedVersion = 16 + versionIncrease;
+    const { version } = extractFilenameAndVersion(instanceName);
+    expect(version).toEqual(expectedVersion);
+  });
+
   it('does not extract the version from name without version', () => {
     const instanceName = 'style-basic-jdbc-source-v';
     const expectedVersion = null;
     const { version } = extractFilenameAndVersion(instanceName);
+    expect(version).toEqual(expectedVersion);
+  });
+
+  it('extract the version from name without version but with version increase', () => {
+    const instanceName = 'style-basic-jdbc-source-v';
+    const versionIncrease = 10;
+    const expectedVersion = versionIncrease;
+    const { version } = extractFilenameAndVersion(instanceName, versionIncrease);
     expect(version).toEqual(expectedVersion);
   });
 });
