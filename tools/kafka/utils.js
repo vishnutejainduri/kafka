@@ -47,14 +47,14 @@ const addErrorHandling = (fn, createError) => {
     };
 }
 
-function extractFilenameAndVersion(connectorInstanceName) {
-  let version = null;
-  let filename = connectorInstanceName;
+function extractFilenameAndVersion(connectorInstanceName, versionIncrease) {
   const versionMatch = connectorInstanceName.match(/(.*)-v(\d+)/);
-  if (versionMatch) {
-    version = Number(versionMatch[2]);
-    filename = versionMatch[1]
-  }
+  const filename = versionMatch
+    ? versionMatch[1]
+    : connectorInstanceName;
+  const version = versionMatch
+    ? Number(versionMatch[2]) + (versionIncrease || 0)
+    : (versionIncrease || null);
   return {
     filename,
     version

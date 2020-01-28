@@ -37,7 +37,7 @@ function getCallDeleteConnector(kubeHost, token) {
     }
 }
 
-async function getDeleteConnector(kubeHost, token) {
+function getDeleteConnector(kubeHost, token) {
   const callDeleteConnector = getCallDeleteConnector(kubeHost, token);
   return async function(connectorName) {
     console.log('Deleting connector: ', connectorName);
@@ -47,7 +47,7 @@ async function getDeleteConnector(kubeHost, token) {
       console.log(errorMessage);
       throw new Error(errorMessage);
     }
-    console.log(`Success: connector deleted: ${connectorName}`);
+    console.log(`Success. Connector deleted: ${connectorName}. Status: ${statusCode}. Response: ${body}`);
     return body;
   }
 }
@@ -55,8 +55,13 @@ async function getDeleteConnector(kubeHost, token) {
 async function deleteConnectors(platformEnv, connectorNames) {
     const kubeParams = getKubeEnv(platformEnv);
     const token = await getSessionToken(kubeParams);
-    const deleteConnector = getDeleteConnector(kubeParams.host, token)
-    return Promise.all(connectorNames.map(addErrorHandling(retry(deleteConnector))))
+    const deleteConnector = addErrorHandling(retry(getDeleteConnector(kubeParams.host, token)));
+    const resutls = [];
+    for (let i = 0; i < connectorNames.length; i++) {
+        const result = await deleteConnector(connectorNames[i]);
+        resutls.push(result);
+    }
+    return resutls;
 }
 
 module.exports = deleteConnectors;
