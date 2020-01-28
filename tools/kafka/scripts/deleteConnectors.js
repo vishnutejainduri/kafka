@@ -56,12 +56,12 @@ async function deleteConnectors(platformEnv, connectorNames) {
     const kubeParams = getKubeEnv(platformEnv);
     const token = await getSessionToken(kubeParams);
     const deleteConnector = addErrorHandling(retry(getDeleteConnector(kubeParams.host, token)));
-    const resutls = [];
+    const results = [];
     for (let i = 0; i < connectorNames.length; i++) {
         const result = await deleteConnector(connectorNames[i]);
-        resutls.push(result);
+        results.push(result);
     }
-    return resutls;
+    return results;
 }
 
 module.exports = deleteConnectors;
