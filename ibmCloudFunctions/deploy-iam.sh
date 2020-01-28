@@ -3,15 +3,19 @@ echo ">>> Logging into IBM Cloud…"
 DEPLOYER_API_KEY=$1
 ORG=$2" "$3
 SPACE=$4" "$5" "$6
-SPACE=$7
-DEPLOY_TRIGGERS=$8
+RESOURCE_GROUP=$7
+CLOUD_FUNCTIONS_NAMESPACE=$8
+DEPLOY_TRIGGERS=$9
 echo $DEPLOYER_API_KEY
 echo $ORG
 echo $SPACE
+echo $RESOURCE_GROUP
 echo $CLOUD_FUNCTIONS_NAMESPACE
 echo $DEPLOY_TRIGGERS
 ibmcloud login --apikey $DEPLOYER_API_KEY -a cloud.ibm.com -r us-south -o "$ORG" -s "$SPACE"
+ibmcloud target -g $RESOURCE_GROUP
 ibmcloud fn property set --namespace $CLOUD_FUNCTIONS_NAMESPACE
+
 echo ">>> Contents Of Manifest File:"
 if [ $DEPLOY_TRIGGERS = "true" ]; then
 	echo ">>> Deploy with Triggers"
