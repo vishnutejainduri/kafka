@@ -28,8 +28,9 @@ ibmcloud fn trigger list
 echo ">>> Currently Deployed Rules:"
 ibmcloud fn rule list
 echo ">>> Deploying Actions Using WhiskDeploy…"
-ibmcloud fn deploy --project .  -d -v
-#We deploy twice because if run only once for some reason the triggers do not fire the CFs"
+ibmcloud fn deploy --project .
+# We deploy twice because if run only once for some reason the triggers do not fire the CFs"
 #echo ">>> Deploying Actions Using WhiskDeploy again…"
-#ibmcloud fn deploy --project .  -d -v
+#ibmcloud fn deploy --project .
+#echo ">>> Successfully Deployed Actions Using WhiskDeploy."
 echo ">>> Successfully Deployed Actions Using WhiskDeploy."
