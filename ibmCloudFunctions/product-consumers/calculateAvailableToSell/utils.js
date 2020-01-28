@@ -1,45 +1,49 @@
-const handleStyleAtsUpdate = (
-    ats,
+const createError = require('../../lib/createError');
+
+const handleStyleAtsUpdate = async (
     atsData,
-    threshold
+    styles,
+    isOnline
 ) => {
-        const skuAts = ats.filter((atsRecord) => atsRecord.skuId === atsData.skuId)[0];
-        const shouldUpdateAts = (skuAts && atsData.availableToSell >= 0) || (!skuAts && atsData.availableToSell > 0)
-                                
-        const originalAtsRecords = ats.filter((atsRecord) => !(atsRecord.skuId === atsData.skuId))
+          const atsKey = isOnline ? 'onlineAts' : 'ats';
+          const findSkuIdKey = atsKey + '.skuId';
+          const findSkuIdStoreIdKey = atsKey + '.ats.storeId';
+          const updateAtsKey = atsKey + '.$.ats'; 
 
-        if (shouldUpdateAts) {
-          const originalSkuAts = skuAts
-                                 ? skuAts.ats.filter((atsValue) => !(atsValue.storeId === atsData.storeId))
-                                 : null
-          if (originalSkuAts && !(atsData.availableToSell > 0) && originalSkuAts.length === 0) {
-            return originalAtsRecords;
+          await styles.updateOne({ _id: atsData.styleId, [findSkuIdKey] : atsData.skuId, [findSkuIdStoreIdKey] : atsData.storeId }, { $pull: { [updateAtsKey] : { 'storeId': atsData.storeId } } })
+                      .catch(originalError => {
+                          throw createError.calculateAvailableToSell.failedRemoveStyleAts(originalError, atsData);
+                      })
+          if (atsData.availableToSell > 0) {
+            return styles.updateOne({ _id: atsData.styleId, [findSkuIdKey]: atsData.skuId }, { $push: { [updateAtsKey]: { 'storeId': atsData.storeId, 'availableToSell': atsData.availableToSell } }, $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } } })
+                .catch(originalError => {
+                    throw createError.calculateAvailableToSell.failedUpdateStyleAts(originalError, atsData);
+                })
           }
-          const newAtsRecord = {
-              skuId: atsData.skuId,
-              threshold: threshold,
-              ats: !skuAts 
-                  ? [{
-                      storeId: atsData.storeId,
-                      availableToSell: atsData.availableToSell
-                    }]
-                  : atsData.availableToSell > 0 ? originalSkuAts.concat({ storeId: atsData.storeId, availableToSell: atsData.availableToSell }) : originalSkuAts
-            };
-            return originalAtsRecords.concat(newAtsRecord);
-        }
-        return originalAtsRecords;
-      }
+          return null;
+     }
 
-const handleSkuAtsUpdate = (
-    ats,
-    atsData
-) => (atsData.availableToSell && atsData.availableToSell > 0)
-                ? ats.filter((atsRecord) => !(atsRecord.storeId === atsData.storeId))
-                  .concat({
-                    storeId: atsData.storeId,
-                    availableToSell: atsData.availableToSell
-                  })
-                : ats.filter((atsRecord) => !(atsRecord.storeId === atsData.storeId));
+const handleSkuAtsUpdate = async (
+    atsData,
+    skus,
+    isOnline
+) => {
+          const atsKey = isOnline ? 'onlineAts' : 'ats';
+          const findStoreIdKey = atsKey + '.storeId';
+
+          await skus.updateOne({ _id: atsData.skuId, [findStoreIdKey] : atsData.storeId }, { $pull: { [atsKey] : { 'storeId': atsData.storeId } } })
+                      .catch(originalError => {
+                          throw createError.calculateAvailableToSell.failedRemoveSkuAts(originalError, atsData);
+                      })
+          
+          if (atsData.availableToSell > 0) {
+            return skus.updateOne({ _id: atsData.skuId }, { $push: { [atsKey] : { 'storeId': atsData.storeId, 'availableToSell': atsData.availableToSell } }, $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } } })
+              .catch(originalError => {
+                  throw createError.calculateAvailableToSell.failedUpdateSkuAts(originalError, atsData);
+              })
+          }
+          return null;
+     }
 
 module.exports = {
     handleStyleAtsUpdate,

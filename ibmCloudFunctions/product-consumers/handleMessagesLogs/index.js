@@ -76,8 +76,8 @@ function getRequeueMessagesAndCleanupRetryBatch(params) {
     }
 }
 
-global.main = async function(params) {    
-    const retryBatches = await getRetryBatches(params);
+global.main = async function(params) {
+    const retryBatches = await getRetryBatches(params, 10);
     const requeueMessagesAndCleanupRetryBatch = getRequeueMessagesAndCleanupRetryBatch(params);
     const results = await Promise.all(retryBatches.map(addErrorHandling(requeueMessagesAndCleanupRetryBatch)));
     return groupResultByStatus(results)

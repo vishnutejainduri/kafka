@@ -1,6 +1,6 @@
-const updateSalePrice = require('../');
+const consumeSalePrice = require('../');
 
-describe("updateSalePrice", function() {
+describe("consumeSalePrice", function() {
     it("successfuly runs if all the parameters are provided and the messages are valid", async function() {
         const params = {
             topicName: 'some-name',
@@ -14,6 +14,6 @@ describe("updateSalePrice", function() {
                 }
             }]
         };
-        expect(await updateSalePrice(params)).toBe(undefined);
+        expect(await consumeSalePrice(params)).toBe(undefined);
     });
 });

@@ -53,34 +53,39 @@ function parsePriceMessage(msg) {
 
 function generateUpdateFromParsedMessage(update, priceData, styleData) {
     const updateToProcess = {};
+    let onlineSalePrice = priceData ? priceData.onlineSalePrice : null;
+    let inStoreSalePrice = priceData ? priceData.inStoreSalePrice : null;
+
     switch (update.siteId) {
         case ONLINE_SITE_ID:
             updateToProcess.onlineSalePrice = update.newRetailPrice;
-            priceData.onlineSalePrice = updateToProcess.onlineSalePrice;
+            onlineSalePrice = updateToProcess.onlineSalePrice;
+            updateToProcess.inStoreSalePrice = inStoreSalePrice;
             break;
         case IN_STORE_SITE_ID:
             updateToProcess.inStoreSalePrice = update.newRetailPrice;
-            priceData.inStoreSalePrice = updateToProcess.inStoreSalePrice;
+            inStoreSalePrice = updateToProcess.inStoreSalePrice;
+            updateToProcess.onlineSalePrice = onlineSalePrice;
             break;
         default:
             break;
     }
 
 
-    updateToProcess.currentPrice = priceData.onlineSalePrice || styleData.originalPrice;
+    updateToProcess.currentPrice = onlineSalePrice || styleData.originalPrice;
     updateToProcess.lowestOnlinePrice = updateToProcess.currentPrice > styleData.originalPrice
                              ? styleData.originalPrice
                              : updateToProcess.currentPrice
 
-    updateToProcess.lowestPrice = priceData.inStoreSalePrice 
-                             ? Math.min(updateToProcess.lowestOnlinePrice, priceData.inStoreSalePrice)
+    updateToProcess.lowestPrice = inStoreSalePrice 
+                             ? Math.min(updateToProcess.lowestOnlinePrice, inStoreSalePrice)
                              : updateToProcess.lowestOnlinePrice
 
-    updateToProcess.isSale = !!(priceData.onlineSalePrice || priceData.inStoreSalePrice);
-    updateToProcess.isOnlineSale = !!(priceData.onlineSalePrice);
+    updateToProcess.isSale = !!(onlineSalePrice || inStoreSalePrice);
+    updateToProcess.isOnlineSale = !!(onlineSalePrice);
 
-    updateToProcess.inStoreDiscount = calcDiscount(styleData.originalPrice, priceData.inStoreSalePrice);
-    updateToProcess.onlineDiscount = calcDiscount(styleData.originalPrice, priceData.onlineSalePrice);
+    updateToProcess.inStoreDiscount = calcDiscount(styleData.originalPrice, inStoreSalePrice);
+    updateToProcess.onlineDiscount = calcDiscount(styleData.originalPrice, onlineSalePrice);
 
     return updateToProcess;
 }

@@ -1,3 +1,4 @@
+const getCollection = require('../../../lib/getCollection');
 const calculateAvailableToSell = require('../');
 const { handleStyleAtsUpdate, handleSkuAtsUpdate } = require('../utils');
 
@@ -11,29 +12,32 @@ const increaseAtsTestData = {
    'quantityOnHand':1,
    'availableToSell':1,
    'quantityOnHandNotSellable':0,
-   'quantityOnHandSellable':0,
+   'quantityOnHandSellable':1,
    'quantityOnOrder':0,
    'skuId': 'skuId',
    'storeId': 34,
    'styleId': 'styleId' 
 };
 
+const params = {
+    messages: [increaseAtsTestData],
+    mongoUri: 'mongo-uri',
+    dbName: 'db-name',
+    mongoCertificateBase64: 'mong-certificate',
+    collectionName: 'inventory',
+    stylesCollectionName: 'styles',
+    skusCollectionName: 'skus',
+    storesCollectionName: 'stores',
+    styleAvailabilityCheckQueue: 'styleAvailabilityCheckQueue',
+    bulkAtsRecalculateQueue: 'bulkAtsRecalculateQueue' 
+}
+
 describe('calculateAvailableToSell', () => {
     it('missing all parameters; should fail', async () => {
-        await expect(calculateAvailableToSell({})).rejects.toThrow();
+        const result = await expect(calculateAvailableToSell({}));
+        expect(result).toBeInstanceOf(Object);
     });
     it('correct message to update ats', async () => {
-        const params = {
-            messages: [increaseAtsTestData],
-            mongoUri: 'mongo-uri',
-            dbName: 'db-name',
-            mongoCertificateBase64: 'mong-certificate',
-            collectionName: 'inventory',
-            stylesCollectionName: 'styles',
-            skusCollectionName: 'skus',
-            storesCollectionName: 'stores',
-            styleAvailabilityCheckQueue: 'styleAvailabilityCheckQueue'
-        }
         const response = await calculateAvailableToSell(params);
         // returns nothing/undefined if successfully run
         expect(response).toEqual(undefined);
@@ -41,37 +45,37 @@ describe('calculateAvailableToSell', () => {
 });
 
 describe('handleSyleAtsUpdate', () => {
-    it('missing all params; should fail', () => {
-        const atsData = {};
-        const ats = [];
-        const threshold = 0;
+    it('missing all params; should fail', async () => {
+        const styles = await getCollection(params, params.stylesCollectionName);
 
-        const atsResult = handleStyleAtsUpdate(ats, atsData, threshold);
-        expect(atsResult.length).toBe(0);
+        let atsUpdates = [await handleStyleAtsUpdate({}, styles, false)];
+        atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
+        expect(atsUpdates.length).toBe(0);
     });
 
-    it('add to empty ats', () => {
-        const ats = [];
-        const threshold = 0;
+    it('add to empty ats', async () => {
+        const styles = await getCollection(params, params.stylesCollectionName);
 
-        const atsResult = handleStyleAtsUpdate(ats, increaseAtsTestData, threshold);
-        expect(atsResult.length).toBe(1);
+        let atsUpdates = [await handleStyleAtsUpdate(increaseAtsTestData, styles, false)];
+        atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
+        expect(atsUpdates.length).toBe(1);
     });
 });
 
 describe('handleSkuAtsUpdate', () => {
-    it('missing all params; should fail', () => {
-        const atsData = {};
-        const ats = [];
+    it('missing all params; should fail', async () => {
+        const skus = await getCollection(params, params.skusCollectionName);
 
-        const atsResult = handleSkuAtsUpdate(ats, atsData);
-        expect(atsResult.length).toBe(0);
+        let atsUpdates = [await handleSkuAtsUpdate({}, skus, false)];
+        atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
+        expect(atsUpdates.length).toBe(0);
     });
 
-    it('add to empty ats', () => {
-        const ats = [];
+    it('add to empty ats', async () => {
+        const skus = await getCollection(params, params.skusCollectionName);
 
-        const atsResult = handleSkuAtsUpdate(ats, increaseAtsTestData);
-        expect(atsResult.length).toBe(1);
+        let atsUpdates = [await handleSkuAtsUpdate(increaseAtsTestData, skus, false)];
+        atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
+        expect(atsUpdates.length).toBe(1);
     });
 });
