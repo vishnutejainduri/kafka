@@ -124,6 +124,7 @@
           timeout: 600000
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
+          stylesCollectionName: $STYLES_COLLECTION_NAME
           topicName: skus-connect-jdbc
       consume-sku-message-with-retry:
         location: ./product-consumers/consumeSkuMessageWithRetry/dist/bundle.js

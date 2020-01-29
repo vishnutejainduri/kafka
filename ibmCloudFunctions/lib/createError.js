@@ -98,6 +98,23 @@ module.exports = {
             }
         )
     },
+    consumeSkuMessage: {
+        failedAllUpdates: (originalError, skuData) => new CustomError(
+            originalError,
+            'failed-consume-sku-message',
+            `Failure in run of consume sku message; skuData: ${skuData}.`
+        ),
+        failedSkuUpdate: (originalError, skuData) => new CustomError(
+            originalError,
+            'failed-consume-sku-message-sku-update',
+            `Failure in sku update run of consume sku message; skuData: ${skuData}.`
+        ),
+        failedUpdateStyleAts: (originalError, skuData) => new CustomError(
+            originalError,
+            'failed-consume-sku-message-update-style-ats',
+            `Failure to update style ats in run of consume sku message; skuData: ${skuData}.`
+        ),
+    },
     consumeCatalogMessage: {
         failed: (originalError, params) => new CustomError(
             originalError,

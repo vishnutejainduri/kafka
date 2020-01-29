@@ -2,6 +2,7 @@ const { filterSkuMessage, parseSkuMessage } = require('../../lib/parseSkuMessage
 const { addErrorHandling, log, createLog } = require('../utils');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
+const { handleSkuAtsSizeUpdate } = require('./utils');
 
 global.main = async function (params) {
     log(createLog.params('consumeSkuMessage', params));
@@ -15,34 +16,42 @@ global.main = async function (params) {
     }
 
     let skus;
+    let styles;
     try {
         skus = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
 
     return Promise.all(params.messages
-        .filter(filterSkuMessage)
-        .map(parseSkuMessage)
-        .map(addErrorHandling((skuData) => skus.findOne({ _id: skuData._id })
-            .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
-                  ? skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: skuData })
-                  : skus.updateOne({ _id: skuData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: skuData }, { upsert: true }) // fix race condition
-            ).then(() => "Updated/inserted document " + skuData._id)
-            .catch((err) => {
-                console.error('Problem with SKU ' + skuData._id);
-                console.error(err);
-                if (!(err instanceof Error)) {
-                    const e = new Error();
-                    e.originalError = err;
-                    e.attemptedDocument = skuData;
-                    return e;
-                }
+        .filter(addErrorHandling(filterSkuMessage))
+        .map(addErrorHandling(parseSkuMessage))
+        .map(addErrorHandling(async (skuData) => {
+                  const skuOperatons = [];
+                  const existingDocument = await skus.findOne({ _id: skuData._id })
 
-                err.attemptedDocument = skuData;
-                return err;
+                  if (existingDocument && existingDocument.lastModifiedDate) {
+                    skuOperatons.push(skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: skuData }).catch(originalError => {
+                                        return createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
+                                    })
+                    )
+                  } else {
+                    skuOperatons.push(skus.updateOne({ _id: skuData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: skuData }, { upsert: true }).catch(originalError => {
+                                        return createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
+                                    })
+                    )
+                  }
+
+                  skuOperatons.push(await handleSkuAtsSizeUpdate (skuData, styles, false));
+                  skuOperatons.push(await handleSkuAtsSizeUpdate (skuData, styles, true));
+
+                  return Promise.all(skuOperatons)
+                                    .catch(originalError => {
+                                        return createError.consumeSkuMessage.failedAllUpdates(originalError, skuData);
+                                    })
             })
-        ))
+        )
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
