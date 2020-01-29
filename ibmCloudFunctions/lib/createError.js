@@ -264,6 +264,11 @@ module.exports = {
             'failed-prepare-styles-for-algolia',
             `Failed to prepare ${failed} of ${total} styles for Algolia.`
         ),
+        failedToGetStylesToCheck: (originalError) => new CustomError(
+            originalError,
+            'failed-to-get-styles-to-check',
+            'Failed to get styles to check'
+        ),
         failedToGetApiResponse: (originalError, styleId) => new CustomError(
             originalError,
             'failed-to-get-api-response',

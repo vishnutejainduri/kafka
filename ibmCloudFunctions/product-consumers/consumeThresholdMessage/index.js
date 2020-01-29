@@ -34,11 +34,11 @@ global.main = async function (params) {
               const thresholdOperations = [];
               const skuData = await skus.findOne({ _id: thresholdData.skuId })
                 .catch(originalError => {
-                    return createError.consumeThresholdMessage.failedToGetSku(originalError, thresholdData);
+                    throw createError.consumeThresholdMessage.failedToGetSku(originalError, thresholdData);
                 });
               const styleData = await styles.findOne({ _id: skuData.styleId })
                 .catch(originalError => {
-                    return createError.consumeThresholdMessage.failedToGetStyle(originalError, thresholdData);
+                    throw createError.consumeThresholdMessage.failedToGetStyle(originalError, thresholdData);
                 });
 
               const styleUpdates = { $set: {} };
@@ -79,7 +79,7 @@ global.main = async function (params) {
 
               return Promise.all(thresholdOperations)
                                   .catch(originalError => {
-                                      return createError.consumeThresholdMessage.failedUpdates(originalError, thresholdData);
+                                      throw createError.consumeThresholdMessage.failedUpdates(originalError, thresholdData);
                                   })
             })
         )
@@ -94,7 +94,9 @@ global.main = async function (params) {
         }
     })
     .catch(originalError => {
-        throw createError.consumeThresholdMessage.failed(originalError, paramsExcludingMessages);
+        return {
+            error: createError.consumeThresholdMessage.failed(originalError, paramsExcludingMessages)
+        };
     });
 }
 
