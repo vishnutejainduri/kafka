@@ -22,9 +22,8 @@ describe('updateAlgoliaInventory', () => {
             stylesCollectionName: 'styles',
             styleAvailabilityCheckQueue: 'styleAvailabilityCheckQueue'
         }
-        let response = null;
-        await updateAlgoliaInventory(params);
+        let response = await updateAlgoliaInventory(params);
         // returns nothing/undefined if successfully run
-        expect(response).toEqual(null);
+        expect(response).toEqual(undefined);
     });
 });
