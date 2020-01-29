@@ -38,7 +38,7 @@ global.main = async function (params) {
         .map(addErrorHandling(parseSkuInventoryMessage))
         .map(addErrorHandling(async (inventoryData) => {
             const inventoryLastModifiedDate = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1 } );
-            if (inventoryData.lastModifiedDate <= inventoryLastModifiedDate.lastModifiedDate) return null;
+            if (inventoryLastModifiedDate && inventoryData.lastModifiedDate <= inventoryLastModifiedDate.lastModifiedDate) return null;
 
             const inventoryUpdatePromise = inventory
                 .updateOne({ _id: inventoryData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: inventoryData }, { upsert: true })
