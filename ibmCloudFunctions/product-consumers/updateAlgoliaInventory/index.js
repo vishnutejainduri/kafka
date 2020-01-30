@@ -3,7 +3,11 @@ const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { productApiRequest } = require('../../lib/productApi');
 const { createLog, log, addErrorHandling } = require('../utils');
+<<<<<<< HEAD
 const { buildSizesArray, buildStoreInventory, buildStoresArray } = require('./utils');
+=======
+const { buildSizesArray, buildStoreInventory } = require('./utils');
+>>>>>>> HRC-1635 store inventory algolia field generated from style ats field
 
 let client = null;
 let index = null;
@@ -58,7 +62,10 @@ global.main = async function (params) {
                     isOnlineAvailableToSell: styleAts.onlineAts > 0,
                     sizes: buildSizesArray(styleData.ats),
                     storeInventory: buildStoreInventory(styleData.ats),
+<<<<<<< HEAD
                     stores: buildStoresArray(styleData.ats),
+=======
+>>>>>>> HRC-1635 store inventory algolia field generated from style ats field
                     objectID: styleData._id
                 }))
                 .catch(originalError => {
