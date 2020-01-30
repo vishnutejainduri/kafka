@@ -97,7 +97,6 @@ global.main = async function (params) {
     });
     if (recordsToUpdate.length) {
         try {
-            console.log('recordsToUpdate', recordsToUpdate);
             await index.partialUpdateObjects(recordsToUpdate, true);
             log('Updated availability for styles ', stylesIdsToUpdate);
         } catch (error) {
