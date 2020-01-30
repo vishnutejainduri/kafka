@@ -61,7 +61,7 @@ global.main = async function (params) {
                   });
                 }
         
-                styleUpdates['$current'] = { lastModifiedInternalThreshold: { $type:"timestamp" } };
+                styleUpdates['$currentDate'] = { lastModifiedInternalThreshold: { $type:"timestamp" } };
                 thresholdOperations.push(styles.updateOne({ _id: styleData._id }, styleUpdates)
                                   .catch(originalError => {
                                       throw createError.consumeThresholdMessage.failedToUpdateStyleThreshold(originalError, styleData);
