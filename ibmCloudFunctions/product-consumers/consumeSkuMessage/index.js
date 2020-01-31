@@ -44,8 +44,8 @@ global.main = async function (params) {
                     )
                   }
 
-                  skuOperatons.push(await handleSkuAtsSizeUpdate (skuData, styles, false));
-                  skuOperatons.push(await handleSkuAtsSizeUpdate (skuData, styles, true));
+                  skuOperatons.push(handleSkuAtsSizeUpdate (skuData, styles, false));
+                  skuOperatons.push(handleSkuAtsSizeUpdate (skuData, styles, true));
 
                   return Promise.all(skuOperatons)
                                     .catch(originalError => {

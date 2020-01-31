@@ -1,6 +1,6 @@
 const createError = require('../../lib/createError');
 
-const handleSkuAtsSizeUpdate = async (
+const handleSkuAtsSizeUpdate = (
     skuData,
     styles,
     isOnline
