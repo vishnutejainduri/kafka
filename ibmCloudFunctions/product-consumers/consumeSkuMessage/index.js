@@ -28,26 +28,26 @@ global.main = async function (params) {
         .filter(addErrorHandling(filterSkuMessage))
         .map(addErrorHandling(parseSkuMessage))
         .map(addErrorHandling(async (skuData) => {
-                  const skuOperatons = [];
+                  const skuOperations = [];
                   const existingDocument = await skus.findOne({ _id: skuData._id })
 
                   const skuUpdate = { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: skuData }
                   if (existingDocument && existingDocument.lastModifiedDate) {
-                    skuOperatons.push(skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, skuUpdate).catch(originalError => {
+                    skuOperations.push(skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, skuUpdate).catch(originalError => {
                                         throw createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
                                     })
                     )
                   } else {
-                    skuOperatons.push(skus.updateOne({ _id: skuData._id }, skuUpdate, { upsert: true }).catch(originalError => {
+                    skuOperations.push(skus.updateOne({ _id: skuData._id }, skuUpdate, { upsert: true }).catch(originalError => {
                                         throw createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
                                     })
                     )
                   }
 
-                  skuOperatons.push(handleSkuAtsSizeUpdate (skuData, styles, false));
-                  skuOperatons.push(handleSkuAtsSizeUpdate (skuData, styles, true));
+                  skuOperations.push(handleSkuAtsSizeUpdate (skuData, styles, false));
+                  skuOperations.push(handleSkuAtsSizeUpdate (skuData, styles, true));
 
-                  return Promise.all(skuOperatons)
+                  return Promise.all(skuOperations)
                                     .catch(originalError => {
                                         throw createError.consumeSkuMessage.failedAllUpdates(originalError, skuData);
                                     })
