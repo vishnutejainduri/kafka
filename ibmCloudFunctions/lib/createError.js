@@ -1,3 +1,13 @@
+// message and stack on Error instance are not enumerable
+// and will be ignored if not explicitly set 
+function errorToObject(error) {
+    return {
+        ...error,
+        message: error.message,
+        stack: error.stack,
+    };
+}
+
 // TODO: constructor should be called at the point of error to better identify the line of error
 // ref: https://stackoverflow.com/a/871646
 // e.g. throw new CustomError(...) instead of throw createError(...)
@@ -330,6 +340,14 @@ module.exports = {
             originalError,
             'failed-to-add-to-algolia-queue',
             `Failed to add style inventory update to algolia mongo queue; style data: ${styleData}.`
+        ),
+        partialFailure: (messages, errors) => new CustomError(
+            null,
+            'partial-failure-consuming-threshold-message',
+            `Failed to consume ${errors.length} out of ${messages.length} messages.`,
+            {
+                errors: errors.map(errorToObject)
+            }
         )
     },
     consumeStoresMessage: {
