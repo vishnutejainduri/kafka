@@ -1,66 +1,66 @@
     triggers:
       catalog-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        feed: /${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
           topic: styles-connect-jdbc-CATALOG
       styles-basic-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        feed: /${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
           topic: styles-basic-connect-jdbc
       threshold-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        feed: /${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
           topic: thresholds-connect-jdbc
       barcode-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        feed: /${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
           topic: barcodes-connect-jdbc
       sku-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        feed: /${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
           topic: skus-connect-jdbc
       medias-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        feed: /${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
           topic: medias-connect-jdbc
       stores-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        feed: /${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
           topic: stores-connect-jdbc
       storefulfill-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        feed: /${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
           topic: stores-fulfill-connect-jdbc
       dep27fulfill-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        feed: /${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
           topic: stores-dep27fulfill-connect-jdbc
       media-containers-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        feed: /${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
           topic: media-containers-connect-jdbc
       sale-price-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        feed: /${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
           topic: prices-connect-jdbc
       sku-inventory-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        feed: /${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
           topic: inventory-connect-jdbc-SKUINVENTORY
       facets-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        feed: /${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
           topic: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
