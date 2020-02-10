@@ -32,7 +32,7 @@ global.main = async function (params) {
     return Promise.all(stylesToRecalcAts
         .map(addErrorHandling(async (styleToRecalcAts) => {
           const { skuAtsOperations, styleAts, styleOnlineAts } = await calculateStyleAts(styleToRecalcAts, styles, skus, stores, inventory);
-          const operationResults = await Promise.all([styles.updateOne({ _id: styleToRecalcAts._id }, { $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } }, $set: { ats: styleAts, onlineAts: styleOnlineAts } }, { upsert: true })
+          const operationResults = await Promise.all([styles.updateOne({ _id: styleToRecalcAts._id }, { $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } }, $set: { ats: styleAts, onlineAts: styleOnlineAts } })
                               .catch(originalError => {
                                   throw createError.bulkCalculateAvailableToSell.failedUpdateStyleAts(originalError, styleToRecalcAts);
                               })].concat(skuAtsOperations))
