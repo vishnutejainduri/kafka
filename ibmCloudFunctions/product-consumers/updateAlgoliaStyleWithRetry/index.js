@@ -1,3 +1,5 @@
-const composer = require('openwhisk-composer')
- 
-module.exports = composer.retry(1, 'product-consumers/update-algolia-style');
+const composer = require('openwhisk-composer');
+
+const { COMPOSER_RETRIES } = require('../constants');
+
+module.exports = composer.retry(COMPOSER_RETRIES, 'product-consumers/update-algolia-style');
