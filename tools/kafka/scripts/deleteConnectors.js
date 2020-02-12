@@ -18,13 +18,12 @@ function getCallDeleteConnector(kubeHost, token) {
 
         return new Promise(function(resolve, reject) {
             const request = https.request(options, function(res){
-                let body = "";
-                res.on('data', function(data) {
-                   body += data;
-                });
+                res.on('data', function() {});
                 res.on('end', function() {
                     //here we have the full response, html or json object
-                    resolve(body);
+                    resolve({
+                        statusCode: res.statusCode
+                    });
                 });
                 res.on('error', function(e) {
                     console.log("Error: an error occured while calling the end point for deleting connector: ", connectorName);
@@ -41,14 +40,18 @@ function getDeleteConnector(kubeHost, token) {
   const callDeleteConnector = getCallDeleteConnector(kubeHost, token);
   return async function(connectorName) {
     console.log('Deleting connector: ', connectorName);
-    const { statusCode, body } = await callDeleteConnector(connectorName);
-    if (statusCode < 200 || statusCode >= 300) {
-      const errorMessage = `Error: server responded with status code ${statusCode} and could not delete connector: ${connectorName}.`;
+    const { statusCode } = await callDeleteConnector(connectorName);
+    if (statusCode >= 500) {
+      const errorMessage = `Error  - Status Code ${statusCode}. Could not delete connector: ${connectorName}.`;
       console.log(errorMessage);
       throw new Error(errorMessage);
     }
-    console.log(`Success. Connector deleted: ${connectorName}. Status: ${statusCode}. Response: ${body}`);
-    return body;
+    if (statusCode < 200 || statusCode >= 300) {
+        console.log(`Failure  - Status Code ${statusCode}. Could not delete connector: ${connectorName}.`);
+        return false;
+    }
+    console.log(`Success - Status Code ${statusCode}. Connector deleted: ${connectorName}.`);
+    return true;
   }
 }
 
