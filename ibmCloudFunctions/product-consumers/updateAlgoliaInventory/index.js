@@ -68,6 +68,8 @@ global.main = async function (params) {
         })
     )));
 
+    const styleIdsForAvailabilitiesToBeSynced = stylesToCheck.map(style => style.styleId);
+
     const recordsWithError = styleAvailabilitiesToBeSynced.filter(rec => rec instanceof Error);
     if (recordsWithError.length > 0) {
         log(createError.updateAlgoliaInventory.failedRecords(null, recordsWithError.length, styleAvailabilitiesToBeSynced.length), "ERROR");
@@ -76,12 +78,10 @@ global.main = async function (params) {
         });
     }
 
-    const styleIds = stylesToCheck.map(style => style.styleId);
-
     const stylesIdsToUpdate = [];
     const recordsToUpdate = styleAvailabilitiesToBeSynced.filter((record, index) => {
         if (record && !(record instanceof Error)) {
-            stylesIdsToUpdate.push(styleIds[index]);
+            stylesIdsToUpdate.push(styleIdsForAvailabilitiesToBeSynced[index]);
             return true;
         }
         return false;
@@ -102,7 +102,7 @@ global.main = async function (params) {
             });
     }
 
-    const styleIdsToCleanup = styleIds.filter((_, index) => !(styleAvailabilitiesToBeSynced[index] instanceof Error));
+    const styleIdsToCleanup = styleIdsForAvailabilitiesToBeSynced.filter((_, index) => !(styleAvailabilitiesToBeSynced[index] instanceof Error));
     try {
         await styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIdsToCleanup } });
     } catch (originalError) {
