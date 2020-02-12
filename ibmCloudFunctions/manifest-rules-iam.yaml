@@ -34,7 +34,7 @@
         trigger: media-containers-trigger
       sale-price-sequence-rule:
         action: update-pricing-sequence
-        trigger: /sale-price-trigger
+        trigger: sale-price-trigger
       algolia-images-rule:
         action: update-algolia-image
         trigger: every-minute
@@ -52,10 +52,10 @@
         trigger: catalog-trigger
       update-inventory-sequence-rule:
         action: update-inventory-sequence
-        trigger: /sku-inventory-trigger
+        trigger: sku-inventory-trigger
       add-facets-to-queue-rule:
         action: add-facets-to-bulk-import-queue-with-retry
-        trigger: /facets-trigger
+        trigger: facets-trigger
       algolia-facets-rule:
         action: update-algolia-facets
         trigger: every-minute
