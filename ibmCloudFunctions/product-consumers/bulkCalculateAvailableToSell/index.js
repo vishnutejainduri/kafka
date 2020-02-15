@@ -31,7 +31,9 @@ global.main = async function (params) {
 
     return Promise.all(stylesToRecalcAts
         .map(addErrorHandling(async (styleToRecalcAts) => {
-          const { skuAtsOperations, styleAts, styleOnlineAts } = await calculateStyleAts(styleToRecalcAts, styles, skus, stores, inventory);
+          const atsCalculations = await calculateStyleAts(styleToRecalcAts, styles, skus, stores, inventory);
+          if (atsCalculations === null) return null;
+          const { skuAtsOperations, styleAts, styleOnlineAts } = atsCalculations;
           const operationResults = await Promise.all([styles.updateOne({ _id: styleToRecalcAts._id }, { $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } }, $set: { ats: styleAts, onlineAts: styleOnlineAts } }, { upsert: true })
                               .catch(originalError => {
                                   throw createError.bulkCalculateAvailableToSell.failedUpdateStyleAts(originalError, styleToRecalcAts);
@@ -49,7 +51,7 @@ global.main = async function (params) {
     )
     .then(async (results) => {
         const errors = results.filter((res) => res instanceof Error);
-        const successes = results.filter((res) => !(res instanceof Error));
+        const successes = results.filter((res) => res !== null && !(res instanceof Error));
         const successResults = successes.map((result) => result.map((res) => res.styleToRecalcAts));
         const successfulStyleIds = successResults.map((result) => result.filter((res, index) => result.indexOf(res) === index)[0]);
 

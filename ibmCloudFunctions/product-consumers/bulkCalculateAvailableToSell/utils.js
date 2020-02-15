@@ -1,5 +1,6 @@
 const createError = require('../../lib/createError');
 const { addErrorHandling } = require('../utils');
+const { log } = require('../utils');
 
 const calculateSkuAts = async (
     skuRecord,
@@ -53,7 +54,10 @@ module.exports = {
           .catch(originalError => {
               throw createError.bulkCalculateAvailableToSell.failedGetStyle(originalError, styleToRecalcAts);
           })
-          if (!styleData) return null;
+          if (!styleData) {
+            log(`Could not find style data for _id: ${styleToRecalcAts._id}`);
+            return null;
+          }
           const styleAts = [];
           const styleOnlineAts = [];
 
