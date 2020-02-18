@@ -1,47 +1,38 @@
-const { handleStyleUpdate }  = require('../utils');
+const consumeSkuInventoryMessage = require('../');
 
-describe('handleStyleUpdate', () => {
-    it('returns an instance of error if a function failes', async () => {
-        // test data
-        const skus = {
-            findOne: async () => ({})
-        };
-        const styles = {
-            findOne: async () => ({}),
-            // ---> required method on styles
-            // updateOne: async () => {}
-        };
-        const inventoryData = {};
+jest.mock("mongodb");
 
-        // test run
-        const result = await handleStyleUpdate(skus, styles, inventoryData);
-        expect(result instanceof Error).toBe(true);
+describe('consumeSkuInventoryMessage', () => {
+    it('missing all parameters; should fail', async () => {
+        await expect(consumeSkuInventoryMessage({})).rejects.toThrow();
     });
-
-    it('successfully returns for complete input', async () => {
-        // test data
-        const styleId = '#id';
-    
-        const inventoryData = {
-            styleId
+    it('correct message to update inventory', async () => {
+        const params = {
+            topicName: 'inventory-connect-jdbc-SKUINVENTORY',
+            messages: [{
+                topic: 'inventory-connect-jdbc-SKUINVENTORY',
+                value: {
+                  STYLE_ID:'styleId',
+                  SKU_ID:'skuId',
+                  STORE_ID:'storeId',
+                  QBO:0,
+                  QIT:0,
+                  QIP:0,
+                  QOH:0,
+                  QOHNOTSELLABLE:0,
+                  QOHSELLABLE:1,
+                  QOO:0,
+                  LASTMODIFIEDDATE:1000000000,
+                  INV_FKORGANIZATIONNO: '1'
+                }
+            }],
+            mongoUri: 'mongo-uri',
+            dbName: 'db-name',
+            mongoCertificateBase64: 'mong-certificate',
+            collectionName: 'inventory' 
         };
-
-        const skus = {
-            findOne: async () => ({
-
-            })
-        };
-
-        const mockStylesUpdateOne = jest.fn(async () => ({ [styleId]: true }));
-
-        const styles = {
-            findOne: async () => ({}),
-            updateOne: mockStylesUpdateOne
-        };
-
-        // test run
-        const result = await handleStyleUpdate(skus, styles, inventoryData);
-        expect(result).toEqual({ [styleId]: true });
-        expect(mockStylesUpdateOne.mock.calls[0][0]).toEqual({ _id: styleId });
+        const response = await consumeSkuInventoryMessage(params);
+        // returns nothing/undefined if successfully run
+        expect(response).toBeInstanceOf(Object);
     });
 });
