@@ -46,7 +46,8 @@ async function debug({
         }
         case 'deleteAll': {
             // TODO add a confirmation with y/N step
-            const connectorNames = await getConnectorNames(env);
+            const connectorInstancesPassedAsArgument = options[0] && options[0].split(',');
+            const connectorNames = connectorInstancesPassedAsArgument || await getConnectorNames(env);
             const deletedConnectors = await deleteConnectors(env, connectorNames);
             const previousHistory = debugHistory.deleteAll || [];
             const data = deletedConnectors.map((result, index) => ({
@@ -76,7 +77,7 @@ async function debug({
           // accepts two optional arguments:
           // a. a list of connector names separated by comma
           // b. a number denoting the increase in version
-          // e.g. passing "medias-jdbc-source-v8, skus-jdbc-source 1"
+          // e.g. passing `medias-jdbc-source-v8,skus-jdbc-source 1`
           // will create "medias-jdbc-source-v9" and "skus-jdbc-source-v1"
           const connectorInstancesPassedAsArgument = options[0] && options[0].split(',');
           const versionIncrease = options[1] ? Number(options[1]) : null;

@@ -65,17 +65,23 @@ global.main = async function (params) {
         return productApiRequest(params, `/media/${mediaContainer.code}/main`)
             .then((imageMedia) => {
                 let url = null;
+                let zoomUrl = null;
                 if (imageMedia && imageMedia.data && imageMedia.data.length) {
                     const thumbnail = imageMedia.data[0].images.find((image) => image.qualifier === 'HRSTORE');
+                    const zoom = imageMedia.data[0].images.find((image) => image.qualifier === 'HRZOOM');
                     if (thumbnail) {
                         url = thumbnail.url;
                     }
+                    if (zoom) {
+                        zoomUrl = zoom.url;
+                    }
                 }
 
-                if (url) {
+                if (url || zoomUrl) {
                     imagesToBeSynced.push({
                         mediaContainer,
-                        url
+                        url,
+                        zoomUrl
                     });
                 } else {
                     // This mediacontainer has images, but none in our crop OR no URL for some reason
@@ -100,7 +106,8 @@ global.main = async function (params) {
             .map((imageData) => {
                 return {
                     objectID: imageData.mediaContainer.code.match(/\d+/)[0] || imageData.mediaContainer.code,
-                    image: imageData.url
+                    image: imageData.url,
+                    imageZoom: imageData.zoomUrl
                 };
             });
         const mediaContainerIds = imagesToBeSynced.map((imageData) => imageData.mediaContainer._id)

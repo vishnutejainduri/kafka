@@ -1,61 +1,61 @@
     rules:
       catalog-rule:
-        action: product-consumers/consume-catalog-message-with-retry
+        action: consume-catalog-message-with-retry
         trigger: catalog-trigger
       styles-basic-rule:
-        action: product-consumers/consume-styles-basic-message-with-retry
+        action: consume-styles-basic-message-with-retry
         trigger: styles-basic-trigger
       threshold-rule:
-        action: product-consumers/consume-threshold-message-with-retry
+        action: consume-threshold-message-with-retry
         trigger: threshold-trigger
       sku-rule:
-        action: product-consumers/consume-sku-message-with-retry
+        action: consume-sku-message-with-retry
         trigger: sku-trigger
       barcode-rule:
-        action: product-consumers/consume-barcode-message-with-retry
+        action: consume-barcode-message-with-retry
         trigger: barcode-trigger
       medias-rule:
-        action: product-consumers/consume-medias-message-with-retry
+        action: consume-medias-message-with-retry
         trigger: medias-trigger
       stores-rule:
-        action: product-consumers/consume-stores-message-with-retry
+        action: consume-stores-message-with-retry
         trigger: stores-trigger
       storefulfill-rule:
-        action: product-consumers/consume-storesfulfill-message-with-retry
+        action: consume-storesfulfill-message-with-retry
         trigger: storefulfill-trigger
       dep27fulfill-rule:
-        action: product-consumers/consume-dep27fulfill-message-with-retry
+        action: consume-dep27fulfill-message-with-retry
         trigger: dep27fulfill-trigger
       media-containers-rule:
-        action: product-consumers/consume-media-containers-message-with-retry
+        action: consume-media-containers-message-with-retry
         trigger: media-containers-trigger
       add-media-container-to-queue-message-rule:
-        action: product-consumers/add-media-container-to-queue-message-with-retry
+        action: add-media-container-to-queue-message-with-retry
         trigger: media-containers-trigger
       sale-price-sequence-rule:
-        action: product-consumers/update-pricing-sequence
-        trigger: /sale-price-trigger
+        action: update-pricing-sequence
+        trigger: sale-price-trigger
       algolia-images-rule:
-        action: product-consumers/update-algolia-image
+        action: update-algolia-image
         trigger: every-minute
       algolia-inventory-rule:
-        action: product-consumers/update-algolia-inventory
+        action: update-algolia-inventory
         trigger: every-minute
       bulk-ats-rule:
-        action: product-consumers/bulk-calculate-available-to-sell
+        action: bulk-calculate-available-to-sell
         trigger: every-minute
       algolia-delete-create-rule:
-        action: product-consumers/delete-create-algolia-styles
+        action: delete-create-algolia-styles
         trigger: every-minute
       algolia-catalog-rule:
-        action: product-consumers/update-algolia-style-with-retry
+        action: update-algolia-style-with-retry
         trigger: catalog-trigger
       update-inventory-sequence-rule:
-        action: product-consumers/update-inventory-sequence
-        trigger: /sku-inventory-trigger
+        action: update-inventory-sequence
+        trigger: sku-inventory-trigger
       add-facets-to-queue-rule:
-        action: product-consumers/add-facets-to-bulk-import-queue-with-retry
-        trigger: /facets-trigger
+        action: add-facets-to-bulk-import-queue-with-retry
+        trigger: facets-trigger
       algolia-facets-rule:
-        action: product-consumers/update-algolia-facets
+        action: update-algolia-facets
         trigger: every-minute

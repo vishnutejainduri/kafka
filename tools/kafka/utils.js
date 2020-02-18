@@ -1,12 +1,14 @@
+const NoResponse = Symbol.for("no-response");
+
 function retry(fn, retries = 3) {
     return async function(...args){
         let tries = 0;
         let error = null;
-        let response = null;
-        while (!response && tries < retries) {
+        let response = NoResponse;
+        while (response === NoResponse && tries < retries) {
             tries++;
             error = null;
-            response = null;
+            response = NoResponse;
             try {
                 response = await fn(...args);
             } catch (err) {

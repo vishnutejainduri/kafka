@@ -68,6 +68,8 @@ global.main = async function (params) {
         })
     )));
 
+    const styleIdsForAvailabilitiesToBeSynced = stylesToCheck.map(style => style.styleId);
+
     const recordsWithError = styleAvailabilitiesToBeSynced.filter(rec => rec instanceof Error);
     if (recordsWithError.length > 0) {
         log(createError.updateAlgoliaInventory.failedRecords(null, recordsWithError.length, styleAvailabilitiesToBeSynced.length), "ERROR");
@@ -76,13 +78,18 @@ global.main = async function (params) {
         });
     }
 
-    const styleIds = stylesToCheck.map(style => style.styleId);
-
-    let recordsToUpdate = styleAvailabilitiesToBeSynced.filter((record) => record && !(record instanceof Error));
+    const stylesIdsToUpdate = [];
+    const recordsToUpdate = styleAvailabilitiesToBeSynced.filter((record, index) => {
+        if (record && !(record instanceof Error)) {
+            stylesIdsToUpdate.push(styleIdsForAvailabilitiesToBeSynced[index]);
+            return true;
+        }
+        return false;
+    });
     if (recordsToUpdate.length) {
         try {
             await index.partialUpdateObjects(recordsToUpdate, true);
-            log('Updated availability for styles ', styleIds);
+            log('Updated availability for styles ', stylesIdsToUpdate);
         } catch (error) {
             log('Failed to send styles to Algolia.', "ERROR");
             log(params.messages, "ERROR");
@@ -95,10 +102,11 @@ global.main = async function (params) {
             });
     }
 
+    const styleIdsToCleanup = styleIdsForAvailabilitiesToBeSynced.filter((_, index) => !(styleAvailabilitiesToBeSynced[index] instanceof Error));
     try {
-        await styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIds } });
+        await styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIdsToCleanup } });
     } catch (originalError) {
-        throw createError.updateAlgoliaInventory.failedToRemoveFromQueue(originalError, styleIds);
+        throw createError.updateAlgoliaInventory.failedToRemoveFromQueue(originalError, styleIdsToCleanup);
     }
 }
 
