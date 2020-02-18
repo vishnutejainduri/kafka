@@ -3,7 +3,7 @@ const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { productApiRequest } = require('../../lib/productApi');
 const { createLog, log, addErrorHandling } = require('../utils');
-const { buildSizesArray, buildStoreInventory, buildStoresArray } = require('./utils');
+const { buildStoresArray } = require('./utils');
 
 let client = null;
 let index = null;
@@ -56,8 +56,8 @@ global.main = async function (params) {
                 .then((styleAts) => ({
                     isAvailableToSell: styleAts.ats > 0,
                     isOnlineAvailableToSell: styleAts.onlineAts > 0,
-                    sizes: buildSizesArray(styleData.ats),
-                    storeInventory: buildStoreInventory(styleData.ats),
+                    sizes: styleData.sizes,
+                    storeInventory: styleData.storeInventory,
                     stores: buildStoresArray(styleData.ats),
                     objectID: styleData._id
                 }))
