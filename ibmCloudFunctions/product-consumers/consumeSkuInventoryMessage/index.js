@@ -47,7 +47,6 @@ global.main = async function (params) {
     .then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         const successes = results.filter((res) => !(res instanceof Error) && res);
-        const successResults = successes.map((results) => results[0]);
 
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
@@ -56,17 +55,12 @@ global.main = async function (params) {
 
             log('Failed to update some inventory records', "ERROR");
             log(e, "ERROR");
-            
-            return {
-              messages: successResults,
-              ...paramsExcludingMessages
-            };
-        } else {
-            return {
-              messages: successResults,
-              ...paramsExcludingMessages
-            };
         }
+
+        return {
+            ...paramsExcludingMessages,
+            messages: successes
+        };
     })
     .catch(originalError => {
         throw createError.consumeInventoryMessage.failed(originalError, params);
