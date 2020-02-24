@@ -32,10 +32,12 @@ global.main = async function (params) {
 
     let styleAvailabilityCheckQueue;
     let styles;
+    let skus;
     let updateAlgoliaInventoryCount;
     try {
         styleAvailabilityCheckQueue = await getCollection(params);
-        styles = await getCollection(params, params.stylesCollectionName)
+        styles = await getCollection(params, params.stylesCollectionName);
+        skus = await getCollection(params, params.skusCollectionName);
         updateAlgoliaInventoryCount = await getCollection(params, 'updateAlgoliaInventoryCount');
     } catch (originalError) {
         throw createError.failedDbConnection(originalError, params && params.collectionName);
@@ -48,27 +50,27 @@ global.main = async function (params) {
         throw createError.updateAlgoliaInventory.failedToGetStylesToCheck(originalError);
     }
 
-    const styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map(addErrorHandling((style) => styles.findOne({ _id: style.styleId })
+    const styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map(addErrorHandling(async style => {
         // for some reason we don't have style data in the DPM for certain styles referenced in inventory data
-        .then((styleData) => {
-            if (!styleData || !styleData.ats || styleData.isOutlet) return null;
-            return productApiRequest(params, `/inventory/ats/${styleData._id}`)
-                .then((styleAts) => ({
-                    isAvailableToSell: styleAts.ats > 0,
-                    isOnlineAvailableToSell: styleAts.onlineAts > 0,
-                    sizes: buildSizesArray(styleData.ats),
-                    storeInventory: buildStoreInventory(styleData.ats),
-                    stores: buildStoresArray(styleData.ats),
-                    objectID: styleData._id
-                }))
-                .catch(originalError => {
-                    throw createError.updateAlgoliaInventory.failedToGetApiResponse(originalError, styleData._id);
-                });
-        })
-        .catch(originalError => {
-            throw createError.updateAlgoliaInventory.failedToGetStyle(originalError, style);
-        })
-    )));
+        const styleData = await styles.findOne({ _id: style.styleId })
+            .catch(originalError => {
+                throw createError.updateAlgoliaInventory.failedToGetStyle(originalError, style);
+            });
+        if (!styleData || !styleData.ats || styleData.isOutlet) return null;
+        const styleSkus = await skus.find({ styleId: style.styleId }).toArray();
+        const styleAts = await productApiRequest(params, `/inventory/ats/${styleData._id}`)
+            .catch(originalError => {
+                throw createError.updateAlgoliaInventory.failedToGetApiResponse(originalError, styleData._id);
+            });
+        return {
+            isAvailableToSell: styleAts.ats > 0,
+            isOnlineAvailableToSell: styleAts.onlineAts > 0,
+            sizes: buildSizesArray(styleSkus),
+            storeInventory: buildStoreInventory(styleSkus),
+            stores: buildStoresArray(styleSkus),
+            objectID: styleData._id
+        };
+    })));
 
     const styleIdsForAvailabilitiesToBeSynced = stylesToCheck.map(style => style.styleId);
 
@@ -91,16 +93,15 @@ global.main = async function (params) {
     if (recordsToUpdate.length) {
         try {
             await index.partialUpdateObjects(recordsToUpdate, true);
-            log('Updated availability for styles ', stylesIdsToUpdate);
+            log(`Updated availability for styles: ${stylesIdsToUpdate}`);
         } catch (error) {
-            log('Failed to send styles to Algolia.', "ERROR");
-            log(params.messages, "ERROR");
+            log('Error: Failed to send styles to Algolia.');
             throw error;
         }
         await updateAlgoliaInventoryCount
             .insert({ batchSize: styleAvailabilitiesToBeSynced.length })
             .catch (() => {
-                log('Failed to update algolia inventory count.', "ERROR");
+                log('Error: failed to update algolia inventory count.');
             });
     }
 
