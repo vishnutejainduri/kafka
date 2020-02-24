@@ -9,7 +9,7 @@ const handleSkuAtsSizeUpdate = (
           const findSkuKey = atsKey + '.skuId';
           const findSizeKey = atsKey + '.$.size';
 
-          return styles.updateOne({ _id: skuData.styleId, [findSkuKey] : skuData._id }, { $set: { [findSizeKey] : skuData.size } })
+          return styles.updateOne({ _id: skuData.styleId, [findSkuKey] : skuData._id }, { $set: { [findSizeKey] : skuData.size } }, { upsert: true })
             .catch(originalError => {
                 throw createError.consumeSkuMessage.failedUpdateStyleAts(originalError, skuData);
             })
