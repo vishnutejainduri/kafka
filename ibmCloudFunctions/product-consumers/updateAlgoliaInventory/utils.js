@@ -2,7 +2,7 @@ const buildSizesArray = (
     ats,
 ) => {
       let sizes = ats.map((skuAts) => {
-        return skuAts.ats.length > 0
+        return (skuAts.ats || []).length > 0
           ? skuAts.size
           : null
       });
@@ -18,7 +18,7 @@ const buildStoreInventory = (
 ) => {
       const storeInventory = {};
       ats.forEach((skuAts) => {
-        skuAts.ats.forEach((storeAts) => {
+        (skuAts.ats || []).forEach((storeAts) => {
           storeInventory[storeAts.storeId] = storeInventory[storeAts.storeId] || []
           if (!storeInventory[storeAts.storeId].includes(skuAts.size) && skuAts.size) {
             storeInventory[storeAts.storeId].push(skuAts.size)
@@ -33,7 +33,7 @@ const buildStoresArray = (
 ) => {
       const stores = [];
       ats.forEach((skuAts) => {
-        skuAts.ats.forEach((storeAts) => {
+        (skuAts.ats || []).forEach((storeAts) => {
           if (!stores.includes(storeAts.storeId) && storeAts.storeId) {
             stores.push(storeAts.storeId)
           }

@@ -266,6 +266,7 @@
           algoliaIndexName: $ALGOLIA_INDEX_NAME
           algoliaAppId: $ALGOLIA_APP_ID
           stylesCollectionName: $STYLES_COLLECTION_NAME
+          skusCollectionName: $SKUS_COLLECTION_NAME
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
       update-algolia-facets:
         location: ./product-consumers/updateAlgoliaFacets/dist/bundle.js
