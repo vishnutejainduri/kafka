@@ -57,7 +57,7 @@ global.main = async function (params) {
                 throw createError.updateAlgoliaInventory.failedToGetStyle(originalError, style);
             });
         if (!styleData || !styleData.ats || styleData.isOutlet) return null;
-        const skusAts = await skus.find({ styleId: style.styleId }).toArray();
+        const styleSkus = await skus.find({ styleId: style.styleId }).toArray();
         const styleAts = await productApiRequest(params, `/inventory/ats/${styleData._id}`)
             .catch(originalError => {
                 throw createError.updateAlgoliaInventory.failedToGetApiResponse(originalError, styleData._id);
@@ -65,9 +65,9 @@ global.main = async function (params) {
         return {
             isAvailableToSell: styleAts.ats > 0,
             isOnlineAvailableToSell: styleAts.onlineAts > 0,
-            sizes: buildSizesArray(skusAts),
-            storeInventory: buildStoreInventory(skusAts),
-            stores: buildStoresArray(skusAts),
+            sizes: buildSizesArray(styleSkus),
+            storeInventory: buildStoreInventory(styleSkus),
+            stores: buildStoresArray(styleSkus),
             objectID: styleData._id
         };
     })));
