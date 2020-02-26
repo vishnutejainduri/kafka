@@ -1,6 +1,6 @@
 const bulkCalculateAvailableToSell = require('../');
 const getCollection = require('../../../lib/getCollection');
-const { calculateSkuAts, calculateStyleAts }  = require('../utils');
+const { calculateSkuAts, calculateAts }  = require('../utils');
 
 jest.mock("mongodb");
 
@@ -25,16 +25,14 @@ describe('bulkCalculateAvailableToSell', () => {
         response = await bulkCalculateAvailableToSell(params);
         expect(response).toEqual(undefined);
     });
-    it('valid calculateStyleAts execution', async () => {
+    it('valid calculateAts execution', async () => {
         const styles = await getCollection(params, params.stylesCollectionName)
         const skus = await getCollection(params, params.skusCollectionName)
         const stores = await getCollection(params, params.storesCollectionName)
         const inventory = await getCollection(params, params.inventoryCollectionName)
         const styleToRecalcAts = 'styleId';
 
-        const { skuAtsOperations, styleAts, styleOnlineAts } = await calculateStyleAts(styleToRecalcAts, styles, skus, stores, inventory);
-        expect(styleAts[0].ats).toEqual([]);
-        expect(styleOnlineAts[0].ats).toEqual([]);
+        const skuAtsOperations = await calculateAts(styleToRecalcAts, styles, skus, stores, inventory);
         expect(skuAtsOperations[0]).toBeInstanceOf(Promise);
     });
     it('valid calculateSkuAts execution', async () => {

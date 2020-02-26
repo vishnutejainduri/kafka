@@ -1,7 +1,7 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { addErrorHandling, log, createLog } = require('../utils');
-const { handleStyleAtsUpdate, handleSkuAtsUpdate } = require('./utils');
+const { handleSkuAtsUpdate } = require('./utils');
 
 global.main = async function (params) {
     log(createLog.params('calculateAvailableToSell', params));
@@ -17,13 +17,11 @@ global.main = async function (params) {
     let skus;
     let stores;
     let styleAvailabilityCheckQueue;
-    let bulkAtsRecalculateQueue;
     try {
         styles = await getCollection(params, params.stylesCollectionName);
         skus = await getCollection(params, params.skusCollectionName);
         stores = await getCollection(params, params.storesCollectionName);
         styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue);
-        bulkAtsRecalculateQueue = await getCollection(params, params.bulkAtsRecalculateQueue);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
@@ -45,23 +43,13 @@ global.main = async function (params) {
 
           if (!storeData || !skuData || !styleData || storeData.isOutlet) return null;
 
-          // Check if ats and sku ats have been initialized, if not, add to the bulk ats queue to do so
-          if (!styleData.ats || !skuData.ats || styleData.ats.filter((atsRecord) => atsRecord.skuId === atsData.skuId).length < 0) {
-            return bulkAtsRecalculateQueue.updateOne({ _id: atsData.styleId }, { $set: { _id: atsData.styleId, insertTimestamp: atsData.lastModifiedDate } }, { upsert: true })
-              .catch(originalError => {
-                  throw createError.calculateAvailableToSell.failedBulkAtsInsert(originalError, atsData);
-              })
-          }
-
           let atsUpdates = [];
 
           // Regular ats operations
-          atsUpdates.push(await handleStyleAtsUpdate(atsData, styles, false))
           atsUpdates.push(await handleSkuAtsUpdate(atsData, skus, false))
 
           if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27")) {
               // Online ats operations
-              atsUpdates.push(await handleStyleAtsUpdate(atsData, styles, true))
               atsUpdates.push(await handleSkuAtsUpdate(atsData, skus, true))
           }
 
