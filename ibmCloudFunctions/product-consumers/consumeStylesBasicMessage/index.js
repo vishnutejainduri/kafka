@@ -17,7 +17,7 @@ const handleError = function (err, msg) {
 };
 
 global.main = async function (params) {
-  console.log(JSON.stringify({
+    console.log(JSON.stringify({
       cfName: 'consumeStylesBasicMessage',
       params
     }));

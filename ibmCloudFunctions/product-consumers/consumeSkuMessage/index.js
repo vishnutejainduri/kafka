@@ -2,7 +2,6 @@ const { filterSkuMessage, parseSkuMessage } = require('../../lib/parseSkuMessage
 const { addErrorHandling, log, createLog } = require('../utils');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { handleSkuAtsSizeUpdate } = require('./utils');
 
 global.main = async function (params) {
     log(createLog.params('consumeSkuMessage', params));
@@ -16,10 +15,8 @@ global.main = async function (params) {
     }
 
     let skus;
-    let styles;
     try {
         skus = await getCollection(params);
-        styles = await getCollection(params, params.stylesCollectionName);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
@@ -28,29 +25,20 @@ global.main = async function (params) {
         .filter(addErrorHandling(filterSkuMessage))
         .map(addErrorHandling(parseSkuMessage))
         .map(addErrorHandling(async (skuData) => {
-                  const skuOperations = [];
                   const existingDocument = await skus.findOne({ _id: skuData._id })
 
                   const skuUpdate = { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: skuData }
                   if (existingDocument && existingDocument.lastModifiedDate) {
-                    skuOperations.push(skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, skuUpdate).catch(originalError => {
-                                        throw createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
-                                    })
-                    )
-                  } else {
-                    skuOperations.push(skus.updateOne({ _id: skuData._id }, skuUpdate, { upsert: true }).catch(originalError => {
-                                        throw createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
-                                    })
-                    )
-                  }
-
-                  skuOperations.push(handleSkuAtsSizeUpdate (skuData, styles, false));
-                  skuOperations.push(handleSkuAtsSizeUpdate (skuData, styles, true));
-
-                  return Promise.all(skuOperations)
+                    return skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, skuUpdate)
                                     .catch(originalError => {
-                                        throw createError.consumeSkuMessage.failedAllUpdates(originalError, skuData);
+                                        throw createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
                                     })
+                  } else {
+                    return skus.updateOne({ _id: skuData._id }, skuUpdate, { upsert: true })
+                                    .catch(originalError => {
+                                        throw createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
+                                    })
+                  }
             })
         )
     ).then((results) => {

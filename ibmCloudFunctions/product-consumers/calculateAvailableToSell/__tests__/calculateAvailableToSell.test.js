@@ -1,6 +1,6 @@
 const getCollection = require('../../../lib/getCollection');
 const calculateAvailableToSell = require('../');
-const { handleStyleAtsUpdate, handleSkuAtsUpdate } = require('../utils');
+const { handleSkuAtsUpdate } = require('../utils');
 
 jest.mock("mongodb");
 
@@ -41,24 +41,6 @@ describe('calculateAvailableToSell', () => {
         const response = await calculateAvailableToSell(params);
         // returns nothing/undefined if successfully run
         expect(response).toEqual(undefined);
-    });
-});
-
-describe('handleSyleAtsUpdate', () => {
-    it('missing all params; should fail', async () => {
-        const styles = await getCollection(params, params.stylesCollectionName);
-
-        let atsUpdates = [await handleStyleAtsUpdate({}, styles, false)];
-        atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
-        expect(atsUpdates.length).toBe(0);
-    });
-
-    it('add to empty ats', async () => {
-        const styles = await getCollection(params, params.stylesCollectionName);
-
-        let atsUpdates = [await handleStyleAtsUpdate(increaseAtsTestData, styles, false)];
-        atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
-        expect(atsUpdates.length).toBe(1);
     });
 });
 
