@@ -1,36 +1,7 @@
 const getCollection = require('../../lib/getCollection');
 const { addErrorHandling, log, createLog } = require('../utils');
 const createError = require('../../lib/createError');
-const { HIDDEN_STORES } = require('../../lib/constants');
-const OUTLET_ID = "3";
-
-const parseStoreMessage = function (msg) {
-    return {
-        _id: msg.value.SITE_ID,
-        id: msg.value.SITE_ID,
-        businessUnitId: msg.value.BUSINESS_UNIT_ID,
-        subType: msg.value.SUB_TYPE,
-        daysOpenPerWeek: msg.value.DAYS_OPEN_PER_WEEK,
-        name: msg.value.NAME,
-        address1: msg.value.ADDRESS_1,
-        address2: msg.value.ADDRESS_2,
-        address3: msg.value.ADDRESS_3,
-        address4: msg.value.ADDRESS_4,
-        city: msg.value.CITY,
-        stateId: msg.value.STATE_ID,
-        countryId: msg.value.COUNTRY_ID,
-        zipCode: msg.value.ZIP_CODE,
-        telephone: msg.value.TELEPHONE,
-        fax: msg.value.FAX,
-        latitude: msg.value.LATITUDE,
-        longitude: msg.value.LONGITUDE,
-        operationalStatus: msg.value.OPERATIONAL_STATUS,
-        siteMgrEmployeeId: msg.value.SITE_MGR_EMPLOYEE_ID,
-        siteMgrSubType: msg.value.SITE_MGR_SUB_TYPE,
-        isVisible: !HIDDEN_STORES.includes(msg.value.SITE_ID),
-        isOutlet: msg.value.ZONE_ID === OUTLET_ID
-    };
-};
+const { filterStoreMessage, parseStoreMessage } = require('../../lib/parseStoreMessage');
 
 global.main = async function (params) {
     log(createLog.params('consumeStoresMessage', params));
@@ -54,7 +25,7 @@ global.main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter(addErrorHandling((msg) => msg.topic === params.topicName))
+        .filter(addErrorHandling(filterStoreMessage))
         .map(addErrorHandling(parseStoreMessage))
         .map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: storeData }, { upsert: true })
             .then(() => log('Updated/inserted store ' + storeData._id))
