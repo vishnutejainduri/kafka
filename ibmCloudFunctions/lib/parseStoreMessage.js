@@ -22,17 +22,15 @@ function parseStoreMessage(msg) {
         address1: msg.value.ADDRESS1,
         address2: msg.value.ADDRESS2,
         city: msg.value.CITY,
-        state: msg.value.STATE,
-        postalZip: msg.value.POSTALZIP,
-        telephone: msg.value.TELEPHONE,
-        fax: msg.value.FAX,
+        stateId: msg.value.STATE,
+        zipCode: msg.value.POSTALZIP,
         latitude: msg.value.LATITUDE,
         longitude: msg.value.LONGITUDE,
-        operationalStatus: msg.value.OPERATIONAL_STATUS,
-        siteMgrEmployeeId: msg.value.SITE_MGR_EMPLOYEE_ID,
-        siteMgrSubType: msg.value.SITE_MGR_SUB_TYPE,
-        isVisible: !HIDDEN_STORES.includes(msg.value.SITE_ID),
-        isOutlet: msg.value.ZONE_ID === OUTLET_ID
+        canOnlineFulfill: msg.value.FULFILL_STATUS === 'Y' ? true : false,
+        canFulfillDep27: msg.value.DEP27_FULFILL_STATUS === 'Y' ? true : false,
+        canPickup: msg.value.PICKUP_STATUS === 'Y' ? true : false,
+        storeLookupStatus: msg.value.STORELOOKUP_STATUS === 'Y' ? true : false,
+        lastModifiedDate: msg.value.LASTMODIFIEDDATE
     };
 };
 

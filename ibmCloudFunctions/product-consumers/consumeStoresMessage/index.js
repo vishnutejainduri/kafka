@@ -18,8 +18,12 @@ global.main = async function (params) {
     }
 
     let stores;
+    let inventory;
+    let bulkAtsRecalculateQueue;
     try {
         stores = await getCollection(params);
+        inventory = await getCollection(params, params.inventoryCollectionName);
+        bulkAtsRecalculateQueue = await getCollection(params, params.bulkAtsRecalculateQueue);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
@@ -27,12 +31,36 @@ global.main = async function (params) {
     return Promise.all(params.messages
         .filter(addErrorHandling(filterStoreMessage))
         .map(addErrorHandling(parseStoreMessage))
-        .map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: storeData }, { upsert: true })
+        .map(addErrorHandling(async (storeData) => {
+            const storeOperations = [];
+            const currentStoreData = await stores.findOne({ _id: storeData._id });
+
+            // delete store to later do a complete replace
+            await stores.remove({ _id: storeData._id }, { justOne: true });
+
+            if (currentStoreData.canOnlineFulfill !== storeData.canOnlineFulfill) {
+              let bulkStyleAtsUpdates = bulkAtsRecalculateQueue.initializeUnorderedBulkOp();
+              bulkStyleAtsUpdates = await handleStyleAtsRecalc(bulkStyleAtsUpdates, storeData, inventory);
+
+              storeOperations.push(bulkStyleAtsUpdates.execute()
+                                          .catch(originalError => {
+                                              throw createError.consumeStoresFulfillMessage.failedBulkAtsInsert(originalError, bulkStyleAtsUpdates);
+                                          }));
+            }
+
+            storeOperations.push(stores.updateOne({ _id: storeData._id }, { $set: storeData })
+                                .catch(originalError => {
+                                    throw createError.consumeStoresFulfillMessage.failedToUpdateStore(originalError, storeData._id);
+                                }));
+
+            return Promise.all(storeOperations);
+        }))
+        /*.map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: storeData }, { upsert: true })
             .then(() => log('Updated/inserted store ' + storeData._id))
             .catch(originalError => {
                 return createError.consumeStoresMessage.failedToUpdateStore(originalError, storeData._id);
             })
-        ))
+        ))*/
     )
     .then((results) => {
         const errors = results.filter((res) => res instanceof Error);
