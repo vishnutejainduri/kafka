@@ -1,7 +1,7 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { addErrorHandling, log, createLog } = require('../utils');
-const { calculateStyleAts } = require('./utils');
+const { calculateAts } = require('./utils');
 
 global.main = async function (params) {
     log(createLog.params('bulkCalculateAvailableToSell', params));
@@ -31,13 +31,9 @@ global.main = async function (params) {
 
     return Promise.all(stylesToRecalcAts
         .map(addErrorHandling(async (styleToRecalcAts) => {
-          const atsCalculations = await calculateStyleAts(styleToRecalcAts, styles, skus, stores, inventory);
-          if (atsCalculations === null) return null;
-          const { skuAtsOperations, styleAts, styleOnlineAts } = atsCalculations;
-          const operationResults = await Promise.all([styles.updateOne({ _id: styleToRecalcAts._id }, { $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } }, $set: { ats: styleAts, onlineAts: styleOnlineAts } }, { upsert: true })
-                              .catch(originalError => {
-                                  throw createError.bulkCalculateAvailableToSell.failedUpdateStyleAts(originalError, styleToRecalcAts);
-                              })].concat(skuAtsOperations))
+          const skuAtsOperations = await calculateAts(styleToRecalcAts, styles, skus, stores, inventory);
+          if (skuAtsOperations === null) return null;
+          const operationResults = await Promise.all(skuAtsOperations)
                               .catch(originalError => {
                                   throw createError.bulkCalculateAvailableToSell.failedAllAtsUpdates(originalError, stylesToRecalcAts);
                               })

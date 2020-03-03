@@ -3,7 +3,6 @@ const messagesLogs = require('../../lib/messagesLogs');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 const createError = require('../../lib/createError');
 
-const { handleStyleUpdate } = require('./utils');
 const { createLog, addErrorHandling, log } = require('../utils');
 
 global.main = async function (params) {
@@ -23,12 +22,8 @@ global.main = async function (params) {
     }
 
     let inventory;
-    let styles;
-    let skus;
     try {
         inventory = await getCollection(params);
-        styles = await getCollection(params, params.stylesCollectionName);
-        skus = await getCollection(params, params.skusCollectionName);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
@@ -38,29 +33,15 @@ global.main = async function (params) {
         .map(addErrorHandling(parseSkuInventoryMessage))
         .map(addErrorHandling(async (inventoryData) => {
             const inventoryLastModifiedDate = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1 } );
-            if (inventoryLastModifiedDate && inventoryData.lastModifiedDate <= inventoryLastModifiedDate.lastModifiedDate) return null;
+            if (inventoryLastModifiedDate && inventoryData.lastModifiedDate <= inventoryLastModifiedDate.lastModifiedDate) {
+               return null;
+            }
 
-            const inventoryUpdatePromise = inventory
+            return inventory
                 .updateOne({ _id: inventoryData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: inventoryData }, { upsert: true })
                 .then(() => inventoryData)
                 .catch(originalError => {
                     throw createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
-                });
-
-            return Promise.all([inventoryUpdatePromise].concat(!inventoryData.skuId
-                ? []
-                : handleStyleUpdate(
-                    skus,
-                    styles,
-                    {
-                        skuId: inventoryData.skuId,
-                        storeId: inventoryData.storeId,
-                        availableToSell: inventoryData.availableToSell,
-                        styleId: inventoryData.styleId
-                    }
-                )))
-                .catch(originalError => {
-                    throw createError.consumeInventoryMessage.failedUpdates(originalError, inventoryData);
                 });
             })
         )
@@ -68,7 +49,6 @@ global.main = async function (params) {
     .then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         const successes = results.filter((res) => !(res instanceof Error) && res);
-        const successResults = successes.map((results) => results[0]);
 
         if (errors.length > 0) {
             const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
@@ -77,17 +57,12 @@ global.main = async function (params) {
 
             log('Failed to update some inventory records', "ERROR");
             log(e, "ERROR");
-            
-            return {
-              messages: successResults,
-              ...paramsExcludingMessages
-            };
-        } else {
-            return {
-              messages: successResults,
-              ...paramsExcludingMessages
-            };
         }
+
+        return {
+            ...paramsExcludingMessages,
+            messages: successes
+        };
     })
     .catch(originalError => {
         throw createError.consumeInventoryMessage.failed(originalError, params);

@@ -43,7 +43,7 @@ const calculateSkuAts = async (
 
 module.exports = {
   calculateSkuAts: calculateSkuAts,
-  calculateStyleAts: async (
+  calculateAts: async (
     styleToRecalcAts,
     styles,
     skus,
@@ -58,8 +58,6 @@ module.exports = {
             log(`Could not find style data for _id: ${styleToRecalcAts._id}`);
             return null;
           }
-          const styleAts = [];
-          const styleOnlineAts = [];
 
           const skuRecords = await skus.find({ styleId: styleToRecalcAts._id }).toArray()
           .catch(originalError => {
@@ -71,17 +69,6 @@ module.exports = {
               try {
                 const { skuAts, skuOnlineAts } = await calculateSkuAts(skuRecord, styleData, stores, inventory);
 
-                styleAts.push({
-                  skuId: skuRecord._id,
-                  threshold: skuRecord.threshold,
-                  ats: skuAts
-                })
-                styleOnlineAts.push({
-                  skuId: skuRecord._id,
-                  threshold: skuRecord.threshold,
-                  ats: skuOnlineAts
-                })
-
                 skuAtsOperations.push(skus.updateOne({ _id: skuRecord._id }, { $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } }, $set: { ats: skuAts, onlineAts: skuOnlineAts } }, { upsert: true })
                 .catch(originalError => {
                     throw createError.bulkCalculateAvailableToSell.failedUpdateSkuAts(originalError, skuRecord);
@@ -91,11 +78,6 @@ module.exports = {
               }
           })))
 
-          return {
-            skuAtsOperations,
-            styleAts,
-            styleOnlineAts
-          }; 
+          return skuAtsOperations;
   }
 };
-
