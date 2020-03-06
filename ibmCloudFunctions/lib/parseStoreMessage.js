@@ -16,7 +16,7 @@ function parseStoreMessage(msg) {
         throw new Error('Can only parse store update messages');
     }
 
-    return {
+    const storeObj = {
         _id: msg.value.SITE_ID,
         id: msg.value.SITE_ID,
         name: msg.value.NAME,
@@ -25,7 +25,7 @@ function parseStoreMessage(msg) {
         city: msg.value.CITY,
         stateId: msg.value.STATE,
         zipCode: msg.value.POSTALZIP,
-        phone: msg.value.PHONE,
+        telephone: msg.value.PHONE,
         latitude: msg.value.LATITUDE,
         longitude: msg.value.LONGITUDE,
         canOnlineFulfill: msg.value.FULFILL_STATUS === 'Y' ? true : false,
@@ -39,6 +39,15 @@ function parseStoreMessage(msg) {
         subType: msg.value.SUB_TYPE,
         lastModifiedDate: msg.value.LASTMODIFIEDDATE
     };
+
+    const currentDate = new Date().getTime();
+
+    storeObj['isVisible'] = storeObj.isOutlet
+                            ? false
+                            : !storeObj.isOutlet && storeObj.posEnabled && (currentDate > storeObj.dateClosed || storeObj === null)
+                              ? true
+                              : false
+    return storeObj;
 };
 
 module.exports = {

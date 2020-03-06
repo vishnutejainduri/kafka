@@ -33,12 +33,10 @@ global.main = async function (params) {
         .map(addErrorHandling(parseStoreMessage))
         .map(addErrorHandling(async (storeData) => {
             const storeOperations = [];
-            const currentStoreData = await stores.findOne({ _id: storeData._id });
+            //const currentStoreData = await stores.findOne({ _id: storeData._id });
 
             // delete store to later do a complete replace
-            await stores.remove({ _id: storeData._id }, { justOne: true });
-
-            if (currentStoreData.canOnlineFulfill !== storeData.canOnlineFulfill) {
+            /*if (currentStoreData.canOnlineFulfill !== storeData.canOnlineFulfill) {
               let bulkStyleAtsUpdates = bulkAtsRecalculateQueue.initializeUnorderedBulkOp();
               bulkStyleAtsUpdates = await handleStyleAtsRecalc(bulkStyleAtsUpdates, storeData, inventory);
 
@@ -46,9 +44,9 @@ global.main = async function (params) {
                                           .catch(originalError => {
                                               throw createError.consumeStoresFulfillMessage.failedBulkAtsInsert(originalError, bulkStyleAtsUpdates);
                                           }));
-            }
+            }*/
 
-            storeOperations.push(stores.updateOne({ _id: storeData._id }, { $set: storeData })
+            storeOperations.push(stores.updateOne({ _id: storeData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: storeData }, { upsert: true })
                                 .catch(originalError => {
                                     throw createError.consumeStoresFulfillMessage.failedToUpdateStore(originalError, storeData._id);
                                 }));
