@@ -4,9 +4,8 @@ const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('consumeSkuMessage', params));
-    messagesLogs.storeBatch(params);
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
@@ -52,6 +51,13 @@ global.main = async function (params) {
             throw e;
         }
     });
+}
+
+global.main = async function (params) {
+  return Promise.all([
+      main(params),
+      messagesLogs.storeBatch(params)
+  ]).then(([result]) => result);
 }
 
 module.exports = global.main;

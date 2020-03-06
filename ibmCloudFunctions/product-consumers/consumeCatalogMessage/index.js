@@ -4,9 +4,8 @@ const createError = require('../../lib/createError');
 const getCollection = require('../../lib/getCollection');
 const messagesLogs = require('../../lib/messagesLogs');
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('consumeCatalogMessage', params));
-    messagesLogs.storeBatch(params);
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
@@ -88,6 +87,13 @@ global.main = async function (params) {
     .catch(originalError => {
         throw createError.consumeCatalogMessage.failed(originalError, params);
     });
+}
+
+global.main = async function (params) {
+  return Promise.all([
+      main(params),
+      messagesLogs.storeBatch(params)
+  ]).then(([result]) => result);
 }
 
 module.exports = global.main;

@@ -17,12 +17,11 @@ const handleError = function (err, msg) {
   return err;
 };
 
-global.main = async function (params) {
+const main = async function (params) {
     console.log(JSON.stringify({
       cfName: 'consumeStylesBasicMessage',
       params
     }));
-    messagesLogs.storeBatch(params);
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
@@ -80,6 +79,13 @@ global.main = async function (params) {
             throw e;
         }
     });
+}
+
+global.main = async function (params) {
+  return await Promise.all([
+      main(params),
+      messagesLogs.storeBatch(params)
+  ])[0];
 }
 
 module.exports = global.main;

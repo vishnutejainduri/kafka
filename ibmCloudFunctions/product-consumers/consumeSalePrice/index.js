@@ -11,9 +11,8 @@ const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling } = require('../utils');
 const messagesLogs = require('../../lib/messagesLogs');
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params("consumeSalePrice", params));
-    messagesLogs.storeBatch(params);
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
@@ -71,5 +70,13 @@ global.main = async function (params) {
         error
     }));
 };
+
+global.main = async function (params) {
+  return Promise.all([
+      main(params),
+      messagesLogs.storeBatch(params)
+  ]).then(([result]) => result);
+}
+
 
 module.exports = global.main;

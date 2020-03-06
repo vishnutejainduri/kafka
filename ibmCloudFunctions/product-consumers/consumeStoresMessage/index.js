@@ -34,9 +34,8 @@ const parseStoreMessage = function (msg) {
     };
 };
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('consumeStoresMessage', params));
-    messagesLogs.storeBatch(params);
 
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
@@ -79,6 +78,13 @@ global.main = async function (params) {
     .catch(originalError => {
         throw createError.consumeStoresMessage.failed(originalError, paramsExcludingMessages);
     });
+}
+
+global.main = async function (params) {
+  return Promise.all([
+      main(params),
+      messagesLogs.storeBatch(params)
+  ]).then(([result]) => result);
 }
 
 module.exports = global.main;

@@ -5,9 +5,8 @@ const createError = require('../../lib/createError');
 
 const { createLog, addErrorHandling, log } = require('../utils');
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('consumeSkuInventoryMessage', params));
-    messagesLogs.storeBatch(params);
 
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
@@ -68,5 +67,12 @@ global.main = async function (params) {
         throw createError.consumeInventoryMessage.failed(originalError, params);
     });
 };
+
+global.main = async function (params) {
+  return Promise.all([
+      main(params),
+      messagesLogs.storeBatch(params)
+  ]).then(([result]) => result);
+}
 
 module.exports = global.main;
