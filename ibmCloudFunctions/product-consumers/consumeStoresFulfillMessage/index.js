@@ -2,6 +2,7 @@ const getCollection = require('../../lib/getCollection');
 const { addErrorHandling, log, createLog } = require('../utils');
 const createError = require('../../lib/createError');
 const { handleStyleAtsRecalc } = require('./utils');
+const messagesLogs = require('../../lib/messagesLogs');
 
 const parseStoreFulfillMessage = function (msg) {
     return {
@@ -11,8 +12,9 @@ const parseStoreFulfillMessage = function (msg) {
     };
 };
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('consumeStoresFulfillMessage', params));
+
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
     const { messages, ...paramsExcludingMessages } = params;
@@ -73,6 +75,13 @@ global.main = async function (params) {
     .catch(originalError => {
         throw createError.consumeStoresFulfillMessage.failed(originalError, paramsExcludingMessages);
     });
+}
+
+global.main = async function (params) {
+  return Promise.all([
+      main(params),
+      messagesLogs.storeBatch(params)
+  ]).then(([result]) => result);
 }
 
 module.exports = global.main;
