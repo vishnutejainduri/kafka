@@ -48,7 +48,7 @@ function parseStoreMessage(msg) {
                               ? true
                               : false
     return storeObj;
-};
+}
 
 module.exports = {
     parseStoreMessage,

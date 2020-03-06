@@ -2,6 +2,7 @@ const getCollection = require('../../lib/getCollection');
 const { addErrorHandling, log, createLog } = require('../utils');
 const createError = require('../../lib/createError');
 const { filterStoreMessage, parseStoreMessage } = require('../../lib/parseStoreMessage');
+const { getBulkAtsStyles } = require('./utils');
 
 global.main = async function (params) {
     log(createLog.params('consumeStoresMessage', params));
@@ -33,18 +34,22 @@ global.main = async function (params) {
         .map(addErrorHandling(parseStoreMessage))
         .map(addErrorHandling(async (storeData) => {
             const storeOperations = [];
-            //const currentStoreData = await stores.findOne({ _id: storeData._id });
+            const currentStoreData = await stores.findOne({ _id: storeData._id });
 
-            // delete store to later do a complete replace
-            /*if (currentStoreData.canOnlineFulfill !== storeData.canOnlineFulfill) {
-              let bulkStyleAtsUpdates = bulkAtsRecalculateQueue.initializeUnorderedBulkOp();
-              bulkStyleAtsUpdates = await handleStyleAtsRecalc(bulkStyleAtsUpdates, storeData, inventory);
+            // add to bulk ats queue all relavent styles if any ats related attributes are changing
+            if ((currentStoreData.canOnlineFulfill !== storeData.canOnlineFulfill) ||
+                (currentStoreData.isOutlet !== storeData.isOutlet) ||
+                (currentStoreData.isVisible !== storeData.isVisible)) {
+                  let bulkStyleAtsUpdates = bulkAtsRecalculateQueue.initializeUnorderedBulkOp();
+                  bulkStyleAtsUpdates = await getBulkAtsStyles(bulkStyleAtsUpdates, storeData, inventory);
 
-              storeOperations.push(bulkStyleAtsUpdates.execute()
-                                          .catch(originalError => {
-                                              throw createError.consumeStoresFulfillMessage.failedBulkAtsInsert(originalError, bulkStyleAtsUpdates);
-                                          }));
-            }*/
+                  if (bulkStyleAtsUpdates) {
+                    storeOperations.push(bulkStyleAtsUpdates.execute()
+                                                .catch(originalError => {
+                                                    throw createError.consumeStoresFulfillMessage.failedBulkAtsInsert(originalError, bulkStyleAtsUpdates);
+                                                }));
+                  }
+            }
 
             storeOperations.push(stores.updateOne({ _id: storeData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: storeData }, { upsert: true })
                                 .catch(originalError => {
@@ -53,12 +58,6 @@ global.main = async function (params) {
 
             return Promise.all(storeOperations);
         }))
-        /*.map(addErrorHandling((storeData) => stores.updateOne({ _id: storeData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: storeData }, { upsert: true })
-            .then(() => log('Updated/inserted store ' + storeData._id))
-            .catch(originalError => {
-                return createError.consumeStoresMessage.failedToUpdateStore(originalError, storeData._id);
-            })
-        ))*/
     )
     .then((results) => {
         const errors = results.filter((res) => res instanceof Error);
