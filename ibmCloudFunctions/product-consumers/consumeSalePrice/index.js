@@ -9,9 +9,11 @@ const {
 } = require('../../lib/parsePriceMessage');
 const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling } = require('../utils');
+const messagesLogs = require('../../lib/messagesLogs');
 
 global.main = async function (params) {
     log(createLog.params("consumeSalePrice", params));
+    messagesLogs.storeBatch(params);
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');

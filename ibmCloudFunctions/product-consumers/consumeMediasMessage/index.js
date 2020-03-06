@@ -1,12 +1,14 @@
 const { parseMediaMessage } = require('../../lib/parseMediaMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
+const messagesLogs = require('../../lib/messagesLogs');
 
 global.main = async function (params) {
     console.log(JSON.stringify({
         cfName: 'consumeMediasMessage',
         params
     }));
+    messagesLogs.storeBatch(params);
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');

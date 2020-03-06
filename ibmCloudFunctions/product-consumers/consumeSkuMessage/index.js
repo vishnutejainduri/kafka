@@ -2,9 +2,11 @@ const { filterSkuMessage, parseSkuMessage } = require('../../lib/parseSkuMessage
 const { addErrorHandling, log, createLog } = require('../utils');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
+const messagesLogs = require('../../lib/messagesLogs');
 
 global.main = async function (params) {
     log(createLog.params('consumeSkuMessage', params));
+    messagesLogs.storeBatch(params);
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');

@@ -2,9 +2,12 @@ const { parseThresholdMessage } = require('../../lib/parseThresholdMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { addErrorHandling, log, createLog } = require('../utils');
+const messagesLogs = require('../../lib/messagesLogs');
 
 global.main = async function (params) {
     log(createLog.params('consumeThresholdMessage', params));
+    messagesLogs.storeBatch(params);
+
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
     const { messages, ...paramsExcludingMessages } = params;

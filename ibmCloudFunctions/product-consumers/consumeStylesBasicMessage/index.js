@@ -1,6 +1,7 @@
 const { parseStyleBasicMessage, filterStyleBasicMessage } = require('../../lib/parseStyleBasicMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
+const messagesLogs = require('../../lib/messagesLogs');
 
 const handleError = function (err, msg) {
   console.error('Problem with document ' + msg._id);
@@ -21,6 +22,7 @@ global.main = async function (params) {
       cfName: 'consumeStylesBasicMessage',
       params
     }));
+    messagesLogs.storeBatch(params);
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');

@@ -1,6 +1,7 @@
 const getCollection = require('../../lib/getCollection');
 const { addErrorHandling, log, createLog } = require('../utils');
 const createError = require('../../lib/createError');
+const messagesLogs = require('../../lib/messagesLogs');
 
 const parseDep27FulfillMessage = function (msg) {
     return {
@@ -12,6 +13,8 @@ const parseDep27FulfillMessage = function (msg) {
 
 global.main = async function (params) {
     log(createLog.params('consumeDep27FulfillMessage', params));
+    messagesLogs.storeBatch(params);
+
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
     const { messages, ...paramsExcludingMessages } = params;

@@ -2,9 +2,11 @@ const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyle
 const { addErrorHandling, log, createLog } = require('../utils');
 const createError = require('../../lib/createError');
 const getCollection = require('../../lib/getCollection');
+const messagesLogs = require('../../lib/messagesLogs');
 
 global.main = async function (params) {
     log(createLog.params('consumeCatalogMessage', params));
+    messagesLogs.storeBatch(params);
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
