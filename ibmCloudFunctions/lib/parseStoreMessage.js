@@ -1,6 +1,7 @@
 'use strict';
 
 const TOPIC_NAME = 'stores-connect-jdbc';
+const OUTLET_ID = "3";
 
 function filterStoreMessage(msg) {
     if (msg.topic !== TOPIC_NAME) {
@@ -24,12 +25,18 @@ function parseStoreMessage(msg) {
         city: msg.value.CITY,
         stateId: msg.value.STATE,
         zipCode: msg.value.POSTALZIP,
+        phone: msg.value.PHONE,
         latitude: msg.value.LATITUDE,
         longitude: msg.value.LONGITUDE,
         canOnlineFulfill: msg.value.FULFILL_STATUS === 'Y' ? true : false,
         canFulfillDep27: msg.value.DEP27_FULFILL_STATUS === 'Y' ? true : false,
         canPickup: msg.value.PICKUP_STATUS === 'Y' ? true : false,
         storeLookupStatus: msg.value.STORELOOKUP_STATUS === 'Y' ? true : false,
+        daysOpenPerWeek: msg.value.DAYS_OPEN_PER_WEEK,
+        isOutlet: msg.value.ZONE_ID === OUTLET_ID,
+        dateClosed: msg.value.DATE_CLOSED,
+        posEnabled: msg.value.POS_ENABLED === 'Y' ? true : false,
+        subType: msg.value.SUB_TYPE,
         lastModifiedDate: msg.value.LASTMODIFIEDDATE
     };
 };
