@@ -3,8 +3,9 @@ const createError = require('../../lib/createError');
 const { addErrorHandling, log, createLog } = require('../utils');
 const { handleSkuAtsUpdate } = require('./utils');
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('calculateAvailableToSell', params));
+
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
     const { messages, ...paramsExcludingMessages } = params;
@@ -80,5 +81,11 @@ global.main = async function (params) {
         throw createError.calculateAvailableToSell.failed(originalError, paramsExcludingMessages);
     });
 };
+
+global.main = async function (params) {
+  return Promise.all([
+      main(params)
+  ]).then(([result]) => result);
+}
 
 module.exports = global.main;

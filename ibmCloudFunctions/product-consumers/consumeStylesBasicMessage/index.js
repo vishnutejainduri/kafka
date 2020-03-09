@@ -1,6 +1,7 @@
 const { parseStyleBasicMessage, filterStyleBasicMessage } = require('../../lib/parseStyleBasicMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
+const messagesLogs = require('../../lib/messagesLogs');
 
 const handleError = function (err, msg) {
   console.error('Problem with document ' + msg._id);
@@ -16,7 +17,7 @@ const handleError = function (err, msg) {
   return err;
 };
 
-global.main = async function (params) {
+const main = async function (params) {
     console.log(JSON.stringify({
       cfName: 'consumeStylesBasicMessage',
       params
@@ -78,6 +79,13 @@ global.main = async function (params) {
             throw e;
         }
     });
+}
+
+global.main = async function (params) {
+  return await Promise.all([
+      main(params),
+      messagesLogs.storeBatch(params)
+  ])[0];
 }
 
 module.exports = global.main;
