@@ -4,10 +4,7 @@ const getBulkAtsStyles = async (
   inventory
 ) => {
               const unpaddedStoreId = parseInt(storeData._id, 10) 
-              console.log('unpaddedStoreId', unpaddedStoreId);
-              
               const recalcAtsStyleIds = await inventory.aggregate([{ $match: { storeId: unpaddedStoreId, availableToSell: { $gt:0 } } }, { $group: { _id: '$styleId' } } ]).toArray()
-              console.log('recalcAtsStyleIds', recalcAtsStyleIds);
               if (recalcAtsStyleIds.length <= 0) {
                 return null;
               }
