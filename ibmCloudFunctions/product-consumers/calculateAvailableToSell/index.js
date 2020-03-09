@@ -2,6 +2,7 @@ const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { addErrorHandling, log, createLog } = require('../utils');
 const { handleSkuAtsUpdate } = require('./utils');
+const messagesLogs = require('../../lib/messagesLogs');
 
 const main = async function (params) {
     log(createLog.params('calculateAvailableToSell', params));
@@ -84,7 +85,11 @@ const main = async function (params) {
 
 global.main = async function (params) {
   return Promise.all([
-      main(params)
+      main(params),
+      messagesLogs.storeBatch({
+          ...params,
+          messages: null // original messages saved in the first action of the sequence
+      })
   ]).then(([result]) => result);
 }
 
