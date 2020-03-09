@@ -91,10 +91,18 @@ async function getValuesCollection({
 async function storeBatch(params) {
     try {
         const collection = await getMessagesCollection(params);
+        const transactionId = process.env.__OW_TRANSACTION_ID;
+        let messages = params.messages;
+        if (params.messages === null) {
+            // for messages in a sequence, only the first step has the messages as stored in Kafka topics
+            // for the subsequent steps we copy the messages e.g. see calculateAvailableToSell/index.js 
+            messages = (await collection.findOne({ transactionId }, { projection: { messages: 1 }})).messages;
+        }
         const result = await collection
             .insertOne({
                 activationId: process.env.__OW_ACTIVATION_ID,
-                messages: params.messages,
+                transactionId,
+                messages,
                 resolved: false
             });
         return result;
