@@ -35,7 +35,7 @@ const getCollection = (collectionName) => {
         case 'stores':
             return {
                 updateOne: async ({ _id }) => ({ _id }),
-                findOne: async () => ({ _id: 'success', canOnlineFulfill: true }),
+                findOne: async () => ({ _id: 'success', canOnlineFulfill: true, isOutlet: false, isVisible: true }),
             }; 
         case 'skus':
             return {
@@ -52,6 +52,9 @@ const getCollection = (collectionName) => {
         case 'inventory':
             return {
                 find: () => ({
+                  toArray: async () => ([{ _id: 'success' }])
+                }),
+                aggregate: () => ({
                   toArray: async () => ([{ _id: 'success' }])
                 })
             }; 
@@ -76,7 +79,15 @@ const getCollection = (collectionName) => {
                   }),
                 }),
                 deleteMany: async () => ({}),
-                initializeUnorderedBulkOp: async () => ({})
+                initializeUnorderedBulkOp: () => ({
+                  find: () => ({
+                    upsert: () => ({
+                      updateOne: async () => ({
+                        _id: 'success'
+                      })
+                    })
+                  })
+                })
             }; 
         case 'styles':
             return {
