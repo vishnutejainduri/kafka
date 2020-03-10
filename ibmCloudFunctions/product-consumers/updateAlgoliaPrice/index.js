@@ -70,7 +70,8 @@ global.main = async function (params) {
             const algoliaUpdatedPayload = generateUpdateFromParsedMessage (update, priceData, styleData);
             const priceHasNotChanged = priceData
                 ? (algoliaUpdatedPayload.onlineSalePrice === priceData.onlineSalePrice
-                    && algoliaUpdatedPayload.inStoreSalePrice === priceData.inStoreSalePrice)
+                    && algoliaUpdatedPayload.inStoreSalePrice === priceData.inStoreSalePrice
+                    && algoliaUpdatedPayload.currentPrice === priceData.currentPrice)
                 : (algoliaUpdatedPayload.onlineSalePrice === null
                     && algoliaUpdatedPayload.inStoreSalePrice === null);
             if (priceHasNotChanged) {
