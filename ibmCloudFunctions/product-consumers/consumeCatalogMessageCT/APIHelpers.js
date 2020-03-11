@@ -2,6 +2,7 @@ const fetch = require('node-fetch');
 
 const CT_ENDPOINT = 'https://api.us-central1.gcp.commercetools.com/harryrosen-dev'; // TODO: move to constants or ENV file
 const BEARER_TOKEN = process.env.BEARER_TOKEN; // TODO: switch to using secret to fetch fresh bearer token
+const PRODUCT_TYPE_REFERENCE = '3f69b1dd-631c-4913-b015-c20c083a7940'; // TODO: move to constants file
 
 const handleAPIError = err => {
   console.error('TODO: add proper error handling');
@@ -44,13 +45,14 @@ const getActionsFromStyle = style => {
   const customAttributesToUpdate = Object.keys(style).filter(isCustomAttribute);
 
   const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => ({
-    action: "setAttributeInAllVariants",
-    name: attribute,
-    value: style[attribute]
-  }));
+      action: 'setAttributeInAllVariants',
+      name: attribute,
+      value: style[attribute]
+    })
+  );
 
   // `name` isn't a custom attribute of products in CT, so its update action looks different from the others
-  const nameUpdateAction = style.name ? { action: "changeName", name: style.name } : null; // TODO: make sure localized strings are formatted correctly (e.g., `en-CA` keys instead if just `en`)
+  const nameUpdateAction = style.name ? { action: 'changeName', name: style.name } : null; // TODO: make sure localized strings are formatted correctly (e.g., `en-CA` keys instead if just `en`)
 
   const allUpdateActions = nameUpdateAction
     ? [...customAttributeUpdateActions, nameUpdateAction]
@@ -68,8 +70,47 @@ const updateStyle = (style, version) => {
   return fetch(`${CT_ENDPOINT}/products/key=${style.id}`, { method, headers, body });
 };
 
+const getAttributesFromStyle = style => {
+  const customAttributesToCreate = Object.keys(style).filter(isCustomAttribute);
+  
+  return customAttributesToCreate.map(attribute => ({
+      name: attribute,
+      value: style[attribute]
+    })
+  );
+};
+
+// TODO: figure out what to put for the slug (are we even using it for anything? if not, can just put the id, which we know is unique)
 const createStyle = style => {
-  // TODO: remember to set a key to the value of style.id
+  if (!style.id) throw new Error('Style cannot be created if it lacks an ID');
+
+  const method = 'post';
+  const headers = { Authorization };
+  const attributes = getAttributesFromStyle(style);
+
+  const body = JSON.stringify({
+    key: style.id, // the style ID is stored as a key, since we can't set a custom id
+    name: style.name, // TODO: deal with localization
+    description: style.description, // TODO: deal with localization
+    productType: {
+      typeId: 'product-type',
+      id: PRODUCT_TYPE_REFERENCE
+    },
+    // Since CT attributes apply only at the product variant level, we can't
+    // store attribute values at the level of products. So to store the
+    // associated with a style that has no SKUs associated with it yet, we need
+    // to  create a dummy product variant. This dummy variant will be removed
+    // when real product variants are added to the product.
+    masterVariant: {
+      attributes
+    },
+    slug: {
+      'en-CA': style.id,
+      'fr-CA': style.id
+    }
+  });
+
+  return fetch(`${CT_ENDPOINT}/products/`, { method, headers, body });
 };
 
 const createOrUpdateStyle = async style => {
