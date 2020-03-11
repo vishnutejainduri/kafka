@@ -62,8 +62,19 @@ const createLog = {
     }
 }
 
+const validateParams = params => {
+    if (!params.topicName) {
+      throw new Error('Requires an Event Streams topic.');
+    }
+
+    if (!params.messages || !params.messages[0] || !params.messages[0].value) {
+      throw new Error('Invalid arguments. Must include \'messages\' JSON array with \'value\' field');
+    }
+};
+
 module.exports = {
     addErrorHandling,
     log,
-    createLog
+    createLog,
+    validateParams
 }
