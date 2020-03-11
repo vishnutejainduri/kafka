@@ -72,9 +72,33 @@ const validateParams = params => {
     }
 };
 
+const languageKeyMap = {
+    en: 'en-CA',
+    fr: 'fr-CA'
+};
+  
+// CT expects language keys to include a locale (for example, the key for
+// Canadian English is 'en-CA', not 'en'). The messages that
+// `parseMessageStyle` returns have non-localized language keys. This function
+// replaces the non-localized language keys in a message with localized ones.
+const formatLanguageKeys = item => {
+    if (!item) return item;
+    if (typeof item !== 'object') return item;
+    const keys = Object.keys(item);
+    if (keys.length === 0) return item;
+
+    return keys.reduce((newObject, key) => {
+        if (key !== 'en' && key !== 'fr') {
+            return {...newObject, [key]: formatLanguageKeys(item[key])};
+        }
+        return {...newObject, [languageKeyMap[key]]: formatLanguageKeys(item[key])};
+    }, {});
+};
+
 module.exports = {
     addErrorHandling,
     log,
     createLog,
-    validateParams
+    validateParams,
+    formatLanguageKeys
 }

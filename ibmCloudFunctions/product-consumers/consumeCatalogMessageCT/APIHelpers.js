@@ -60,8 +60,8 @@ const getActionsFromStyle = style => {
     })
   );
 
-  // `name` isn't a custom attribute of products in CT, so its update action looks different from the others
-  const nameUpdateAction = style.name ? { action: 'changeName', name: style.name } : null; // TODO: make sure localized strings are formatted correctly (e.g., `en-CA` keys instead if just `en`)
+  // `name` isn't a custom attribute of products in CT, so its update action differs from the others
+  const nameUpdateAction = style.name ? { action: 'changeName', name: style.name } : null;
 
   const allUpdateActions = nameUpdateAction
     ? [...customAttributeUpdateActions, nameUpdateAction]
@@ -99,8 +99,8 @@ const createStyle = async style => {
 
   const body = JSON.stringify({
     key: style.id, // the style ID is stored as a key, since we can't set a custom ID in CT
-    name: style.name, // TODO: deal with localization
-    description: style.description, // TODO: deal with localization
+    name: style.name,
+    description: style.description,
     productType: {
       typeId: 'product-type',
       id: PRODUCT_TYPE_REFERENCE
