@@ -11,7 +11,10 @@ const handleAPIError = err => {
 const Authorization = `Bearer ${BEARER_TOKEN}`;
 
 const getStyleVersion = async styleId => {
-  const response = await fetch(`${CT_ENDPOINT}/products/${styleId}`, { headers: { Authorization }}); // TODO: change to key (which can be custom, to correspond to the style IDå--the ID is just whatever CT spits out)
+  // HR style IDs correspond to CT product keys, not CT product IDs, so we get
+  // the product by key, not by ID
+  const response = await fetch(`${CT_ENDPOINT}/products/key=${styleId}`, { headers: { Authorization }});
+
   if (response.status === 404) return null; // indicates that style doesn't exist in CT
   const style = await response.json();
   return style.version;
@@ -58,11 +61,11 @@ const getActionsFromStyle = style => {
 
 const updateStyle = (style, version) => {
   const actions = getActionsFromStyle(style);
-  const body = JSON.stringify({ version, actions }); // stringify?
+  const body = JSON.stringify({ version, actions });
   const headers = { Authorization };
   const method = 'post';
 
-  return fetch(`${CT_ENDPOINT}/products/${style.id}`, { method, headers, body }); // TODO: change to ?key=...
+  return fetch(`${CT_ENDPOINT}/products/key=${style.id}`, { method, headers, body });
 };
 
 const createStyle = style => {
