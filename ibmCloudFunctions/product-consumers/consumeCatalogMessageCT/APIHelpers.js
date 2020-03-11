@@ -9,6 +9,15 @@ const handleAPIError = err => {
   console.error(err);
 };
 
+// Throws an error if the response status code is unexpected. Otherwise returns
+// the parsed data of the response
+const checkAPIResponse = async (response, expectedStatus) => {
+  const { status } = response;
+  const data = await response.json();
+  if (status !== expectedStatus) throw new Error(`API call failed: ${JSON.stringify(data)}`);
+  return data;
+};
+
 const Authorization = `Bearer ${BEARER_TOKEN}`;
 
 const getStyleVersion = async styleId => {
@@ -61,13 +70,14 @@ const getActionsFromStyle = style => {
   return allUpdateActions;
 };
 
-const updateStyle = (style, version) => {
+const updateStyle = async (style, version) => {
   const actions = getActionsFromStyle(style);
   const body = JSON.stringify({ version, actions });
   const headers = { Authorization };
   const method = 'post';
 
-  return fetch(`${CT_ENDPOINT}/products/key=${style.id}`, { method, headers, body });
+  const response = await fetch(`${CT_ENDPOINT}/products/key=${style.id}`, { method, headers, body })
+  return checkAPIResponse(response, 200);
 };
 
 const getAttributesFromStyle = style => {
@@ -81,7 +91,7 @@ const getAttributesFromStyle = style => {
 };
 
 // TODO: figure out what to put for the slug (are we even using it for anything? if not, can just put the id, which we know is unique)
-const createStyle = style => {
+const createStyle = async style => {
   if (!style.id) throw new Error('Style cannot be created if it lacks an ID');
 
   const method = 'post';
@@ -110,20 +120,18 @@ const createStyle = style => {
     }
   });
 
-  return fetch(`${CT_ENDPOINT}/products/`, { method, headers, body });
+  const response = await fetch(`${CT_ENDPOINT}/products/`, { method, headers, body });
+  return checkAPIResponse(response, 201);
 };
 
 const createOrUpdateStyle = async style => {
-  try {
     const currentProductVersion = await getStyleVersion(style.id);
+
     if (!currentProductVersion) { // the style isn't currently stored in CT, so we create a new one
       return createStyle(style);
     } else { // the style is already stored in CT, so we just need to update its attributes
       return updateStyle(style, currentProductVersion);
     }
-  } catch (err) {
-    handleAPIError(err);
-  }
 };
 
 module.exports = {
