@@ -4,7 +4,7 @@ const CT_ENDPOINT = 'https://api.us-central1.gcp.commercetools.com/harryrosen-de
 const BEARER_TOKEN = process.env.BEARER_TOKEN; // TODO: switch to using secret to fetch fresh bearer token
 const PRODUCT_TYPE_REFERENCE = '3f69b1dd-631c-4913-b015-c20c083a7940'; // TODO: move to constants file
 
-const handleAPIError = err => {
+const handleError = err => {
   console.error('TODO: add proper error handling');
   console.error(err);
 };
@@ -14,7 +14,7 @@ const handleAPIError = err => {
 const checkAPIResponse = async (response, expectedStatus) => {
   const { status } = response;
   const data = await response.json();
-  if (status !== expectedStatus) throw new Error(`API call failed: ${JSON.stringify(data)}`);
+  if (status !== expectedStatus) throw new Error(`API call failed (status ${status}): ${JSON.stringify(data)}`);
   return data;
 };
 
@@ -98,7 +98,7 @@ const createStyle = async style => {
   const attributes = getAttributesFromStyle(style);
 
   const body = JSON.stringify({
-    key: style.id, // the style ID is stored as a key, since we can't set a custom id
+    key: style.id, // the style ID is stored as a key, since we can't set a custom ID in CT
     name: style.name, // TODO: deal with localization
     description: style.description, // TODO: deal with localization
     productType: {
@@ -108,7 +108,7 @@ const createStyle = async style => {
     // Since CT attributes apply only at the product variant level, we can't
     // store attribute values at the level of products. So to store the
     // associated with a style that has no SKUs associated with it yet, we need
-    // to  create a dummy product variant. This dummy variant will be removed
+    // to create a dummy product variant. This dummy variant will be removed
     // when real product variants are added to the product.
     masterVariant: {
       attributes
@@ -136,5 +136,5 @@ const createOrUpdateStyle = async style => {
 
 module.exports = {
   createOrUpdateStyle,
-  handleAPIError
+  handleError
 };
