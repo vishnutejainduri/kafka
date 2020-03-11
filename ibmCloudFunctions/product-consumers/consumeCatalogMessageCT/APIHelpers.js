@@ -90,7 +90,6 @@ const getAttributesFromStyle = style => {
   );
 };
 
-// TODO: figure out what to put for the slug (are we even using it for anything? if not, can just put the id, which we know is unique)
 const createStyle = async style => {
   if (!style.id) throw new Error('Style cannot be created if it lacks an ID');
 
@@ -114,6 +113,7 @@ const createStyle = async style => {
     masterVariant: {
       attributes
     },
+    // TODO: figure out what to put for the slug (it's required and must be unique, but do we even use it?)
     slug: {
       'en-CA': style.id,
       'fr-CA': style.id
