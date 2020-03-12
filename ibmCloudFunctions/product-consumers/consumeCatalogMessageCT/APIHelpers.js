@@ -25,9 +25,10 @@ const getStyleVersion = async styleId => {
   // HR style IDs correspond to CT product keys, not CT product IDs, so we get
   // the product by key, not by ID
   const uri = requestBuilder.products.byKey(styleId).build();
+  const method = 'GET';
 
   try {
-    const response = await client.execute({ uri, method: 'GET' });
+    const response = await client.execute({ uri, method });
     return response.body.version;
   } catch (err) {
       if (err.code === 404) return null; // indicates that style doesn't exist in CT
@@ -76,13 +77,15 @@ const getActionsFromStyle = style => {
 };
 
 const updateStyle = async (style, version) => {
+  if (!style.id) throw new Error('Style updated be created if it lacks an ID');
+  if (!version) throw new Error('Style cannot be updated if we do not know its version');
+
   const actions = getActionsFromStyle(style);
   const body = JSON.stringify({ version, actions });
-  const headers = { Authorization };
-  const method = 'post';
+  const method = 'POST';
+  const uri = requestBuilder.products.byKey(style.id).build();
 
-  const response = await fetch(`${CT_ENDPOINT}/products/key=${style.id}`, { method, headers, body })
-  return checkAPIResponse(response, 200);
+  return client.execute({ uri, method, body });
 };
 
 const getAttributesFromStyle = style => {
@@ -138,8 +141,6 @@ const createOrUpdateStyle = async style => {
       return updateStyle(style, currentProductVersion);
     }
 };
-
-getStyleVersionSDK('HR-02').then(console.log);
 
 module.exports = {
   createStyle,
