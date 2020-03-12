@@ -28,11 +28,11 @@ const authMiddleware = createAuthMiddlewareForClientCredentialsFlow({
 
 const httpMiddleware = createHttpMiddleware({
   host: CTP_API_URL,
-  fetch,
+  fetch
 });
 
 const client = createClient({
-  middlewares: [authMiddleware, httpMiddleware],
+  middlewares: [authMiddleware, httpMiddleware]
 });
 
 const requestBuilder = createRequestBuilder({ projectKey: CTP_PROJECT_KEY });
