@@ -1,6 +1,6 @@
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
 const { log, createLog, validateParams, formatLanguageKeys, addErrorHandling } = require('../utils');
-const { createOrUpdateStyle } = require('./APIHelpers');
+const { createOrUpdateStyle } = require('./styleActions');
 const { passDownAnyMessageErrors, handleErrors } = require('./errorHandling');
 
 const main = async params => {

@@ -1,5 +1,5 @@
-const { createStyle, updateStyle } = require('../APIHelpers');
-const consumeCatalogueMessageCT = require('../');
+const { createStyle, updateStyle } = require('../styleActions');
+const consumeCatalogueMessageCT = require('..');
 
 jest.mock('@commercetools/sdk-client');
 
@@ -23,7 +23,7 @@ describe('updateStyle', () => {
 });
 
 describe('consumeCatalogueMessageCT', () => {
-  it('throws an error if the given parameters are invalid', () => {
+  it('throws an error if the given parameters are invalid', async () => {
     const invalidParams = {};
     return expect(consumeCatalogueMessageCT(invalidParams)).rejects.toThrow();
   });

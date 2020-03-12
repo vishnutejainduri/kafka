@@ -47,7 +47,8 @@ const getActionsFromStyle = style => {
     })
   );
 
-  // `name` isn't a custom attribute of products in CT, so its update action differs from the others
+  // `name` isn't a custom attribute of products in CT, so its update action
+  // differs from the others
   const nameUpdateAction = style.name ? { action: 'changeName', name: style.name } : null;
 
   const allUpdateActions = nameUpdateAction
@@ -115,9 +116,11 @@ const createStyle = async style => {
 const createOrUpdateStyle = async style => {
     const currentProductVersion = await getStyleVersion(style.id);
 
-    if (!currentProductVersion) { // the style isn't currently stored in CT, so we create a new one
+    if (!currentProductVersion) {
+      // the style isn't currently stored in CT, so we create a new one
       return createStyle(style);
-    } else { // the style is already stored in CT, so we just need to update its attributes
+    } else {
+      // the style is already stored in CT, so we just need to update its attributes
       return updateStyle(style, currentProductVersion);
     }
 };

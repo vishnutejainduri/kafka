@@ -1,6 +1,11 @@
-// TODO: move outside this local CF folder
-// TODO: add explanatory comment
-
+/**
+ * The SDK makes it easier to send requests to the CT client, though we could,
+ * if we wanted to, just make normal fetch requests.
+ * 
+ * TODO: At some point, this file should probably be moved to outside this
+ * specific Cloud Function, since the other Cloud Functions that talk to CT
+ * could also make use of it.
+ */
 const { createClient } = require('@commercetools/sdk-client');
 const { createAuthMiddlewareForClientCredentialsFlow } = require('@commercetools/sdk-middleware-auth');
 const { createHttpMiddleware } = require('@commercetools/sdk-middleware-http');

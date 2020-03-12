@@ -14,7 +14,6 @@ const passDownAnyMessageErrors = messages => {
 };
 
 const handleErrors = (params, err) => {
-  console.log(err);
   createError.consumeCatalogMessageCT.failed(err, params);
 };
 
