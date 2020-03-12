@@ -1,4 +1,5 @@
 // TODO: move outside this local CF folder
+// TODO: add explanatory comment
 
 const { createClient } = require('@commercetools/sdk-client');
 const { createAuthMiddlewareForClientCredentialsFlow } = require('@commercetools/sdk-middleware-auth');

@@ -16,7 +16,7 @@ const main = async params => {
 
   return Promise.all(stylesToCreateOrUpdate.map(addErrorHandling(createOrUpdateStyle)))
     .then(passDownAnyMessageErrors)
-    .catch(handleErrors);
+    .catch(handleErrors.bind(null, params));
 };
 
 module.exports = main;

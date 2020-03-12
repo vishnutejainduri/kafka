@@ -1,9 +1,9 @@
+const createError = require('../../lib/createError');
+
 // Based on the error handling code in `/product-consumers/consumeCatalogMessage/index.js`
 const passDownAnyMessageErrors = messages => {
-  console.log('DONE PROCESSING, here are the messages:', messages);
   const errors = messages.filter(result => result instanceof Error);
   const successes = messages.filter(result => !(result instanceof Error));
-
 
   if (errors.length > 0) {
     const err = new Error(`${errors.length} of ${errors.length} updates failed. See 'failedUpdatesErrors'.`);
@@ -13,9 +13,9 @@ const passDownAnyMessageErrors = messages => {
   }
 };
 
-const handleErrors = err => {
-  console.log('TODO');
+const handleErrors = (params, err) => {
   console.log(err);
+  createError.consumeCatalogMessageCT.failed(err, params);
 };
 
 module.exports = {
