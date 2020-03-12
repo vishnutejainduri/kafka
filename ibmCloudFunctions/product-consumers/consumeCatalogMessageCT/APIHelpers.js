@@ -1,6 +1,5 @@
 const { client, requestBuilder } = require('./sdk');
-
-const PRODUCT_TYPE_REFERENCE = '3f69b1dd-631c-4913-b015-c20c083a7940'; // TODO: move to constants file
+const { PRODUCT_TYPE_REFERENCE } = require('../constants');
 
 const handleError = err => {
   console.error('TODO: add proper error handling');
@@ -8,13 +7,14 @@ const handleError = err => {
 };
 
 const getStyleVersion = async styleId => {
+  const method = 'GET';
+
   // HR style IDs correspond to CT product keys, not CT product IDs, so we get
   // the product by key, not by ID
   const uri = requestBuilder.products.byKey(styleId).build();
-  const method = 'GET';
 
   try {
-    const response = await client.execute({ uri, method });
+    const response = await client.execute({ method, uri });
     return response.body.version;
   } catch (err) {
       if (err.code === 404) return null; // indicates that style doesn't exist in CT
@@ -66,12 +66,12 @@ const updateStyle = async (style, version) => {
   if (!style.id) throw new Error('Style updated be created if it lacks an ID');
   if (!version) throw new Error('Style cannot be updated if we do not know its version');
 
-  const actions = getActionsFromStyle(style);
-  const body = JSON.stringify({ version, actions });
   const method = 'POST';
   const uri = requestBuilder.products.byKey(style.id).build();
+  const actions = getActionsFromStyle(style);
+  const body = JSON.stringify({ version, actions });
 
-  return client.execute({ uri, method, body });
+  return client.execute({ method, uri, body });
 };
 
 const getAttributesFromStyle = style => {
@@ -114,7 +114,7 @@ const createStyle = async style => {
     }
   });
 
-  return client.execute({ uri, method, body });
+  return client.execute({ method, uri, body });
 };
 
 const createOrUpdateStyle = async style => {
