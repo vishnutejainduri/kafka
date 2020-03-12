@@ -1,11 +1,6 @@
 const { client, requestBuilder } = require('./sdk');
 const { PRODUCT_TYPE_REFERENCE } = require('../constants');
 
-const handleError = err => {
-  console.error('TODO: add proper error handling');
-  console.error(err);
-};
-
 const getStyleVersion = async styleId => {
   const method = 'GET';
 
@@ -130,6 +125,5 @@ const createOrUpdateStyle = async style => {
 module.exports = {
   createStyle,
   updateStyle,
-  createOrUpdateStyle,
-  handleError
+  createOrUpdateStyle
 };

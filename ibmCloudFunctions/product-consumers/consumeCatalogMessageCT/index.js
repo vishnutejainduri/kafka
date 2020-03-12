@@ -1,6 +1,7 @@
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
-const { log, createLog, validateParams, formatLanguageKeys } = require('../utils');
-const { createOrUpdateStyle, handleError } = require('./APIHelpers');
+const { log, createLog, validateParams, formatLanguageKeys, addErrorHandling } = require('../utils');
+const { createOrUpdateStyle } = require('./APIHelpers');
+const { passDownAnyMessageErrors, handleErrors } = require('./errorHandling');
 
 const main = async params => {
   log(createLog.params('consumeCatalogMessageCT', params));
@@ -13,13 +14,9 @@ const main = async params => {
       .map(formatLanguageKeys)
   );
 
-  for (const style of stylesToCreateOrUpdate) {
-    try {
-      await createOrUpdateStyle(style);
-    } catch (err) {
-      handleError(err);
-    }
-  }
+  return Promise.all(stylesToCreateOrUpdate.map(addErrorHandling(createOrUpdateStyle)))
+    .then(passDownAnyMessageErrors)
+    .catch(handleErrors);
 };
 
 module.exports = main;
