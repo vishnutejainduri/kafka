@@ -63,8 +63,8 @@ const getActionsFromStyle = style => {
 };
 
 const updateStyle = async (style, version) => {
-  if (!style.id) throw new Error('Style updated be created if it lacks an ID');
-  if (!version) throw new Error('Style cannot be updated if we do not know its version');
+  if (!style.id) throw new Error('Style lacks required key \'id\'');
+  if (!version) throw new Error('Invalid arguments: must include \'version\'');
 
   const method = 'POST';
   const uri = requestBuilder.products.byKey(style.id).build();
@@ -85,7 +85,7 @@ const getAttributesFromStyle = style => {
 };
 
 const createStyle = async style => {
-  if (!style.id) throw new Error('Style cannot be created if it lacks an ID');
+  if (!style.id) throw new Error('Style lacks required key \'id\'');
 
   const method = 'POST';
   const uri = requestBuilder.products.build();
@@ -129,6 +129,7 @@ const createOrUpdateStyle = async style => {
 
 module.exports = {
   createStyle,
+  updateStyle,
   createOrUpdateStyle,
   handleError
 };
