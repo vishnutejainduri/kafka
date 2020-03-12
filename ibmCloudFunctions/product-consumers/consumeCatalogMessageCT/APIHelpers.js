@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const { client, requestBuilder } = require('./sdk');
 
 const CT_ENDPOINT = 'https://api.us-central1.gcp.commercetools.com/harryrosen-dev'; // TODO: move to constants or ENV file
 const BEARER_TOKEN = process.env.BEARER_TOKEN; // TODO: switch to using secret to fetch fresh bearer token
@@ -23,11 +24,15 @@ const Authorization = `Bearer ${BEARER_TOKEN}`;
 const getStyleVersion = async styleId => {
   // HR style IDs correspond to CT product keys, not CT product IDs, so we get
   // the product by key, not by ID
-  const response = await fetch(`${CT_ENDPOINT}/products/key=${styleId}`, { headers: { Authorization }});
+  const uri = requestBuilder.products.byKey(styleId).build();
 
-  if (response.status === 404) return null; // indicates that style doesn't exist in CT
-  const style = await response.json();
-  return style.version;
+  try {
+    const response = await client.execute({ uri, method: 'GET' });
+    return response.body.version;
+  } catch (err) {
+      if (err.code === 404) return null; // indicates that style doesn't exist in CT
+      throw err;
+  }
 };
 
 // Returns true iff the given attribute is a custom attribute on the HR product
@@ -134,7 +139,10 @@ const createOrUpdateStyle = async style => {
     }
 };
 
+getStyleVersionSDK('HR-02').then(console.log);
+
 module.exports = {
+  createStyle,
   createOrUpdateStyle,
   handleError
 };
