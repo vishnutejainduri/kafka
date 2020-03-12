@@ -10,6 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@commercetools/api-request-builder": "^5.4.2",
+    "@commercetools/sdk-client": "^2.1.1",
+    "@commercetools/sdk-middleware-auth": "^6.0.5",
+    "@commercetools/sdk-middleware-http": "^6.0.5",
     "node-fetch": "^2.6.0"
   }
 }

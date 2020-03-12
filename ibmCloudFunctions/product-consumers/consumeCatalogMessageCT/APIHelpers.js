@@ -1,25 +1,11 @@
-const fetch = require('node-fetch');
 const { client, requestBuilder } = require('./sdk');
 
-const CT_ENDPOINT = 'https://api.us-central1.gcp.commercetools.com/harryrosen-dev'; // TODO: move to constants or ENV file
-const BEARER_TOKEN = process.env.BEARER_TOKEN; // TODO: switch to using secret to fetch fresh bearer token
 const PRODUCT_TYPE_REFERENCE = '3f69b1dd-631c-4913-b015-c20c083a7940'; // TODO: move to constants file
 
 const handleError = err => {
   console.error('TODO: add proper error handling');
   console.error(err);
 };
-
-// Throws an error if the response status code is unexpected. Otherwise returns
-// the parsed data of the response
-const checkAPIResponse = async (response, expectedStatus) => {
-  const { status } = response;
-  const data = await response.json();
-  if (status !== expectedStatus) throw new Error(`API call failed (status ${status}): ${JSON.stringify(data)}`);
-  return data;
-};
-
-const Authorization = `Bearer ${BEARER_TOKEN}`;
 
 const getStyleVersion = async styleId => {
   // HR style IDs correspond to CT product keys, not CT product IDs, so we get
@@ -101,8 +87,8 @@ const getAttributesFromStyle = style => {
 const createStyle = async style => {
   if (!style.id) throw new Error('Style cannot be created if it lacks an ID');
 
-  const method = 'post';
-  const headers = { Authorization };
+  const method = 'POST';
+  const uri = requestBuilder.products.build();
   const attributes = getAttributesFromStyle(style);
 
   const body = JSON.stringify({
@@ -128,8 +114,7 @@ const createStyle = async style => {
     }
   });
 
-  const response = await fetch(`${CT_ENDPOINT}/products/`, { method, headers, body });
-  return checkAPIResponse(response, 201);
+  return client.execute({ uri, method, body });
 };
 
 const createOrUpdateStyle = async style => {
