@@ -4,7 +4,7 @@ const { createOrUpdateStyle, handleError } = require('./APIHelpers');
 
 const main = async params => {
   log(createLog.params('consumeCatalogMessageCT', params));
-  validateParams();
+  validateParams(params);
 
   const stylesToCreateOrUpdate = (
     params.messages
