@@ -17,7 +17,7 @@ describe('updateStyle', () => {
   });
 
   it('throws an error if called without a version number', () => {
-    const style = {id: '1'};
+    const style = { id: '1' };
     return expect(updateStyle(style)).rejects.toThrow('Invalid arguments: must include \'version\'');
   });
 });
