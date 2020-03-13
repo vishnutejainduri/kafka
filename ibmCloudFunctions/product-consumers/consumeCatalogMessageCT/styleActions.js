@@ -103,7 +103,9 @@ const createStyle = async style => {
     masterVariant: {
       attributes
     },
-    // TODO: figure out what to put for the slug (it's required and must be unique, but do we even use it?)
+    // TODO: Figure out what to put for the slug. It's required and must be
+    // unique, but will we even make use of it? Right now I'm just putting the
+    // style ID since I know that's unique.
     slug: {
       'en-CA': style.id,
       'fr-CA': style.id

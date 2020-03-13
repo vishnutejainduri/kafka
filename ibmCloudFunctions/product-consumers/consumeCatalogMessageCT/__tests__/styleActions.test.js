@@ -23,7 +23,7 @@ describe('updateStyle', () => {
 });
 
 describe('consumeCatalogueMessageCT', () => {
-  it('throws an error if the given parameters are invalid', async () => {
+  it('throws an error if the given parameters are invalid', () => {
     const invalidParams = {};
     return expect(consumeCatalogueMessageCT(invalidParams)).rejects.toThrow();
   });

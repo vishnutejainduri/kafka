@@ -2,6 +2,9 @@
  * The SDK makes it easier to send requests to the CT client, though we could,
  * if we wanted to, just make normal fetch requests.
  * 
+ * Most of this code is based on examples in CT's documentation (e.g.,
+ * https://docs.commercetools.com/assets/code/lambda-reusing-client-example.js).
+ * 
  * TODO: At some point, this file should probably be moved to outside this
  * specific Cloud Function, since the other Cloud Functions that talk to CT
  * could also make use of it.
