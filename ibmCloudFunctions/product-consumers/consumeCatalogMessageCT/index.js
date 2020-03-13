@@ -1,20 +1,22 @@
-const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
 const { createOrUpdateStyle } = require('./styleActions');
-const { passDownAnyMessageErrors, handleErrors } = require('./errorHandling');
+const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
+const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
 const {
-  log,
-  createLog,
-  validateParams,
-  formatLanguageKeys,
   addErrorHandling,
-  addLoggingToMain
+  addLoggingToMain,
+  createLog,
+  formatLanguageKeys,
+  log,
+  passDownAnyMessageErrors,
+  validateParams
 } = require('../utils');
 
-const main = async params => {
+const main = params => {
   log(createLog.params('consumeCatalogMessageCT', params));
   validateParams(params);
-
+  const handleErrors = err => createError.consumeCatalogMessageCT.failed(err, params);
+  
   const stylesToCreateOrUpdate = (
     params.messages
       .filter(filterStyleMessages)
@@ -24,7 +26,7 @@ const main = async params => {
 
   return Promise.all(stylesToCreateOrUpdate.map(addErrorHandling(createOrUpdateStyle)))
     .then(passDownAnyMessageErrors)
-    .catch(handleErrors.bind(null, params));
+    .catch(handleErrors);
 };
 
 module.exports = addLoggingToMain(main, messagesLogs);

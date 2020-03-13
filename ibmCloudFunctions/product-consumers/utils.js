@@ -95,6 +95,22 @@ const formatLanguageKeys = item => {
     }, {});
 };
 
+// Used to handle errors that occurred within particular promises in an array
+// of promises. Should be used together with `addErrorHandling`.
+// Based on the error handling code in `/product-consumers/consumeCatalogMessage/index.js`.
+// Example usage is in `/product-consumers/consumeCatalogMessageCT/index.js`.
+const passDownAnyMessageErrors = messages => {
+    const errors = messages.filter(result => result instanceof Error);
+    const successes = messages.filter(result => !(result instanceof Error));
+
+    if (errors.length > 0) {
+        const err = new Error(`${errors.length} of ${errors.length} updates failed. See 'failedUpdatesErrors'.`);
+        err.failedUpdatesErrors = errors;
+        err.successfulUpdatesResults = successes;
+        throw err;
+    }
+};
+
 // Adds logging to the `main` function of a CF. Takes the main function and
 // the `messagesLogs` logger, defined in `/lib/messagesLog.js`.
 const addLoggingToMain = (main, logger) => (async params => (
@@ -111,5 +127,6 @@ module.exports = {
     createLog,
     validateParams,
     formatLanguageKeys,
-    addLoggingToMain
+    addLoggingToMain,
+    passDownAnyMessageErrors
 }
