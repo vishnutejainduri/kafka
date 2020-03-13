@@ -39,7 +39,8 @@ const main = async function (params) {
             const currentStoreData = await stores.findOne({ _id: storeData._id });
 
             // add to bulk ats queue all relavent styles if any ats related attributes are changing
-            if ((currentStoreData.canOnlineFulfill !== storeData.canOnlineFulfill) ||
+            if (!currentStoreData ||
+                (currentStoreData.canOnlineFulfill !== storeData.canOnlineFulfill) ||
                 (currentStoreData.isOutlet !== storeData.isOutlet) ||
                 (currentStoreData.isVisible !== storeData.isVisible)) {
                   let bulkStyleAtsUpdates = bulkAtsRecalculateQueue.initializeUnorderedBulkOp();
