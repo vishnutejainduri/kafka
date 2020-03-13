@@ -95,10 +95,21 @@ const formatLanguageKeys = item => {
     }, {});
 };
 
+// Adds logging to the `main` function of a CF. Takes the main function and
+// the `messagesLogs` logger, defined in `/lib/messagesLog.js`.
+const addLoggingToMain = (main, logger) => (async params => (
+    Promise.all([
+        main(params),
+        logger.storeBatch(params)
+    ]).then(([result]) => result)
+  )
+);
+
 module.exports = {
     addErrorHandling,
     log,
     createLog,
     validateParams,
-    formatLanguageKeys
+    formatLanguageKeys,
+    addLoggingToMain
 }
