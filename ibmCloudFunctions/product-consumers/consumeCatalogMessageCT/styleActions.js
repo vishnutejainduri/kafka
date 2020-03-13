@@ -47,13 +47,20 @@ const getActionsFromStyle = style => {
     })
   );
 
-  // `name` isn't a custom attribute of products in CT, so its update action
-  // differs from the others
-  const nameUpdateAction = style.name ? { action: 'changeName', name: style.name } : null;
+  // `name` and `description` aren't custom attributes of products in CT, so
+  // their update actions differ from the others
+  const nameUpdateAction = style.name
+    ? { action: 'changeName', name: style.name }
+    : null;
+  
+  const descriptionUpdateAction = style.marketingDescription
+    ? { action: 'setDescription', description: style.marketingDescription }
+    : null;
 
-  const allUpdateActions = nameUpdateAction
-    ? [...customAttributeUpdateActions, nameUpdateAction]
-    : customAttributeUpdateActions;
+  const allUpdateActions = (
+    [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction]
+      .filter(Boolean) // removes the `null` actions, if there are any
+  );
 
   return allUpdateActions;
 };
@@ -90,7 +97,7 @@ const createStyle = async style => {
   const body = JSON.stringify({
     key: style.id, // the style ID is stored as a key, since we can't set a custom ID in CT
     name: style.name,
-    description: style.description,
+    description: style.marketingDescription,
     productType: {
       typeId: 'product-type',
       id: PRODUCT_TYPE_REFERENCE
