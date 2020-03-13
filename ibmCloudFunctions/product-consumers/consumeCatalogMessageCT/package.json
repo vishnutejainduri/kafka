@@ -15,5 +15,9 @@
     "@commercetools/sdk-middleware-auth": "^6.0.5",
     "@commercetools/sdk-middleware-http": "^6.0.5",
     "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "webpack": "^4.42.0",
+    "webpack-cli": "^3.3.11"
   }
 }
