@@ -24,6 +24,13 @@
         limits:
           memorySize: 512
           timeout: 600000
+      consume-catalog-message-with-retry-ct:
+        location: ./product-consumers/consumeCatalogMessageWithRetryCT/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       consume-styles-basic-message:
         location: ./product-consumers/consumeStylesBasicMessage/dist/bundle.js
         runtime: nodejs:10

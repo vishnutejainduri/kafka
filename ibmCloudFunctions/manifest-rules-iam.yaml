@@ -3,7 +3,7 @@
         action: consume-catalog-message-with-retry
         trigger: catalog-trigger
       catalog-rule-ct:
-        action: consume-catalog-message-ct
+        action: consume-catalog-message-with-retry-ct
         trigger: catalog-trigger
       styles-basic-rule:
         action: consume-styles-basic-message-with-retry

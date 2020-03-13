@@ -3,7 +3,7 @@
         action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message-with-retry
         trigger: catalog-trigger
       catalog-rule-ct:
-        action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message-ct
+        action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message-with-retry-ct
         trigger: catalog-trigger
       styles-basic-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-styles-basic-message-with-retry
