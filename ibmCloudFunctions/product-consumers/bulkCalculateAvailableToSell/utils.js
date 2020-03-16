@@ -21,7 +21,7 @@ const calculateSkuAts = async (
           .catch(originalError => {
               throw createError.bulkCalculateAvailableToSell.failedGetStore(originalError, inventoryRecord);
           })
-          if (inventoryRecord.availableToSell > 0 && storeData.isVisible && !storeData.isOutlet) {
+          if (storeData && inventoryRecord.availableToSell > 0 && storeData.isVisible && !storeData.isOutlet) {
             skuAts.push({
               storeId: inventoryRecord.storeId,
               availableToSell: inventoryRecord.availableToSell
