@@ -43,7 +43,7 @@ const main = async function (params) {
                                   return createError.calculateAvailableToSell.failedGetStore(originalError, atsData);
                               });
 
-          if (!storeData || !skuData || !styleData || storeData.isOutlet) return null;
+          if (!storeData || !skuData || !styleData || storeData.isOutlet || storeData.isVisible) return null;
 
           let atsUpdates = [];
 
