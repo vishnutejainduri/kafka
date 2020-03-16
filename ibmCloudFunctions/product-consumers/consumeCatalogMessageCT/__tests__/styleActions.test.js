@@ -1,4 +1,4 @@
-const { createStyle, updateStyle } = require('../styleActions');
+const { createStyle, updateStyle } = require('../utils');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const consumeCatalogueMessageCT = require('..');
 
