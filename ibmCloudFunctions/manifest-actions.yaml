@@ -23,6 +23,7 @@
           ctpAuthUrl: $CTP_AUTH_URL,
           ctpAPIUrl: $CTP_API_URL,
           ctpScopes: $CTP_SCOPES # see https://docs.commercetools.com/http-api-scopes
+          productTypeId: $PRODUCT_TYPE_ID # reference to the Product Type on CT
       consume-catalog-message-with-retry:
         location: ./product-consumers/consumeCatalogMessageWithRetry/dist/bundle.js
         conductor: true

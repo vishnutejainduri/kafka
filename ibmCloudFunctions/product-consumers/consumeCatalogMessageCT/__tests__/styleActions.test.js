@@ -13,6 +13,7 @@ const validParams = {
   ctpAuthUrl: 'authUrl',
   ctpApiUrl: 'apiUrl',
   ctpScopes: 'manage_products:harryrosen-dev',
+  productTypeId: 'product-type-reference-id',
   messages: [{
       topic: 'styles-connect-jdbc-CATALOG',
       value: {
@@ -60,7 +61,7 @@ const mockedCtHelpers = getCtHelpers(validParams);
 describe('createStyle', () => {
   it('throws an error if the given style lacks an ID', () => {
     const styleWithNoId = {};
-    return expect(createStyle(styleWithNoId, mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
+    return expect(createStyle(styleWithNoId, '1', mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
   });
 });
 

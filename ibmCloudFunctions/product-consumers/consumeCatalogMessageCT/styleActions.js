@@ -1,5 +1,4 @@
 const { addRetries } = require('../utils');
-const { PRODUCT_TYPE_REFERENCE } = require('../constants');
 
 const getStyleVersion = async (styleId, { client, requestBuilder }) => {
   const method = 'GET';
@@ -87,7 +86,7 @@ const getAttributesFromStyle = style => {
   );
 };
 
-const createStyle = async (style, { client, requestBuilder }) => {
+const createStyle = async (style, productTypeId, { client, requestBuilder }) => {
   if (!style.id) throw new Error('Style lacks required key \'id\'');
 
   const method = 'POST';
@@ -100,7 +99,7 @@ const createStyle = async (style, { client, requestBuilder }) => {
     description: style.marketingDescription,
     productType: {
       typeId: 'product-type',
-      id: PRODUCT_TYPE_REFERENCE
+      id: productTypeId
     },
     // Since CT attributes apply only at the product variant level, we can't
     // store attribute values at the level of products. So to store the
@@ -122,12 +121,12 @@ const createStyle = async (style, { client, requestBuilder }) => {
   return client.execute({ method, uri, body });
 };
 
-const createOrUpdateStyle = async (ctHelpers, style) => {
+const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     const currentProductVersion = await getStyleVersion(style.id, ctHelpers);
 
     if (!currentProductVersion) {
       // the style isn't currently stored in CT, so we create a new one
-      return createStyle(style, ctHelpers);
+      return createStyle(style, productTypeId, ctHelpers);
     } else {
       // the style is already stored in CT, so we just need to update its attributes
       return updateStyle(style, currentProductVersion, ctHelpers);

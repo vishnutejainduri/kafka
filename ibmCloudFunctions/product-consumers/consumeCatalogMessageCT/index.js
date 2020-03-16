@@ -21,6 +21,7 @@ const main = params => {
   log(createLog.params('consumeCatalogMessageCT', params));
   validateParams(params);
   const handleErrors = err => createError.consumeCatalogMessageCT.failed(err, params);
+  const { productTypeId } = params;
 
   if (!ctHelpers) {
     ctHelpers = getCtHelpers(params);
@@ -35,7 +36,7 @@ const main = params => {
 
   const stylePromises = (
     stylesToCreateOrUpdate
-      .map(addErrorHandling(createOrUpdateStyle.bind(null, ctHelpers)))
+      .map(addErrorHandling(createOrUpdateStyle.bind(null, ctHelpers, productTypeId)))
   );
   
   return Promise.all(stylePromises)
