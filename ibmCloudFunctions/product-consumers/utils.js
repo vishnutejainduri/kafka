@@ -121,6 +121,34 @@ const addLoggingToMain = (main, logger) => (async params => (
   )
 );
 
+// Helper for `addRetries`
+const formatLoggerErrorMessage = (retries, retryLimit, err) => (
+    `Failed on attempt ${retries + 1}. (Retrying up to ${retryLimit - retries} more times.) Error: ${err}`
+);
+  
+/**
+ * Returns a function which will invoke `func` up to `retryLimit` times if the
+ * previous invocation thew an error. After it reaches `retryLimit`, it throws
+ * the most recent error it encountered. Optionally takes a `logger` which is
+ * called with an error string when an error is caught.
+ * @param {Function} func 
+ * @param {Number} retryLimit 
+ * @param {Function} logger
+ */
+const addRetries = (func, retryLimit, logger = () => {}) => {
+    const functionWithRetries = async (retries = 0, ...args) => {
+        try {
+            return await func(...args);
+        } catch(err) {
+            logger(formatLoggerErrorMessage(retries, retryLimit, err));
+            if (retries === retryLimit) throw err;
+            return await functionWithRetries(retries + 1, ...args);
+        }
+    };
+
+    return (...args) => functionWithRetries(0, ...args);
+};
+
 module.exports = {
     addErrorHandling,
     log,
@@ -128,5 +156,6 @@ module.exports = {
     validateParams,
     formatLanguageKeys,
     addLoggingToMain,
-    passDownAnyMessageErrors
+    passDownAnyMessageErrors,
+    addRetries
 }
