@@ -30,6 +30,7 @@ const main = params => {
   const stylesToCreateOrUpdate = (
     params.messages
       .filter(filterStyleMessages)
+      .filter(style => style.webStatus) // webStatus === `false` indicates that the style shouldn't be available online, we we don't store these styles
       .map(parseStyleMessage)
       .map(formatLanguageKeys)
   );
