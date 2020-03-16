@@ -1,8 +1,7 @@
 const { addRetries } = require('../utils');
-const { client, requestBuilder } = require('../../lib/commercetoolsSdk');
 const { PRODUCT_TYPE_REFERENCE } = require('../constants');
 
-const getStyleVersion = async styleId => {
+const getStyleVersion = async (styleId, { client, requestBuilder }) => {
   const method = 'GET';
 
   // HR style IDs correspond to CT product keys, not CT product IDs, so we get
@@ -66,7 +65,7 @@ const getActionsFromStyle = style => {
   return allUpdateActions;
 };
 
-const updateStyle = async (style, version) => {
+const updateStyle = async (style, version, { client, requestBuilder }) => {
   if (!style.id) throw new Error('Style lacks required key \'id\'');
   if (!version) throw new Error('Invalid arguments: must include \'version\'');
 
@@ -88,7 +87,7 @@ const getAttributesFromStyle = style => {
   );
 };
 
-const createStyle = async style => {
+const createStyle = async (style, { client, requestBuilder }) => {
   if (!style.id) throw new Error('Style lacks required key \'id\'');
 
   const method = 'POST';
@@ -123,15 +122,15 @@ const createStyle = async style => {
   return client.execute({ method, uri, body });
 };
 
-const createOrUpdateStyle = async style => {
-    const currentProductVersion = await getStyleVersion(style.id);
+const createOrUpdateStyle = async (ctHelpers, style) => {
+    const currentProductVersion = await getStyleVersion(style.id, ctHelpers);
 
     if (!currentProductVersion) {
       // the style isn't currently stored in CT, so we create a new one
-      return createStyle(style);
+      return createStyle(style, ctHelpers);
     } else {
       // the style is already stored in CT, so we just need to update its attributes
-      return updateStyle(style, currentProductVersion);
+      return updateStyle(style, currentProductVersion, ctHelpers);
     }
 };
 

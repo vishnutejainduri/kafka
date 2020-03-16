@@ -17,6 +17,12 @@
           timeout: 600000
         inputs:
           topicName: styles-connect-jdbc-CATALOG
+          ctpProjectKey: $CTP_PROJECT_KEY,
+          ctpClientId: $CTP_CLIENT_ID,
+          ctpClientSecret: $CTP_CLIENT_SECRET,
+          ctpAuthUrl: $CTP_AUTH_URL,
+          ctpAPIUrl: $CTP_API_URL,
+          ctpScopes: $CTP_SCOPES # see https://docs.commercetools.com/http-api-scopes
       consume-catalog-message-with-retry:
         location: ./product-consumers/consumeCatalogMessageWithRetry/dist/bundle.js
         conductor: true
