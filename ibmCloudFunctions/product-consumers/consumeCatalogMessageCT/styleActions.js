@@ -1,3 +1,4 @@
+const { addRetries } = require('../utils');
 const { client, requestBuilder } = require('./sdk');
 const { PRODUCT_TYPE_REFERENCE } = require('../constants');
 
@@ -137,5 +138,5 @@ const createOrUpdateStyle = async style => {
 module.exports = {
   createStyle,
   updateStyle,
-  createOrUpdateStyle
+  createOrUpdateStyle: addRetries(createOrUpdateStyle, 2, console.error)
 };
