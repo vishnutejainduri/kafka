@@ -1,5 +1,5 @@
 const { addRetries } = require('../utils');
-const { client, requestBuilder } = require('./sdk');
+const { client, requestBuilder } = require('../../lib/commercetoolsSdk');
 const { PRODUCT_TYPE_REFERENCE } = require('../constants');
 
 const getStyleVersion = async styleId => {
