@@ -11,7 +11,7 @@ const {
   log,
   passDownAnyMessageErrors,
   validateParams
-} = require('../utils');
+} = require('../../product-consumers/utils');
 
 // Holds two CT helpers, including the CT client. It's declared outside of
 // `main` so the same client can be shared between warm starts.

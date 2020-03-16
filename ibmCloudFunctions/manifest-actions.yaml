@@ -10,7 +10,7 @@
           pricesCollectionName: $PRICES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
       consume-catalog-message-ct:
-        location: ./product-consumers/consumeCatalogMessageCT/dist/bundle.js
+        location: ./commercetools/consumeCatalogMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
           memorySize: 512
@@ -32,7 +32,7 @@
           memorySize: 512
           timeout: 600000
       consume-catalog-message-with-retry-ct:
-        location: ./product-consumers/consumeCatalogMessageWithRetryCT/dist/bundle.js
+        location: ./commercetools/consumeCatalogMessageWithRetry/dist/bundle.js
         conductor: true
         runtime: nodejs:10
         limits:
