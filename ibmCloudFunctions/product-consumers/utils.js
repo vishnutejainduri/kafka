@@ -91,7 +91,10 @@ const formatLanguageKeys = item => {
         if (key !== 'en' && key !== 'fr') {
             return {...newObject, [key]: formatLanguageKeys(item[key])};
         }
-        return {...newObject, [languageKeyMap[key]]: formatLanguageKeys(item[key])};
+        // CT throws an error if you give it a language string set to `null`,
+        // so we set all falsy language values to an empty string (which CT
+        // accepts without issue).
+        return {...newObject, [languageKeyMap[key]]: formatLanguageKeys(item[key]) || ''};
     }, {});
 };
 
