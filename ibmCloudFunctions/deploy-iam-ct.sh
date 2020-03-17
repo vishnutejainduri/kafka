@@ -20,10 +20,10 @@ ibmcloud fn property set --namespace $CLOUD_FUNCTIONS_NAMESPACE
 echo ">>> Contents Of Manifest File:"
 if [ $DEPLOY_TRIGGERS = "true" ]; then
 	echo ">>> Deploy with Triggers"
-	cat commercetools/manifest-package.yaml commercetools/manifest-actions.yaml commercetools/manifest-triggers-iam.yaml commercetools/manifest-rules-iam.yaml > manifest.yaml
+	cat commercetools/manifest-package-ct.yaml commercetools/manifest-actions-ct.yaml commercetools/manifest-triggers-iam-ct.yaml commercetools/manifest-rules-iam-ct.yaml > manifest.yaml
 else
 	echo ">>> Deploy without Triggers"
-	cat commercetools/manifest-package.yaml commercetools/manifest-actions.yaml commercetools/manifest-rules-iam.yaml > manifest.yaml
+	cat commercetools/manifest-package-ct.yaml commercetools/manifest-actions-ct.yaml commercetools/manifest-rules-iam-ct.yaml > manifest.yaml
 fi
 
 echo ">>> Currently Deployed Packages:"
