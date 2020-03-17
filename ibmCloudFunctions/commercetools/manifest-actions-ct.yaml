@@ -1,0 +1,16 @@
+    actions:
+      consume-catalog-message-ct:
+        location: ./commercetools/consumeCatalogCTMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+        inputs:
+          topicName: styles-connect-jdbc-CATALOG
+      consume-catalog-message-with-retry-ct:
+        location: ./commercetools/consumeCatalogCTMessageWithRetry/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
