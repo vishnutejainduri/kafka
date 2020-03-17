@@ -1,0 +1,6 @@
+    triggers:
+      catalog-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: styles-connect-jdbc-CATALOG
