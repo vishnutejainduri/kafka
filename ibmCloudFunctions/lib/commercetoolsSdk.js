@@ -51,12 +51,17 @@ const getCtHelpers = connectionInfo => {
         clientSecret: ctpClientSecret,
     },
     scopes: [ctpScopes],
-    fetch
+    // Saying `fetch` instead of `fetch.default` will cause errors in some
+    // circumstances. See discussion at https://github.com/netlify/netlify-lambda/issues/117#issuecomment-462672600.
+    // Of course, we're not using Netlify here, but the issue happened to be
+    // the same as the one that someone using Netlify ran into.
+    fetch: fetch.default 
   });
 
   const httpMiddleware = createHttpMiddleware({
     host: ctpApiUrl,
-    fetch
+    // See above comment on `fetch.default`
+    fetch: fetch.default
   });
 
   const client = createClient({
