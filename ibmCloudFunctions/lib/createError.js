@@ -137,6 +137,13 @@ module.exports = {
             `Failed to insert a style for bulk ats recalculation; style data: ${styleData}.`
         )
     },
+    consumeCatalogMessageCT: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-catalog-message-ct',
+            `Failure in run of consume catalog message CT; params: ${params}.`
+        ),
+    },
     calculateAvailableToSell: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(
             originalError,
