@@ -1,5 +1,8 @@
-const { createOrUpdateStyle } = require('../utils');
-const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
+const {
+    filterPriceMessages,
+    parsePriceMessage,
+    generateUpdateFromParsedMessage
+} = require('../../lib/parsePriceMessage');
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
 const getCtHelpers = require('../../lib/commercetoolsSdk');
@@ -18,7 +21,7 @@ const {
 let ctHelpers;
 
 const main = params => {
-  log(createLog.params('consumeCatalogMessageCT', params));
+  log(createLog.params('consumeSalePriceCT', params));
   validateParams(params);
   const handleErrors = err => createError.consumeCatalogMessageCT.failed(err, params);
   const { productTypeId } = params;
@@ -27,16 +30,14 @@ const main = params => {
     ctHelpers = getCtHelpers(params);
   }
   
-  const stylesToCreateOrUpdate = (
+  const pricesToUpdate = (
     params.messages
-      .filter(addErrorHandling(filterStyleMessages))
-      .filter(addErrorHandling(style => style.webStatus)) // webStatus === `false` indicates that the style shouldn't be available online, we we don't store these styles
-      .map(addErrorHandling(parseStyleMessage))
-      .map(addErrorHandling(formatLanguageKeys))
+        .filter(addErrorHandling(filterPriceMessages))
+        .map(addErrorHandling(parsePriceMessage))
   );
 
   const stylePromises = (
-    stylesToCreateOrUpdate
+    pricesToUpdate
       .map(addErrorHandling(createOrUpdateStyle.bind(null, ctHelpers, productTypeId)))
   );
   
