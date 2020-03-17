@@ -1,4 +1,5 @@
 #!/bin/bash
+echo ">>> Deploying product-consumers CFs"
 echo ">>> Logging into IBM Cloud…"
 DEPLOYER_API_KEY=$1
 ORG=$2" "$3
@@ -13,10 +14,10 @@ ibmcloud login --apikey $DEPLOYER_API_KEY -a cloud.ibm.com -r us-south -o "$ORG"
 echo ">>> Contents Of Manifest File:"
 if [ $DEPLOY_TRIGGERS = "true" ]; then
 	echo ">>> Deploy with Triggers"
-	cat manifest-package.yaml manifest-actions.yaml manifest-triggers.yaml manifest-rules.yaml > manifest.yaml
+	cat product-consumers/manifest-package.yaml product-consumers/manifest-actions.yaml product-consumers/manifest-triggers.yaml product-consumers/manifest-rules.yaml > manifest.yaml
 else
 	echo ">>> Deploy without Triggers"
-	cat manifest-package.yaml manifest-actions.yaml manifest-rules.yaml > manifest.yaml
+	cat product-consumers/manifest-package.yaml product-consumers/manifest-actions.yaml product-consumers/manifest-rules.yaml > manifest.yaml
 fi
 
 echo ">>> Currently Deployed Packages:"

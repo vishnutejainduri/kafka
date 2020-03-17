@@ -1,0 +1,4 @@
+    rules:
+      catalog-rule-ct:
+        action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message-with-retry-ct
+        trigger: catalog-trigger

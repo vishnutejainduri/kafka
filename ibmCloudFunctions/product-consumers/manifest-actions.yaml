@@ -9,30 +9,8 @@
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
-      consume-catalog-message-ct:
-        location: ./commercetools/consumeCatalogMessage/dist/bundle.js
-        runtime: nodejs:10
-        limits:
-          memorySize: 512
-          timeout: 600000
-        inputs:
-          topicName: styles-connect-jdbc-CATALOG
-          ctpProjectKey: $CTP_PROJECT_KEY,
-          ctpClientId: $CTP_CLIENT_ID,
-          ctpClientSecret: $CTP_CLIENT_SECRET,
-          ctpAuthUrl: $CTP_AUTH_URL,
-          ctpAPIUrl: $CTP_API_URL,
-          ctpScopes: $CTP_SCOPES # see https://docs.commercetools.com/http-api-scopes
-          productTypeId: $PRODUCT_TYPE_ID # reference to the Product Type on CT
       consume-catalog-message-with-retry:
         location: ./product-consumers/consumeCatalogMessageWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        limits:
-          memorySize: 512
-          timeout: 600000
-      consume-catalog-message-with-retry-ct:
-        location: ./commercetools/consumeCatalogMessageWithRetry/dist/bundle.js
         conductor: true
         runtime: nodejs:10
         limits:

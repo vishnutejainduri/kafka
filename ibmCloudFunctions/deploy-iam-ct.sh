@@ -1,5 +1,5 @@
 #!/bin/bash
-echo ">>> Deploying product-consumers CFs"
+echo ">>> Deploying commercetools CFs"
 echo ">>> Logging into IBM Cloud…"
 DEPLOYER_API_KEY=$1
 ORG=$2" "$3
@@ -20,10 +20,10 @@ ibmcloud fn property set --namespace $CLOUD_FUNCTIONS_NAMESPACE
 echo ">>> Contents Of Manifest File:"
 if [ $DEPLOY_TRIGGERS = "true" ]; then
 	echo ">>> Deploy with Triggers"
-	cat product-consumers/manifest-package.yaml product-consumers/manifest-actions.yaml product-consumers/manifest-triggers-iam.yaml product-consumers/manifest-rules-iam.yaml > manifest.yaml
+	cat commercetools/manifest-package.yaml commercetools/manifest-actions.yaml commercetools/manifest-triggers-iam.yaml commercetools/manifest-rules-iam.yaml > manifest.yaml
 else
 	echo ">>> Deploy without Triggers"
-	cat product-consumers/manifest-package.yaml product-consumers/manifest-actions.yaml product-consumers/manifest-rules-iam.yaml > manifest.yaml
+	cat commercetools/manifest-package.yaml commercetools/manifest-actions.yaml commercetools/manifest-rules-iam.yaml > manifest.yaml
 fi
 
 echo ">>> Currently Deployed Packages:"

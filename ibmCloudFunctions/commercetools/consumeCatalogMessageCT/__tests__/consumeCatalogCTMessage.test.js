@@ -4,6 +4,9 @@ const consumeCatalogueMessageCT = require('..');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
+jest.mock('@commercetools/sdk-middleware-auth');
+jest.mock('@commercetools/sdk-middleware-http');
+jest.mock('node-fetch');
 
 const validParams = {
   topicName: 'styles-connect-jdbc-CATALOG',
