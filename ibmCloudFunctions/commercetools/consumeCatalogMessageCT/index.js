@@ -7,7 +7,7 @@ const {
   addErrorHandling,
   addLoggingToMain,
   createLog,
-  formatLanguageKeys,
+  formatMessageForCt,
   log,
   passDownAnyMessageErrors,
   validateParams
@@ -32,7 +32,7 @@ const main = params => {
       .filter(addErrorHandling(filterStyleMessages))
       .map(addErrorHandling(parseStyleMessage))
       .filter(addErrorHandling(style => style.webStatus)) // false `webStatus` indicates that the style shouldn't be available online, we we don't store these styles
-      .map(addErrorHandling(formatLanguageKeys))
+      .map(addErrorHandling(formatMessageForCt))
   );
 
   const stylePromises = (

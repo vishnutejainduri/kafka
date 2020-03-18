@@ -28,7 +28,8 @@ const isCustomAttribute = attribute => {
     'careInstructions',
     'advice',
     'webStatus',
-    'vsn'
+    'vsn',
+    'styleLastModifiedInternal'
   ];
 
   return customAttributes.includes(attribute);
@@ -57,8 +58,10 @@ const getActionsFromStyle = style => {
     : null;
 
   const allUpdateActions = (
-    [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction]
-      .filter(Boolean) // removes the `null` actions, if there are any
+    [...customAttributeUpdateActions,
+      nameUpdateAction,
+      descriptionUpdateAction
+    ].filter(Boolean) // removes the `null` actions, if there are any
   );
 
   return allUpdateActions;
@@ -107,7 +110,7 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
     // to create a dummy product variant. This dummy variant will be removed
     // when real product variants are added to the product.
     masterVariant: {
-      attributes
+      attributes // TODO: add dummy flag
     },
     // TODO: Figure out what to put for the slug. It's required and must be
     // unique, but will we even make use of it? Right now I'm just putting the
@@ -121,19 +124,15 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
   return client.execute({ method, uri, body });
 };
 
-// Returns the date of the given CT style in the number of milliseconds since
-// the epoch. This matches the date format of the dates stored in JESTA.
-const getCtStyleDate = ctStyle => Date.parse(ctStyle.lastModifiedDate);
-
 // Used to determine whether we should update the style in CT. Deals with race
 // conditions.
 const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
-  if ((!existingCtStyle.lastModifiedDate) || !(givenStyle.lastModifiedDate)) {
+  if ((!existingCtStyle.styleLastModifiedInternal) || !(givenStyle.styleLastModifiedInternal)) {
     console.warn('Style is missing value `lastModifiedDate`');
     return false;
   }
 
-  return getCtStyleDate(existingCtStyle) > givenStyle.lastModifiedDate
+  return existingCtStyle.styleLastModifiedInternal.getTime() > givenStyle.styleLastModifiedInternal.getTime();
 };
 
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {

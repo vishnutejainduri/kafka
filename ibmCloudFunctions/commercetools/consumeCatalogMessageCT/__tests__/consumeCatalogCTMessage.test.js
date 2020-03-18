@@ -1,7 +1,7 @@
 const { createStyle, updateStyle, existingCtStyleIsNewer } = require('../utils');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const consumeCatalogueMessageCT = require('..');
-const { formatLanguageKeys } = require('../../../product-consumers/utils');
+const { formatMessageForCt } = require('../../../product-consumers/utils');
 const { parseStyleMessage } = require('../../../lib/parseStyleMessage');
 
 jest.mock('@commercetools/sdk-client');
@@ -62,24 +62,24 @@ const validParams = {
   }]
 };
 
-const jestaStyle = parseStyleMessage(formatLanguageKeys(validParams.messages[0]));
+const jestaStyle = formatMessageForCt(parseStyleMessage(validParams.messages[0]));
 const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('existingCtStyleIsNewer', () => {
-  it('returns true if existing CT style is newer than given JESTA style', () => {
-    const ctStyle = { lastModifiedDate: new Date('2020-03-18T16:53:20.823Z') };
+  it('returns true if existing CT style is newer than the given style from JESTA', () => {
+    const ctStyle = { styleLastModifiedInternal: new Date('2020-03-18T16:53:20.823Z') };
     expect(existingCtStyleIsNewer(ctStyle, jestaStyle)).toBe(true);
   });
 
   it ('returns false if existing CT style is older than given JEST style', () => {
-    const ctStyle = { lastModifiedDate: new Date('2015-03-18T16:53:20.823Z') };
+    const ctStyle = { styleLastModifiedInternal: new Date('2015-03-18T16:53:20.823Z') };
     expect(existingCtStyleIsNewer(ctStyle, jestaStyle)).toBe(false);
   });
 
-  it('returns false if JESTA style lacks a `lastModifiedDate`', () => {
-    const ctStyle = { lastModifiedDate: new Date('2015-03-18T16:53:20.823Z') };
-    const jestaStyleWithoutLastModifiedDate = {...jestaStyle, lastModifiedDate: undefined };
-    expect(existingCtStyleIsNewer(ctStyle, jestaStyleWithoutLastModifiedDate)).toBe(false);
+  it('returns false if JESTA style lacks a value for `styleLastModifiedInternal`', () => {
+    const ctStyle = { styleLastModifiedInternal: new Date('2015-03-18T16:53:20.823Z') };
+    const jestaStyleWithoutModifiedDate = {...jestaStyle, styleLastModifiedInternal: undefined };
+    expect(existingCtStyleIsNewer(ctStyle, jestaStyleWithoutModifiedDate)).toBe(false);
   });
 })
 

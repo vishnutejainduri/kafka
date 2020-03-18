@@ -76,7 +76,7 @@ const languageKeyMap = {
     en: 'en-CA',
     fr: 'fr-CA'
 };
-  
+
 // CT expects language keys to include a locale (for example, the key for
 // Canadian English is 'en-CA', not 'en'). The messages that
 // `parseMessageStyle` returns have non-localized language keys. This function
@@ -97,6 +97,20 @@ const formatLanguageKeys = item => {
         return {...newObject, [languageKeyMap[key]]: formatLanguageKeys(item[key]) || ''};
     }, {});
 };
+
+// Dates in JESTA are stored as the number of milliseconds since the epoch.
+// This function standardizes the format of the dates and sets the key to the
+// corresponding attribute in CT.
+const formatDatesForCt = message => ({
+    ...message,
+    styleLastModifiedInternal: new Date(message.lastModifiedDate)
+});
+
+// When reading messages for adding data to CT, we rely on `parseMessageStyle`,
+// which is also used when addded data to MongoDB. But there are some small
+// CT-specific changes that are useful to make to the formatting of the messages.
+// This function makes those changes.
+const formatMessageForCt = message => formatDatesForCt(formatLanguageKeys(message));
 
 // Used to handle errors that occurred within particular promises in an array
 // of promises. Should be used together with `addErrorHandling`.
@@ -160,5 +174,6 @@ module.exports = {
     formatLanguageKeys,
     addLoggingToMain,
     passDownAnyMessageErrors,
-    addRetries
+    addRetries,
+    formatMessageForCt
 }
