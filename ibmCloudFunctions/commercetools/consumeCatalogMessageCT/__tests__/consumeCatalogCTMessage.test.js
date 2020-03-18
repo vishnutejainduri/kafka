@@ -1,6 +1,8 @@
-const { createStyle, updateStyle } = require('../utils');
+const { createStyle, updateStyle, existingCtStyleIsNewer } = require('../utils');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const consumeCatalogueMessageCT = require('..');
+const { formatLanguageKeys } = require('../../../product-consumers/utils');
+const { parseStyleMessage } = require('../../../lib/parseStyleMessage');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -54,12 +56,32 @@ const validParams = {
           UPD_TIMESTAMP: 1000000000000,
           EFFECTIVE_DATE: 1000000000000,
           TRUE_COLOURGROUP_EN: 'trueColourGroupEn',
-          TRUE_COLOURGROUP_FR: 'trueColourGroupFr'
+          TRUE_COLOURGROUP_FR: 'trueColourGroupFr',
+          LAST_MODIFIED_DATE: 1470391439001 // circa 2016
       }
   }]
 };
 
+const jestaStyle = parseStyleMessage(formatLanguageKeys(validParams.messages[0]));
 const mockedCtHelpers = getCtHelpers(validParams);
+
+describe('existingCtStyleIsNewer', () => {
+  it('returns true if existing CT style is newer than given JESTA style', () => {
+    const ctStyle = { lastModifiedDate: new Date('2020-03-18T16:53:20.823Z') };
+    expect(existingCtStyleIsNewer(ctStyle, jestaStyle)).toBe(true);
+  });
+
+  it ('returns false if existing CT style is older than given JEST style', () => {
+    const ctStyle = { lastModifiedDate: new Date('2015-03-18T16:53:20.823Z') };
+    expect(existingCtStyleIsNewer(ctStyle, jestaStyle)).toBe(false);
+  });
+
+  it('returns false if JESTA style lacks a `lastModifiedDate`', () => {
+    const ctStyle = { lastModifiedDate: new Date('2015-03-18T16:53:20.823Z') };
+    const jestaStyleWithoutLastModifiedDate = {...jestaStyle, lastModifiedDate: undefined };
+    expect(existingCtStyleIsNewer(ctStyle, jestaStyleWithoutLastModifiedDate)).toBe(false);
+  });
+})
 
 describe('createStyle', () => {
   it('throws an error if the given style lacks an ID', () => {

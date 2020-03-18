@@ -6,7 +6,7 @@ const mockRequestBuilder = {
 };
 
 const requestBuilder = {
-  createRequestBuilder: () => { console.log('mock active'); return mockRequestBuilder}
+  createRequestBuilder: () => mockRequestBuilder
 };
 
 module.exports = requestBuilder;
