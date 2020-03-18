@@ -34,8 +34,8 @@ const formatDates = message => ({
   styleLastModifiedInternal: new Date(message.lastModifiedDate)
 });
 
-// When reading style messages for updated CT, we rely mostly on
-// `parseMessageStyle`, which is also used when addded data to MongoDB. But
+// When parsing style messages for updating CT, we rely mostly on
+// `parseMessageStyle`, which is also used when adding styles to MongoDB. But
 // there are some small CT-specific changes to do with dates and language keys
 // that we need to make.
 const parseStyleMessageCt = message => formatDates(formatLanguageKeys(parseStyleMessage(message)));
