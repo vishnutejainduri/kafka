@@ -107,7 +107,12 @@ describe('existingCtStyleIsNewer', () => {
     const jestaStyleWithoutModifiedDate = {...jestaStyle, styleLastModifiedInternal: undefined };
     expect(existingCtStyleIsNewer(ctStyleOlder, jestaStyleWithoutModifiedDate)).toBe(false);
   });
-})
+
+  it('returns false if CT style lacks a value for `styleLastModifiedInternal`', () => {
+    const ctStyleWithoutDate = {};
+    expect(existingCtStyleIsNewer(ctStyleWithoutDate, jestaStyle)).toBe(false);
+  });
+});
 
 describe('createStyle', () => {
   it('throws an error if the given style lacks an ID', () => {
