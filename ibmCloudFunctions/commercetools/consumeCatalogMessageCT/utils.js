@@ -1,6 +1,6 @@
 const { addRetries } = require('../../product-consumers/utils');
 
-const getStyleVersion = async (styleId, { client, requestBuilder }) => {
+const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
   const method = 'GET';
 
   // HR style IDs correspond to CT product keys, not CT product IDs, so we get
@@ -9,7 +9,7 @@ const getStyleVersion = async (styleId, { client, requestBuilder }) => {
 
   try {
     const response = await client.execute({ method, uri });
-    return response.body.version;
+    return response.body;
   } catch (err) {
       if (err.code === 404) return null; // indicates that style doesn't exist in CT
       throw err;
@@ -121,20 +121,40 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
   return client.execute({ method, uri, body });
 };
 
-const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
-    const currentProductVersion = await getStyleVersion(style.id, ctHelpers);
+// Returns the date of the given CT style in the number of milliseconds since
+// the epoch. This matches the date format of the dates stored in JESTA.
+const getCtStyleDate = ctStyle => Date.parse(ctStyle.lastModifiedDate);
 
-    if (!currentProductVersion) {
-      // the style isn't currently stored in CT, so we create a new one
+// Used to determine whether we should update the style in CT. Deals with race
+// conditions.
+const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
+  if ((!existingCtStyle.lastModifiedDate) || !(givenStyle.lastModifiedDate)) {
+    console.warn('Style is missing value `lastModifiedDate`');
+    return false;
+  }
+
+  return getCtStyleDate(existingCtStyle) > givenStyle.lastModifiedDate
+};
+
+const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
+    const existingCtStyle = await getExistingCtStyle(style.id, ctHelpers);
+
+    if (!existingCtStyle) {
+      // the given style isn't currently stored in CT, so we create a new one
       return createStyle(style, productTypeId, ctHelpers);
-    } else {
-      // the style is already stored in CT, so we just need to update its attributes
-      return updateStyle(style, currentProductVersion, ctHelpers);
     }
+    if (existingCtStyleIsNewer(existingCtStyle, style)) {
+      // the given style is out of date, so we don't add it to CT
+      return null;
+    }
+    // the given style up-to-date and already stored in CT, so we just need to
+    // update its attributes
+    return updateStyle(style, existingCtStyle.version, ctHelpers);
 };
 
 module.exports = {
   createStyle,
   updateStyle,
-  createOrUpdateStyle: addRetries(createOrUpdateStyle, 2, console.error)
+  createOrUpdateStyle: addRetries(createOrUpdateStyle, 2, console.error),
+  existingCtStyleIsNewer
 };
