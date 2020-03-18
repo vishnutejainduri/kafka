@@ -172,8 +172,8 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
       // the given style is out of date, so we don't add it to CT
       return null;
     }
-    // the given style is up-to-date and already stored in CT, so we just need
-    // to update its attributes
+    // the given style is up-to-date and an earlier version of it is already
+    // stored in CT, so we just need to update its attributes
     return updateStyle(style, existingCtStyle.version, ctHelpers);
 };
 
