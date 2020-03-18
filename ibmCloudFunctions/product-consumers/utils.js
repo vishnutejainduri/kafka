@@ -72,46 +72,6 @@ const validateParams = params => {
     }
 };
 
-const languageKeyMap = {
-    en: 'en-CA',
-    fr: 'fr-CA'
-};
-
-// CT expects language keys to include a locale (for example, the key for
-// Canadian English is 'en-CA', not 'en'). The messages that
-// `parseMessageStyle` returns have non-localized language keys. This function
-// replaces the non-localized language keys in a message with localized ones.
-const formatLanguageKeys = item => {
-    if (!item) return item;
-    if (typeof item !== 'object') return item;
-    const keys = Object.keys(item);
-    if (keys.length === 0) return item;
-
-    return keys.reduce((newObject, key) => {
-        if (key !== 'en' && key !== 'fr') {
-            return {...newObject, [key]: formatLanguageKeys(item[key])};
-        }
-        // CT throws an error if you give it a language string set to `null`,
-        // so we set all falsy language values to an empty string (which CT
-        // accepts without issue).
-        return {...newObject, [languageKeyMap[key]]: formatLanguageKeys(item[key]) || ''};
-    }, {});
-};
-
-// Dates in JESTA are stored as the number of milliseconds since the epoch.
-// This function standardizes the format of the dates and sets the key to the
-// corresponding attribute in CT.
-const formatDatesForCt = message => ({
-    ...message,
-    styleLastModifiedInternal: new Date(message.lastModifiedDate)
-});
-
-// When reading messages for adding data to CT, we rely on `parseMessageStyle`,
-// which is also used when addded data to MongoDB. But there are some small
-// CT-specific changes that are useful to make to the formatting of the messages.
-// This function makes those changes.
-const formatMessageForCt = message => formatDatesForCt(formatLanguageKeys(message));
-
 // Used to handle errors that occurred within particular promises in an array
 // of promises. Should be used together with `addErrorHandling`.
 // Based on the error handling code in `/product-consumers/consumeCatalogMessage/index.js`.
@@ -171,9 +131,7 @@ module.exports = {
     log,
     createLog,
     validateParams,
-    formatLanguageKeys,
     addLoggingToMain,
     passDownAnyMessageErrors,
-    addRetries,
-    formatMessageForCt
+    addRetries
 }
