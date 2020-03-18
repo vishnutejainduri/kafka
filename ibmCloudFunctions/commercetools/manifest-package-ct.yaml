@@ -15,10 +15,10 @@ packages:
       cloudFunctionsRestEndpoint: $CLOUD_FUNCTIONS_REST_ENDPOINT
       cloudFunctionsRestUsername: $CLOUD_FUNCTIONS_REST_USERNAME
       cloudFunctionsRestPassword: $CLOUD_FUNCTIONS_REST_PASSWORD
-      ctpProjectKey: $CTP_PROJECT_KEY,
-      ctpClientId: $CTP_CLIENT_ID,
-      ctpClientSecret: $CTP_CLIENT_SECRET,
-      ctpAuthUrl: $CTP_AUTH_URL,
-      ctpAPIUrl: $CTP_API_URL,
+      ctpProjectKey: $CTP_PROJECT_KEY
+      ctpClientId: $CTP_CLIENT_ID
+      ctpClientSecret: $CTP_CLIENT_SECRET
+      ctpAuthUrl: $CTP_AUTH_URL
+      ctpAPIUrl: $CTP_API_URL
       ctpScopes: $CTP_SCOPES # see https://docs.commercetools.com/http-api-scopes
       productTypeId: $PRODUCT_TYPE_ID # reference to the Product Type on CT
