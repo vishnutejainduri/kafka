@@ -1,8 +1,7 @@
 const { createStyle, updateStyle, existingCtStyleIsNewer } = require('../utils');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const consumeCatalogueMessageCT = require('..');
-const { formatMessageForCt } = require('../../../product-consumers/utils');
-const { parseStyleMessage } = require('../../../lib/parseStyleMessage');
+const parseStyleMessageCt = require('../../../lib/parseStyleMessageCt');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -62,24 +61,51 @@ const validParams = {
   }]
 };
 
-const jestaStyle = formatMessageForCt(parseStyleMessage(validParams.messages[0]));
+const ctStyleNewer = {
+  "masterData": {
+      "staged": {
+          "masterVariant": {
+              "attributes": [
+                  {
+                      "name": "styleLastModifiedInternal",
+                      "value": "2020-03-18T16:53:20.823Z"
+                  }
+              ]
+          }
+      }
+    }
+};
+
+const ctStyleOlder = {
+  "masterData": {
+      "staged": {
+          "masterVariant": {
+              "attributes": [
+                  {
+                      "name": "styleLastModifiedInternal",
+                      "value": "2015-03-18T16:53:20.823Z"
+                  }
+              ]
+          }
+      }
+    }
+};
+
+const jestaStyle = parseStyleMessageCt(validParams.messages[0]);
 const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('existingCtStyleIsNewer', () => {
   it('returns true if existing CT style is newer than the given style from JESTA', () => {
-    const ctStyle = { styleLastModifiedInternal: new Date('2020-03-18T16:53:20.823Z') };
-    expect(existingCtStyleIsNewer(ctStyle, jestaStyle)).toBe(true);
+    expect(existingCtStyleIsNewer(ctStyleNewer, jestaStyle)).toBe(true);
   });
 
   it ('returns false if existing CT style is older than given JEST style', () => {
-    const ctStyle = { styleLastModifiedInternal: new Date('2015-03-18T16:53:20.823Z') };
-    expect(existingCtStyleIsNewer(ctStyle, jestaStyle)).toBe(false);
+    expect(existingCtStyleIsNewer(ctStyleOlder, jestaStyle)).toBe(false);
   });
 
   it('returns false if JESTA style lacks a value for `styleLastModifiedInternal`', () => {
-    const ctStyle = { styleLastModifiedInternal: new Date('2015-03-18T16:53:20.823Z') };
     const jestaStyleWithoutModifiedDate = {...jestaStyle, styleLastModifiedInternal: undefined };
-    expect(existingCtStyleIsNewer(ctStyle, jestaStyleWithoutModifiedDate)).toBe(false);
+    expect(existingCtStyleIsNewer(ctStyleOlder, jestaStyleWithoutModifiedDate)).toBe(false);
   });
 })
 
@@ -93,7 +119,7 @@ describe('createStyle', () => {
 describe('updateStyle', () => {
   it('throws an error if the given style lacks an ID', () => {
     const styleWithNoId = {};
-    return expect(updateStyle(styleWithNoId, 1, mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
+    return expect(updateStyle(styleWithNoId, '1', mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
   });
 
   it('throws an error if called without a version number', () => {

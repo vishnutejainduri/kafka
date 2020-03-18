@@ -124,15 +124,41 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
   return client.execute({ method, uri, body });
 };
 
+// Returns the `styleLastModifiedInternal` value of the given ctStyle.
+// Given the format of the styles that CT gives us in response to a GET
+// request, we have to do some annoying drilling down to get the value that we
+// want.
+//
+// TODO: At some point, it may be worth turning this into a general helper
+// function to find the value of any given attribute.
+const getCtStyleDate = ctStyle => {
+  const getDate = stagedOrCurrent => (
+    ctStyle
+      .masterData[stagedOrCurrent]
+      .masterVariant
+      .attributes
+      .find(attribute => attribute.name === 'styleLastModifiedInternal')
+      .value
+  );
+
+  try {
+    return new Date(getDate('staged')); // the date we get from the CT style is a string, so we manually create a date out of it
+  } catch (err) {
+    return null;
+  }
+};
+
 // Used to determine whether we should update the style in CT. Deals with race
 // conditions.
 const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
-  if ((!existingCtStyle.styleLastModifiedInternal) || !(givenStyle.styleLastModifiedInternal)) {
-    console.warn('Style is missing value `lastModifiedDate`');
+  const existingCtStyleDate = getCtStyleDate(existingCtStyle);
+
+  if ((!existingCtStyleDate) || !(givenStyle.styleLastModifiedInternal)) {
+    console.warn('Style is missing value `styleLastModifiedInternal`');
     return false;
   }
 
-  return existingCtStyle.styleLastModifiedInternal.getTime() > givenStyle.styleLastModifiedInternal.getTime();
+  return existingCtStyleDate.getTime() > givenStyle.styleLastModifiedInternal.getTime();
 };
 
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
