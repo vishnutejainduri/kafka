@@ -1,4 +1,4 @@
-const { createOrUpdateStyle } = require('./utils');
+const { createOrUpdateStyle } = require('../utils');
 const { filterStyleMessages } = require('../../lib/parseStyleMessage');
 const parseStyleMessageCt = require('../../lib/parseStyleMessageCt');
 const createError = require('../../lib/createError');

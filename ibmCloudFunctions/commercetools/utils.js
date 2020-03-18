@@ -1,4 +1,4 @@
-const { addRetries } = require('../../product-consumers/utils');
+const { addRetries } = require('../product-consumers/utils');
 
 const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
   const method = 'GET';

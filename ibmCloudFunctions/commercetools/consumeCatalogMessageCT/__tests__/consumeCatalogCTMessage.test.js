@@ -1,4 +1,4 @@
-const { createStyle, updateStyle, existingCtStyleIsNewer } = require('../utils');
+const { createStyle, updateStyle, existingCtStyleIsNewer } = require('../../utils');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const consumeCatalogueMessageCT = require('..');
 const parseStyleMessageCt = require('../../../lib/parseStyleMessageCt');
