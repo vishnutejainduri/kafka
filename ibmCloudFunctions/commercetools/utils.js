@@ -1,4 +1,5 @@
 const { addRetries } = require('../product-consumers/utils');
+const { attributeNames } = require('./constants');
 
 const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
   const method = 'GET';
@@ -144,8 +145,8 @@ const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
 };
 
 const getCtStyleDate = ctStyle => {
-  const stagedDateString = getCtStyleAttributeValue(ctStyle, 'styleLastModifiedInternal', false);
-  const currentDateString = getCtStyleAttributeValue(ctStyle, 'styleLastModifiedInternal', true);
+  const stagedDateString = getCtStyleAttributeValue(ctStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL, false);
+  const currentDateString = getCtStyleAttributeValue(ctStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL, true);
   const dateString = stagedDateString || currentDateString;
 
   if (!dateString) return null;
