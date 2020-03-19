@@ -159,7 +159,6 @@ const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
   const existingCtStyleDate = getCtStyleDate(existingCtStyle);
 
   if ((!existingCtStyleDate) || !(givenStyle.styleLastModifiedInternal)) {
-    console.warn('Style is missing value `styleLastModifiedInternal`');
     return false;
   }
 
