@@ -105,10 +105,9 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
     // Since CT attributes apply only at the product variant level, we can't
     // store attribute values at the level of products. So to store the
     // associated with a style that has no SKUs associated with it yet, we need
-    // to create a dummy product variant. This dummy variant will be removed
-    // when real product variants are added to the product.
+    // to create a dummy product variant.
     masterVariant: {
-      attributes // TODO: add dummy flag
+      attributes
     },
     // TODO: Figure out what to put for the slug. It's required and must be
     // unique, but will we even make use of it? Right now I'm just putting the
@@ -145,10 +144,9 @@ const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
 };
 
 const getCtStyleDate = ctStyle => {
-  const dateString = (
-    getCtStyleAttributeValue(ctStyle, 'styleLastModifiedInternal', false) || // if there's a staged product, get its modified date
-    getCtStyleAttributeValue(ctStyle, 'styleLastModifiedInternal', true) // otherwise, get the modified date of the current product
-  );
+  const stagedDateString = getCtStyleAttributeValue(ctStyle, 'styleLastModifiedInternal', false);
+  const currentDateString = getCtStyleAttributeValue(ctStyle, 'styleLastModifiedInternal', true);
+  const dateString = stagedDateString || currentDateString;
 
   if (!dateString) return null;
   return new Date(dateString);
