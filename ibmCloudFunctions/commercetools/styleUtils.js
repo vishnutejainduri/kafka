@@ -1,6 +1,7 @@
 const { addRetries } = require('../product-consumers/utils');
+const { attributeNames } = require('./constants');
 
-const getStyle = async (styleId, { client, requestBuilder }) => {
+const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
   const method = 'GET';
 
   // HR style IDs correspond to CT product keys, not CT product IDs, so we get
@@ -28,7 +29,8 @@ const isCustomAttribute = attribute => {
     'careInstructions',
     'advice',
     'webStatus',
-    'vsn'
+    'vsn',
+    'styleLastModifiedInternal'
   ];
 
   return customAttributes.includes(attribute);
@@ -104,8 +106,7 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
     // Since CT attributes apply only at the product variant level, we can't
     // store attribute values at the level of products. So to store the
     // associated with a style that has no SKUs associated with it yet, we need
-    // to create a dummy product variant. This dummy variant will be removed
-    // when real product variants are added to the product.
+    // to create a dummy product variant.
     masterVariant: {
       attributes
     },
@@ -121,21 +122,69 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
   return client.execute({ method, uri, body });
 };
 
-const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
-    const currentProductVersion = await getStyle(style.id, ctHelpers).version;
+/**
+ * Returns the value of the attribute in the given CT style. The value is taken
+ * from the master variant. Throws an error if the attribute is not found.
+ * @param {Object} ctStyle The product as stored in CT.
+ * @param {String} attributeName Name of the attribute whose value should be returned.
+ * @param {Boolean} current Indicates whether to return the value from the current product or the staged product.
+ */
+const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => (
+  ctStyle
+    .masterData[current ? 'current' : 'staged']
+    .masterVariant
+    .attributes
+    .find(attribute => attribute.name === attributeName)
+    .value
+);
 
-    if (!currentProductVersion) {
-      // the style isn't currently stored in CT, so we create a new one
+const getCtStyleDate = ctStyle => {
+  const stagedDateString = ctStyle.masterData.staged ? getCtStyleAttributeValue(ctStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL, false) : null;
+  const currentDateString = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL, true) : null;
+  const dateString = stagedDateString || currentDateString;
+
+  if (!dateString) return null;
+  return new Date(dateString);
+};
+
+// Used to determine whether we should update the style in CT. Deals with race
+// conditions.
+const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
+  let existingCtStyleDate;
+  try {
+    existingCtStyleDate = getCtStyleDate(existingCtStyle);
+  } catch (err) {
+    existingCtStyleDate = null;
+  }
+
+  if ((!existingCtStyleDate) || !(givenStyle.styleLastModifiedInternal)) {
+    return false;
+  }
+
+  return existingCtStyleDate.getTime() > givenStyle.styleLastModifiedInternal.getTime();
+};
+
+const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
+    const existingCtStyle = await getExistingCtStyle(style.id, ctHelpers);
+
+    if (!existingCtStyle) {
+      // the given style isn't currently stored in CT, so we create a new one
       return createStyle(style, productTypeId, ctHelpers);
-    } else {
-      // the style is already stored in CT, so we just need to update its attributes
-      return updateStyle(style, currentProductVersion, ctHelpers);
     }
+    if (existingCtStyleIsNewer(existingCtStyle, style)) {
+      // the given style is out of date, so we don't add it to CT
+      return null;
+    }
+    // the given style is up-to-date and an earlier version of it is already
+    // stored in CT, so we just need to update its attributes
+    return updateStyle(style, existingCtStyle.version, ctHelpers);
 };
 
 module.exports = {
-  getStyle,
   createStyle,
   updateStyle,
-  createOrUpdateStyle: addRetries(createOrUpdateStyle, 2, console.error)
+  createOrUpdateStyle: addRetries(createOrUpdateStyle, 2, console.error),
+  existingCtStyleIsNewer,
+  getCtStyleAttributeValue,
+  getExistingCtStyle
 };
