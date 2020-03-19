@@ -130,7 +130,7 @@ describe('getCtStyleAttributeValue', () => {
   });
 });
 
-describe('consumeCatalogMessageCt', () => {
+describe('parseStyleMessageCt', () => {
   it('returns a message with correctly formatted localization keys', () => {
     const actualKeys = Object.keys(parseStyleMessageCt(message).brandName);
     const expectedKeys = ['en-CA', 'fr-CA'];
