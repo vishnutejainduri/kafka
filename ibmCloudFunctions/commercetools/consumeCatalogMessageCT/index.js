@@ -1,6 +1,6 @@
 const { createOrUpdateStyle } = require('../utils');
 const { filterStyleMessages } = require('../../lib/parseStyleMessage');
-const parseStyleMessageCt = require('../../lib/parseStyleMessageCt');
+const { parseStyleMessageCt } = require('../../lib/parseStyleMessageCt');
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
 const getCtHelpers = require('../../lib/commercetoolsSdk');

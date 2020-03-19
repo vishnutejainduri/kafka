@@ -40,4 +40,7 @@ const formatDates = message => ({
 // that we need to make.
 const parseStyleMessageCt = message => formatDates(formatLanguageKeys(parseStyleMessage(message)));
 
-module.exports = parseStyleMessageCt;
+module.exports = {
+  parseStyleMessageCt,
+  formatLanguageKeys
+};

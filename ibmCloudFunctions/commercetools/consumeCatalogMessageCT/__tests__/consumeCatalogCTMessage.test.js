@@ -1,6 +1,6 @@
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const consumeCatalogueMessageCT = require('..');
-const parseStyleMessageCt = require('../../../lib/parseStyleMessageCt');
+const { parseStyleMessageCt, formatLanguageKeys } = require('../../../lib/parseStyleMessageCt');
 const {
   createStyle,
   updateStyle,
@@ -111,6 +111,26 @@ const ctStyleOlder = {
 const jestaStyle = parseStyleMessageCt(message);
 const mockedCtHelpers = getCtHelpers(validParams);
 
+describe('formatLanguageKeys', () => {
+  const objectWithIncorrectlyFormattedKeys = {'en': 'foo', 'fr': 'bar'};
+  const objectWithCorrectlyFormattedKeys = {'en-CA': 'foo', 'fr-CA': 'bar'};
+
+  it('when given an object, returns an object that is the same expect its language keys are CT-style', () => {
+    expect(formatLanguageKeys(objectWithIncorrectlyFormattedKeys)).toMatchObject(objectWithCorrectlyFormattedKeys);
+  });
+
+  it('correctly formats nested objects', () => {
+    const nestedObjectWithIncorrectKeys = { foo: objectWithIncorrectlyFormattedKeys };
+    const nestedObjectWithCorrectKeys = { foo: objectWithCorrectlyFormattedKeys };
+    expect(formatLanguageKeys(nestedObjectWithIncorrectKeys)).toMatchObject(nestedObjectWithCorrectKeys);
+  });
+
+  it('when given a non-object, returns what it was given', () => {
+    expect(formatLanguageKeys(1)).toBe(1);
+    expect(formatLanguageKeys('foo')).toBe('foo');
+  });
+});
+
 describe('getCtStyleAttributeValue', () => {
   it('returns the correct staged value for the given style', () => {
     const actual = getCtStyleAttributeValue(ctStyleNewer, 'styleLastModifiedInternal');
@@ -122,11 +142,6 @@ describe('getCtStyleAttributeValue', () => {
     const actual = getCtStyleAttributeValue(ctStyleNewer, 'styleLastModifiedInternal', true);
     const expected = '2019-03-18T16:53:20.823Z';
     expect(actual).toBe(expected);
-  });
-
-  it('returns `null` if the style lacks the given attribute', () => {
-    const emptyStyle = {};
-    expect(getCtStyleAttributeValue(emptyStyle, 'foo')).toBe(null);
   });
 });
 
