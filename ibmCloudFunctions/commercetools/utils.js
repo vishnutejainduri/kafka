@@ -124,28 +124,32 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
   return client.execute({ method, uri, body });
 };
 
-// Returns the `styleLastModifiedInternal` value of the given ctStyle.
-// Given the format of the styles that CT gives us in response to a GET
-// request, we have to do some annoying drilling down to get the value that we
-// want.
-//
-// TODO: At some point, it may be worth turning this into a general helper
-// function to find the value of any given attribute.
-const getCtStyleDate = ctStyle => {
-  const getDate = stagedOrCurrent => (
-    ctStyle
-      .masterData[stagedOrCurrent]
-      .masterVariant
-      .attributes
-      .find(attribute => attribute.name === 'styleLastModifiedInternal')
-      .value
-  );
-
+/**
+ * Returns the value of the attribute in the given CT style. The value is taken
+ * from the master variant. Returns `null` if the attribute does not exist.
+ * @param {Object} ctStyle The product as stored in CT.
+ * @param {String} attributeName Name of the attribute whose value should be returned.
+ * @param {String} current Indicates whether to return the value from the current product or the staged product.
+ */
+const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
   try {
-    return new Date(getDate('staged')); // the date we get from the CT style is a string, so we manually create a date out of it
-  } catch (err) {
+    return (
+      ctStyle
+        .masterData[current ? 'current' : 'staged']
+        .masterVariant
+        .attributes
+        .find(attribute => attribute.name === attributeName)
+        .value
+      );
+  } catch(err) {
     return null;
   }
+};
+
+const getCtStyleDate = ctStyle => {
+  const dateString = getCtStyleAttributeValue(ctStyle, 'styleLastModifiedInternal');
+  if (!dateString) return null;
+  return new Date(dateString);
 };
 
 // Used to determine whether we should update the style in CT. Deals with race
@@ -181,5 +185,6 @@ module.exports = {
   createStyle,
   updateStyle,
   createOrUpdateStyle: addRetries(createOrUpdateStyle, 2, console.error),
-  existingCtStyleIsNewer
+  existingCtStyleIsNewer,
+  getCtStyleAttributeValue
 };

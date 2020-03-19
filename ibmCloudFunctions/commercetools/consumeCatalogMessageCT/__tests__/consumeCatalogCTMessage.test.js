@@ -1,7 +1,12 @@
-const { createStyle, updateStyle, existingCtStyleIsNewer } = require('../../utils');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const consumeCatalogueMessageCT = require('..');
 const parseStyleMessageCt = require('../../../lib/parseStyleMessageCt');
+const {
+  createStyle,
+  updateStyle,
+  existingCtStyleIsNewer,
+  getCtStyleAttributeValue
+} = require('../../utils');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -74,7 +79,17 @@ const ctStyleNewer = {
                   }
               ]
           }
-      }
+      },
+      "current": {
+        "masterVariant": {
+            "attributes": [
+                {
+                    "name": "styleLastModifiedInternal",
+                    "value": "2019-03-18T16:53:20.823Z"
+                }
+            ]
+        }
+    }
     }
 };
 
@@ -95,6 +110,25 @@ const ctStyleOlder = {
 
 const jestaStyle = parseStyleMessageCt(message);
 const mockedCtHelpers = getCtHelpers(validParams);
+
+describe('getCtStyleAttributeValue', () => {
+  it('returns the correct staged value for the given style', () => {
+    const actual = getCtStyleAttributeValue(ctStyleNewer, 'styleLastModifiedInternal');
+    const expected = '2020-03-18T16:53:20.823Z';
+    expect(actual).toBe(expected);
+  });
+
+  it('returns the correct current value for the given style', () => {
+    const actual = getCtStyleAttributeValue(ctStyleNewer, 'styleLastModifiedInternal', true);
+    const expected = '2019-03-18T16:53:20.823Z';
+    expect(actual).toBe(expected);
+  });
+
+  it('returns `null` if the style lacks the given attribute', () => {
+    const emptyStyle = {};
+    expect(getCtStyleAttributeValue(emptyStyle, 'foo')).toBe(null);
+  });
+});
 
 describe('consumeCatalogMessageCt', () => {
   it('returns a message with correctly formatted localization keys', () => {
