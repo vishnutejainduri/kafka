@@ -129,7 +129,7 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
  * from the master variant. Returns `null` if the attribute does not exist.
  * @param {Object} ctStyle The product as stored in CT.
  * @param {String} attributeName Name of the attribute whose value should be returned.
- * @param {String} current Indicates whether to return the value from the current product or the staged product.
+ * @param {Boolean} current Indicates whether to return the value from the current product or the staged product.
  */
 const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
   try {
@@ -147,7 +147,11 @@ const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
 };
 
 const getCtStyleDate = ctStyle => {
-  const dateString = getCtStyleAttributeValue(ctStyle, 'styleLastModifiedInternal');
+  const dateString = (
+    getCtStyleAttributeValue(ctStyle, 'styleLastModifiedInternal', false) || // if there's a staged product, get its modified date
+    getCtStyleAttributeValue(ctStyle, 'styleLastModifiedInternal', true) // otherwise, get the modified date of the current product
+  );
+
   if (!dateString) return null;
   return new Date(dateString);
 };

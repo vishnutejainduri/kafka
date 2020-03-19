@@ -149,11 +149,11 @@ describe('consumeCatalogMessageCt', () => {
 });
 
 describe('existingCtStyleIsNewer', () => {
-  it('returns true if existing CT style is newer than the given style from JESTA', () => {
+  it('returns true if existing CT style is newer than the given JESTA style', () => {
     expect(existingCtStyleIsNewer(ctStyleNewer, jestaStyle)).toBe(true);
   });
 
-  it ('returns false if existing CT style is older than given JEST style', () => {
+  it ('returns false if existing CT style is older than the given JESTA style', () => {
     expect(existingCtStyleIsNewer(ctStyleOlder, jestaStyle)).toBe(false);
   });
 
