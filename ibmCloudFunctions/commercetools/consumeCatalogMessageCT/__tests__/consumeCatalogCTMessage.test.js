@@ -61,6 +61,8 @@ const validParams = {
   }]
 };
 
+const message = validParams.messages[0];
+
 const ctStyleNewer = {
   "masterData": {
       "staged": {
@@ -91,8 +93,26 @@ const ctStyleOlder = {
     }
 };
 
-const jestaStyle = parseStyleMessageCt(validParams.messages[0]);
+const jestaStyle = parseStyleMessageCt(message);
 const mockedCtHelpers = getCtHelpers(validParams);
+
+describe('consumeCatalogMessageCt', () => {
+  it('returns a message with correctly formatted localization keys', () => {
+    const actualKeys = Object.keys(parseStyleMessageCt(message).brandName);
+    const expectedKeys = ['en-CA', 'fr-CA'];
+    expect(actualKeys).toEqual(expect.arrayContaining(expectedKeys));
+  });
+
+  it('does not return a message with `null` localization values', () => {
+    const actualValue = parseStyleMessageCt(message).advice['en-CA'];
+    expect(actualValue).not.toBe(null);
+  });
+
+  it('returns a message with a `styleLastModifiedInternal` date', () => {
+    const actualValue = parseStyleMessageCt(message).styleLastModifiedInternal;
+    expect(actualValue).toEqual(expect.any(Date));
+  });
+});
 
 describe('existingCtStyleIsNewer', () => {
   it('returns true if existing CT style is newer than the given style from JESTA', () => {
