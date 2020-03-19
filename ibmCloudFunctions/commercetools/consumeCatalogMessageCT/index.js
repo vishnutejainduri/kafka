@@ -30,8 +30,8 @@ const main = params => {
   const stylesToCreateOrUpdate = (
     params.messages
       .filter(addErrorHandling(filterStyleMessages))
-      .filter(addErrorHandling(style => style.webStatus)) // webStatus === `false` indicates that the style shouldn't be available online, we we don't store these styles
       .map(addErrorHandling(parseStyleMessage))
+      .filter(addErrorHandling(style => style.webStatus)) // false `webStatus` indicates that the style shouldn't be available online, we we don't store these styles
       .map(addErrorHandling(formatLanguageKeys))
   );
 
@@ -45,4 +45,6 @@ const main = params => {
     .catch(handleErrors);
 };
 
-module.exports = addLoggingToMain(main, messagesLogs);
+global.main = addLoggingToMain(main, messagesLogs);
+
+module.exports = global.main;

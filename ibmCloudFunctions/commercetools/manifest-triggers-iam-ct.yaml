@@ -1,5 +1,5 @@
     triggers:
-      catalog-trigger:
+      catalog-ct-trigger:
         feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
