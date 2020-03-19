@@ -19,6 +19,6 @@ packages:
       ctpClientId: $CTP_CLIENT_ID
       ctpClientSecret: $CTP_CLIENT_SECRET
       ctpAuthUrl: $CTP_AUTH_URL
-      ctpAPIUrl: $CTP_API_URL
+      ctpApiUrl: $CTP_API_URL
       ctpScopes: $CTP_SCOPES # see https://docs.commercetools.com/http-api-scopes
       productTypeId: $PRODUCT_TYPE_ID # reference to the Product Type on CT
