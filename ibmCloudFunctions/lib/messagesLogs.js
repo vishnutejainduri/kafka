@@ -112,6 +112,24 @@ async function storeBatch(params) {
     }
 }
 
+async function updateBatchWithFailureIndexes(params, failureIndexes) {
+    try {
+        const collection = await getMessagesCollection(params);
+        const transactionId = process.env.__OW_TRANSACTION_ID;
+        const result = await collection
+            .updateOne({
+                activationId: process.env.__OW_ACTIVATION_ID,
+                transactionId,
+                resolved: 'partial',
+                failureIndexes
+            });
+        return result;
+    } catch (error) {
+        log(createLog.messagesLog.failedToUpdateBatchWithFailureIndexes(error));
+        return error;
+    }
+}
+
 async function getStoreDlqMessages(params) {
     const collection = await getDlqCollection(params);
     return async function(messages, metadata ) {
@@ -235,6 +253,7 @@ async function storeInvalidMessages(params, invalidMessages) {
 module.exports = {
     getMessagesCollection,
     storeBatch,
+    updateBatchWithFailureIndexes,
     findUnresolvedBatches,
     findTimedoutBatchesActivationIds,
     getFindMessages,
@@ -245,5 +264,5 @@ module.exports = {
     getRetryBatches,
     getUpdateRetryBatch,
     getDeleteRetryBatch,
-    storeInvalidMessages
+    storeInvalidMessages,
 };

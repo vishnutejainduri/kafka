@@ -45,7 +45,8 @@ log.messageFailures = (messageFailures) => {
 const createLog = {
     messagesLog: {
         failedToStoreBatch: (error) => `Failed to store batch of messages: ${error}`,
-        failedToResolveBatch: (error) => `Failed to resolve batch of messages: ${error}`
+        failedToResolveBatch: (error) => `Failed to resolve batch of messages: ${error}`,
+        failedToUpdateBatchWithFailureIndexes: (error) => `Failed to update batch of messages with failure indexes: ${error}`
     },
     params: (cfName, params) => {
         const { messages, ...paramsExcludingMessages } = params;
