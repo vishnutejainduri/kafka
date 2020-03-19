@@ -124,7 +124,7 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
 
 /**
  * Returns the value of the attribute in the given CT style. The value is taken
- * from the master variant. Returns `null` if the attribute does not exist.
+ * from the master variant. Throws an error if the attribute is not found.
  * @param {Object} ctStyle The product as stored in CT.
  * @param {String} attributeName Name of the attribute whose value should be returned.
  * @param {Boolean} current Indicates whether to return the value from the current product or the staged product.
