@@ -58,10 +58,8 @@ const getActionsFromStyle = style => {
     : null;
 
   const allUpdateActions = (
-    [...customAttributeUpdateActions,
-      nameUpdateAction,
-      descriptionUpdateAction
-    ].filter(Boolean) // removes the `null` actions, if there are any
+    [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction]
+      .filter(Boolean) // removes the `null` actions, if there are any
   );
 
   return allUpdateActions;
