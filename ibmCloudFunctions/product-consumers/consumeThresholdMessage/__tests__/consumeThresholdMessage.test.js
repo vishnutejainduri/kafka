@@ -35,4 +35,10 @@ describe('consumeThresholdMessage', () => {
         // returns nothing/undefined if successfully run
         expect(response).toEqual(undefined);
     });
+    it('correct message; threshold is actually integer', async () => {
+        params.messages[0].value.THRESHOLD = 3;
+        const response = await consumeThresholdMessage(params);
+        // returns nothing/undefined if successfully run
+        expect(response).toEqual(undefined);
+    });
 });

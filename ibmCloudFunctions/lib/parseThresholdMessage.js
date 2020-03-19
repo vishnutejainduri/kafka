@@ -30,7 +30,7 @@ function parseThresholdMessage(msg) {
 
     return {
         skuId: msg.value.SKU_ID,
-        threshold: convertToInteger(msg.value.THRESHOLD)
+        threshold: Number.isInteger(msg.value.THRESHOLD) ? msg.value.THRESHOLD : convertToInteger(msg.value.THRESHOLD)
     };
 }
 
