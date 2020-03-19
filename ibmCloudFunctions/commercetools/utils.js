@@ -129,24 +129,18 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
  * @param {String} attributeName Name of the attribute whose value should be returned.
  * @param {Boolean} current Indicates whether to return the value from the current product or the staged product.
  */
-const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
-  try {
-    return (
-      ctStyle
-        .masterData[current ? 'current' : 'staged']
-        .masterVariant
-        .attributes
-        .find(attribute => attribute.name === attributeName)
-        .value
-      );
-  } catch(err) {
-    return null;
-  }
-};
+const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => (
+  ctStyle
+    .masterData[current ? 'current' : 'staged']
+    .masterVariant
+    .attributes
+    .find(attribute => attribute.name === attributeName)
+    .value
+);
 
 const getCtStyleDate = ctStyle => {
-  const stagedDateString = getCtStyleAttributeValue(ctStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL, false);
-  const currentDateString = getCtStyleAttributeValue(ctStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL, true);
+  const stagedDateString = ctStyle.masterData.staged ? getCtStyleAttributeValue(ctStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL, false) : null;
+  const currentDateString = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL, true) : null;
   const dateString = stagedDateString || currentDateString;
 
   if (!dateString) return null;
@@ -156,7 +150,12 @@ const getCtStyleDate = ctStyle => {
 // Used to determine whether we should update the style in CT. Deals with race
 // conditions.
 const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
-  const existingCtStyleDate = getCtStyleDate(existingCtStyle);
+  let existingCtStyleDate;
+  try {
+    existingCtStyleDate = getCtStyleDate(existingCtStyle);
+  } catch (err) {
+    existingCtStyleDate = null;
+  }
 
   if ((!existingCtStyleDate) || !(givenStyle.styleLastModifiedInternal)) {
     return false;
