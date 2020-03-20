@@ -112,22 +112,24 @@ const jestaStyle = parseStyleMessageCt(message);
 const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('formatLanguageKeys', () => {
-  const objectWithIncorrectlyFormattedKeys = {'en': 'foo', 'fr': 'bar'};
-  const objectWithCorrectlyFormattedKeys = {'en-CA': 'foo', 'fr-CA': 'bar'};
+  const localizedStringWithWrongKeys = {'en': 'foo', 'fr': 'bar'};
+  const localizedStringWithRightKeys = {'en-CA': 'foo', 'fr-CA': 'bar'};
+  const messageWithWrongLocalizedString = { 'foo': localizedStringWithWrongKeys };
+  const messageWithRightLocalizedString = { 'foo': localizedStringWithRightKeys };
 
-  it('when given an object, returns an object that is the same expect its language keys are CT-style', () => {
-    expect(formatLanguageKeys(objectWithIncorrectlyFormattedKeys)).toMatchObject(objectWithCorrectlyFormattedKeys);
+  it('when given an message object, returns an message object that is the same expect its language keys are CT-style', () => {
+    expect(formatLanguageKeys(messageWithWrongLocalizedString)).toMatchObject(messageWithRightLocalizedString);
   });
 
-  it('correctly formats nested objects', () => {
-    const nestedObjectWithIncorrectKeys = { foo: objectWithIncorrectlyFormattedKeys };
-    const nestedObjectWithCorrectKeys = { foo: objectWithCorrectlyFormattedKeys };
-    expect(formatLanguageKeys(nestedObjectWithIncorrectKeys)).toMatchObject(nestedObjectWithCorrectKeys);
+  it('works when a message has multiple localized strings associated with it', () => {
+    const messageWithTwoWrongLocalizedStrings = { 'foo': localizedStringWithWrongKeys, 'bar': localizedStringWithWrongKeys };
+    const messageWithTwoRightLocalizedStrings = { 'foo': localizedStringWithRightKeys, 'bar': localizedStringWithRightKeys };
+    expect(formatLanguageKeys(messageWithTwoWrongLocalizedStrings)).toMatchObject(messageWithTwoRightLocalizedStrings);
   });
 
-  it('when given a non-object, returns what it was given', () => {
-    expect(formatLanguageKeys(1)).toBe(1);
-    expect(formatLanguageKeys('foo')).toBe('foo');
+  it('does not change the top-level keys of a message', () => {
+    const messageWithConfusingKeyNames = { fr: 'not a localized string, despite the key name', foo: 'bar'};
+    expect(formatLanguageKeys(messageWithConfusingKeyNames)).toMatchObject(messageWithConfusingKeyNames);
   });
 });
 
