@@ -268,5 +268,6 @@ module.exports = {
   existingCtStyleIsNewer,
   getCtStyleAttributeValue,
   createOrUpdateSku, // TODO: wrap in with retry HOF
-  formatSkuRequestBody
+  formatSkuRequestBody,
+  getActionsFromSku
 };

@@ -1,3 +1,4 @@
+const { getActionsFromSku } = require('../../utils');
 const consumeSkuMessageCT = require('..');
 
 jest.mock('@commercetools/sdk-client');
@@ -39,8 +40,44 @@ describe('consumeSkuMessageCT', () => {
     return expect(consumeSkuMessageCT(invalidParams)).rejects.toThrow();
   });
 
-  it('returns  `undefined` if given valid params', async () => {
+  xit('returns `undefined` if given valid params', async () => {
     const response = await consumeSkuMessageCT(validParams);
     expect(response).toBeUndefined();
+  });
+});
+
+describe('getActionsFromSku', () => {
+  const sku = { id: 'sku-01', styleId: '1', colorId: 'c1', sizeId: 's1'};
+
+  it('returns an array of objects', () => {
+    expect(Array.isArray(getActionsFromSku(sku))).toBe(true);
+  });
+
+  it('returns an array of objects that are the correct CT update actions', () => {
+    const expectedActions = [
+      {
+        action: 'setAttribute',
+        sku: 'sku-01',
+        name: 'colorId',
+        value: 'c1'
+      },
+      {
+        action: 'setAttribute',
+        sku: 'sku-01',
+        name: 'sizeId',
+        value: 's1'
+      },
+    ];
+    const actualActions = getActionsFromSku(sku);
+
+    expect(actualActions.length).toBe(expectedActions.length);
+    expect(actualActions[0]).toMatchObject(expectedActions[0]);
+    expect(actualActions[1]).toMatchObject(expectedActions[1]);
+  });
+
+  it('ignores attributes that are not defined on SKUs in CT', () => {
+    const skuWithInvalidAttribute = { 'foo': 'bar' };
+    const actualActions = getActionsFromSku(skuWithInvalidAttribute);
+    expect(actualActions.length).toBe(0);
   });
 });
