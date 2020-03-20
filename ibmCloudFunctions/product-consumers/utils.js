@@ -118,7 +118,7 @@ const addRetries = (func, retryLimit, logger = () => {}) => {
             return await func(...args);
         } catch(err) {
             logger(formatLoggerErrorMessage(retries, retryLimit, err));
-            if (retries === retryLimit) throw err;
+            if (retries === retryLimit) return err;
             return await functionWithRetries(retries + 1, ...args);
         }
     };
