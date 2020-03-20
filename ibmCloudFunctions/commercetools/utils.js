@@ -173,10 +173,100 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     return updateStyle(style, existingCtStyle.version, ctHelpers);
 };
 
+//
+// SKU-related helpers
+//
+const isSkuAttributeThatShouldUpdate = attribute => {
+  const skuAttributesThatShouldUpdate = [
+    'colorId',
+    'sizeId',
+    'size',
+    'lastModifiedDate' // TODO: change name to be sku-specific
+  ];
+
+  return skuAttributesThatShouldUpdate.includes(attribute);
+};
+
+const getActionsFromSku = sku => {
+  const attributes = Object.keys(sku).filter(isSkuAttributeThatShouldUpdate);
+
+  return attributes.map(attribute => ({
+    action: 'setAttribute',
+    sku: sku.id,
+    name: attribute,
+    value: sku[attribute]
+  }));
+};
+
+const formatSkuRequestBody = (sku, version, create) => {
+  const actionsThatSetAttributes = getActionsFromSku(sku);
+  const actionThatCreatesASku = { action: 'addVariant',  sku: sku.id };
+  const actionsIncludingCreateAction = [actionThatCreatesASku, ...actionsThatSetAttributes];
+
+  return JSON.stringify({
+    version,
+    actions: create ? actionsIncludingCreateAction : actionsThatSetAttributes
+  });
+};
+
+const createSku = (sku, version, { client, requestBuilder }) => {
+  const method = 'POST';
+  const uri = requestBuilder.products.byKey(sku.styleId).build();
+  const body = formatSkuRequestBody(sku, version, true);
+
+  console.log({ body });
+
+  return client.execute({ method, uri, body });
+};
+
+const updateSku = (sku, version, { client, requestBuilder }) => {
+  const method = 'POST';
+  const uri = requestBuilder.products.byKey(sku.styleId).build();
+  const body = formatSkuRequestBody(sku, version, false);
+
+  return client.execute({ method, uri, body });
+};
+
+// Note: Does not return the master variant (which should be a placeholder that doesn't correspond to an HR SKU)
+const getSkusFromCtStyle = ctStyle => {
+  const stagedSkus = ctStyle.masterData.staged.variants;
+  const currentSkus = ctStyle.masterData.current.variants;
+  return [...stagedSkus, ...currentSkus];
+};
+
+const existingCtSkuIsNewer = () => false; // TODO
+
+const createOrUpdateSku = async (ctHelpers, sku) => {
+  const existingCtStyle = await getExistingCtStyle(sku.styleId, ctHelpers);
+  if (!existingCtStyle) throw new Error(`Style with id ${sku.styleId} does not exist in CT`);
+
+  // const existingStagedSku = getSkuFromStyle(sku, existingCtStyle, true);
+  // const existingCurrentSku = getSkuFromStyle(sku, existingCtStyle, true);
+  // const skuExistsInCt = Boolean(existing || staged).
+
+  const existingSkus = getSkusFromCtStyle(existingCtStyle);
+  const skuExistsInCt = existingSkus.some(existingSku => existingSku.sku === sku.id); // in CT, the SKU ID is simply called 'sku'
+  // TODO: Get existingSku--staged if exists, current otherwise. Need to pass into `existingCtSkuIsNewer`.
+
+  if (!skuExistsInCt) {
+    console.log('creating new sku')
+    return createSku(sku, existingCtStyle.version, ctHelpers);
+  } if (existingCtSkuIsNewer()) {
+    return null;
+  }
+  console.log('updating existing sku')
+  return updateSku(sku, existingCtStyle.version, ctHelpers);
+};
+
+
+// TODO: add date checking
+
 module.exports = {
   createStyle,
   updateStyle,
   createOrUpdateStyle: addRetries(createOrUpdateStyle, 2, console.error),
   existingCtStyleIsNewer,
-  getCtStyleAttributeValue
+  getCtStyleAttributeValue,
+  createOrUpdateSku, // TODO: wrap in with retry HOF
+  formatSkuRequestBody
 };
