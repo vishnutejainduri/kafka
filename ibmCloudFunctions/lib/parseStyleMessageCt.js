@@ -27,7 +27,7 @@ const formatLanguageKeys = message => (
   }, {})
 );
 
-// Dates in JESTA are stored as the number of milliseconds since the epoch.
+// Dates that we get from Kafka are in Unix time (possibly shifted to ET?).
 // This function standardizes the format of the dates and sets the key to the
 // corresponding attribute in CT.
 const formatDates = message => ({
