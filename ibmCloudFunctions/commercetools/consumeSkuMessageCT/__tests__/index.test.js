@@ -1,4 +1,4 @@
-const { getActionsFromSku } = require('../../utils');
+const { getActionsFromSku, formatSkuRequestBody } = require('../../utils');
 const consumeSkuMessageCT = require('..');
 
 jest.mock('@commercetools/sdk-client');
@@ -79,5 +79,25 @@ describe('getActionsFromSku', () => {
     const skuWithInvalidAttribute = { 'foo': 'bar' };
     const actualActions = getActionsFromSku(skuWithInvalidAttribute);
     expect(actualActions.length).toBe(0);
+  });
+});
+
+describe('formatSkuRequestBody', () => {
+  const sku = { id: 'sku-01', styleId: '1', colorId: 'c1', sizeId: 's1' };
+
+  it('returns a string', () => {
+    expect(typeof formatSkuRequestBody(sku, 1, true) === 'string').toBe(true);
+  });
+
+  it('returns the correct body to create a new SKU', () => {
+    const expectedBody = '{"version":1,"actions":[{"action":"addVariant","sku":"sku-01"},{"action":"setAttribute","sku":"sku-01","name":"colorId","value":"c1"},{"action":"setAttribute","sku":"sku-01","name":"sizeId","value":"s1"}]}';
+    const actualBody = formatSkuRequestBody(sku, 1, true);
+    expect(actualBody).toBe(expectedBody);
+  });
+
+  it('returns the correct body to update an existing a SKU', () => {
+    const expectedBody = '{"version":2,"actions":[{"action":"setAttribute","sku":"sku-01","name":"colorId","value":"c1"},{"action":"setAttribute","sku":"sku-01","name":"sizeId","value":"s1"}]}';
+    const actualBody = formatSkuRequestBody(sku, 2, false);
+    expect(actualBody).toBe(expectedBody);
   });
 });
