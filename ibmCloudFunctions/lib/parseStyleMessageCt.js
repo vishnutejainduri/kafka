@@ -3,9 +3,10 @@ const { parseStyleMessage } = require('./parseStyleMessage');
 // Helper function for `formatLanguageKeys`. Returns true iff given object of
 // the form {fr: 'foo', en: 'bar'}. Order of the keys doesn't matter.
 const isLocalizedString = value => (
+  value &&
   typeof value === 'object' &&
-  typeof value.fr === 'string' &&
-  typeof value.en === 'string' &&
+  Object.prototype.hasOwnProperty.call(value, 'en') &&
+  Object.prototype.hasOwnProperty.call(value, 'fr') &&
   (Object.keys(value).length === 2)
 );
 
