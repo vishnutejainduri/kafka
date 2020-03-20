@@ -150,16 +150,9 @@ const getCtStyleDate = ctStyle => {
 // Used to determine whether we should update the style in CT. Deals with race
 // conditions.
 const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
-  let existingCtStyleDate;
-  try {
-    existingCtStyleDate = getCtStyleDate(existingCtStyle);
-  } catch (err) {
-    existingCtStyleDate = null;
-  }
-
-  if ((!existingCtStyleDate) || !(givenStyle.styleLastModifiedInternal)) {
-    return false;
-  }
+  const existingCtStyleDate = getCtStyleDate(existingCtStyle);
+  if (!existingCtStyleDate) throw new Error('CT style lacks last modified date');
+  if (!givenStyle.styleLastModifiedInternal) throw new Error('JESTA style lacks last modified date');
 
   return existingCtStyleDate.getTime() > givenStyle.styleLastModifiedInternal.getTime();
 };

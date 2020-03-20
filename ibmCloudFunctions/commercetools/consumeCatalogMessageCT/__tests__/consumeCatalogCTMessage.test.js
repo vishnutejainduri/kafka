@@ -174,14 +174,14 @@ describe('existingCtStyleIsNewer', () => {
     expect(existingCtStyleIsNewer(ctStyleOlder, jestaStyle)).toBe(false);
   });
 
-  it('returns false if JESTA style lacks a value for `styleLastModifiedInternal`', () => {
+  it('throws an error if JESTA style lacks a value for `styleLastModifiedInternal`', () => {
     const jestaStyleWithoutModifiedDate = {...jestaStyle, styleLastModifiedInternal: undefined };
-    expect(existingCtStyleIsNewer(ctStyleOlder, jestaStyleWithoutModifiedDate)).toBe(false);
+    expect(() => existingCtStyleIsNewer(ctStyleOlder, jestaStyleWithoutModifiedDate)).toThrow();
   });
 
-  it('returns false if CT style lacks a value for `styleLastModifiedInternal`', () => {
+  it('throws an error if CT style lacks a value for `styleLastModifiedInternal`', () => {
     const ctStyleWithoutDate = {};
-    expect(existingCtStyleIsNewer(ctStyleWithoutDate, jestaStyle)).toBe(false);
+    expect(() => existingCtStyleIsNewer(ctStyleWithoutDate, jestaStyle)).toThrow();
   });
 });
 
