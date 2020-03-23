@@ -1,5 +1,6 @@
 const { getExistingCtStyle } = require('../utils');
 const { attributeNames } = require('../constants');
+const { addRetries } = require('../../product-consumers/utils');
 
 const isSkuAttributeThatShouldUpdate = attribute => {
   const skuAttributesThatShouldUpdate = [
@@ -99,7 +100,6 @@ const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
 const createOrUpdateSku = async (ctHelpers, sku) => {
   const existingCtStyle = await getExistingCtStyle(sku.styleId, ctHelpers);
   if (!existingCtStyle) throw new Error(`Style with id ${sku.styleId} does not exist in CT`);
-
   const existingCtSku = getCtSkuFromCtStyle(sku.id, existingCtStyle);
   
   if (!existingCtSku) {
@@ -111,7 +111,7 @@ const createOrUpdateSku = async (ctHelpers, sku) => {
 };
 
 module.exports = {
-  createOrUpdateSku, // TODO: wrap in with retry HOF
+  createOrUpdateSku: addRetries(createOrUpdateSku, 2, console.error),
   formatSkuRequestBody,
   getActionsFromSku,
   existingCtSkuIsNewer,
