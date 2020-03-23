@@ -49,11 +49,11 @@ describe('consumeSkuMessageCT', () => {
 describe('getActionsFromSku', () => {
   const sku = { id: 'sku-01', styleId: '1', colorId: 'c1', sizeId: 's1'};
 
-  it('returns an array of objects', () => {
+  it('returns an array', () => {
     expect(Array.isArray(getActionsFromSku(sku))).toBe(true);
   });
 
-  it('returns an array of objects that are the correct CT update actions', () => {
+  it('returns the correct CT update actions', () => {
     const expectedActions = [
       {
         action: 'setAttribute',
