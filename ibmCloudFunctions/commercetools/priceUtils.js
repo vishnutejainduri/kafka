@@ -2,6 +2,14 @@ const { getExistingCtStyle, getCtStyleAttribute, updateStyle, getProductType } =
 const { attributeNames } = require('./constantsCt');
 const { generateUpdateFromParsedMessage } = require('../lib/parsePriceMessage');
 
+const getCtStylePrice = (existingCtStyle, current = false) => {
+  const priceObj = existingCtStyle
+    .masterData[current ? 'current' : 'staged']
+    .masterVariant
+    .prices[0]
+  return priceObj ? priceObj.value : null;
+};
+
 const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
     const existingCtStyle = await getExistingCtStyle(priceUpdate.styleId, ctHelpers);
 
@@ -11,7 +19,8 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
     }
 
     const priceData = {
-      onlineSalePrice: getCtStyleAttribute(existingCtStyle, attributeNames.ONLINE_SALE_PRICE)
+      onlineSalePrice: getCtStyleAttribute(existingCtStyle, attributeNames.ONLINE_SALE_PRICE),
+      currentPrice: getCtStylePrice(existingCtStyle, true) 
     };
     const styleData = {
       originalPrice: getCtStyleAttribute(existingCtStyle, attributeNames.ORIGINAL_PRICE)
