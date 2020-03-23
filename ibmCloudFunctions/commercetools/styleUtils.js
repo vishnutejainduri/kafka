@@ -9,12 +9,9 @@ const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
   const uri = requestBuilder.products.byKey(styleId).build();
 
   try {
-    console.log('uri', uri);
     const response = await client.execute({ method, uri });
-    console.log('response', response);
     return response.body;
   } catch (err) {
-      console.log('err', err);
       if (err.code === 404) return null; // indicates that style doesn't exist in CT
       throw err;
   }
@@ -33,7 +30,11 @@ const isCustomAttribute = attribute => {
     'advice',
     'webStatus',
     'vsn',
-    'styleLastModifiedInternal'
+    'styleLastModifiedInternal',
+    'originalPrice',
+    'onlineSalePrice',
+    'isOnlineSale',
+    'onlineDiscount'
   ];
 
   return customAttributes.includes(attribute);
@@ -77,6 +78,8 @@ const updateStyle = async (style, version, { client, requestBuilder }) => {
   const uri = requestBuilder.products.byKey(style.id).build();
   const actions = getActionsFromStyle(style);
   const body = JSON.stringify({ version, actions });
+
+  console.log('body', body);
 
   return client.execute({ method, uri, body });
 };
@@ -132,14 +135,14 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
  * @param {String} attributeName Name of the attribute whose value should be returned.
  * @param {Boolean} current Indicates whether to return the value from the current product or the staged product.
  */
-const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => (
-  ctStyle
+const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
+  const attribute = ctStyle
     .masterData[current ? 'current' : 'staged']
     .masterVariant
     .attributes
-    .find(attribute => attribute.name === attributeName)
-    .value
-);
+    .find(attribute => attribute.name === attributeName);
+  return attribute ? attribute.value : null;
+};
 
 const getCtStyleAttribute = (ctStyle, attributeName) => {
   const stagedAttribute = ctStyle.masterData.staged ? getCtStyleAttributeValue(ctStyle, attributeName, false) : null;
