@@ -95,7 +95,7 @@ async function storeBatch(params) {
         let messages = params.messages;
         if (params.messages === null) {
             // for messages in a sequence, only the first step has the messages as stored in Kafka topics
-            // for the subsequent steps we copy the messages e.g. see calculateAvailableToSell/index.js 
+            // for the subsequent steps we copy the messages e.g. see calculateAvailableToSell/index.js
             messages = (await collection.findOne({ transactionId }, { projection: { messages: 1 }})).messages;
         }
         const result = await collection
@@ -108,6 +108,25 @@ async function storeBatch(params) {
         return result;
     } catch (error) {
         log(createLog.messagesLog.failedToStoreBatch(error));
+        return error;
+    }
+}
+
+async function updateBatchWithFailureIndexes(params, failureIndexes) {
+    try {
+        const collection = await getMessagesCollection(params);
+        const transactionId = process.env.__OW_TRANSACTION_ID;
+        const result = await collection
+            .updateOne({
+                activationId: process.env.__OW_ACTIVATION_ID,
+                transactionId,
+            }, {
+              resolved: 'partial',
+              failureIndexes
+            });
+        return result;
+    } catch (error) {
+        log(createLog.messagesLog.failedToUpdateBatchWithFailureIndexes(error));
         return error;
     }
 }
@@ -195,7 +214,7 @@ async function getStoreValues(params) {
 async function getDeleteBatch(params) {
     const collection = await getMessagesCollection(params);
     return async function(activationId) {
-        const result = await collection.deleteOne({ activationId });        
+        const result = await collection.deleteOne({ activationId });
         return result;
     }
 }
@@ -235,6 +254,7 @@ async function storeInvalidMessages(params, invalidMessages) {
 module.exports = {
     getMessagesCollection,
     storeBatch,
+    updateBatchWithFailureIndexes,
     findUnresolvedBatches,
     findTimedoutBatchesActivationIds,
     getFindMessages,
@@ -245,5 +265,5 @@ module.exports = {
     getRetryBatches,
     getUpdateRetryBatch,
     getDeleteRetryBatch,
-    storeInvalidMessages
+    storeInvalidMessages,
 };
