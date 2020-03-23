@@ -182,7 +182,7 @@ const isSkuAttributeThatShouldUpdate = attribute => {
     'colorId',
     'sizeId',
     'size',
-    'lastModifiedDate' // TODO: change name to be sku-specific
+    'skuLastModifiedInternal'
   ];
 
   return skuAttributesThatShouldUpdate.includes(attribute);
@@ -215,8 +215,6 @@ const createSku = (sku, version, { client, requestBuilder }) => {
   const uri = requestBuilder.products.byKey(sku.styleId).build();
   const body = formatSkuRequestBody(sku, version, true);
 
-  console.log({ body });
-
   return client.execute({ method, uri, body });
 };
 
@@ -228,14 +226,8 @@ const updateSku = (sku, version, { client, requestBuilder }) => {
   return client.execute({ method, uri, body });
 };
 
-// Note: Does not return the master variant (which should be a placeholder that doesn't correspond to an HR SKU)
-// const getSkusFromCtStyle = ctStyle => {
-//   const stagedSkus = ctStyle.masterData.staged.variants;
-//   const currentSkus = ctStyle.masterData.current.variants;
-//   return [...stagedSkus, ...currentSkus];
-// };
-
-// Note: Does not check the master variant
+// Note: This ignores the master variant, which is a placeholder that doesn't
+// correspond to an actual SKU
 const getCtSkuFromCtStyle = (skuId, ctStyle, current) => {
   const skus = ctStyle.masterData[current ? 'current' : 'staged'].variants;
   return skus.find(variant => variant.sku === skuId); // in CT, the SKU ID is simply called 'sku'
@@ -270,28 +262,13 @@ const createOrUpdateSku = async (ctHelpers, sku) => {
   const newestExistingCtSku = existingCtStagedSku || existingCtCurrentSku;
   const skuExistsInCt = Boolean(newestExistingCtSku);
 
-  console.log('existingCtStagedSku', existingCtStagedSku);
-  console.log('existingCtCurrentSku', existingCtCurrentSku);
-  console.log('newestExistingCtSku', newestExistingCtSku);
-  console.log('skuExistsInCt', skuExistsInCt)
-
-  // const existingSkus = getSkusFromCtStyle(existingCtStyle);
-  // const skuExistsInCt = existingSkus.some(existingSku => existingSku.sku === sku.id); // in CT, the SKU ID is simply called 'sku'
-  // TODO: Get existingSku--staged if exists, current otherwise. Need to pass into `existingCtSkuIsNewer`.
-
   if (!skuExistsInCt) {
-    console.log('creating new sku')
     return createSku(sku, existingCtStyle.version, ctHelpers);
   } if (existingCtSkuIsNewer(newestExistingCtSku, sku)) {
-    console.log('existing CT SKU is newer, so returning null')
     return null;
   }
-  console.log('updating existing sku')
   return updateSku(sku, existingCtStyle.version, ctHelpers);
 };
-
-
-// TODO: add date checking
 
 module.exports = {
   createStyle,
