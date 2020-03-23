@@ -1,5 +1,5 @@
 const { addRetries } = require('../product-consumers/utils');
-const { attributeNames } = require('./constants');
+const { attributeNames, currencyCodes } = require('./constants');
 
 const getProductType = async (productTypeId, { client, requestBuilder }) => {
   const method = 'GET';
@@ -57,17 +57,10 @@ const isCustomAttribute = attribute => {
 // Returns an array of actions, each of which tells CT to update a different
 // attribute of the given style
 const getActionsFromStyle = (style, productType) => {
-  console.log('getActionsFromStyle');
   const customAttributesToUpdate = Object.keys(style).filter(isCustomAttribute);
 
   const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => {
-      console.log('productType.attributes', productType.attributes);
-      const attributeType = productType.attributes.find((attribute) => {
-        console.log(attribute.name + ":" + attribute);
-        return attribute.name === attribute
-      })
-      console.log('fuck', attributeType);
-      console.log('attributeType', attributeType);
+      const attributeType = productType.attributes.find((attributeType) => attributeType.name === attribute).type.name;
       const actionObj = {
         action: 'setAttributeInAllVariants',
         name: attribute,
@@ -76,7 +69,7 @@ const getActionsFromStyle = (style, productType) => {
       
       if (attributeType === 'money') {
         actionObj.value = {
-          currencyCode: 'CAD',
+          currencyCode: currencyCodes.CAD,
           centAmount: style[attribute]
         }
       }

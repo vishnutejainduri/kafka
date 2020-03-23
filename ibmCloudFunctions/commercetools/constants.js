@@ -19,6 +19,11 @@ const attributeNames = {
   ONLINE_DISCOUNT: 'onlineDiscount'
 };
 
+const currencyCodes = {
+  CAD: 'CAD'
+};
+
 module.exports = {
-  attributeNames
+  attributeNames,
+  currencyCodes
 };

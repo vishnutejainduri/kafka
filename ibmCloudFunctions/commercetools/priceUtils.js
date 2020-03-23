@@ -17,16 +17,6 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
       originalPrice: getCtStyleAttribute(existingCtStyle, attributeNames.ORIGINAL_PRICE)
     };
 
-    const updatedPrice = generateUpdateFromParsedMessage (priceUpdate, priceData, styleData);
-
-    const priceHasNotChanged = priceData
-        ? (updatedPrice.onlineSalePrice === priceData.onlineSalePrice
-            && updatedPrice.currentPrice === priceData.currentPrice)
-        : (updatedPrice.onlineSalePrice === null);
-    if (priceHasNotChanged) {
-        return null;
-    }
-
     updatedPrice.ctStyleVersion = existingCtStyle.version;
     updatedPrice.id = priceUpdate.styleId;
     updatedPrice.onlineSalePrice = updatedPrice.onlineSalePrice
@@ -35,6 +25,15 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
     updatedPrice.originalPrice = updatedPrice.originalPrice
                                   ? Math.round(updatedPrice.originalPrice * 100)
                                   : null
+
+    const updatedPrice = generateUpdateFromParsedMessage (priceUpdate, priceData, styleData);
+
+
+    const priceHasNotChanged = (updatedPrice.onlineSalePrice === priceData.onlineSalePrice
+                                && updatedPrice.currentPrice === priceData.currentPrice)
+    if (priceHasNotChanged) {
+        return null;
+    }
 
     return updatedPrice;
 };
