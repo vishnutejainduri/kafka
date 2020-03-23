@@ -32,6 +32,13 @@ const parseSkuMessageCt = message => Object.keys(message.value).reduce((parsedMe
     };
   }
 
+  if (attribute === 'SIZEID') {
+    return {
+      ...parsedMessage,
+      [attributeMap.SIZEID]: message.value.SIZEID.toString() // CT expects the sizeId to be a string, and will throw an error if you give it a number
+    };
+  }
+
   return {
     ...parsedMessage,
     [attributeMap[attribute]]: message.value[attribute]

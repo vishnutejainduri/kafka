@@ -23,36 +23,50 @@ const getActionsFromSku = sku => {
   }));
 };
 
-const formatSkuRequestBody = (sku, version, create) => {
-  const actionsThatSetAttributes = getActionsFromSku(sku);
-  const actionThatCreatesASku = { action: 'addVariant',  sku: sku.id };
-  const actionsIncludingCreateAction = [actionThatCreatesASku, ...actionsThatSetAttributes];
+const getCreationAction = (sku, style) => {
+  const attributes = (
+    style.masterData.hasStagedChanges
+      ? style.masterData.staged.masterVariant.attributes
+      : style.masterData.current.masterVariant.attributes
+  );
+
+  return {
+    action: 'addVariant',
+    sku: sku.id,
+    attributes // copies the existing master variant attributes to this variant
+  };
+};
+
+const formatSkuRequestBody = (sku, style, create) => {
+  const actionsThatSetSkuAttributes = getActionsFromSku(sku);
+  const creationAction = getCreationAction(sku, style);
+  const actionsIncludingCreateActions = [creationAction, ...actionsThatSetSkuAttributes];
 
   return JSON.stringify({
-    version,
-    actions: create ? actionsIncludingCreateAction : actionsThatSetAttributes
+    version: style.version,
+    actions: create ? actionsIncludingCreateActions : actionsThatSetSkuAttributes
   });
 };
 
-const createSku = (sku, version, { client, requestBuilder }) => {
+const createSku = (sku, style, { client, requestBuilder }) => {
   const method = 'POST';
   const uri = requestBuilder.products.byKey(sku.styleId).build();
-  const body = formatSkuRequestBody(sku, version, true);
+  const body = formatSkuRequestBody(sku, style, true);
 
   return client.execute({ method, uri, body });
 };
 
-const updateSku = (sku, version, { client, requestBuilder }) => {
+const updateSku = (sku, style, { client, requestBuilder }) => {
   const method = 'POST';
   const uri = requestBuilder.products.byKey(sku.styleId).build();
-  const body = formatSkuRequestBody(sku, version, false);
+  const body = formatSkuRequestBody(sku, style, false);
 
   return client.execute({ method, uri, body });
 };
 
 // Note: This ignores the master variant, which is a placeholder that doesn't
 // correspond to an actual SKU
-const getCtSkuFromCtStyle = (skuId, ctStyle, current) => {
+const getCtSkuFromCtStyle = (skuId, ctStyle, current = false) => {
   const skus = ctStyle.masterData[current ? 'current' : 'staged'].variants;
   return skus.find(variant => variant.sku === skuId); // in CT, the SKU ID is simply called 'sku'
 };
@@ -79,20 +93,20 @@ const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
 
 const createOrUpdateSku = async (ctHelpers, sku) => {
   const existingCtStyle = await getExistingCtStyle(sku.styleId, ctHelpers);
-  console.log('existingStyle?', existingCtStyle);
   if (!existingCtStyle) throw new Error(`Style with id ${sku.styleId} does not exist in CT`);
 
+  // TODO: rely on hasStagedChanges to clean this up
   const existingCtStagedSku = getCtSkuFromCtStyle(sku.id, existingCtStyle, false);
   const existingCtCurrentSku = getCtSkuFromCtStyle(sku.id, existingCtStyle, true);
   const newestExistingCtSku = existingCtStagedSku || existingCtCurrentSku;
   const skuExistsInCt = Boolean(newestExistingCtSku);
 
   if (!skuExistsInCt) {
-    return createSku(sku, existingCtStyle.version, ctHelpers);
+    return createSku(sku, existingCtStyle, ctHelpers);
   } if (existingCtSkuIsNewer(newestExistingCtSku, sku)) {
     return null;
   }
-  return updateSku(sku, existingCtStyle.version, ctHelpers);
+  return updateSku(sku, existingCtStyle, ctHelpers);
 };
 
 module.exports = {

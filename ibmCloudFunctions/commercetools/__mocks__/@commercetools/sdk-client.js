@@ -2,10 +2,16 @@ const ctProduct = {
   version: 1,
   masterData: {
     current: {
-      variants: []
+      variants: [],
+      masterVariant: {
+        attributes: []
+      }
     },
     staged: {
-      variants: []
+      variants: [],
+      masterVariant: {
+        attributes: []
+      }
     }
   }
 };

@@ -85,20 +85,32 @@ describe('getActionsFromSku', () => {
 
 describe('formatSkuRequestBody', () => {
   const sku = { id: 'sku-01', styleId: '1', colorId: 'c1', sizeId: 's1' };
+  const style = {
+    version: 1,
+    masterData: {
+      current: {
+        variants: [],
+        masterVariant: {
+          attributes: [{ name: 'season', value: 'Winter 2020' }]
+        }
+      }
+    },
+    hasStagedChanges: false
+  };
 
   it('returns a string', () => {
-    expect(typeof formatSkuRequestBody(sku, 1, true) === 'string').toBe(true);
+    expect(typeof formatSkuRequestBody(sku, style, true) === 'string').toBe(true);
   });
 
   it('returns the correct body to create a new SKU', () => {
-    const expectedBody = '{"version":1,"actions":[{"action":"addVariant","sku":"sku-01"},{"action":"setAttribute","sku":"sku-01","name":"colorId","value":"c1"},{"action":"setAttribute","sku":"sku-01","name":"sizeId","value":"s1"}]}';
-    const actualBody = formatSkuRequestBody(sku, 1, true);
+    const expectedBody = '{"version":1,"actions":[{"action":"addVariant","sku":"sku-01","attributes":[{"name":"season","value":"Winter 2020"}]},{"action":"setAttribute","sku":"sku-01","name":"colorId","value":"c1"},{"action":"setAttribute","sku":"sku-01","name":"sizeId","value":"s1"}]}';
+    const actualBody = formatSkuRequestBody(sku, style, true);
     expect(actualBody).toBe(expectedBody);
   });
 
   it('returns the correct body to update an existing a SKU', () => {
-    const expectedBody = '{"version":2,"actions":[{"action":"setAttribute","sku":"sku-01","name":"colorId","value":"c1"},{"action":"setAttribute","sku":"sku-01","name":"sizeId","value":"s1"}]}';
-    const actualBody = formatSkuRequestBody(sku, 2, false);
+    const expectedBody = '{"version":1,"actions":[{"action":"setAttribute","sku":"sku-01","name":"colorId","value":"c1"},{"action":"setAttribute","sku":"sku-01","name":"sizeId","value":"s1"}]}';
+    const actualBody = formatSkuRequestBody(sku, style, false);
     expect(actualBody).toBe(expectedBody);
   });
 });
@@ -131,10 +143,16 @@ describe('getCtSkuFromCtStyle', () => {
   const ctStyle = {
     masterData: {
       current: {
-        variants: [{ sku: 'sku-1' }]
+        variants: [{ sku: 'sku-1' }],
+        masterVariant: {
+          attributes: []
+        }
       },
       staged: {
-        variants: [{ sku: 'sku-2' }]
+        variants: [{ sku: 'sku-2' }],
+        masterVariant: {
+          attributes: []
+        }
       }
     }
   };
@@ -167,6 +185,11 @@ describe('parseStyleMessageCt', () => {
 
     expect(parsedMessage.size['en-CA']).toBe(englishSize);
     expect(parseSkuMessageCt(messageThatLacksASize).size['en-CA']).toBe('');
+  });
+
+  it('handles sizeIds correctly', () => {
+    const messageWithANumberForSizeId = { value: { SIZEID: 1 } };
+    expect(parseSkuMessageCt(messageWithANumberForSizeId).sizeId).toBe('1');
   });
 
   it('includes all relevant attributes', () => {
