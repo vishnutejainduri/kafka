@@ -1,4 +1,5 @@
 const { getActionsFromSku, formatSkuRequestBody, existingCtSkuIsNewer, getCtSkuFromCtStyle } = require('../utils');
+const parseSkuMessageCt = require('../../../lib/parseSkuMessageCt');
 const consumeSkuMessageCT = require('..');
 
 jest.mock('@commercetools/sdk-client');
@@ -148,5 +149,36 @@ describe('getCtSkuFromCtStyle', () => {
 
   it('returns `undefined` if no matching SKU exists', () => {
     expect(getCtSkuFromCtStyle('sku-3', ctStyle, true)).toBeUndefined();
+  });
+});
+
+describe('parseStyleMessageCt', () => {
+  const rawMessage = validParams.messages[0];
+  const parsedMessage = parseSkuMessageCt(rawMessage);
+
+  it('handles dates correctly', () => {
+    expect(parsedMessage.skuLastModifiedInternal instanceof Date).toBe(true);
+    expect(parsedMessage.skuLastModifiedInternal.toString()).toBe(new Date(1000000000).toString());
+  });
+
+  it('handles sizes correctly', () => {
+    const englishSize = 'size'
+    const messageThatLacksASize = { value: { SIZE: null } };
+
+    expect(parsedMessage.size['en-CA']).toBe(englishSize);
+    expect(parseSkuMessageCt(messageThatLacksASize).size['en-CA']).toBe('');
+  });
+
+  it('includes all relevant attributes', () => {
+    const expectedMessage = {
+      id: 'skuId',
+      styleId:'styleId',
+      colorId: 'colorId',
+      sizeId: 'sizeId',
+      size: { 'en-CA': 'size' },
+      dimension: 'dimension',
+    };
+
+    expect(parsedMessage).toMatchObject(expectedMessage);
   });
 });

@@ -1,5 +1,6 @@
 const { createOrUpdateSku } = require('../utils');
-const { filterSkuMessage, parseSkuMessage } = require('../../lib/parseSkuMessage');
+const { filterSkuMessage } = require('../../lib/parseSkuMessage');
+const parseSkuMessageCt = require('../../lib/parseSkuMessageCt');
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
 const getCtHelpers = require('../../lib/commercetoolsSdk');
@@ -28,7 +29,7 @@ const main = params => {
   const skusToCreateOrUpdate = (
     params.messages
       .filter(addErrorHandling(filterSkuMessage))
-      .map(addErrorHandling(parseSkuMessage))
+      .map(addErrorHandling(parseSkuMessageCt))
   );
 
   const skuPromises = (

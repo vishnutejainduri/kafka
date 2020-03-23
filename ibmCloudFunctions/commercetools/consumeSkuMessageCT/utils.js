@@ -1,11 +1,12 @@
 const { getExistingCtStyle } = require('../utils');
+const { attributeNames } = require('../constants');
 
 const isSkuAttributeThatShouldUpdate = attribute => {
   const skuAttributesThatShouldUpdate = [
-    'colorId',
-    'sizeId',
-    'size',
-    'skuLastModifiedInternal'
+    attributeNames.COLOR_ID,
+    attributeNames.SIZE_ID,
+    attributeNames.SIZE,
+    attributeNames.SKU_LAST_MODIFIED_INTERNAL
   ];
 
   return skuAttributesThatShouldUpdate.includes(attribute);
@@ -68,7 +69,7 @@ const getCtSkuAttributeValue = (ctSku, attributeName) => {
 };
 
 const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
-  const ctSkuLastModifiedString = getCtSkuAttributeValue(existingCtSku, 'skuLastModifiedInternal'); // TODO: rely on enum for this name
+  const ctSkuLastModifiedString = getCtSkuAttributeValue(existingCtSku, attributeNames.SKU_LAST_MODIFIED_INTERNAL);
   if (!ctSkuLastModifiedString) throw new Error('CT product variant lacks last modified date');
   if (!givenSku.skuLastModifiedInternal) throw new Error('JESTA SKU lacks last modified date');
 

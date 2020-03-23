@@ -12,7 +12,11 @@ const attributeNames = {
   ADVICE: 'advice',
   WEB_STATUS: 'webStatus',
   VSN: 'vsn',
-  STYLE_LAST_MODIFIED_INTERNAL: 'styleLastModifiedInternal'
+  STYLE_LAST_MODIFIED_INTERNAL: 'styleLastModifiedInternal',
+  SKU_LAST_MODIFIED_INTERNAL: 'skuLastModifiedInternal',
+  COLOR_ID: 'colorId',
+  SIZE_ID: 'sizeId',
+  SIZE: 'size'
 };
 
 module.exports = {
