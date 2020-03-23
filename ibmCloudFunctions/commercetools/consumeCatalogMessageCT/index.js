@@ -20,7 +20,7 @@ let ctHelpers;
 const main = params => {
   log(createLog.params('consumeCatalogMessageCT', params));
   validateParams(params);
-  const handleErrors = err => createError.consumeCatalogMessageCT.failed(err, params);
+  const handleErrors = err => { throw createError.consumeCatalogMessageCT.failed(err, params) };
   const { productTypeId } = params;
 
   if (!ctHelpers) {

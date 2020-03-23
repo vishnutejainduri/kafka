@@ -1,32 +1,34 @@
 const { parseStyleMessage } = require('./parseStyleMessage');
 
-const languageKeyMap = {
-  en: 'en-CA',
-  fr: 'fr-CA'
-};
+// Helper function for `formatLanguageKeys`. Returns true iff given object of
+// the form {fr: 'foo', en: 'bar'}. Order of the keys doesn't matter.
+const isLocalizedString = value => (
+  value &&
+  typeof value === 'object' &&
+  Object.prototype.hasOwnProperty.call(value, 'en') &&
+  Object.prototype.hasOwnProperty.call(value, 'fr') &&
+  (Object.keys(value).length === 2)
+);
 
-// CT expects language keys to include a locale (for example, the key for
-// Canadian English is 'en-CA', not 'en'). The messages that
-// `parseMessageStyle` returns have non-localized language keys. This function
-// replaces the non-localized language keys in a message with localized ones.
-const formatLanguageKeys = item => {
-  if (!item) return item;
-  if (typeof item !== 'object') return item;
-  const keys = Object.keys(item);
-  if (keys.length === 0) return item;
-
-  return keys.reduce((newObject, key) => {
-      if (key !== 'en' && key !== 'fr') {
-          return {...newObject, [key]: formatLanguageKeys(item[key])};
+const formatLanguageKeys = message => (
+  Object.keys(message).reduce((newMessage, property) => {
+    if (isLocalizedString(message[property])) {
+      return {
+        ...newMessage,
+        [property]: {
+          // CT throws an error if you give it a language string set to `null`,
+          // so we set all falsy language values to an empty string (which CT
+          // accepts without issue).
+          'en-CA': message[property].en || '',
+          'fr-CA': message[property].fr || ''
+        }
       }
-      // CT throws an error if you give it a language string set to `null`,
-      // so we set all falsy language values to an empty string (which CT
-      // accepts without issue).
-      return {...newObject, [languageKeyMap[key]]: formatLanguageKeys(item[key]) || ''};
-  }, {});
-};
+    }
+    return { ...newMessage, [property]: message[property] };
+  }, {})
+);
 
-// Dates in JESTA are stored as the number of milliseconds since the epoch.
+// Dates that we get from Kafka are in Unix time (possibly shifted to ET?).
 // This function standardizes the format of the dates and sets the key to the
 // corresponding attribute in CT.
 const formatDates = message => ({

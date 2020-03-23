@@ -97,7 +97,6 @@ const getActionsFromStyle = (style, productType) => {
 };
 
 const updateStyle = async (style, version, productType, { client, requestBuilder }) => {
-  console.log('updateStyle');
   if (!style.id) throw new Error('Style lacks required key \'id\'');
   if (!version) throw new Error('Invalid arguments: must include \'version\'');
 
@@ -183,16 +182,9 @@ const getCtStyleAttribute = (ctStyle, attributeName) => {
 // Used to determine whether we should update the style in CT. Deals with race
 // conditions.
 const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
-  let existingCtStyleDate;
-  try {
-    existingCtStyleDate = new Date(getCtStyleAttribute(existingCtStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL));
-  } catch (err) {
-    existingCtStyleDate = null;
-  }
-
-  if ((!existingCtStyleDate) || !(givenStyle.styleLastModifiedInternal)) {
-    return false;
-  }
+  const existingCtStyleDate = new Date(getCtStyleAttribute(existingCtStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL));
+  if (!existingCtStyleDate) throw new Error('CT style lacks last modified date');
+  if (!givenStyle.styleLastModifiedInternal) throw new Error('JESTA style lacks last modified date');
 
   return existingCtStyleDate.getTime() > givenStyle.styleLastModifiedInternal.getTime();
 };
