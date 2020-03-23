@@ -43,5 +43,7 @@ function groupMessagesByNextAction(messages, activationEndTime ) {
 groupMessagesByNextAction.getValueWithUpdatedMetadata = getValueWithUpdatedMetadata;
 
 module.exports = {
-    groupMessagesByNextAction
+    groupMessagesByNextAction,
+    MAX_RETRIES, // exported for tests
+    INTERVAL_PER_RETRY // exported for tests
 };

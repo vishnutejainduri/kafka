@@ -1,4 +1,4 @@
-const { groupMessagesByNextAction } = require('../utils');
+const { groupMessagesByNextAction, INTERVAL_PER_RETRY, MAX_RETRIES  } = require('../utils');
 
 describe('groupMessagesByNextAction', function() {
     const activationEndTime  = 0;
@@ -11,7 +11,7 @@ describe('groupMessagesByNextAction', function() {
             expect(valueWithMetadata).toEqual({
                 metadata: {
                     lastRetry: 0,
-                    nextRetry: 0,
+                    nextRetry: INTERVAL_PER_RETRY,
                     retries: 0
                 }
             });
@@ -26,7 +26,7 @@ describe('groupMessagesByNextAction', function() {
             expect(valueWithMetadata).toEqual({
                 metadata: {
                     lastRetry: 0,
-                    nextRetry: 0,
+                    nextRetry: INTERVAL_PER_RETRY,
                     retries: 0,
                     someField: 'someField'
                 }
@@ -38,11 +38,12 @@ describe('groupMessagesByNextAction', function() {
                     retries: 1,
                 }
             };
+            const activationEndTime = 1000;
             const valueWithMetadata = getValueWithUpdatedMetadata(value, activationEndTime);
             expect(valueWithMetadata).toEqual({
                 metadata: {
-                    lastRetry: 0,
-                    nextRetry: 0 + 10 * 60 * 1000, // activationEndTime + INTERVAL_PER_RETRY
+                    lastRetry: activationEndTime,
+                    nextRetry: activationEndTime + Math.pow(2, 1) * INTERVAL_PER_RETRY, // activationEndTime + INTERVAL_PER_RETRY
                     retries: 1
                 }
             });
@@ -50,11 +51,12 @@ describe('groupMessagesByNextAction', function() {
     });
 
     it("groups messages that has been retried more than MAX_RETRIES into dlq", function() {
+      const retries = MAX_RETRIES;
         const dlqMessages = {
             id: 'dlqValue',
             value: {
                 metadata: {
-                    retries: 24
+                    retries
                 }
             }
         };
@@ -64,11 +66,12 @@ describe('groupMessagesByNextAction', function() {
         })
     });
     it("groups messages that has been retried less  han MAX_RETRIES into retry and update their metadata", function() {
+        const retries =  MAX_RETRIES - 1;
         const retryMessage = {
             id: 'retryValue',
             value: {
                 metadata: {
-                    retries: 23,
+                    retries,
                 }
             }
         };
@@ -78,10 +81,10 @@ describe('groupMessagesByNextAction', function() {
                 value: {
                     metadata: {
                         lastRetry: 0,
-                        retries: 23,
-                        nextRetry: 23 * 10 * 60 * 1000
+                        retries: retries,
+                        nextRetry: Math.pow(2, retries) * INTERVAL_PER_RETRY
                     }
-                } 
+                }
             }],
             dlq: []
         })
