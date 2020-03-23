@@ -175,6 +175,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
 
 //
 // SKU-related helpers
+// TODO: move to different file
 //
 const isSkuAttributeThatShouldUpdate = attribute => {
   const skuAttributesThatShouldUpdate = [
@@ -228,30 +229,61 @@ const updateSku = (sku, version, { client, requestBuilder }) => {
 };
 
 // Note: Does not return the master variant (which should be a placeholder that doesn't correspond to an HR SKU)
-const getSkusFromCtStyle = ctStyle => {
-  const stagedSkus = ctStyle.masterData.staged.variants;
-  const currentSkus = ctStyle.masterData.current.variants;
-  return [...stagedSkus, ...currentSkus];
+// const getSkusFromCtStyle = ctStyle => {
+//   const stagedSkus = ctStyle.masterData.staged.variants;
+//   const currentSkus = ctStyle.masterData.current.variants;
+//   return [...stagedSkus, ...currentSkus];
+// };
+
+// Note: Does not check the master variant
+const getCtSkuFromCtStyle = (skuId, ctStyle, current) => {
+  const skus = ctStyle.masterData[current ? 'current' : 'staged'].variants;
+  return skus.find(variant => variant.sku === skuId); // in CT, the SKU ID is simply called 'sku'
 };
 
-const existingCtSkuIsNewer = () => false; // TODO
+const getCtSkuAttributeValue = (ctSku, attributeName) => {
+  try {
+    return ctSku.attributes.find(attribute => attribute.name === attributeName).value;
+  } catch (err) {
+    if (err.message === 'Cannot read property \'value\' of undefined') {
+      throw new Error(`CT SKU ${ctSku.sku} lacks attribute '${attributeName}'`);
+    }
+    throw err;
+  }
+};
+
+const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
+  const ctSkuLastModifiedString = getCtSkuAttributeValue(existingCtSku, 'skuLastModifiedInternal');
+  if (!ctSkuLastModifiedString) throw new Error('CT product variant lacks last modified date');
+  if (!givenSku.skuLastModifiedInternal) throw new Error('JESTA SKU lacks last modified date');
+
+  const ctSkuLastModifiedDate = new Date(ctSkuLastModifiedString);
+  return ctSkuLastModifiedDate.getTime() > givenSku.skuLastModifiedInternal.getTime();
+};
 
 const createOrUpdateSku = async (ctHelpers, sku) => {
   const existingCtStyle = await getExistingCtStyle(sku.styleId, ctHelpers);
   if (!existingCtStyle) throw new Error(`Style with id ${sku.styleId} does not exist in CT`);
 
-  // const existingStagedSku = getSkuFromStyle(sku, existingCtStyle, true);
-  // const existingCurrentSku = getSkuFromStyle(sku, existingCtStyle, true);
-  // const skuExistsInCt = Boolean(existing || staged).
+  const existingCtStagedSku = getCtSkuFromCtStyle(sku.id, existingCtStyle, false);
+  const existingCtCurrentSku = getCtSkuFromCtStyle(sku.id, existingCtStyle, true);
+  const newestExistingCtSku = existingCtStagedSku || existingCtCurrentSku;
+  const skuExistsInCt = Boolean(newestExistingCtSku);
 
-  const existingSkus = getSkusFromCtStyle(existingCtStyle);
-  const skuExistsInCt = existingSkus.some(existingSku => existingSku.sku === sku.id); // in CT, the SKU ID is simply called 'sku'
+  console.log('existingCtStagedSku', existingCtStagedSku);
+  console.log('existingCtCurrentSku', existingCtCurrentSku);
+  console.log('newestExistingCtSku', newestExistingCtSku);
+  console.log('skuExistsInCt', skuExistsInCt)
+
+  // const existingSkus = getSkusFromCtStyle(existingCtStyle);
+  // const skuExistsInCt = existingSkus.some(existingSku => existingSku.sku === sku.id); // in CT, the SKU ID is simply called 'sku'
   // TODO: Get existingSku--staged if exists, current otherwise. Need to pass into `existingCtSkuIsNewer`.
 
   if (!skuExistsInCt) {
     console.log('creating new sku')
     return createSku(sku, existingCtStyle.version, ctHelpers);
-  } if (existingCtSkuIsNewer()) {
+  } if (existingCtSkuIsNewer(newestExistingCtSku, sku)) {
+    console.log('existing CT SKU is newer, so returning null')
     return null;
   }
   console.log('updating existing sku')
@@ -269,5 +301,6 @@ module.exports = {
   getCtStyleAttributeValue,
   createOrUpdateSku, // TODO: wrap in with retry HOF
   formatSkuRequestBody,
-  getActionsFromSku
+  getActionsFromSku,
+  existingCtSkuIsNewer
 };

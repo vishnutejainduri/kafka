@@ -1,4 +1,4 @@
-const { getActionsFromSku, formatSkuRequestBody } = require('../../utils');
+const { getActionsFromSku, formatSkuRequestBody, existingCtSkuIsNewer } = require('../../utils');
 const consumeSkuMessageCT = require('..');
 
 jest.mock('@commercetools/sdk-client');
@@ -99,5 +99,29 @@ describe('formatSkuRequestBody', () => {
     const expectedBody = '{"version":2,"actions":[{"action":"setAttribute","sku":"sku-01","name":"colorId","value":"c1"},{"action":"setAttribute","sku":"sku-01","name":"sizeId","value":"s1"}]}';
     const actualBody = formatSkuRequestBody(sku, 2, false);
     expect(actualBody).toBe(expectedBody);
+  });
+});
+
+describe('existingCtSkuIsNewer', () => {
+  const olderCtSku = { sku: 'sku-01', attributes: [{ name: 'skuLastModifiedInternal', value: new Date(0) }] };
+  const newerCtSku = { sku: 'sku-01',  attributes: [{ name: 'skuLastModifiedInternal', value: new Date(100) }] };
+  const jestaSku = { id: 'sku-01', styleId: '1', skuLastModifiedInternal: new Date(50) };
+
+  it('returns `true` if CT SKU is newer than JESTA SKU', () => {
+    expect(existingCtSkuIsNewer(newerCtSku, jestaSku)).toBe(true);
+  });
+
+  it('returns `false` if CT SKU is older than JESTA SKU', () => {
+    expect(existingCtSkuIsNewer(olderCtSku, jestaSku)).toBe(false);
+  });
+
+  it('throws an error if given CT SKU lacks a last modified date', () => {
+    const ctSkuWithMissingDate = { sku: 'sku-01', attributes: [] };
+    expect(() => existingCtSkuIsNewer(ctSkuWithMissingDate, jestaSku)).toThrow('CT SKU sku-01 lacks attribute \'skuLastModifiedInternal\'');
+  });
+
+  it('throws an error if given JESTA SKU lacks a last modified date', () => {
+    const jestaSkuWithMissingDate = { id: 'sku-01', styleId: '1' };
+    expect(() => existingCtSkuIsNewer(olderCtSku, jestaSkuWithMissingDate)).toThrow('JESTA SKU lacks last modified date');
   });
 });
