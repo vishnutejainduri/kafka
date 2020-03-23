@@ -1,4 +1,4 @@
-const MAX_RETRIES = 6;
+const MAX_RETRIES = 7;
 const INTERVAL_PER_RETRY = 15 * 60 * 1000;
 
 function getValueWithUpdatedMetadata(value, activationEndTime) {
