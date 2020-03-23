@@ -6,7 +6,7 @@ const {
   updateStyle,
   existingCtStyleIsNewer,
   getCtStyleAttributeValue
-} = require('../../utils');
+} = require('../../styleUtils');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');

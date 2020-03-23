@@ -2,19 +2,16 @@ const { preparePriceUpdate } = require('../priceUtils');
 const {
     filterPriceMessages,
     parsePriceMessage,
-    generateUpdateFromParsedMessage,
     ONLINE_SITE_ID
 } = require('../../lib/parsePriceMessage');
-const createError = require('../../lib/createError');
+//const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
 const getCtHelpers = require('../../lib/commercetoolsSdk');
 const {
   addErrorHandling,
   addLoggingToMain,
   createLog,
-  formatLanguageKeys,
   log,
-  passDownAnyMessageErrors,
   validateParams
 } = require('../../product-consumers/utils');
 
@@ -25,7 +22,7 @@ let ctHelpers;
 const main = params => {
   log(createLog.params('consumeSalePriceCT', params));
   validateParams(params);
-  const handleErrors = err => createError.consumeSalePriceCT.failed(err, params);
+  //const handleErrors = err => createError.consumeSalePriceCT.failed(err, params);
   const { productTypeId } = params;
 
   if (!ctHelpers) {
@@ -37,9 +34,11 @@ const main = params => {
         .filter(addErrorHandling(filterPriceMessages))
         .map(addErrorHandling(parsePriceMessage))
         .filter(addErrorHandling(update => update.siteId === ONLINE_SITE_ID))
-        .map(addErrorHandling(update => preparePriceUpdate(ctHelpers, productTypeId, update)))
-        .filter(update)
+        .map(addErrorHandling(async(update) => await preparePriceUpdate(ctHelpers, productTypeId, update)))
+        .filter(update => update)
   );
+
+  console.log('pricesToUpdate', pricesToUpdate);
 
   /*const stylePromises = (
     pricesToUpdate
@@ -49,7 +48,8 @@ const main = params => {
   return Promise.all(stylePromises)
     .then(passDownAnyMessageErrors)
     .catch(handleErrors);*/
-  console.log('pricesToUpdate', pricesToUpdate);
 };
 
-module.exports = addLoggingToMain(main, messagesLogs);
+global.main = addLoggingToMain(main, messagesLogs);
+
+module.exports = global.main;

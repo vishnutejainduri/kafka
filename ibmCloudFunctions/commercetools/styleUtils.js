@@ -9,9 +9,12 @@ const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
   const uri = requestBuilder.products.byKey(styleId).build();
 
   try {
+    console.log('uri', uri);
     const response = await client.execute({ method, uri });
+    console.log('response', response);
     return response.body;
   } catch (err) {
+      console.log('err', err);
       if (err.code === 404) return null; // indicates that style doesn't exist in CT
       throw err;
   }
@@ -138,13 +141,13 @@ const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => (
     .value
 );
 
-const getCtStyleDate = ctStyle => {
-  const stagedDateString = ctStyle.masterData.staged ? getCtStyleAttributeValue(ctStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL, false) : null;
-  const currentDateString = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL, true) : null;
-  const dateString = stagedDateString || currentDateString;
+const getCtStyleAttribute = (ctStyle, attributeName) => {
+  const stagedAttribute = ctStyle.masterData.staged ? getCtStyleAttributeValue(ctStyle, attributeName, false) : null;
+  const currentAttribute = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, attributeName, true) : null;
+  const attribute = stagedAttribute || currentAttribute;
 
-  if (!dateString) return null;
-  return new Date(dateString);
+  if (!attribute) return null;
+  return attribute;
 };
 
 // Used to determine whether we should update the style in CT. Deals with race
@@ -152,7 +155,7 @@ const getCtStyleDate = ctStyle => {
 const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
   let existingCtStyleDate;
   try {
-    existingCtStyleDate = getCtStyleDate(existingCtStyle);
+    existingCtStyleDate = new Date(getCtStyleAttribute(existingCtStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL));
   } catch (err) {
     existingCtStyleDate = null;
   }
@@ -186,5 +189,6 @@ module.exports = {
   createOrUpdateStyle: addRetries(createOrUpdateStyle, 2, console.error),
   existingCtStyleIsNewer,
   getCtStyleAttributeValue,
-  getExistingCtStyle
+  getExistingCtStyle,
+  getCtStyleAttribute
 };
