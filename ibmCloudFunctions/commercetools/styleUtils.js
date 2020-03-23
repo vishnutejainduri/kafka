@@ -1,6 +1,20 @@
 const { addRetries } = require('../product-consumers/utils');
 const { attributeNames } = require('./constants');
 
+const getProductType = async (productTypeId, { client, requestBuilder }) => {
+  const method = 'GET';
+
+  const uri = requestBuilder.productTypes.byId(productTypeId).build();
+
+  try {
+    const response = await client.execute({ method, uri });
+    return response.body;
+  } catch (err) {
+      if (err.code === 404) return null; 
+      throw err;
+  }
+};
+
 const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
   const method = 'GET';
 
@@ -42,14 +56,33 @@ const isCustomAttribute = attribute => {
 
 // Returns an array of actions, each of which tells CT to update a different
 // attribute of the given style
-const getActionsFromStyle = style => {
+const getActionsFromStyle = (style, productType) => {
+  console.log('getActionsFromStyle');
   const customAttributesToUpdate = Object.keys(style).filter(isCustomAttribute);
 
-  const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => ({
-      action: 'setAttributeInAllVariants',
-      name: attribute,
-      value: style[attribute]
-    })
+  const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => {
+      console.log('productType.attributes', productType.attributes);
+      const attributeType = productType.attributes.find((attribute) => {
+        console.log(attribute.name + ":" + attribute);
+        return attribute.name === attribute
+      })
+      console.log('fuck', attributeType);
+      console.log('attributeType', attributeType);
+      const actionObj = {
+        action: 'setAttributeInAllVariants',
+        name: attribute,
+        value: style[attribute]
+      };
+      
+      if (attributeType === 'money') {
+        actionObj.value = {
+          currencyCode: 'CAD',
+          centAmount: style[attribute]
+        }
+      }
+
+      return actionObj;
+    }
   );
 
   // `name` and `description` aren't custom attributes of products in CT, so
@@ -70,13 +103,14 @@ const getActionsFromStyle = style => {
   return allUpdateActions;
 };
 
-const updateStyle = async (style, version, { client, requestBuilder }) => {
+const updateStyle = async (style, version, productType, { client, requestBuilder }) => {
+  console.log('updateStyle');
   if (!style.id) throw new Error('Style lacks required key \'id\'');
   if (!version) throw new Error('Invalid arguments: must include \'version\'');
 
   const method = 'POST';
   const uri = requestBuilder.products.byKey(style.id).build();
-  const actions = getActionsFromStyle(style);
+  const actions = getActionsFromStyle(style, productType);
   const body = JSON.stringify({ version, actions });
 
   console.log('body', body);
@@ -171,6 +205,7 @@ const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
 };
 
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
+    const productType = await getProductType(productTypeId, ctHelpers);
     const existingCtStyle = await getExistingCtStyle(style.id, ctHelpers);
 
     if (!existingCtStyle) {
@@ -183,7 +218,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     }
     // the given style is up-to-date and an earlier version of it is already
     // stored in CT, so we just need to update its attributes
-    return updateStyle(style, existingCtStyle.version, ctHelpers);
+    return updateStyle(style, existingCtStyle.version, productType, ctHelpers);
 };
 
 module.exports = {
@@ -193,5 +228,6 @@ module.exports = {
   existingCtStyleIsNewer,
   getCtStyleAttributeValue,
   getExistingCtStyle,
-  getCtStyleAttribute
+  getCtStyleAttribute,
+  getProductType
 };

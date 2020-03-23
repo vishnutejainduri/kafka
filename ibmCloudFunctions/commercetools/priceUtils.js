@@ -1,11 +1,9 @@
-const { getExistingCtStyle, getCtStyleAttribute, updateStyle } = require('./styleUtils');
+const { getExistingCtStyle, getCtStyleAttribute, updateStyle, getProductType } = require('./styleUtils');
 const { attributeNames } = require('./constants');
 const { generateUpdateFromParsedMessage } = require('../lib/parsePriceMessage');
 
 const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
     const existingCtStyle = await getExistingCtStyle(priceUpdate.styleId, ctHelpers);
-
-    console.log('existingCtStyle', existingCtStyle.masterData['current'].masterVariant.attributes);
 
     if (!existingCtStyle) {
       // the given style isn't currently stored in CT; can't update price right now
@@ -42,7 +40,9 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
 };
 
 const updateStylePrice = async (ctHelpers, productTypeId, updatedPrice) => {
-    return updateStyle(updatedPrice, updatedPrice.ctStyleVersion, ctHelpers);
+    const productType = await getProductType(productTypeId, ctHelpers);
+
+    return updateStyle(updatedPrice, updatedPrice.ctStyleVersion, productType, ctHelpers);
 };
 
 module.exports = {
