@@ -121,8 +121,10 @@ async function updateBatchWithFailureIndexes(params, failureIndexes) {
                 activationId: process.env.__OW_ACTIVATION_ID,
                 transactionId,
             }, {
-              resolved: 'partial',
-              failureIndexes
+              $set: {
+                resolved: 'partial',
+                failureIndexes
+              }
             });
         return result;
     } catch (error) {
