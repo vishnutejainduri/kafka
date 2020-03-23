@@ -1,4 +1,4 @@
-const { getActionsFromSku, formatSkuRequestBody, existingCtSkuIsNewer, getCtSkuFromCtStyle } = require('../../utils');
+const { getActionsFromSku, formatSkuRequestBody, existingCtSkuIsNewer, getCtSkuFromCtStyle } = require('../utils');
 const consumeSkuMessageCT = require('..');
 
 jest.mock('@commercetools/sdk-client');
