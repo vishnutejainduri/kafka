@@ -1,5 +1,17 @@
+const ctProduct = {
+  version: 1,
+  masterData: {
+    current: {
+      variants: []
+    },
+    staged: {
+      variants: []
+    }
+  }
+};
+
 const mockClient = {
-  execute: () => ({ body: { version: 1 } })
+  execute: () => ({ body: ctProduct })
 };
 
 const sdkClient = {
