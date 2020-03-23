@@ -17,17 +17,16 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
       originalPrice: getCtStyleAttribute(existingCtStyle, attributeNames.ORIGINAL_PRICE)
     };
 
-    const updatedPrice = generateUpdateFromParsedMessage (priceUpdate, priceData, styleData);
+    priceUpdate.newRetailPrice = priceUpdate.newRetailPrice
+                                  ? Math.round(priceUpdate.newRetailPrice * 100) //conversion to cents for CT comparison
+                                  : null
+    priceUpdate.originalPrice = styleData.originalPrice
+                                  ? Math.round(styleData.originalPrice * 100) //conversion to cents for CT comparison
+                                  : null
 
+    const updatedPrice = generateUpdateFromParsedMessage (priceUpdate, priceData, styleData);
     updatedPrice.ctStyleVersion = existingCtStyle.version;
     updatedPrice.id = priceUpdate.styleId;
-    updatedPrice.onlineSalePrice = updatedPrice.onlineSalePrice
-                                  ? Math.round(updatedPrice.onlineSalePrice * 100)
-                                  : null
-    updatedPrice.originalPrice = updatedPrice.originalPrice
-                                  ? Math.round(updatedPrice.originalPrice * 100)
-                                  : null
-
 
     const priceHasNotChanged = (updatedPrice.onlineSalePrice === priceData.onlineSalePrice
                                 && updatedPrice.currentPrice === priceData.currentPrice)

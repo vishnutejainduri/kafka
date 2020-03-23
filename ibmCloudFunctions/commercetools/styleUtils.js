@@ -57,6 +57,7 @@ const isCustomAttribute = attribute => {
 // Returns an array of actions, each of which tells CT to update a different
 // attribute of the given style
 const getActionsFromStyle = (style, productType) => {
+  console.log('getActionsFromStyle');
   const customAttributesToUpdate = Object.keys(style).filter(isCustomAttribute);
 
   const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => {
@@ -72,6 +73,7 @@ const getActionsFromStyle = (style, productType) => {
           currencyCode: currencyCodes.CAD,
           centAmount: style[attribute]
         }
+        if (!style[attribute]) delete actionObj.value;
       }
 
       return actionObj;
@@ -97,6 +99,7 @@ const getActionsFromStyle = (style, productType) => {
 };
 
 const updateStyle = async (style, version, productType, { client, requestBuilder }) => {
+  console.log('updateStyle');
   if (!style.id) throw new Error('Style lacks required key \'id\'');
   if (!version) throw new Error('Invalid arguments: must include \'version\'');
 
