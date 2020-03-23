@@ -1,4 +1,4 @@
-const { getActionsFromSku, formatSkuRequestBody, existingCtSkuIsNewer } = require('../../utils');
+const { getActionsFromSku, formatSkuRequestBody, existingCtSkuIsNewer, getCtSkuFromCtStyle } = require('../../utils');
 const consumeSkuMessageCT = require('..');
 
 jest.mock('@commercetools/sdk-client');
@@ -123,5 +123,30 @@ describe('existingCtSkuIsNewer', () => {
   it('throws an error if given JESTA SKU lacks a last modified date', () => {
     const jestaSkuWithMissingDate = { id: 'sku-01', styleId: '1' };
     expect(() => existingCtSkuIsNewer(olderCtSku, jestaSkuWithMissingDate)).toThrow('JESTA SKU lacks last modified date');
+  });
+});
+
+describe('getCtSkuFromCtStyle', () => {
+  const ctStyle = {
+    masterData: {
+      current: {
+        variants: [{ sku: 'sku-1' }]
+      },
+      staged: {
+        variants: [{ sku: 'sku-2' }]
+      }
+    }
+  };
+
+  it('returns the matching current SKU if one exists', () => {
+    expect(getCtSkuFromCtStyle('sku-1', ctStyle, true)).toMatchObject({ sku: 'sku-1' });
+  });
+
+  it('returns the matching staged SKU if one exists', () => {
+    expect(getCtSkuFromCtStyle('sku-2', ctStyle, false)).toMatchObject({ sku: 'sku-2' });
+  });
+
+  it('returns `undefined` if no matching SKU exists', () => {
+    expect(getCtSkuFromCtStyle('sku-3', ctStyle, true)).toBeUndefined();
   });
 });
