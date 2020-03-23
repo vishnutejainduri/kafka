@@ -1,4 +1,4 @@
-const { createOrUpdateSku } = require('../utils');
+const { createOrUpdateSku } = require('./utils');
 const { filterSkuMessage } = require('../../lib/parseSkuMessage');
 const parseSkuMessageCt = require('../../lib/parseSkuMessageCt');
 const createError = require('../../lib/createError');

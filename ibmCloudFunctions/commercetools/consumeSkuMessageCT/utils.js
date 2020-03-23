@@ -79,6 +79,7 @@ const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
 
 const createOrUpdateSku = async (ctHelpers, sku) => {
   const existingCtStyle = await getExistingCtStyle(sku.styleId, ctHelpers);
+  console.log('existingStyle?', existingCtStyle);
   if (!existingCtStyle) throw new Error(`Style with id ${sku.styleId} does not exist in CT`);
 
   const existingCtStagedSku = getCtSkuFromCtStyle(sku.id, existingCtStyle, false);
