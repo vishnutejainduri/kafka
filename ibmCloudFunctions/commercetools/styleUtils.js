@@ -35,7 +35,7 @@ const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
 // type defined in CT
 const isCustomAttribute = attribute => {
   const customAttributes = [];
-  for (let [key, value] of Object.entries(attributeNames)) {
+  for (let [key] of Object.entries(attributeNames)) {
     customAttributes.push(attributeNames[key]); 
   }
 
