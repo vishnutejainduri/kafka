@@ -1,5 +1,5 @@
 const { getExistingCtStyle, getCtStyleAttribute, updateStyle, getProductType } = require('./styleUtils');
-const { attributeNames } = require('./constants');
+const { attributeNames } = require('./constantsCt');
 const { generateUpdateFromParsedMessage } = require('../lib/parsePriceMessage');
 
 const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {

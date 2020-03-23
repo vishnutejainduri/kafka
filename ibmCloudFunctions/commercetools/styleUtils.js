@@ -1,5 +1,5 @@
 const { addRetries } = require('../product-consumers/utils');
-const { attributeNames, currencyCodes } = require('./constants');
+const { attributeNames, currencyCodes } = require('./constantsCt');
 
 const getProductType = async (productTypeId, { client, requestBuilder }) => {
   const method = 'GET';
@@ -34,22 +34,10 @@ const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
 // Returns true iff the given attribute is a custom attribute on the HR product
 // type defined in CT
 const isCustomAttribute = attribute => {
-  const customAttributes = [
-    'season',
-    'brandName',
-    'construction',
-    'fabricAndMaterials',
-    'styleAndMeasurements',
-    'careInstructions',
-    'advice',
-    'webStatus',
-    'vsn',
-    'styleLastModifiedInternal',
-    'originalPrice',
-    'onlineSalePrice',
-    'isOnlineSale',
-    'onlineDiscount'
-  ];
+  const customAttributes = [];
+  for (let [key, value] of Object.entries(attributeNames)) {
+    customAttributes.push(attributeNames[key]); 
+  }
 
   return customAttributes.includes(attribute);
 };
@@ -57,7 +45,6 @@ const isCustomAttribute = attribute => {
 // Returns an array of actions, each of which tells CT to update a different
 // attribute of the given style
 const getActionsFromStyle = (style, productType) => {
-  console.log('getActionsFromStyle');
   const customAttributesToUpdate = Object.keys(style).filter(isCustomAttribute);
 
   const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => {
@@ -99,7 +86,6 @@ const getActionsFromStyle = (style, productType) => {
 };
 
 const updateStyle = async (style, version, productType, { client, requestBuilder }) => {
-  console.log('updateStyle');
   if (!style.id) throw new Error('Style lacks required key \'id\'');
   if (!version) throw new Error('Invalid arguments: must include \'version\'');
 
