@@ -1,6 +1,6 @@
-const { addErrorHandling } = require('../utils');
 const rp = require('request-promise');
 
+const { addErrorHandling } = require('../utils');
 const {
     findUnresolvedBatches,
     getDeleteBatch,
@@ -26,9 +26,7 @@ global.main = async function(params) {
     async function resolveBatchWithActivationInfo({ activationId }) {
         const activationInfo = await fetchActivationInfo(activationId);
         if (!activationInfo) {
-            return {
-                [activationId]: activationInfo
-            };
+            return null;
         }
         if (activationInfo.error) throw new Error(activationInfo.error);
         // if an activation has failed, the messages in the batch should be either DLQed or retried
@@ -81,10 +79,11 @@ global.main = async function(params) {
         const resolveBatchesResult = await Promise.all(
             unresolvedBatches.map(addErrorHandling(resolveBatchWithActivationInfo))
         );
-    
+
         return {
             unresolvedBatches,
             resolveBatchesResult: resolveBatchesResult
+                .filter(result => result !== null)
                 .map(result => result instanceof Error
                     ? {
                         error: true,
