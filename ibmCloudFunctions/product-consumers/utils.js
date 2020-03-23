@@ -75,32 +75,6 @@ const validateParams = params => {
     }
 };
 
-const languageKeyMap = {
-    en: 'en-CA',
-    fr: 'fr-CA'
-};
-  
-// CT expects language keys to include a locale (for example, the key for
-// Canadian English is 'en-CA', not 'en'). The messages that
-// `parseMessageStyle` returns have non-localized language keys. This function
-// replaces the non-localized language keys in a message with localized ones.
-const formatLanguageKeys = item => {
-    if (!item) return item;
-    if (typeof item !== 'object') return item;
-    const keys = Object.keys(item);
-    if (keys.length === 0) return item;
-
-    return keys.reduce((newObject, key) => {
-        if (key !== 'en' && key !== 'fr') {
-            return {...newObject, [key]: formatLanguageKeys(item[key])};
-        }
-        // CT throws an error if you give it a language string set to `null`,
-        // so we set all falsy language values to an empty string (which CT
-        // accepts without issue).
-        return {...newObject, [languageKeyMap[key]]: formatLanguageKeys(item[key]) || ''};
-    }, {});
-};
-
 // Used to handle errors that occurred within particular promises in an array
 // of promises. Should be used together with `addErrorHandling`.
 // Based on the error handling code in `/product-consumers/consumeCatalogMessage/index.js`.
@@ -147,7 +121,7 @@ const addRetries = (func, retryLimit, logger = () => {}) => {
             return await func(...args);
         } catch(err) {
             logger(formatLoggerErrorMessage(retries, retryLimit, err));
-            if (retries === retryLimit) throw err;
+            if (retries === retryLimit) return err;
             return await functionWithRetries(retries + 1, ...args);
         }
     };
@@ -160,7 +134,6 @@ module.exports = {
     log,
     createLog,
     validateParams,
-    formatLanguageKeys,
     addLoggingToMain,
     passDownAnyMessageErrors,
     addRetries

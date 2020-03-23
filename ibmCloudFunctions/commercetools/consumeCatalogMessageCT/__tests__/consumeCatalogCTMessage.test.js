@@ -1,6 +1,12 @@
-const { createStyle, updateStyle } = require('../utils');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const consumeCatalogueMessageCT = require('..');
+const { parseStyleMessageCt, formatLanguageKeys } = require('../../../lib/parseStyleMessageCt');
+const {
+  createStyle,
+  updateStyle,
+  existingCtStyleIsNewer,
+  getCtStyleAttributeValue
+} = require('../../utils');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -54,12 +60,130 @@ const validParams = {
           UPD_TIMESTAMP: 1000000000000,
           EFFECTIVE_DATE: 1000000000000,
           TRUE_COLOURGROUP_EN: 'trueColourGroupEn',
-          TRUE_COLOURGROUP_FR: 'trueColourGroupFr'
+          TRUE_COLOURGROUP_FR: 'trueColourGroupFr',
+          LAST_MODIFIED_DATE: 1470391439001 // circa 2016
       }
   }]
 };
 
+const message = validParams.messages[0];
+
+const ctStyleNewer = {
+  "masterData": {
+      "staged": {
+          "masterVariant": {
+              "attributes": [
+                  {
+                      "name": "styleLastModifiedInternal",
+                      "value": "2020-03-18T16:53:20.823Z"
+                  }
+              ]
+          }
+      },
+      "current": {
+        "masterVariant": {
+            "attributes": [
+                {
+                    "name": "styleLastModifiedInternal",
+                    "value": "2019-03-18T16:53:20.823Z"
+                }
+            ]
+        }
+    }
+    }
+};
+
+const ctStyleOlder = {
+  "masterData": {
+      "staged": {
+          "masterVariant": {
+              "attributes": [
+                  {
+                      "name": "styleLastModifiedInternal",
+                      "value": "2015-03-18T16:53:20.823Z"
+                  }
+              ]
+          }
+      }
+    }
+};
+
+const jestaStyle = parseStyleMessageCt(message);
 const mockedCtHelpers = getCtHelpers(validParams);
+
+describe('formatLanguageKeys', () => {
+  const localizedStringWithWrongKeys = {'en': 'foo', 'fr': 'bar'};
+  const localizedStringWithRightKeys = {'en-CA': 'foo', 'fr-CA': 'bar'};
+  const messageWithWrongLocalizedString = { 'foo': localizedStringWithWrongKeys };
+  const messageWithRightLocalizedString = { 'foo': localizedStringWithRightKeys };
+
+  it('when given an message object, returns an message object that is the same expect its language keys are CT-style', () => {
+    expect(formatLanguageKeys(messageWithWrongLocalizedString)).toMatchObject(messageWithRightLocalizedString);
+  });
+
+  it('works when a message has multiple localized strings associated with it', () => {
+    const messageWithTwoWrongLocalizedStrings = { 'foo': localizedStringWithWrongKeys, 'bar': localizedStringWithWrongKeys, 'biz': 1 };
+    const messageWithTwoRightLocalizedStrings = { 'foo': localizedStringWithRightKeys, 'bar': localizedStringWithRightKeys, 'biz': 1 };
+    expect(formatLanguageKeys(messageWithTwoWrongLocalizedStrings)).toMatchObject(messageWithTwoRightLocalizedStrings);
+  });
+
+  it('does not change the top-level keys of a message', () => {
+    const messageWithConfusingKeyNames = { fr: 'not a localized string, despite the key name', foo: 'bar'};
+    expect(formatLanguageKeys(messageWithConfusingKeyNames)).toMatchObject(messageWithConfusingKeyNames);
+  });
+});
+
+describe('getCtStyleAttributeValue', () => {
+  it('returns the correct staged value for the given style', () => {
+    const actual = getCtStyleAttributeValue(ctStyleNewer, 'styleLastModifiedInternal');
+    const expected = '2020-03-18T16:53:20.823Z';
+    expect(actual).toBe(expected);
+  });
+
+  it('returns the correct current value for the given style', () => {
+    const actual = getCtStyleAttributeValue(ctStyleNewer, 'styleLastModifiedInternal', true);
+    const expected = '2019-03-18T16:53:20.823Z';
+    expect(actual).toBe(expected);
+  });
+});
+
+describe('parseStyleMessageCt', () => {
+  it('returns a message with correctly formatted localization keys', () => {
+    const actualKeys = Object.keys(parseStyleMessageCt(message).brandName);
+    const expectedKeys = ['en-CA', 'fr-CA'];
+    expect(actualKeys).toEqual(expect.arrayContaining(expectedKeys));
+  });
+
+  it('does not return a message with `null` localization values', () => {
+    const actualValue = parseStyleMessageCt(message).advice['en-CA'];
+    expect(actualValue).not.toBe(null);
+  });
+
+  it('returns a message with a `styleLastModifiedInternal` date', () => {
+    const actualValue = parseStyleMessageCt(message).styleLastModifiedInternal;
+    expect(actualValue).toEqual(expect.any(Date));
+  });
+});
+
+describe('existingCtStyleIsNewer', () => {
+  it('returns true if existing CT style is newer than the given JESTA style', () => {
+    expect(existingCtStyleIsNewer(ctStyleNewer, jestaStyle)).toBe(true);
+  });
+
+  it ('returns false if existing CT style is older than the given JESTA style', () => {
+    expect(existingCtStyleIsNewer(ctStyleOlder, jestaStyle)).toBe(false);
+  });
+
+  it('throws an error if JESTA style lacks a value for `styleLastModifiedInternal`', () => {
+    const jestaStyleWithoutModifiedDate = {...jestaStyle, styleLastModifiedInternal: undefined };
+    expect(() => existingCtStyleIsNewer(ctStyleOlder, jestaStyleWithoutModifiedDate)).toThrow();
+  });
+
+  it('throws an error if CT style lacks a value for `styleLastModifiedInternal`', () => {
+    const ctStyleWithoutDate = {};
+    expect(() => existingCtStyleIsNewer(ctStyleWithoutDate, jestaStyle)).toThrow();
+  });
+});
 
 describe('createStyle', () => {
   it('throws an error if the given style lacks an ID', () => {
@@ -71,7 +195,7 @@ describe('createStyle', () => {
 describe('updateStyle', () => {
   it('throws an error if the given style lacks an ID', () => {
     const styleWithNoId = {};
-    return expect(updateStyle(styleWithNoId, 1, mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
+    return expect(updateStyle(styleWithNoId, '1', mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
   });
 
   it('throws an error if called without a version number', () => {
