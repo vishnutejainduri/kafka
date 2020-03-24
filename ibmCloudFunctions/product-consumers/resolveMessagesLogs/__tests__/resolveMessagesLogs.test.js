@@ -89,7 +89,7 @@ describe('resolveMessagesLogs', function() {
         });
     });
 
-    it('returns a dlq message for a failed batch that is not timedout and has no partial failure', async function() {
+    it('returns a retry message for a failed batch that has a message that has not been retried at all', async function() {
         const mockBatch = {
             activationId: 'some-activationId'
         };
@@ -115,8 +115,8 @@ describe('resolveMessagesLogs', function() {
                 activationId: mockBatch.activationId,
                 success: true,
                 messagesByNextAction: {
-                    retried: 0,
-                    dlqed: 1
+                    retried: 1,
+                    dlqed: 0
                 }
             }],
             unresolvedBatches: [{
@@ -125,19 +125,18 @@ describe('resolveMessagesLogs', function() {
         });
     });
 
-    it('returns a retry message for a failed batch that is timedout', async function() {
+    it('returns a dlq message for a failed batch that has a message that has exceeded maximum retries', async function() {
         const mockBatch = {
-            activationId: 'some-activationId',
+            activationId: 'some-activationId'
         };
         const mockActivationInfo = {
             annotations: [{
                 key: 'timeout',
-                value: true
+                value: false
             }],
             response: {
                 success: false
-            },
-            end: 0
+            }
         };
         const mockMessage = {
             id: 'some-message',
@@ -146,7 +145,7 @@ describe('resolveMessagesLogs', function() {
                 metadata: {
                     lastRetry: 0,
                     nextRetry: 0,
-                    retries: 0
+                    retries: MAX_RETRIES
                 }
             }
         };
@@ -157,8 +156,8 @@ describe('resolveMessagesLogs', function() {
                 activationId: mockBatch.activationId,
                 success: true,
                 messagesByNextAction: {
-                    retried: 1,
-                    dlqed: 0
+                    retried: 0,
+                    dlqed: 1
                 }
             }],
             unresolvedBatches: [{

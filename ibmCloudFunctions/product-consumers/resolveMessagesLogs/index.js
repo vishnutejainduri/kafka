@@ -43,15 +43,10 @@ global.main = async function(params) {
         if (hasFailed || hasFailedMessages) {
             const findMessages = await getFindMessages(params);
             const allMessages = await findMessages(activationId) || [];
-            const activationTimedout = activationInfo.annotations.find(({ key }) => key === 'timeout').value === true;
-            if (activationTimedout || hasFailedMessages) {
-                const messages = hasFailed
-                    ? allMessages
-                    : allMessages.filter((_, index) => failureIndexes.includes(index));
-                messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end);
-            } else {
-                messagesByNextAction.dlq = allMessages;
-            }
+            const messages = hasFailed
+                ? allMessages
+                : allMessages.filter((_, index) => failureIndexes.includes(index));
+            messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end);
             if (messagesByNextAction.dlq.length) {
                 const storeDlqMessages = await getStoreDlqMessages(params);
                 storeMessagesByNextActionResult.dlq = await storeDlqMessages(messagesByNextAction.dlq, { activationInfo });
