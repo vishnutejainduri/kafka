@@ -77,17 +77,19 @@ const getActionsFromStyle = (style, productType) => {
     ? { action: 'setDescription', description: style.marketingDescription }
     : null;
 
-  const currentPriceActions = style.variantPrices.map((variantPrice) => ({
-      action: variantPrice.price ? 'changePrice' : 'addPrice',
-      priceId: variantPrice.price ? variantPrice.price.id : null,
-      variantId: variantPrice.price ? null : variantPrice.variantId,
-      price: {
-        value: {
-          currencyCode: currencyCodes.CAD,
-          centAmount: style.currentPrice
-        }
-      } 
-  }));
+  const currentPriceActions = style.variantPrices
+      ? style.variantPrices.map((variantPrice) => ({
+        action: variantPrice.price ? 'changePrice' : 'addPrice',
+        priceId: variantPrice.price ? variantPrice.price.id : null,
+        variantId: variantPrice.price ? null : variantPrice.variantId,
+        price: {
+          value: {
+            currencyCode: currencyCodes.CAD,
+            centAmount: variantPrice.updatedPrice.currentPrice
+          }
+        } 
+    }))
+      : null
 
   const allUpdateActions = (
     [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction].concat(currentPriceActions)
@@ -127,7 +129,7 @@ const getAttributesFromStyle = (style, productType) => {
         } else {
           attributeCreation.value = {
             currencyCode: currencyCodes.CAD,
-            centAmount: Math.round(style[attribute] * 100)
+            centAmount: style[attribute]
           }
         }
       }
@@ -160,7 +162,7 @@ const createStyle = async (style, productType, { client, requestBuilder }) => {
       prices: [{
         value: {
           currencyCode: currencyCodes.CAD,
-          centAmount: Math.round(style.originalPrice * 100)
+          centAmount: style.originalPrice
         } 
       }]
     },
