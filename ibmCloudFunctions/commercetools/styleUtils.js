@@ -77,8 +77,19 @@ const getActionsFromStyle = (style, productType) => {
     ? { action: 'setDescription', description: style.marketingDescription }
     : null;
 
+  const currentPriceActions = style.variantPrices.map((variantPrice) => ({
+      action: 'changePrice',
+      priceId: variantPrice.id,
+      price: {
+        value: {
+          currencyCode: currencyCodes.CAD,
+          centAmount: style.currentPrice
+        }
+      } 
+  }));
+
   const allUpdateActions = (
-    [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction]
+    [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction].concat(currentPriceActions)
       .filter(Boolean) // removes the `null` actions, if there are any
   );
 
@@ -99,22 +110,37 @@ const updateStyle = async (style, version, productType, { client, requestBuilder
   return client.execute({ method, uri, body });
 };
 
-const getAttributesFromStyle = style => {
+const getAttributesFromStyle = (style, productType) => {
   const customAttributesToCreate = Object.keys(style).filter(isCustomAttribute);
   
-  return customAttributesToCreate.map(attribute => ({
-      name: attribute,
-      value: style[attribute]
-    })
+  return customAttributesToCreate.map(attribute => {
+      const attributeType = productType.attributes.find((attributeType) => attributeType.name === attribute).type.name;
+      const attributeCreation = {
+        name: attribute,
+        value: style[attribute]
+      };
+
+      if (attributeType === 'money') {
+        if (!style[attribute]) {
+          delete attributeCreation.value;
+        } else {
+          attributeCreation.value = {
+            currencyCode: currencyCodes.CAD,
+            centAmount: Math.round(style[attribute] * 100)
+          }
+        }
+      }
+      return attributeCreation;
+    }
   );
 };
 
-const createStyle = async (style, productTypeId, { client, requestBuilder }) => {
+const createStyle = async (style, productType, { client, requestBuilder }) => {
   if (!style.id) throw new Error('Style lacks required key \'id\'');
 
   const method = 'POST';
   const uri = requestBuilder.products.build();
-  const attributes = getAttributesFromStyle(style);
+  const attributes = getAttributesFromStyle(style, productType);
 
   const body = JSON.stringify({
     key: style.id, // the style ID is stored as a key, since we can't set a custom ID in CT
@@ -122,14 +148,20 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
     description: style.marketingDescription,
     productType: {
       typeId: 'product-type',
-      id: productTypeId
+      id: productType.id
     },
     // Since CT attributes apply only at the product variant level, we can't
     // store attribute values at the level of products. So to store the
     // associated with a style that has no SKUs associated with it yet, we need
     // to create a dummy product variant.
     masterVariant: {
-      attributes
+      attributes,
+      prices: [{
+        value: {
+          currencyCode: currencyCodes.CAD,
+          centAmount: Math.round(style.originalPrice * 100)
+        } 
+      }]
     },
     // TODO: Figure out what to put for the slug. It's required and must be
     // unique, but will we even make use of it? Right now I'm just putting the
@@ -139,6 +171,8 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
       'fr-CA': style.id
     }
   });
+
+  console.log('body', body);
 
   return client.execute({ method, uri, body });
 };
@@ -184,7 +218,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
 
     if (!existingCtStyle) {
       // the given style isn't currently stored in CT, so we create a new one
-      return createStyle(style, productTypeId, ctHelpers);
+      return createStyle(style, productType, ctHelpers);
     }
     if (existingCtStyleIsNewer(existingCtStyle, style)) {
       // the given style is out of date, so we don't add it to CT

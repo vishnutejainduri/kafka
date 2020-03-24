@@ -38,7 +38,7 @@ const main = params => {
     stylesToCreateOrUpdate
       .map(addErrorHandling(createOrUpdateStyle.bind(null, ctHelpers, productTypeId)))
   );
-  
+
   return Promise.all(stylePromises)
     .then(passDownAnyMessageErrors)
     .catch(handleErrors);

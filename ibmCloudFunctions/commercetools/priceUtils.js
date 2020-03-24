@@ -2,12 +2,23 @@ const { getExistingCtStyle, getCtStyleAttribute, updateStyle, getProductType } =
 const { attributeNames } = require('./constantsCt');
 const { generateUpdateFromParsedMessage } = require('../lib/parsePriceMessage');
 
-const getCtStylePrice = (existingCtStyle, current = false) => {
-  const priceObj = existingCtStyle
+const getAllVariantPrices = (existingCtStyle, current = false) => {
+  const variantPrices = [];
+  const priceObjMaster = existingCtStyle
     .masterData[current ? 'current' : 'staged']
     .masterVariant
-    .prices[0]
-  return priceObj ? priceObj.value : null;
+    .prices[0];
+  variantPrices.push(priceObjMaster);
+
+  const ctStyleVariants = existingCtStyle
+    .masterData[current ? 'current' : 'staged']
+    .variants;
+   
+  ctStyleVariants.forEach((variant) => {
+    variantPrices.push(variant.prices[0]);
+  });
+
+  return variantPrices;
 };
 
 const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
@@ -18,12 +29,16 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
       return null;
     }
 
+    const variantPrices = getAllVariantPrices(existingCtStyle, false) || getAllVariantPrices(existingCtStyle, true);
+
+    const onlineSalePriceCurrent = getCtStyleAttribute(existingCtStyle, attributeNames.ONLINE_SALE_PRICE);
     const priceData = {
-      onlineSalePrice: getCtStyleAttribute(existingCtStyle, attributeNames.ONLINE_SALE_PRICE),
-      currentPrice: getCtStylePrice(existingCtStyle, true) 
+      onlineSalePrice: onlineSalePriceCurrent ? onlineSalePriceCurrent.centAmount : null,
+      currentPrice: variantPrices[0] ? variantPrices[0].value.centAmount : null
     };
+    const originalPriceCurrent = getCtStyleAttribute(existingCtStyle, attributeNames.ORIGINAL_PRICE);
     const styleData = {
-      originalPrice: getCtStyleAttribute(existingCtStyle, attributeNames.ORIGINAL_PRICE)
+      originalPrice: originalPriceCurrent ? originalPriceCurrent.centAmount : null
     };
 
     priceUpdate.newRetailPrice = priceUpdate.newRetailPrice
@@ -36,7 +51,10 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
     const updatedPrice = generateUpdateFromParsedMessage (priceUpdate, priceData, styleData);
     updatedPrice.ctStyleVersion = existingCtStyle.version;
     updatedPrice.id = priceUpdate.styleId;
+    updatedPrice.variantPrices = variantPrices;
 
+    console.log('updatedPrice', updatedPrice);
+    console.log('priceData', priceData);
     const priceHasNotChanged = (updatedPrice.onlineSalePrice === priceData.onlineSalePrice
                                 && updatedPrice.currentPrice === priceData.currentPrice)
     if (priceHasNotChanged) {
