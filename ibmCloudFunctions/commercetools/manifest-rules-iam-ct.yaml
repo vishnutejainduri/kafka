@@ -2,3 +2,6 @@
       catalog-rule-ct:
         action: consume-catalog-message-with-retry-ct
         trigger: catalog-ct-trigger
+      price-rule-ct:
+        action: consume-sale-price-with-retry-ct
+        trigger: price-ct-trigger

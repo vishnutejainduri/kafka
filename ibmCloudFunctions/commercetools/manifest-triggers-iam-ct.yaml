@@ -4,3 +4,8 @@
         inputs:
           isJSONData: true
           topic: styles-connect-jdbc-CATALOG
+      price-ct-trigger:
+        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: prices-connect-jdbc
