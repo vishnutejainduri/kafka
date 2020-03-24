@@ -15,7 +15,7 @@ const isSkuAttributeThatShouldUpdate = attribute => {
 };
 
 // Returns an array of CT actions, each of which tells CT to set a different
-// attribute of the given style
+// attribute of the given SKU
 const getActionsFromSku = sku => {
   const attributes = Object.keys(sku).filter(isSkuAttributeThatShouldUpdate);
 
