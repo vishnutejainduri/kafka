@@ -4,18 +4,27 @@ const { generateUpdateFromParsedMessage } = require('../lib/parsePriceMessage');
 
 const getAllVariantPrices = (existingCtStyle, current = false) => {
   const variantPrices = [];
+
+  //current price for master variant
   const priceObjMaster = existingCtStyle
     .masterData[current ? 'current' : 'staged']
     .masterVariant
-    .prices[0];
-  variantPrices.push(priceObjMaster);
+  const currentPriceObjMaster = {
+    variantId: priceObjMaster.id,
+    price: priceObjMaster.prices[0]
+  };
+  variantPrices.push(currentPriceObjMaster);
 
+  //current price for all variants
   const ctStyleVariants = existingCtStyle
     .masterData[current ? 'current' : 'staged']
     .variants;
-   
   ctStyleVariants.forEach((variant) => {
-    variantPrices.push(variant.prices[0]);
+    const currentPriceObj = {
+      variantId: variant.id,
+      price: variant.prices[0]
+    };
+    variantPrices.push(currentPriceObj);
   });
 
   return variantPrices;
@@ -30,11 +39,12 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
     }
 
     const variantPrices = getAllVariantPrices(existingCtStyle, false) || getAllVariantPrices(existingCtStyle, true);
+    console.log('variantPrices', variantPrices);
 
     const onlineSalePriceCurrent = getCtStyleAttribute(existingCtStyle, attributeNames.ONLINE_SALE_PRICE);
     const priceData = {
       onlineSalePrice: onlineSalePriceCurrent ? onlineSalePriceCurrent.centAmount : null,
-      currentPrice: variantPrices[0] ? variantPrices[0].value.centAmount : null
+      currentPrice: variantPrices[0].price.value ? variantPrices[0].price.value.centAmount : null
     };
     const originalPriceCurrent = getCtStyleAttribute(existingCtStyle, attributeNames.ORIGINAL_PRICE);
     const styleData = {

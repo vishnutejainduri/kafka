@@ -78,8 +78,9 @@ const getActionsFromStyle = (style, productType) => {
     : null;
 
   const currentPriceActions = style.variantPrices.map((variantPrice) => ({
-      action: 'changePrice',
-      priceId: variantPrice.id,
+      action: variantPrice.price ? 'changePrice' : 'addPrice',
+      priceId: variantPrice.price ? variantPrice.price.id : null,
+      variantId: variantPrice.price ? null : variantPrice.variantId,
       price: {
         value: {
           currencyCode: currencyCodes.CAD,
