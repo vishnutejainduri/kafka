@@ -1,6 +1,8 @@
+const BARCODE_NAMESPACE = 'barcodes';
+
 const getBarcodeFromCt = async (barcode, { client, requestBuilder }) => {
   const method = 'GET';
-  const uri = `${requestBuilder.customObjects.build()}/barcodes/${barcode.barcode}`;
+  const uri = `${requestBuilder.customObjects.build()}/${BARCODE_NAMESPACE}/${barcode.barcode}`;
   console.log(uri);
 
   try {
@@ -16,7 +18,7 @@ const createOrUpdateBarcode = async (barcode, { client, requestBuilder }) => {
   const method = 'POST';
   const uri = requestBuilder.customObjects.build();
   const body = JSON.stringify({
-    container: 'barcodes', // namespace of the these custom objects in CT
+    container: BARCODE_NAMESPACE, // namespace of the these custom objects in CT
     key: barcode.barcode,
     value: barcode
   });
