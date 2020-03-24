@@ -1,4 +1,4 @@
-const { groupMessagesByNextAction, INTERVAL_PER_RETRY, MAX_RETRIES  } = require('../utils');
+const { groupMessagesByNextAction, INTERVAL_GROWTH_RATE, MAX_RETRIES  } = require('../utils');
 
 describe('groupMessagesByNextAction', function() {
     const activationEndTime  = 0;
@@ -11,7 +11,7 @@ describe('groupMessagesByNextAction', function() {
             expect(valueWithMetadata).toEqual({
                 metadata: {
                     lastRetry: 0,
-                    nextRetry: INTERVAL_PER_RETRY,
+                    nextRetry: INTERVAL_GROWTH_RATE,
                     retries: 0
                 }
             });
@@ -26,7 +26,7 @@ describe('groupMessagesByNextAction', function() {
             expect(valueWithMetadata).toEqual({
                 metadata: {
                     lastRetry: 0,
-                    nextRetry: INTERVAL_PER_RETRY,
+                    nextRetry: INTERVAL_GROWTH_RATE,
                     retries: 0,
                     someField: 'someField'
                 }
@@ -43,7 +43,7 @@ describe('groupMessagesByNextAction', function() {
             expect(valueWithMetadata).toEqual({
                 metadata: {
                     lastRetry: activationEndTime,
-                    nextRetry: activationEndTime + Math.pow(2, 1) * INTERVAL_PER_RETRY, // activationEndTime + INTERVAL_PER_RETRY
+                    nextRetry: activationEndTime + Math.pow(2, 1) * INTERVAL_GROWTH_RATE, // activationEndTime + INTERVAL_GROWTH_RATE
                     retries: 1
                 }
             });
@@ -82,7 +82,7 @@ describe('groupMessagesByNextAction', function() {
                     metadata: {
                         lastRetry: 0,
                         retries: retries,
-                        nextRetry: Math.pow(2, retries) * INTERVAL_PER_RETRY
+                        nextRetry: Math.pow(2, retries) * INTERVAL_GROWTH_RATE
                     }
                 }
             }],
