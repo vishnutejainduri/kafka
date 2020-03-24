@@ -2,7 +2,7 @@ const rp = require('request-promise');
 
 const { addErrorHandling } = require('../utils');
 const {
-    findUnresolvedBatches,
+    findBatches,
     getDeleteBatch,
     getFindMessages,
     getStoreDlqMessages,
@@ -23,7 +23,7 @@ global.main = async function(params) {
         });
     }
 
-    async function resolveBatchWithActivationInfo({ activationId }) {
+    async function resolveBatchWithActivationInfo({ activationId, failureIndexes }) {
         const activationInfo = await fetchActivationInfo(activationId);
         if (!activationInfo) {
             return null;
@@ -39,17 +39,22 @@ global.main = async function(params) {
             retry: null
         };
         // TODO HRC-1184: implement a mechanism to handle partial failures
-        if (!activationInfo.response.success) {
+        const hasFailed = !activationInfo.response.success;
+        const hasFailedMessages = failureIndexes && failureIndexes.length > 0;
+        if (hasFailed || hasFailedMessages) {
             const findMessages = await getFindMessages(params);
-            const messages = await findMessages(activationId) || [];
+            const allMessages = await findMessages(activationId) || [];
             const activationTimedout = activationInfo.annotations.find(({ key }) => key === 'timeout').value === true;
             // if an activation has failed for any reason but timeout, send all of its messages to DLQ
             if (!activationTimedout) {
-                messagesByNextAction.dlq = messages;
+                messagesByNextAction.dlq = allMessages;
             } else {
                 // if an activation has timedout, we retry the messages that has not been retried MAX_RETRIES times
                 // and send the rest to be DLQed
-                messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end );
+                const messages = (hasFailed || !failureIndexes)
+                    ? allMessages
+                    : allMessages.filter((_, index) => failureIndexes.includes(index));
+                messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end);
             }
             if (messagesByNextAction.dlq.length) {
                 const storeDlqMessages = await getStoreDlqMessages(params);
@@ -75,7 +80,7 @@ global.main = async function(params) {
     }
 
     try {
-        const unresolvedBatches = await findUnresolvedBatches(params);
+        const unresolvedBatches = await findBatches(params);
         const resolveBatchesResult = await Promise.all(
             unresolvedBatches.map(addErrorHandling(resolveBatchWithActivationInfo))
         );
