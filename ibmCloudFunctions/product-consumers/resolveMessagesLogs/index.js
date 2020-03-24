@@ -45,16 +45,14 @@ global.main = async function(params) {
             const findMessages = await getFindMessages(params);
             const allMessages = await findMessages(activationId) || [];
             const activationTimedout = activationInfo.annotations.find(({ key }) => key === 'timeout').value === true;
-            // if an activation has failed for any reason but timeout, send all of its messages to DLQ
-            if (!activationTimedout) {
-                messagesByNextAction.dlq = allMessages;
-            } else {
-                // if an activation has timedout, we retry the messages that has not been retried MAX_RETRIES times
-                // and send the rest to be DLQed
-                const messages = (hasFailed || !failureIndexes)
+            console.log("hasFailedMessages: ", hasFailedMessages);
+            if (activationTimedout || hasFailedMessages) {
+                const messages = hasFailed
                     ? allMessages
                     : allMessages.filter((_, index) => failureIndexes.includes(index));
                 messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end);
+            } else {
+                messagesByNextAction.dlq = allMessages;
             }
             if (messagesByNextAction.dlq.length) {
                 const storeDlqMessages = await getStoreDlqMessages(params);
@@ -97,7 +95,11 @@ global.main = async function(params) {
                     }
                     : {
                         success: true,
-                        activationId: result.activationId
+                        activationId: result.activationId,
+                        messagesByNextAction: {
+                            retried: result.messagesByNextAction.retry.length,
+                            dlqed: result.messagesByNextAction.dlq.length
+                        }
                     }
                 )
         };
