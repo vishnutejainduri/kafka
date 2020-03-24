@@ -7,7 +7,8 @@ const isSkuAttributeThatShouldUpdate = attribute => {
     attributeNames.COLOR_ID,
     attributeNames.SIZE_ID,
     attributeNames.SIZE,
-    attributeNames.SKU_LAST_MODIFIED_INTERNAL
+    attributeNames.SKU_LAST_MODIFIED_INTERNAL,
+    attributeNames.DIMENSION_ID
   ];
 
   return skuAttributesThatShouldUpdate.includes(attribute);

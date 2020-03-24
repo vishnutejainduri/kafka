@@ -207,7 +207,7 @@ describe('parseStyleMessageCt', () => {
       colorId: 'colorId',
       sizeId: 'sizeId',
       size: { 'en-CA': 'size' },
-      dimension: 'dimension',
+      dimensionId: 'dimension',
     };
 
     expect(parsedMessage).toMatchObject(expectedMessage);

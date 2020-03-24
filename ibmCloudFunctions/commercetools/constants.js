@@ -16,7 +16,8 @@ const attributeNames = {
   SKU_LAST_MODIFIED_INTERNAL: 'skuLastModifiedInternal',
   COLOR_ID: 'colorId',
   SIZE_ID: 'sizeId',
-  SIZE: 'size'
+  SIZE: 'size',
+  DIMENSION_ID: 'dimensionId'
 };
 
 module.exports = {

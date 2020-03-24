@@ -4,7 +4,7 @@ const attributeMap = {
   'COLORID': 'colorId',
   'SIZEID': 'sizeId',
   'SIZE': 'size',
-  'DIMENSION': 'dimension',
+  'DIMENSION': 'dimensionId',
   'LASTMODIFIEDDATE': 'skuLastModifiedInternal'
 };
 
