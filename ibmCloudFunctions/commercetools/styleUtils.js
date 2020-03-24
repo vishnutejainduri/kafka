@@ -48,7 +48,8 @@ const getActionsFromStyle = (style, productType) => {
   const customAttributesToUpdate = Object.keys(style).filter(isCustomAttribute);
 
   const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => {
-      const attributeType = productType.attributes.find((attributeType) => attributeType.name === attribute).type.name;
+      const attributeTypeOj = productType.attributes.find((attributeType) => attributeType.name === attribute)
+      const attributeType = attributeTypeOj ? attributeTypeOj.type.name : null;
       const actionObj = {
         action: 'setAttributeInAllVariants',
         name: attribute,
@@ -107,8 +108,6 @@ const updateStyle = async (style, version, productType, { client, requestBuilder
   const uri = requestBuilder.products.byKey(style.id).build();
   const actions = getActionsFromStyle(style, productType);
   const body = JSON.stringify({ version, actions });
-
-  console.log('body', body);
 
   return client.execute({ method, uri, body });
 };
@@ -174,8 +173,6 @@ const createStyle = async (style, productType, { client, requestBuilder }) => {
       'fr-CA': style.id
     }
   });
-
-  console.log('body', body);
 
   return client.execute({ method, uri, body });
 };

@@ -73,7 +73,6 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
                                   : null
 
     const updatedPrices = generateUpdateFromParsedMessages (priceUpdate, priceData, styleData, variantPrices)
-    console.log('updatedPrice.variantPrices', updatedPrices.variantPrices);
 
     if (updatedPrices.variantPrices.length === 0) {
         return null;
@@ -81,11 +80,14 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
 
     updatedPrices.ctStyleVersion = existingCtStyle.version;
     updatedPrices.id = priceUpdate.styleId;
+
+
     //the following three values come from index 0, they should be identical at all times at anywhere in the index
     //since all variants should have the same pricing
     updatedPrices.onlineSalePrice =  updatedPrices.variantPrices[0].updatedPrice.onlineSalePrice;
     updatedPrices.isOnlineSale =  updatedPrices.variantPrices[0].updatedPrice.isOnlineSale;
     updatedPrices.onlineDiscount =  updatedPrices.variantPrices[0].updatedPrice.onlineDiscount;
+
 
     return updatedPrices;
 };

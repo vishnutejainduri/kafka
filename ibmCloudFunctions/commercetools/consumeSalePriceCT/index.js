@@ -29,7 +29,6 @@ const main = async params => {
   if (!ctHelpers) {
     ctHelpers = getCtHelpers(params);
   }
- 
   
   let pricesToUpdate = (
     await Promise.all(params.messages
@@ -38,9 +37,7 @@ const main = async params => {
         .filter(addErrorHandling(update => update.siteId === ONLINE_SITE_ID))
         .map(addErrorHandling(async(update) => await preparePriceUpdate(ctHelpers, productTypeId, update)))
   ));
-
   pricesToUpdate = pricesToUpdate.filter(update => update);
-  console.log('pricesToUpdate', pricesToUpdate);
 
   const stylePromises = (
     pricesToUpdate
