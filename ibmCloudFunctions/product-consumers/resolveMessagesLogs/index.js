@@ -29,7 +29,7 @@ global.main = async function(params) {
             return null;
         }
         if (activationInfo.error) throw new Error(activationInfo.error);
-        // if an activation has failed, the messages in the batch should be either DLQed or retried
+        // if an activation has failed or has partial failures, the messages in the batch should be either DLQed or retried
         let messagesByNextAction = {
             dlq: [],
             retry: []
@@ -38,24 +38,15 @@ global.main = async function(params) {
             dlq: null,
             retry: null
         };
-        // TODO HRC-1184: implement a mechanism to handle partial failures
         const hasFailed = !activationInfo.response.success;
         const hasFailedMessages = failureIndexes && failureIndexes.length > 0;
         if (hasFailed || hasFailedMessages) {
             const findMessages = await getFindMessages(params);
             const allMessages = await findMessages(activationId) || [];
-            const activationTimedout = activationInfo.annotations.find(({ key }) => key === 'timeout').value === true;
-            // if an activation has failed for any reason but timeout, send all of its messages to DLQ
-            if (!activationTimedout) {
-                messagesByNextAction.dlq = allMessages;
-            } else {
-                // if an activation has timedout, we retry the messages that has not been retried MAX_RETRIES times
-                // and send the rest to be DLQed
-                const messages = (hasFailed || !failureIndexes)
-                    ? allMessages
-                    : allMessages.filter((_, index) => failureIndexes.includes(index));
-                messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end);
-            }
+            const messages = hasFailed
+                ? allMessages
+                : allMessages.filter((_, index) => failureIndexes.includes(index));
+            messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end);
             if (messagesByNextAction.dlq.length) {
                 const storeDlqMessages = await getStoreDlqMessages(params);
                 storeMessagesByNextActionResult.dlq = await storeDlqMessages(messagesByNextAction.dlq, { activationInfo });
@@ -65,7 +56,7 @@ global.main = async function(params) {
                 storeMessagesByNextActionResult.retry = await storeRetryMessages(messagesByNextAction.retry, { activationInfo });
             }
         }
-        // if a batch was successful or if we successfuly DLQed or requeued all of its messages for retry,
+        // if a batch was successful or if we successfuly DLQed or requeued its messages for retry,
         // we delete the activation record
         const deleteBatch = await getDeleteBatch(params);
         const deleteBatchResult = await deleteBatch(activationId);
@@ -97,7 +88,11 @@ global.main = async function(params) {
                     }
                     : {
                         success: true,
-                        activationId: result.activationId
+                        activationId: result.activationId,
+                        messagesByNextAction: {
+                            retried: result.messagesByNextAction.retry.length,
+                            dlqed: result.messagesByNextAction.dlq.length
+                        }
                     }
                 )
         };
