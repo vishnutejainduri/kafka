@@ -10,7 +10,7 @@ const mockClient = {
         variants: []
       }
     },
-    //this is a mock for product type actually
+    //this is a mock for product type onwards actually
     attributes: [{
       name: 'isOnlineSale',
       type: {

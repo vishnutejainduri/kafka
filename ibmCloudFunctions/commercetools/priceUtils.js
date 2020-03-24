@@ -1,3 +1,4 @@
+const { addRetries } = require('../product-consumers/utils');
 const { getExistingCtStyle, getCtStyleAttribute, updateStyle, getProductType } = require('./styleUtils');
 const { attributeNames } = require('./constantsCt');
 const { generateUpdateFromParsedMessage } = require('../lib/parsePriceMessage');
@@ -43,6 +44,7 @@ const generateUpdateFromParsedMessages = (priceUpdate, priceData, styleData, var
 
       return variantPrice;
     }).filter(variantPrice => variantPrice)
+
     return { variantPrices };
 };
 
@@ -100,5 +102,5 @@ const updateStylePrice = async (ctHelpers, productTypeId, updatedPrice) => {
 
 module.exports = {
   preparePriceUpdate,
-  updateStylePrice
+  updateStylePrice: addRetries(updateStylePrice, 2, console.error),
 };
