@@ -1,6 +1,13 @@
-const { getActionsFromSku, formatSkuRequestBody, existingCtSkuIsNewer, getCtSkuFromCtStyle } = require('../utils');
 const parseSkuMessageCt = require('../../../lib/parseSkuMessageCt');
 const consumeSkuMessageCT = require('..');
+const {
+  getActionsFromSku,
+  formatSkuRequestBody,
+  existingCtSkuIsNewer,
+  getCtSkuFromCtStyle,
+  getCtSkuAttributeValue,
+  getCreationAction
+} = require('../utils');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -211,5 +218,58 @@ describe('parseStyleMessageCt', () => {
     };
 
     expect(parsedMessage).toMatchObject(expectedMessage);
+  });
+});
+
+describe('getCtSkuAttributeValue', () => {
+  const ctSku = { sku: 'sku-01', attributes: [{ name: 'foo', value: 1 }, { name: 'bar', value: 2 }] };
+
+  it('returns the correct value of an existing attribute', () => {
+    expect(getCtSkuAttributeValue(ctSku, 'foo')).toBe(1);
+    expect(getCtSkuAttributeValue(ctSku, 'bar')).toBe(2);
+  });
+
+  it('it throws an error when the given attribute does not exist', () => {
+    expect(() => getCtSkuAttributeValue(ctSku, 'baz')).toThrow('CT SKU sku-01 lacks attribute \'baz\'');
+  });
+});
+
+describe('getCreationAction', () => {
+  const sku = { id: 'sku-01', styleId: '1', colorId: 'c1', sizeId: 's1' };
+
+  const ctStyleWithNoStagedChanges = {
+    masterData: {
+      current: {
+        masterVariant: {
+          attributes: [{ name: 'brand', value: 'foo' }]
+        }
+      },
+      hasStagedChanges: false
+    }
+  };
+
+  const ctStyleWithStagedChanges = {
+    masterData: {
+      staged: {
+        masterVariant: {
+          attributes: [{ name: 'brand', value: 'foo' }]
+        }
+      },
+      hasStagedChanges: true
+    }
+  };
+
+  const expected = {
+    action: 'addVariant',
+    sku: 'sku-01',
+    attributes: [{ name: 'brand', value: 'foo' }]
+  };
+
+  it('returns the correct object when given the style has no staged changes', () => {
+    expect(getCreationAction(sku, ctStyleWithNoStagedChanges)).toMatchObject(expected);
+  });
+
+  it('returns the correct object when given style has staged changes', () => {
+    expect(getCreationAction(sku, ctStyleWithStagedChanges)).toMatchObject(expected);
   });
 });

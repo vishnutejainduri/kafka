@@ -31,7 +31,7 @@ const getActionsFromSku = sku => {
 // attributes of the mater variant of the given style. These should be the same
 // for each SKU, but we still need to manually copy them. Copies the most
 // recent version of the mater variant's attributes, which are assumed to be the
-// staged changes if there are any.
+// those in the staged version of the variant if there are staged changes.
 const getCreationAction = (sku, style) => {
   const attributes = (
     style.masterData.hasStagedChanges
@@ -123,5 +123,7 @@ module.exports = {
   formatSkuRequestBody,
   getActionsFromSku,
   existingCtSkuIsNewer,
-  getCtSkuFromCtStyle
+  getCtSkuFromCtStyle,
+  getCtSkuAttributeValue,
+  getCreationAction
 };
