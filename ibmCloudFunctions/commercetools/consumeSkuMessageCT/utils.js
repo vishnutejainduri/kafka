@@ -14,6 +14,8 @@ const isSkuAttributeThatShouldUpdate = attribute => {
   return skuAttributesThatShouldUpdate.includes(attribute);
 };
 
+// Returns an array of CT actions, each of which tells CT to set a different
+// attribute of the given style
 const getActionsFromSku = sku => {
   const attributes = Object.keys(sku).filter(isSkuAttributeThatShouldUpdate);
 
@@ -25,6 +27,11 @@ const getActionsFromSku = sku => {
   }));
 };
 
+// Returns a CT action which tells CT to create a new SKU with the style-level
+// attributes of the mater variant of the given style. These should be the same
+// for each SKU, but we still need to manually copy them. Copies the most
+// recent version of the mater variant's attributes, which are assumed to be the
+// staged changes if there are any.
 const getCreationAction = (sku, style) => {
   const attributes = (
     style.masterData.hasStagedChanges
@@ -35,7 +42,7 @@ const getCreationAction = (sku, style) => {
   return {
     action: 'addVariant',
     sku: sku.id,
-    attributes // copies the existing master variant attributes to this variant
+    attributes
   };
 };
 
