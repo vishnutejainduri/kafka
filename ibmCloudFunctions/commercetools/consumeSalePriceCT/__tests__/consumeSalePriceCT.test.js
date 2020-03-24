@@ -46,8 +46,20 @@ describe('preparePriceUpdate', () => {
         .map(addErrorHandling(parsePriceMessage))
         .filter(addErrorHandling(update => update.siteId === ONLINE_SITE_ID))
 
-    const response = await preparePriceUpdate(mockedCtHelpers, validParams.productTypeId, result);
+    const response = await preparePriceUpdate(mockedCtHelpers, validParams.productTypeId, result[0]);
     expect(response.variantPrices[0].updatedPrice.currentPrice).toBeNull();
+  });
+
+  it('should not update price', async () => {
+     validParams.messages[0].value.NEW_RETAIL_PRICE = null;
+     const result =  
+        validParams.messages
+        .filter(addErrorHandling(filterPriceMessages))
+        .map(addErrorHandling(parsePriceMessage))
+        .filter(addErrorHandling(update => update.siteId === ONLINE_SITE_ID))
+
+    const response = await preparePriceUpdate(mockedCtHelpers, validParams.productTypeId, result[0]);
+    expect(response).toBeNull();
   });
 });
 
