@@ -153,4 +153,43 @@ describe('resolveMessagesLogs', function() {
             }]
         });
     });
+
+    it('returns a retry message for a batch with partial failure even if batch is susscessful', async function() {
+        const mockBatch = {
+            activationId: 'some-activationId',
+            failureIndex: [0]
+        };
+        const mockActivationInfo = {
+            annotations: [{
+                key: 'timeout',
+                value: false
+            }],
+            response: {
+                success: true
+            },
+            end: 0
+        };
+        const mockMessage = {
+            id: 'some-message',
+            value: {
+                id: 'some-id',
+                metadata: {
+                    lastRetry: 0,
+                    nextRetry: 0,
+                    retries: 0
+                }
+            }
+        };
+        mockModules({ mockBatch, mockActivationInfo, mockMessage });
+        const resolveMessagesLogs = require('../index');
+        expect(await resolveMessagesLogs({})).toEqual({
+            resolveBatchesResult: [{
+                activationId: mockBatch.activationId,
+                success: true
+            }],
+            unresolvedBatches: [{
+                ...mockBatch
+            }]
+        });
+    });
 });
