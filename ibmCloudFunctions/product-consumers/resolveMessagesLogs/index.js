@@ -29,7 +29,7 @@ global.main = async function(params) {
             return null;
         }
         if (activationInfo.error) throw new Error(activationInfo.error);
-        // if an activation has failed, the messages in the batch should be either DLQed or retried
+        // if an activation has failed or has partial failures, the messages in the batch should be either DLQed or retried
         let messagesByNextAction = {
             dlq: [],
             retry: []
@@ -38,14 +38,12 @@ global.main = async function(params) {
             dlq: null,
             retry: null
         };
-        // TODO HRC-1184: implement a mechanism to handle partial failures
         const hasFailed = !activationInfo.response.success;
         const hasFailedMessages = failureIndexes && failureIndexes.length > 0;
         if (hasFailed || hasFailedMessages) {
             const findMessages = await getFindMessages(params);
             const allMessages = await findMessages(activationId) || [];
             const activationTimedout = activationInfo.annotations.find(({ key }) => key === 'timeout').value === true;
-            console.log("hasFailedMessages: ", hasFailedMessages);
             if (activationTimedout || hasFailedMessages) {
                 const messages = hasFailed
                     ? allMessages
@@ -63,7 +61,7 @@ global.main = async function(params) {
                 storeMessagesByNextActionResult.retry = await storeRetryMessages(messagesByNextAction.retry, { activationInfo });
             }
         }
-        // if a batch was successful or if we successfuly DLQed or requeued all of its messages for retry,
+        // if a batch was successful or if we successfuly DLQed or requeued its messages for retry,
         // we delete the activation record
         const deleteBatch = await getDeleteBatch(params);
         const deleteBatchResult = await deleteBatch(activationId);
