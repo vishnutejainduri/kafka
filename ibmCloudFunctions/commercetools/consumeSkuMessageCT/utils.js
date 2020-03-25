@@ -1,16 +1,9 @@
 const { getExistingCtStyle } = require('../utils');
-const { attributeNames } = require('../constants');
+const { skuAttributeNames } = require('../constants');
 const { addRetries } = require('../../product-consumers/utils');
 
 const isSkuAttributeThatShouldUpdate = attribute => {
-  const skuAttributesThatShouldUpdate = [
-    attributeNames.COLOR_ID,
-    attributeNames.SIZE_ID,
-    attributeNames.SIZE,
-    attributeNames.SKU_LAST_MODIFIED_INTERNAL,
-    attributeNames.DIMENSION_ID
-  ];
-
+  const skuAttributesThatShouldUpdate = Object.values(skuAttributeNames);
   return skuAttributesThatShouldUpdate.includes(attribute);
 };
 
@@ -97,7 +90,7 @@ const getCtSkuAttributeValue = (ctSku, attributeName) => {
 };
 
 const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
-  const ctSkuLastModifiedString = getCtSkuAttributeValue(existingCtSku, attributeNames.SKU_LAST_MODIFIED_INTERNAL);
+  const ctSkuLastModifiedString = getCtSkuAttributeValue(existingCtSku, skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL);
   if (!ctSkuLastModifiedString) throw new Error('CT product variant lacks last modified date');
   if (!givenSku.skuLastModifiedInternal) throw new Error('JESTA SKU lacks last modified date');
 

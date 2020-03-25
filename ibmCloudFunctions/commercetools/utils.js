@@ -1,5 +1,5 @@
 const { addRetries } = require('../product-consumers/utils');
-const { attributeNames } = require('./constants');
+const { styleAttributeNames } = require('./constants');
 
 const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
   const method = 'GET';
@@ -20,20 +20,8 @@ const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
 // Returns true iff the given attribute is a custom attribute on the HR product
 // type defined in CT
 const isCustomAttribute = attribute => {
-  const customAttributes = [
-    'season',
-    'brandName',
-    'construction',
-    'fabricAndMaterials',
-    'styleAndMeasurements',
-    'careInstructions',
-    'advice',
-    'webStatus',
-    'vsn',
-    'styleLastModifiedInternal'
-  ];
-
-  return customAttributes.includes(attribute);
+  const styleCustomAttributes = Object.values(styleAttributeNames);
+  return styleCustomAttributes.includes(attribute);
 };
 
 // Returns an array of actions, each of which tells CT to update a different
@@ -139,8 +127,8 @@ const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => (
 );
 
 const getCtStyleDate = ctStyle => {
-  const stagedDateString = ctStyle.masterData.staged ? getCtStyleAttributeValue(ctStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL, false) : null;
-  const currentDateString = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL, true) : null;
+  const stagedDateString = ctStyle.masterData.staged ? getCtStyleAttributeValue(ctStyle, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL, false) : null;
+  const currentDateString = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL, true) : null;
   const dateString = stagedDateString || currentDateString;
 
   if (!dateString) return null;
