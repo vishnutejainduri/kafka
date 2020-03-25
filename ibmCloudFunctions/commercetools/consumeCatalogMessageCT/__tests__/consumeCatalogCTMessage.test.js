@@ -145,6 +145,11 @@ describe('getCtStyleAttributeValue', () => {
     const expected = '2019-03-18T16:53:20.823Z';
     expect(actual).toBe(expected);
   });
+
+  it('throws an informative error message if the style lacks the given attribute', () => {
+    const expectedErrorMessage = 'CT style lacks attribute \'attributeThatDoesNotExist\'';
+    expect(() => getCtStyleAttributeValue(ctStyleNewer, 'attributeThatDoesNotExist', true)).toThrow(expectedErrorMessage);
+  });
 });
 
 describe('parseStyleMessageCt', () => {
