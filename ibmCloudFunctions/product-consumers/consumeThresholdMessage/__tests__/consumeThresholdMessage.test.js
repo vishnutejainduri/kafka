@@ -4,14 +4,32 @@ jest.mock("mongodb");
 
 const params = {
     topicName: 'thresholds-connect-jdbc',
-    messages: [{
-        topic: 'thresholds-connect-jdbc',
-        value: {
-            'SKU_ID': 'skuId',
-            'THRESHOLD': 'Aw==',
-            'LAST_MOD_DATE': 1000000000000,
-          }
-    }],
+    messages: [
+        {
+            topic: 'thresholds-connect-jdbc',
+            value: {
+                'SKU_ID': 'skuId',
+                'THRESHOLD': 'Aw==',
+                'LAST_MOD_DATE': 1000000000000,
+            }
+        },
+        {
+            topic: 'thresholds-connect-jdbc',
+            value: {
+                'SKU_ID': 'skuId',
+                'THRESHOLD': 'Aw==',
+                'LAST_MOD_DATE': 1000000000000,
+            }
+        },
+        {
+            topic: 'thresholds-connect-jdbc',
+            value: {
+                'SKU_ID': 'skuId',
+                'THRESHOLD': 'Aw==',
+                'LAST_MOD_DATE': 1000000000000,
+            }
+        }
+    ],
     mongoUri: 'mongo-uri',
     dbName: 'db-name',
     mongoCertificateBase64: 'mong-certificate',
@@ -24,21 +42,31 @@ describe('consumeThresholdMessage', () => {
     it('missing all parameters; should fail', async () => {
         await expect(consumeThresholdMessage({})).rejects.toThrow();
     });
+    const resultWithNoErrors = {
+        errors: [],
+        failureIndexes: []
+    }
     it('correct message', async () => {
         const response = await consumeThresholdMessage(params);
         // returns nothing/undefined if successfully run
-        expect(response).toEqual(undefined);
+        expect(response).toEqual(resultWithNoErrors);
     });
     it('correct message; large threshold', async () => {
         params.messages[0].value.THRESHOLD = 'AfQ=';
         const response = await consumeThresholdMessage(params);
         // returns nothing/undefined if successfully run
-        expect(response).toEqual(undefined);
+        expect(response).toEqual(resultWithNoErrors);
     });
     it('correct message; threshold is actually integer', async () => {
         params.messages[0].value.THRESHOLD = 3;
         const response = await consumeThresholdMessage(params);
         // returns nothing/undefined if successfully run
-        expect(response).toEqual(undefined);
+        expect(response).toEqual(resultWithNoErrors);
+    });
+    it('handles partial failure', async () => {
+        params.messages[1].topic = null;
+        const response = await consumeThresholdMessage(params);
+        // returns nothing/undefined if successfully run
+        expect(response.failureIndexes.includes(1)).toEqual(true);
     });
 });
