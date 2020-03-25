@@ -108,7 +108,8 @@ global.main = async function (params) {
                 return {
                     objectID: imageData.mediaContainer.code.match(/\d+/)[0] || imageData.mediaContainer.code,
                     image: imageData.url,
-                    imageZoom: imageData.zoomUrl
+                    imageZoom: imageData.zoomUrl,
+                    hasImage: imageData.hasImage
                 };
             });
         const mediaContainerIds = imagesToBeSynced.map((imageData) => imageData.mediaContainer._id)
