@@ -130,22 +130,17 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
  * @param {Boolean} current Indicates whether to return the value from the current product or the staged product.
  */
 const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
-  try {
-    return (
-      ctStyle
-        .masterData[current ? 'current' : 'staged']
-        .masterVariant
-        .attributes
-        .find(attribute => attribute.name === attributeName)
-        .value
-    );
-  } catch (err) {
-    if (err.message === 'Cannot read property \'value\' of undefined') {
-      throw new Error(`CT style lacks attribute '${attributeName}'`);
-    }
-    throw err;
-  }
-}
+  const foundAttribute =  (
+    ctStyle
+    .masterData[current ? 'current' : 'staged']
+    .masterVariant
+    .attributes
+    .find(attribute => attribute.name === attributeName)
+  );
+
+  if (!foundAttribute) throw new Error(`CT style lacks attribute '${attributeName}'`);
+  return foundAttribute.value;
+};
 
 const getCtStyleDate = ctStyle => {
   const stagedDateString = ctStyle.masterData.staged ? getCtStyleAttributeValue(ctStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL, false) : null;
