@@ -137,7 +137,7 @@ describe('existingCtSkuIsNewer', () => {
 
   it('throws an error if given CT SKU lacks a last modified date', () => {
     const ctSkuWithMissingDate = { sku: 'sku-01', attributes: [] };
-    expect(() => existingCtSkuIsNewer(ctSkuWithMissingDate, jestaSku)).toThrow('CT SKU sku-01 lacks attribute \'skuLastModifiedInternal\'');
+    expect(() => existingCtSkuIsNewer(ctSkuWithMissingDate, jestaSku)).toThrow('CT product variant lacks last modified date');
   });
 
   it('throws an error if given JESTA SKU lacks a last modified date', () => {
@@ -229,8 +229,8 @@ describe('getCtSkuAttributeValue', () => {
     expect(getCtSkuAttributeValue(ctSku, 'bar')).toBe(2);
   });
 
-  it('it throws an error when the given attribute does not exist', () => {
-    expect(() => getCtSkuAttributeValue(ctSku, 'baz')).toThrow('CT SKU sku-01 lacks attribute \'baz\'');
+  it('it returns `undefined` when the given attribute does not exist', () => {
+    expect(getCtSkuAttributeValue(ctSku, 'baz')).toBeUndefined();
   });
 });
 

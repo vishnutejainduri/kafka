@@ -79,14 +79,9 @@ const getCtSkuFromCtStyle = (skuId, ctStyle) => {
 };
 
 const getCtSkuAttributeValue = (ctSku, attributeName) => {
-  try {
-    return ctSku.attributes.find(attribute => attribute.name === attributeName).value;
-  } catch (err) {
-    if (err.message === 'Cannot read property \'value\' of undefined') {
-      throw new Error(`CT SKU ${ctSku.sku} lacks attribute '${attributeName}'`);
-    }
-    throw err;
-  }
+  const foundAttribute = ctSku.attributes.find(attribute => attribute.name === attributeName);
+  if (!foundAttribute) return undefined;
+  return foundAttribute.value;
 };
 
 const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
