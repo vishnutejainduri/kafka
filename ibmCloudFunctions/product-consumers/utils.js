@@ -27,6 +27,9 @@ const addErrorHandling = (fn, createError) => {
     };
 }
 
+// TODO log should behave similar to console.log i.e. it should assume all of the parameters passed to it need to be logged.
+// One solution is to add log.error, another is to create a level symbol e.g. log.Level.ERROR = Symbol('error')
+
 const log = (msg, level) => {
     if (process.env.NODE_ENV === "test") return;
     if (level === "ERROR") {  console.error(msg); }
