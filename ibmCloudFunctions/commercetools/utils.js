@@ -178,5 +178,6 @@ module.exports = {
   updateStyle,
   createOrUpdateStyle: addRetries(createOrUpdateStyle, 2, console.error),
   existingCtStyleIsNewer,
-  getCtStyleAttributeValue
+  getCtStyleAttributeValue,
+  getExistingCtStyle
 };
