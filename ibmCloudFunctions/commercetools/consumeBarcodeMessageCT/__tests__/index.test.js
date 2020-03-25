@@ -1,5 +1,5 @@
 const consumeBarcodeMessageCT = require('..');
-const { existingCtBarcodeIsNewer } = require('../utils');
+const { existingCtBarcodeIsNewer, getBarcodeUpdateAction } = require('../utils');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -53,6 +53,39 @@ describe('existingCtBarcodeIsNewer', () => {
     const ctBarcodeWithoutDate = { ...ctBarcode, value: {} };
     const expectedErrorMessage = 'CT barcode lacks last modified date (object reference: foo)'
     expect(() => existingCtBarcodeIsNewer(ctBarcodeWithoutDate, newJestaBarcode)).toThrow(expectedErrorMessage);
+  });
+});
+
+describe('getBarcodeUpdateAction', () => {
+  const jestaBarcode = {
+    lastModifiedDate: 100,
+    barcode: '1101',
+    subType: 'subType',
+    skuId: '1',
+    styleId: '1',
+    ctBarcodeReference: 'bar'
+  };
+
+  const barcodes = [{ id: 'foo', typeId: 'key-value-document' }];
+
+  const ctSku = {
+    id: '1',
+    sku: '1',
+    attributes: [{ name: 'barcodes', value: barcodes }]
+  };
+
+  const expectedAction = {
+    action: 'setAttribute',
+    name: 'barcodes',
+    sku: '1',
+    value: [
+      { id: 'foo', typeId: 'key-value-document' },
+      { id: 'bar', typeId: 'key-value-document' }
+    ]
+  };
+
+  it('returns the correct CT update action object', () => {
+    expect(getBarcodeUpdateAction(jestaBarcode, ctSku)).toEqual(expectedAction);
   });
 });
 

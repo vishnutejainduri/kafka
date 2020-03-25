@@ -53,6 +53,7 @@ const createOrUpdateBarcode = async (barcode, { client, requestBuilder }) => {
 };
 
 const getBarcodeUpdateAction = (barcode, sku) => {
+  console.log('SKU', sku);
   const existingBarcodeReferences = getCtSkuAttributeValue(sku, attributeNames.BARCODES);
   const newBarcodeReference = { id: barcode.ctBarcodeReference, typeId: 'key-value-document' };
   const allBarcodeReferences = [...existingBarcodeReferences, newBarcodeReference];
@@ -107,6 +108,7 @@ module.exports = {
   handleBarcode,
   createOrUpdateBarcode,
   getBarcodeFromCt,
+  getBarcodeUpdateAction,
   addBarcodeToSku,
   existingCtBarcodeIsNewer
 };
