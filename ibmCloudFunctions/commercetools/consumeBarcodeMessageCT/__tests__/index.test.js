@@ -1,4 +1,11 @@
+const consumeBarcodeMessageCT = require('..');
 const { existingCtBarcodeIsNewer } = require('../utils');
+
+jest.mock('@commercetools/sdk-client');
+jest.mock('@commercetools/api-request-builder');
+jest.mock('@commercetools/sdk-middleware-auth');
+jest.mock('@commercetools/sdk-middleware-http');
+jest.mock('node-fetch');
 
 describe('existingCtBarcodeIsNewer', () => {
   const ctBarcode = {
@@ -11,12 +18,12 @@ describe('existingCtBarcodeIsNewer', () => {
       skuId: '1',
       subType: 'subType',
       barcode: '1101',
-      lastModifiedDate: '1970-01-01T00:00:00.050Z' // = new Date(50)
+      lastModifiedDate: '1970-01-01T00:00:00.050Z' // equivalent to new Date(50)
     }
   };
 
   const newJestaBarcode = {
-    lastModifiedDate: new Date(100),
+    lastModifiedDate: 100, // date in Unix time
     barcode: '1101',
     subType: 'subType',
     skuId: '1',
@@ -25,7 +32,7 @@ describe('existingCtBarcodeIsNewer', () => {
 
   const oldJestaBarcode = {
     ...newJestaBarcode,
-    lastModifiedDate: new Date(0)
+    lastModifiedDate: 1
   };
 
   it('returns `true` if the given CT barcode is newer', () => {
@@ -46,5 +53,42 @@ describe('existingCtBarcodeIsNewer', () => {
     const ctBarcodeWithoutDate = { ...ctBarcode, value: {} };
     const expectedErrorMessage = 'CT barcode lacks last modified date (object reference: foo)'
     expect(() => existingCtBarcodeIsNewer(ctBarcodeWithoutDate, newJestaBarcode)).toThrow(expectedErrorMessage);
+  });
+});
+
+describe('consumeCatalogueMessageCT', () => {
+  const validParams = {
+    topicName: 'barcodes-connect-jdbc',
+    messages: [{
+        topic: 'barcodes-connect-jdbc',
+        value: {
+          'LASTMODIFIEDDATE': 1000000000000,
+          'BARCODE': 'barcode',
+          'SUBTYPE': 'subType',
+          'SKU_ID': 'skuId',
+          'STYLEID': 'styleId',
+          'FKORGANIZATIONNO': '1'
+        }
+    }],
+    mongoUri: 'mongo-uri',
+    dbName: 'db-name',
+    mongoCertificateBase64: 'mong-certificate',
+    collectionName: 'barcodes',
+    ctpProjectKey: 'key',
+    ctpClientId: 'id',
+    ctpClientSecret: 'secret',
+    ctpAuthUrl: 'url',
+    ctpApiUrl: 'url',
+    ctpScopes: 'manage_products:harryrosen-dev'
+  };
+
+  it('throws an error if the given parameters are invalid', () => {
+    const invalidParams = {};
+    return expect(consumeBarcodeMessageCT(invalidParams)).rejects.toThrow();
+  });
+
+  it('returns `undefined` if given valid params', async () => {
+    const response = await consumeBarcodeMessageCT(validParams);
+    expect(response).toBeUndefined();
   });
 });

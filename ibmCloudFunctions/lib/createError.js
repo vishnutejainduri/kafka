@@ -144,6 +144,13 @@ module.exports = {
             `Failure in run of consume catalog message CT; params: ${params}.`
         ),
     },
+    consumeBarcodeMessageCT: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-barcode-message-ct',
+            `Failure in run of consume barcode message CT; params: ${params}.`
+        )
+    },
     calculateAvailableToSell: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(
             originalError,
