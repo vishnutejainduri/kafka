@@ -142,7 +142,7 @@ module.exports = {
             originalError,
             'failed-consume-catalog-message-ct',
             `Failure in run of consume catalog message CT; params: ${params}.`
-        ),
+        )
     },
     calculateAvailableToSell: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(
