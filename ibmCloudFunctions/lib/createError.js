@@ -199,6 +199,15 @@ module.exports = {
             originalError,
             'failed-bulk-ats-insert',
             `Failed to insert a style for bulk ats recalculation; ats data: ${atsData}.`
+        ),
+        partialFailure: (messages, messageFailures) => new CustomError(
+            null,
+            'partial-failure-calculate-available-to-sell',
+            `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
+            {
+                messages: JSON.stringify(messages),
+                messageFailures: JSON.stringify(messageFailures)
+            }
         )
     },
     bulkCalculateAvailableToSell: {

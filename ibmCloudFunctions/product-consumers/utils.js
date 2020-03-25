@@ -38,6 +38,11 @@ log.error = (msg) => {
     console.error(msg);
 }
 
+log.warn = (msg) => {
+    if (process.env.NODE_ENV === "test") return;
+    console.warn(msg);
+}
+
 /**
  * @param {{ index: number, error: Object, message: Object }[]}  messageFailures
  */
