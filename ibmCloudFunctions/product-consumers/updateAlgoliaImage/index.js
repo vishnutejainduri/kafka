@@ -81,7 +81,8 @@ global.main = async function (params) {
                     imagesToBeSynced.push({
                         mediaContainer,
                         url,
-                        zoomUrl
+                        zoomUrl,
+                        hasImage: true
                     });
                 } else {
                     // This mediacontainer has images, but none in our crop OR no URL for some reason
