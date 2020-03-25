@@ -146,9 +146,8 @@ describe('getCtStyleAttributeValue', () => {
     expect(actual).toBe(expected);
   });
 
-  it('throws an informative error message if the style lacks the given attribute', () => {
-    const expectedErrorMessage = 'CT style lacks attribute \'attributeThatDoesNotExist\'';
-    expect(() => getCtStyleAttributeValue(ctStyleNewer, 'attributeThatDoesNotExist', true)).toThrow(expectedErrorMessage);
+  it('returns `undefined` if the attribute does not exist on the style', () => {
+    expect(getCtStyleAttributeValue(ctStyleNewer, 'attributeThatDoesNotExist', true)).toBeUndefined();
   });
 });
 

@@ -143,6 +143,11 @@ module.exports = {
             'failed-consume-catalog-message-ct',
             `Failure in run of consume catalog message CT; params: ${params}.`
         ),
+        failedUpdateStyle: (originalError, styleId) => new CustomError(
+            originalError,
+            'failed-style-updates-ct',
+            `Failed to update style; style Id: ${styleId}.`
+        )
     },
     calculateAvailableToSell: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(
