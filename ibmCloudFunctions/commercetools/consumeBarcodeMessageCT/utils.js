@@ -1,4 +1,5 @@
 const { getExistingCtStyle } = require('../utils');
+const { attributeNames, BARCODE_NAMESPACE } = require('../constants');
 
 /**
  * START FROM SKU PR. DELETE LATER
@@ -24,8 +25,6 @@ const getCtSkuAttributeValue = (ctSku, attributeName) => {
  * END COPIED FROM SKU PR. DELETE LATER
  */
 
-const BARCODE_NAMESPACE = 'barcodes';
-
 const getBarcodeFromCt = async (barcode, { client, requestBuilder }) => {
   const method = 'GET';
   const uri = `${requestBuilder.customObjects.build()}/${BARCODE_NAMESPACE}/${barcode.barcode}`;
@@ -44,7 +43,7 @@ const createOrUpdateBarcode = async (barcode, { client, requestBuilder }) => {
   const method = 'POST';
   const uri = requestBuilder.customObjects.build();
   const body = JSON.stringify({
-    container: BARCODE_NAMESPACE, // namespace of the custom barcode objects in CT
+    container: BARCODE_NAMESPACE,
     key: barcode.barcode,
     value: barcode
   });
@@ -54,7 +53,7 @@ const createOrUpdateBarcode = async (barcode, { client, requestBuilder }) => {
 };
 
 const getBarcodeUpdateAction = (barcode, sku) => {
-  const existingBarcodeReferences = getCtSkuAttributeValue(sku, 'barcodes'); // TODO: use enum
+  const existingBarcodeReferences = getCtSkuAttributeValue(sku, attributeNames.BARCODES);
   const newBarcodeReference = { id: barcode.ctBarcodeReference, typeId: 'key-value-document' };
   const allBarcodeReferences = [...existingBarcodeReferences, newBarcodeReference];
 
@@ -86,14 +85,14 @@ const addBarcodeToSku = async (barcode, { client, requestBuilder }) => {
 const existingCtBarcodeIsNewer = (existingCtBarcode, givenBarcode) => {
   if (!existingCtBarcode.value.lastModifiedDate) throw new Error(`CT barcode lacks last modified date (object reference: ${existingCtBarcode.id})`);
   if (!givenBarcode.lastModifiedDate) throw new Error(`Given barcode lacks last modified date (barcode number: ${givenBarcode.barcode})`);
-  const existingCtBarcodeDate = new Date(existingCtBarcode.value.lastModifiedDate); // the date is stored as a string in CT
+  const existingCtBarcodeDate = new Date(existingCtBarcode.value.lastModifiedDate); // the date is stored as a UTC string in CT
+  const givenBarcodeDate = new Date(givenBarcode.lastModifiedDate); // the date is stored as a Unix time integer in JESTA
 
-  return existingCtBarcodeDate.getTime() > givenBarcode.lastModifiedDate.getTime();
+  return existingCtBarcodeDate.getTime() > givenBarcodeDate.getTime();
 };
 
 const handleBarcode = async (ctHelpers, barcode) => {
   const existingBarcode = await getBarcodeFromCt(barcode, ctHelpers);
-  console.log('existingBarcode', existingBarcode);
 
   if (!existingBarcode) {
     const newCtBarcode = await createOrUpdateBarcode(barcode, ctHelpers);

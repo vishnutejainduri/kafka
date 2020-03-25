@@ -12,9 +12,13 @@ const attributeNames = {
   ADVICE: 'advice',
   WEB_STATUS: 'webStatus',
   VSN: 'vsn',
-  STYLE_LAST_MODIFIED_INTERNAL: 'styleLastModifiedInternal'
+  STYLE_LAST_MODIFIED_INTERNAL: 'styleLastModifiedInternal',
+  BARCODES: 'barcodes'
 };
 
+const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
+
 module.exports = {
-  attributeNames
+  attributeNames,
+  BARCODE_NAMESPACE
 };
