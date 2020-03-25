@@ -1,6 +1,6 @@
 const rp = require('request-promise');
 
-const { addErrorHandling } = require('../utils');
+const { addErrorHandling, log } = require('../utils');
 const {
     findBatches,
     getDeleteBatch,
@@ -49,10 +49,12 @@ global.main = async function(params) {
             messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end);
             if (messagesByNextAction.dlq.length) {
                 const storeDlqMessages = await getStoreDlqMessages(params);
+                log.error(`DLQing messages: ${messagesByNextAction.dlq.length} messages DLQed with activation info: ${activationInfo}`)
                 storeMessagesByNextActionResult.dlq = await storeDlqMessages(messagesByNextAction.dlq, { activationInfo });
             }
             if (messagesByNextAction.retry.length) {
                 const storeRetryMessages = await getStoreRetryMessages(params);
+                log.warn(`Retrying messages: ${messagesByNextAction.retry.length} messages queued for retry with activation info: ${activationInfo}`)
                 storeMessagesByNextActionResult.retry = await storeRetryMessages(messagesByNextAction.retry, { activationInfo });
             }
         }

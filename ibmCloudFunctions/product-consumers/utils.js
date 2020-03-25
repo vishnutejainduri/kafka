@@ -27,10 +27,20 @@ const addErrorHandling = (fn, createError) => {
     };
 }
 
-const log = (msg, level) => {
+// TODO log should behave similar to console.log, replace all usages where level = "ERROR" with log.error
+const log = msg => {
     if (process.env.NODE_ENV === "test") return;
-    if (level === "ERROR") {  console.error(msg); }
-    else {  console.log(msg); }
+    console.log(msg);
+}
+
+log.error = (msg) => {
+    if (process.env.NODE_ENV === "test") return;
+    console.error(msg);
+}
+
+log.warn = (msg) => {
+    if (process.env.NODE_ENV === "test") return;
+    console.warn(msg);
 }
 
 /**
@@ -38,7 +48,7 @@ const log = (msg, level) => {
  */
 log.messageFailures = (messageFailures) => {
     messageFailures.forEach(({ message, error }) => {
-        log(`Message failure: ${JSON.stringify(message)} failed with error: ${error}`);
+        log.error(`Message failure: ${JSON.stringify(message)} failed with error: ${error}`);
     });
 }
 
