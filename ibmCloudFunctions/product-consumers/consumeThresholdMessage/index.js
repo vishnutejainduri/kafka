@@ -92,9 +92,21 @@ const main = async function (params) {
         };
     })
     .then((results) => {
-        const errors = results.filter((res) => res instanceof Error);
+        const failureIndexes = [];
+        const errors = results.filter((res, index) => {
+            if (res instanceof Error) {
+                failureIndexes.push(index);
+                return true;
+            }
+        });
+
         if (errors.length > 0) {
-            throw createError.consumeThresholdMessage.partialFailure(params.messages, errors);
+            log.error(createError.consumeThresholdMessage.partialFailure(params.messages, errors));
+        }
+
+        return {
+            failureIndexes,
+            errors
         }
     })
 }
@@ -103,7 +115,12 @@ global.main = async function (params) {
   return Promise.all([
       main(params),
       messagesLogs.storeBatch(params)
-  ]).then(([result]) => result);
+  ]).then(async ([result]) => {
+      if (result.failureIndexes.length > 0) {
+        await messagesLogs.updateBatchWithFailureIndexes(params, result.failureIndexes);
+      }
+      return result;
+  });
 }
 
 module.exports = global.main;

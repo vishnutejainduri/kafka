@@ -27,10 +27,20 @@ const addErrorHandling = (fn, createError) => {
     };
 }
 
-const log = (msg, level) => {
+// TODO log should behave similar to console.log, replace all usages where level = "ERROR" with log.error
+const log = msg => {
     if (process.env.NODE_ENV === "test") return;
-    if (level === "ERROR") {  console.error(msg); }
-    else {  console.log(msg); }
+    console.log(msg);
+}
+
+log.error = (msg) => {
+    if (process.env.NODE_ENV === "test") return;
+    console.error(msg);
+}
+
+log.warn = (msg) => {
+    if (process.env.NODE_ENV === "test") return;
+    console.warn(msg);
 }
 
 /**
@@ -38,14 +48,17 @@ const log = (msg, level) => {
  */
 log.messageFailures = (messageFailures) => {
     messageFailures.forEach(({ message, error }) => {
-        log(`Message failure: ${JSON.stringify(message)} failed with error: ${error}`);
+        log.error(`Message failure: ${JSON.stringify(message)} failed with error: ${error}`);
     });
 }
 
+const MESSAGES_LOG_ERROR = 'MESSAGES LOG ERROR.';
+
 const createLog = {
     messagesLog: {
-        failedToStoreBatch: (error) => `Failed to store batch of messages: ${error}`,
-        failedToResolveBatch: (error) => `Failed to resolve batch of messages: ${error}`
+        failedToStoreBatch: (error) => `${MESSAGES_LOG_ERROR} Failed to store batch of messages: ${error}`,
+        failedToResolveBatch: (error) => `${MESSAGES_LOG_ERROR} Failed to resolve batch of messages: ${error}`,
+        failedToUpdateBatchWithFailureIndexes: (error) => `${MESSAGES_LOG_ERROR} Failed to update batch of messages with failure indexes: ${error}`
     },
     params: (cfName, params) => {
         const { messages, ...paramsExcludingMessages } = params;

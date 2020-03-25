@@ -95,7 +95,7 @@ async function storeBatch(params) {
         let messages = params.messages;
         if (params.messages === null) {
             // for messages in a sequence, only the first step has the messages as stored in Kafka topics
-            // for the subsequent steps we copy the messages e.g. see calculateAvailableToSell/index.js 
+            // for the subsequent steps we copy the messages e.g. see calculateAvailableToSell/index.js
             messages = (await collection.findOne({ transactionId }, { projection: { messages: 1 }})).messages;
         }
         const result = await collection
@@ -108,6 +108,27 @@ async function storeBatch(params) {
         return result;
     } catch (error) {
         log(createLog.messagesLog.failedToStoreBatch(error));
+        return error;
+    }
+}
+
+async function updateBatchWithFailureIndexes(params, failureIndexes) {
+    try {
+        const collection = await getMessagesCollection(params);
+        const transactionId = process.env.__OW_TRANSACTION_ID;
+        const result = await collection
+            .updateOne({
+                activationId: process.env.__OW_ACTIVATION_ID,
+                transactionId,
+            }, {
+              $set: {
+                resolved: 'partial',
+                failureIndexes
+              }
+            });
+        return result;
+    } catch (error) {
+        log(createLog.messagesLog.failedToUpdateBatchWithFailureIndexes(error));
         return error;
     }
 }
@@ -128,11 +149,11 @@ async function getStoreRetryMessages(params) {
     }
 }
 
-async function findUnresolvedBatches(params, limit = 100) {
+async function findBatches(params, limit = 50) {
     const collection = await getMessagesCollection(params);
     let result = [];
     await collection
-        .find({ resolved: false }, { projection: { activationId: 1 } })
+        .find({}, { projection: { activationId: 1, failureIndexes: 1 } })
         .limit(limit)
         .forEach(document => {
             result.push(document);
@@ -195,7 +216,7 @@ async function getStoreValues(params) {
 async function getDeleteBatch(params) {
     const collection = await getMessagesCollection(params);
     return async function(activationId) {
-        const result = await collection.deleteOne({ activationId });        
+        const result = await collection.deleteOne({ activationId });
         return result;
     }
 }
@@ -235,7 +256,8 @@ async function storeInvalidMessages(params, invalidMessages) {
 module.exports = {
     getMessagesCollection,
     storeBatch,
-    findUnresolvedBatches,
+    updateBatchWithFailureIndexes,
+    findBatches,
     findTimedoutBatchesActivationIds,
     getFindMessages,
     getDeleteBatch,

@@ -33,6 +33,10 @@ const params = {
 }
 
 describe('calculateAvailableToSell', () => {
+    const resultWithNoErrors = {
+        errors: [],
+        failureIndexes: []
+    }
     it('missing all parameters; should fail', async () => {
         const result = await expect(calculateAvailableToSell({}));
         expect(result).toBeInstanceOf(Object);
@@ -40,7 +44,16 @@ describe('calculateAvailableToSell', () => {
     it('correct message to update ats', async () => {
         const response = await calculateAvailableToSell(params);
         // returns nothing/undefined if successfully run
-        expect(response).toEqual(undefined);
+        expect(response).toEqual(resultWithNoErrors);
+    });
+    it('invalid message to update ats', async () => {
+        const invalidMessage = {};
+        const response = await calculateAvailableToSell({
+            ...params,
+            messages: [increaseAtsTestData, invalidMessage, increaseAtsTestData]
+        });
+        // returns nothing/undefined if successfully run
+        expect(response.failureIndexes.includes(1)).toEqual(true);
     });
 });
 
