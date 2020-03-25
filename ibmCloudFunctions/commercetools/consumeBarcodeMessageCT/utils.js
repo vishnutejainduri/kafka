@@ -31,8 +31,8 @@ const getBarcodeFromCt = async (barcode, { client, requestBuilder }) => {
   const uri = `${requestBuilder.customObjects.build()}/${BARCODE_NAMESPACE}/${barcode.barcode}`;
   console.log(uri);
 
-  try {
-    const response = await client.execute({ method, uri }); // the CT client throws an error if it gets a 404 response
+  try { // the CT client throws an error if it gets a 404 response
+    const response = await client.execute({ method, uri }); 
     return response.body;
   } catch (err) {
     if (err.statusCode === 404) return null;
@@ -44,7 +44,7 @@ const createOrUpdateBarcode = async (barcode, { client, requestBuilder }) => {
   const method = 'POST';
   const uri = requestBuilder.customObjects.build();
   const body = JSON.stringify({
-    container: BARCODE_NAMESPACE, // namespace of the these custom objects in CT
+    container: BARCODE_NAMESPACE, // namespace of the custom barcode objects in CT
     key: barcode.barcode,
     value: barcode
   });
@@ -52,12 +52,6 @@ const createOrUpdateBarcode = async (barcode, { client, requestBuilder }) => {
   const response = await client.execute({ method, uri, body });
   return response.body;
 };
-
-// setSkuAttribute = ({ style, skuId, attributeName, attributeValue, ctHelpers}) => {
-//   const { };
-  
-
-// };
 
 const getBarcodeUpdateAction = (barcode, sku) => {
   const existingBarcodeReferences = getCtSkuAttributeValue(sku, 'barcodes'); // TODO: use enum
@@ -89,24 +83,31 @@ const addBarcodeToSku = async (barcode, { client, requestBuilder }) => {
   return client.execute({ method, uri, body });
 };
 
-const handleBarcode = (ctHelpers, barcode) => {
-  const existingBarcode = getBarcodeFromCt(barcode, ctHelpers);
+const existingCtBarcodeIsNewer = (existingCtBarcode, givenBarcode) => {
+  if (!existingCtBarcode.value.lastModifiedDate) throw new Error(`CT barcode lacks last modified date (object reference: ${existingCtBarcode.id})`);
+  if (!givenBarcode.lastModifiedDate) throw new Error(`Given barcode lacks last modified date (barcode number: ${givenBarcode.barcode})`);
+  const existingCtBarcodeDate = new Date(existingCtBarcode.value.lastModifiedDate); // the date is stored as a string in CT
 
-  if (!existingBarcode) {
-    const newCtBarcode = createOrUpdateBarcode(barcode, ctHelpers);
-    addBarcodeToSku({ ...barcode, ctBarcodeReference: newCtBarcode.id }, ctHelpers);
-  } else {
-    // TODO: check if exsiting barcode is newer.
-    createOrUpdateBarcode(barcode, ctHelpers);
-  }
+  return existingCtBarcodeDate.getTime() > givenBarcode.lastModifiedDate.getTime();
 };
 
-// TODO: in parse message, change `lastModifiedDate` to something more descriptive. add id (which will = barcode)?
+const handleBarcode = async (ctHelpers, barcode) => {
+  const existingBarcode = await getBarcodeFromCt(barcode, ctHelpers);
+  console.log('existingBarcode', existingBarcode);
 
+  if (!existingBarcode) {
+    const newCtBarcode = await createOrUpdateBarcode(barcode, ctHelpers);
+    return addBarcodeToSku({ ...barcode, ctBarcodeReference: newCtBarcode.id }, ctHelpers);
+  } else if (existingCtBarcodeIsNewer(existingBarcode, barcode)) {
+    return null;
+  }
+  return createOrUpdateBarcode(barcode, ctHelpers);
+};
 
 module.exports = {
   handleBarcode,
   createOrUpdateBarcode,
   getBarcodeFromCt,
-  addBarcodeToSku
+  addBarcodeToSku,
+  existingCtBarcodeIsNewer
 };
