@@ -1,6 +1,5 @@
 const { addRetries } = require('../product-consumers/utils');
 const { attributeNames } = require('./constants');
-const createError = require('../lib/createError');
 
 const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
   const method = 'GET';
@@ -155,15 +154,11 @@ const getCtStyleDate = ctStyle => {
 // Used to determine whether we should update the style in CT. Deals with race
 // conditions.
 const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
-  try {
-    const existingCtStyleDate = getCtStyleDate(existingCtStyle);
-    if (!existingCtStyleDate) throw new Error('CT style lacks last modified date');
-    if (!givenStyle.styleLastModifiedInternal) throw new Error('JESTA style lacks last modified date');
-  
-    return existingCtStyleDate.getTime() > givenStyle.styleLastModifiedInternal.getTime();
-  } catch (err) {
-    throw createError.consumeCatalogMessageCT.failedUpdateStyle(err, givenStyle.id);
-  }
+  const existingCtStyleDate = getCtStyleDate(existingCtStyle);
+  if (!existingCtStyleDate) throw new Error('CT style lacks last modified date');
+  if (!givenStyle.styleLastModifiedInternal) throw new Error('JESTA style lacks last modified date');
+
+  return existingCtStyleDate.getTime() > givenStyle.styleLastModifiedInternal.getTime();
 };
 
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
