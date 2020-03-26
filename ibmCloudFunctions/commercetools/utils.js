@@ -94,7 +94,6 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
   const method = 'POST';
   const uri = requestBuilder.products.build();
   const attributes = getAttributesFromStyle(style);
-  console.log('ATTRIBUTES', attributes);
 
   const body = JSON.stringify({
     key: style.id, // the style ID is stored as a key, since we can't set a custom ID in CT
