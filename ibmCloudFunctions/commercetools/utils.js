@@ -94,6 +94,7 @@ const createStyle = async (style, productTypeId, { client, requestBuilder }) => 
   const method = 'POST';
   const uri = requestBuilder.products.build();
   const attributes = getAttributesFromStyle(style);
+  console.log('ATTRIBUTES', attributes);
 
   const body = JSON.stringify({
     key: style.id, // the style ID is stored as a key, since we can't set a custom ID in CT
@@ -155,8 +156,8 @@ const getCtStyleDate = ctStyle => {
 // conditions.
 const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
   const existingCtStyleDate = getCtStyleDate(existingCtStyle);
-  if (!existingCtStyleDate) throw new Error('CT style lacks last modified date');
-  if (!givenStyle.styleLastModifiedInternal) throw new Error('JESTA style lacks last modified date');
+  if (!existingCtStyleDate) return false;
+  if (!givenStyle.styleLastModifiedInternal) return false;
 
   return existingCtStyleDate.getTime() > givenStyle.styleLastModifiedInternal.getTime();
 };
