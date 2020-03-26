@@ -206,8 +206,8 @@ const getCtStyleAttribute = (ctStyle, attributeName) => {
 // conditions.
 const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
   const existingCtStyleDate = new Date(getCtStyleAttribute(existingCtStyle, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL));
-  if (!existingCtStyleDate) throw new Error('CT style lacks last modified date');
-  if (!givenStyle.styleLastModifiedInternal) throw new Error('JESTA style lacks last modified date');
+  if (!existingCtStyleDate) return false;
+  if (!givenStyle.styleLastModifiedInternal) return false;
 
   return existingCtStyleDate.getTime() > givenStyle.styleLastModifiedInternal.getTime();
 };

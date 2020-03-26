@@ -68,6 +68,11 @@ const validParams = {
 
 const message = validParams.messages[0];
 
+const messageWithoutLastModifiedDate = {
+  ...message,
+  value: { ...message.value, LAST_MODIFIED_DATE: undefined }
+};
+
 const ctStyleNewer = {
   "masterData": {
       "staged": {
@@ -167,6 +172,11 @@ describe('parseStyleMessageCt', () => {
     const actualValue = parseStyleMessageCt(message).styleLastModifiedInternal;
     expect(actualValue).toEqual(expect.any(Date));
   });
+
+  it('returns a message that lacks a `styleLastModifiedInternal` date if the JESTA corresponding date is undefined', () => {
+    const parsedMessage = parseStyleMessageCt(messageWithoutLastModifiedDate);
+    expect(parsedMessage.styleLastModifiedInternal).toBeUndefined();
+  });
 });
 
 describe('existingCtStyleIsNewer', () => {
@@ -178,14 +188,22 @@ describe('existingCtStyleIsNewer', () => {
     expect(existingCtStyleIsNewer(ctStyleOlder, jestaStyle)).toBe(false);
   });
 
-  it('throws an error if JESTA style lacks a value for `styleLastModifiedInternal`', () => {
+  it('returns `false` if JESTA style lacks a value for `styleLastModifiedInternal`', () => {
     const jestaStyleWithoutModifiedDate = {...jestaStyle, styleLastModifiedInternal: undefined };
-    expect(() => existingCtStyleIsNewer(ctStyleOlder, jestaStyleWithoutModifiedDate)).toThrow();
+    expect(existingCtStyleIsNewer(ctStyleOlder, jestaStyleWithoutModifiedDate)).toBe(false);
   });
 
-  it('throws an error if CT style lacks a value for `styleLastModifiedInternal`', () => {
-    const ctStyleWithoutDate = {};
-    expect(() => existingCtStyleIsNewer(ctStyleWithoutDate, jestaStyle)).toThrow();
+  it('returns `false` if CT style lacks a value for `styleLastModifiedInternal`', () => {
+    const ctStyleWithoutDate = {
+        "masterData": {
+        "staged": {
+            "masterVariant": {
+                "attributes": []
+            }
+        }
+      }
+    };
+    expect(existingCtStyleIsNewer(ctStyleWithoutDate, jestaStyle)).toBe(false);
   });
 });
 
