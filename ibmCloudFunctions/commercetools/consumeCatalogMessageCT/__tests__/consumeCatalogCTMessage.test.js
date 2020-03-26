@@ -145,6 +145,10 @@ describe('getCtStyleAttributeValue', () => {
     const expected = '2019-03-18T16:53:20.823Z';
     expect(actual).toBe(expected);
   });
+
+  it('returns `undefined` if the attribute does not exist on the style', () => {
+    expect(getCtStyleAttributeValue(ctStyleNewer, 'attributeThatDoesNotExist', true)).toBeUndefined();
+  });
 });
 
 describe('parseStyleMessageCt', () => {

@@ -1,7 +1,7 @@
-const { addRetries } = require('../product-consumers/utils');
-const { getExistingCtStyle, getCtStyleAttribute, updateStyle, getProductType } = require('./styleUtils');
-const { attributeNames } = require('./constantsCt');
-const { generateUpdateFromParsedMessage } = require('../lib/parsePriceMessage');
+const { addRetries } = require('../../product-consumers/utils');
+const { getExistingCtStyle, getCtStyleAttribute, updateStyle, getProductType } = require('../styleUtils');
+const { styleAttributeNames } = require('../constantsCt');
+const { generateUpdateFromParsedMessage } = require('../../lib/parsePriceMessage');
 
 const getAllVariantPrices = (existingCtStyle, current = false) => {
   const variantPrices = [];
@@ -58,11 +58,11 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
 
     const variantPrices = getAllVariantPrices(existingCtStyle, false) || getAllVariantPrices(existingCtStyle, true);
 
-    const onlineSalePriceCurrent = getCtStyleAttribute(existingCtStyle, attributeNames.ONLINE_SALE_PRICE);
+    const onlineSalePriceCurrent = getCtStyleAttribute(existingCtStyle, styleAttributeNames.ONLINE_SALE_PRICE);
     const priceData = {
       onlineSalePrice: onlineSalePriceCurrent ? onlineSalePriceCurrent.centAmount : null,
     };
-    const originalPriceCurrent = getCtStyleAttribute(existingCtStyle, attributeNames.ORIGINAL_PRICE);
+    const originalPriceCurrent = getCtStyleAttribute(existingCtStyle, styleAttributeNames.ORIGINAL_PRICE);
     const styleData = {
       originalPrice: originalPriceCurrent ? originalPriceCurrent.centAmount : null
     };

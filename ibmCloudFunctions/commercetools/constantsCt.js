@@ -1,8 +1,8 @@
 /**
- * Custom CT product attributes.
+ * Custom CT product attributes that apply to styles
  * @enum {String}
  */
-const attributeNames = {
+const styleAttributeNames = {
   SEASON: 'season',
   BRAND_NAME: 'brandName',
   CONSTRUCTION: 'construction',
@@ -19,11 +19,24 @@ const attributeNames = {
   ONLINE_DISCOUNT: 'onlineDiscount'
 };
 
+/**
+ * Custom CT product attributes that apply to SKUs
+ * @enum {String}
+ */
+const skuAttributeNames = {
+  SKU_LAST_MODIFIED_INTERNAL: 'skuLastModifiedInternal',
+  COLOR_ID: 'colorId',
+  SIZE_ID: 'sizeId',
+  SIZE: 'size',
+  DIMENSION_ID: 'dimensionId'
+};
+
 const currencyCodes = {
   CAD: 'CAD'
 };
 
 module.exports = {
-  attributeNames,
+  styleAttributeNames,
+  skuAttributeNames,
   currencyCodes
 };

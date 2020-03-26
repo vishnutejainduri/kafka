@@ -5,3 +5,6 @@
       price-rule-ct:
         action: /${ORG}_${SPACE}/commercetools/consume-sale-price-with-retry-ct
         trigger: price-ct-trigger
+      sku-rule-ct:
+        action: /${ORG}_${SPACE}/product-consumers/consume-sku-message-with-retry-ct
+        trigger: sku-ct-trigger

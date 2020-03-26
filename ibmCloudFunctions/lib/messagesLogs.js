@@ -149,11 +149,11 @@ async function getStoreRetryMessages(params) {
     }
 }
 
-async function findUnresolvedBatches(params, limit = 100) {
+async function findBatches(params, limit = 50) {
     const collection = await getMessagesCollection(params);
     let result = [];
     await collection
-        .find({ resolved: false }, { projection: { activationId: 1 } })
+        .find({}, { projection: { activationId: 1, failureIndexes: 1 } })
         .limit(limit)
         .forEach(document => {
             result.push(document);
@@ -257,7 +257,7 @@ module.exports = {
     getMessagesCollection,
     storeBatch,
     updateBatchWithFailureIndexes,
-    findUnresolvedBatches,
+    findBatches,
     findTimedoutBatchesActivationIds,
     getFindMessages,
     getDeleteBatch,
@@ -267,5 +267,5 @@ module.exports = {
     getRetryBatches,
     getUpdateRetryBatch,
     getDeleteRetryBatch,
-    storeInvalidMessages,
+    storeInvalidMessages
 };

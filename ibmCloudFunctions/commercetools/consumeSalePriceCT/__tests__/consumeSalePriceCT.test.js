@@ -1,6 +1,6 @@
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const consumeSalePriceCT = require('..');
-const { preparePriceUpdate } = require('../../priceUtils');
+const { preparePriceUpdate } = require('../utils');
 const {
     filterPriceMessages,
     parsePriceMessage,

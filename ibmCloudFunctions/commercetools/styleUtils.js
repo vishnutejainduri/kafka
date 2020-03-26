@@ -1,5 +1,5 @@
 const { addRetries } = require('../product-consumers/utils');
-const { attributeNames, currencyCodes } = require('./constantsCt');
+const { styleAttributeNames, currencyCodes } = require('./constantsCt');
 
 const getProductType = async (productTypeId, { client, requestBuilder }) => {
   const method = 'GET';
@@ -34,12 +34,8 @@ const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
 // Returns true iff the given attribute is a custom attribute on the HR product
 // type defined in CT
 const isCustomAttribute = attribute => {
-  const customAttributes = [];
-  for (let [key] of Object.entries(attributeNames)) {
-    customAttributes.push(attributeNames[key]); 
-  }
-
-  return customAttributes.includes(attribute);
+  const styleCustomAttributes = Object.values(styleAttributeNames);
+  return styleCustomAttributes.includes(attribute);
 };
 
 // Returns an array of actions, each of which tells CT to update a different
@@ -179,18 +175,22 @@ const createStyle = async (style, productType, { client, requestBuilder }) => {
 
 /**
  * Returns the value of the attribute in the given CT style. The value is taken
- * from the master variant. Throws an error if the attribute is not found.
+ * from the master variant. Returns `undefined` if the attribute does not exist.
  * @param {Object} ctStyle The product as stored in CT.
  * @param {String} attributeName Name of the attribute whose value should be returned.
  * @param {Boolean} current Indicates whether to return the value from the current product or the staged product.
  */
 const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
-  const attribute = ctStyle
+  const foundAttribute =  (
+    ctStyle
     .masterData[current ? 'current' : 'staged']
     .masterVariant
     .attributes
-    .find(attribute => attribute.name === attributeName);
-  return attribute ? attribute.value : null;
+    .find(attribute => attribute.name === attributeName)
+  );
+
+  if (!foundAttribute) return undefined;
+  return foundAttribute.value;
 };
 
 const getCtStyleAttribute = (ctStyle, attributeName) => {
@@ -205,7 +205,7 @@ const getCtStyleAttribute = (ctStyle, attributeName) => {
 // Used to determine whether we should update the style in CT. Deals with race
 // conditions.
 const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
-  const existingCtStyleDate = new Date(getCtStyleAttribute(existingCtStyle, attributeNames.STYLE_LAST_MODIFIED_INTERNAL));
+  const existingCtStyleDate = new Date(getCtStyleAttribute(existingCtStyle, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL));
   if (!existingCtStyleDate) throw new Error('CT style lacks last modified date');
   if (!givenStyle.styleLastModifiedInternal) throw new Error('JESTA style lacks last modified date');
 
@@ -235,7 +235,7 @@ module.exports = {
   createOrUpdateStyle: addRetries(createOrUpdateStyle, 2, console.error),
   existingCtStyleIsNewer,
   getCtStyleAttributeValue,
-  getExistingCtStyle,
   getCtStyleAttribute,
-  getProductType
+  getProductType,
+  getExistingCtStyle
 };

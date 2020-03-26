@@ -1,4 +1,4 @@
-const { preparePriceUpdate, updateStylePrice } = require('../priceUtils');
+const { preparePriceUpdate, updateStylePrice } = require('./utils');
 const {
     filterPriceMessages,
     parsePriceMessage,

@@ -9,3 +9,8 @@
         inputs:
           isJSONData: true
           topic: prices-connect-jdbc
+      sku-ct-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: skus-connect-jdbc
