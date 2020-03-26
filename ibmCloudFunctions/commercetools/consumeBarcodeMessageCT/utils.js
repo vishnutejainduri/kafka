@@ -12,14 +12,9 @@ const getCtSkuFromCtStyle = (skuId, ctStyle) => {
 };
 
 const getCtSkuAttributeValue = (ctSku, attributeName) => {
-  try {
-    return ctSku.attributes.find(attribute => attribute.name === attributeName).value;
-  } catch (err) {
-    if (err.message === 'Cannot read property \'value\' of undefined') {
-      throw new Error(`CT SKU ${ctSku.sku} lacks attribute '${attributeName}'`);
-    }
-    throw err;
-  }
+  const foundAttribute = ctSku.attributes.find(attribute => attribute.name === attributeName);
+  if (!foundAttribute) return undefined;
+  return foundAttribute.value;
 };
 /**
  * END COPIED FROM SKU PR. DELETE LATER
@@ -54,7 +49,7 @@ const createOrUpdateBarcode = async (barcode, { client, requestBuilder }) => {
 
 const getBarcodeUpdateAction = (barcode, sku) => {
   console.log('SKU', sku);
-  const existingBarcodeReferences = getCtSkuAttributeValue(sku, attributeNames.BARCODES);
+  const existingBarcodeReferences = getCtSkuAttributeValue(sku, attributeNames.BARCODES) || [];
   const newBarcodeReference = { id: barcode.ctBarcodeReference, typeId: 'key-value-document' };
   const allBarcodeReferences = [...existingBarcodeReferences, newBarcodeReference];
 

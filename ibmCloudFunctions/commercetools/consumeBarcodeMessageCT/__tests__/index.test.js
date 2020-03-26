@@ -66,27 +66,45 @@ describe('getBarcodeUpdateAction', () => {
     ctBarcodeReference: 'bar'
   };
 
-  const barcodes = [{ id: 'foo', typeId: 'key-value-document' }];
-
-  const ctSku = {
-    id: '1',
-    sku: '1',
-    attributes: [{ name: 'barcodes', value: barcodes }]
-  };
-
-  const expectedAction = {
-    action: 'setAttribute',
-    name: 'barcodes',
-    sku: '1',
-    value: [
-      { id: 'foo', typeId: 'key-value-document' },
-      { id: 'bar', typeId: 'key-value-document' }
-    ]
-  };
-
   it('returns the correct CT update action object', () => {
+    const barcodes = [{ id: 'foo', typeId: 'key-value-document' }];
+
+    const ctSku = {
+      id: '1',
+      sku: '1',
+      attributes: [{ name: 'barcodes', value: barcodes }]
+    };
+
+    const expectedAction = {
+      action: 'setAttribute',
+      name: 'barcodes',
+      sku: '1',
+      value: [
+        { id: 'foo', typeId: 'key-value-document' },
+        { id: 'bar', typeId: 'key-value-document' }
+      ]
+    };
     expect(getBarcodeUpdateAction(jestaBarcode, ctSku)).toEqual(expectedAction);
   });
+
+  it('works when there are no pre-existing CT barcodes', () => {
+    const ctSkuWithNoBarcodes = {
+      id: '1',
+      sku: '1',
+      attributes: []
+    };
+
+    const expectedAction = {
+      action: 'setAttribute',
+      name: 'barcodes',
+      sku: '1',
+      value: [
+        { id: 'bar', typeId: 'key-value-document' }
+      ]
+    };
+
+    expect(getBarcodeUpdateAction(jestaBarcode, ctSkuWithNoBarcodes)).toEqual(expectedAction);
+  })
 });
 
 describe('consumeCatalogueMessageCT', () => {
