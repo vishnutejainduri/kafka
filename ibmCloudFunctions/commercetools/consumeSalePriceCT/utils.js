@@ -3,29 +3,29 @@ const { getExistingCtStyle, getCtStyleAttribute, updateStyle, getProductType } =
 const { styleAttributeNames } = require('../constantsCt');
 const { generateUpdateFromParsedMessage } = require('../../lib/parsePriceMessage');
 
-const getAllVariantPrices = (existingCtStyle, current = false) => {
+const getAllVariantPrices = (existingCtStyle) => {
   const variantPrices = [];
 
-  //current price for master variant
-  const priceObjMaster = existingCtStyle
-    .masterData[current ? 'current' : 'staged']
-    .masterVariant
-  const currentPriceObjMaster = {
+  //current/staged price for master variant
+  const priceObjMaster = existingCtStyle.masterData.hasStagedChanges
+    ? existingCtStyle.masterData.staged.masterVariant
+    : existingCtStyle.masterData.current.masterVariant
+  const relevantPriceObjMaster = {
     variantId: priceObjMaster.id,
     price: priceObjMaster.prices[0]
   };
-  variantPrices.push(currentPriceObjMaster);
+  variantPrices.push(relevantPriceObjMaster);
 
-  //current price for all variants
-  const ctStyleVariants = existingCtStyle
-    .masterData[current ? 'current' : 'staged']
-    .variants;
+  //current/staged price for all variants
+  const ctStyleVariants = existingCtStyle.masterData.hasStagedChanges
+    ? existingCtStyle.masterData.staged.variants
+    : existingCtStyle.masterData.current.variants
   ctStyleVariants.forEach((variant) => {
-    const currentPriceObj = {
+    const relevantPriceObj = {
       variantId: variant.id,
       price: variant.prices[0]
     };
-    variantPrices.push(currentPriceObj);
+    variantPrices.push(relevantPriceObj);
   });
 
   return variantPrices;
@@ -56,7 +56,7 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
       return null;
     }
 
-    const variantPrices = getAllVariantPrices(existingCtStyle, false) || getAllVariantPrices(existingCtStyle, true);
+    const variantPrices = getAllVariantPrices(existingCtStyle);
 
     const onlineSalePriceCurrent = getCtStyleAttribute(existingCtStyle, styleAttributeNames.ONLINE_SALE_PRICE);
     const priceData = {

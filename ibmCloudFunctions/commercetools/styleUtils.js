@@ -95,7 +95,7 @@ const getActionsFromStyle = (style, productType) => {
       : null
 
   const allUpdateActions = (
-    [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction].concat(currentPriceActions)
+    [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...currentPriceActions]
       .filter(Boolean) // removes the `null` actions, if there are any
   );
 
