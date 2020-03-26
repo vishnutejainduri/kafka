@@ -3,6 +3,8 @@ const { getExistingCtStyle, getCtStyleAttribute, updateStyle, getProductType } =
 const { styleAttributeNames } = require('../constantsCt');
 const { generateUpdateFromParsedMessage } = require('../../lib/parsePriceMessage');
 
+const convertToCents = (amount) => Math.round(amount * 100)
+
 const getAllVariantPrices = (existingCtStyle) => {
   const variantPrices = [];
 
@@ -68,10 +70,10 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
     };
 
     priceUpdate.newRetailPrice = priceUpdate.newRetailPrice
-                                  ? Math.round(priceUpdate.newRetailPrice * 100) //conversion to cents for CT comparison
+                                  ? convertToCents(priceUpdate.newRetailPrice)
                                   : null
     priceUpdate.originalPrice = styleData.originalPrice
-                                  ? Math.round(styleData.originalPrice * 100) //conversion to cents for CT comparison
+                                  ? convertToCents(styleData.originalPrice)
                                   : null
 
     const updatedPrices = generateUpdateFromParsedMessages (priceUpdate, priceData, styleData, variantPrices)
@@ -82,7 +84,6 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
 
     updatedPrices.ctStyleVersion = existingCtStyle.version;
     updatedPrices.id = priceUpdate.styleId;
-
 
     //the following three values come from index 0, they should be identical at all times at anywhere in the index
     //since all variants should have the same pricing
