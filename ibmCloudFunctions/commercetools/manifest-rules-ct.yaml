@@ -2,3 +2,6 @@
       catalog-rule-ct:
         action: /${ORG}_${SPACE}/commercetools/consume-catalog-message-with-retry-ct
         trigger: catalog-ct-trigger
+      sku-rule-ct:
+        action: /${ORG}_${SPACE}/product-consumers/consume-sku-message-with-retry-ct
+        trigger: sku-ct-trigger

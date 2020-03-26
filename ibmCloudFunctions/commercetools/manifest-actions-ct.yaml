@@ -14,3 +14,18 @@
         limits:
           memorySize: 512
           timeout: 600000
+      consume-sku-message-ct:
+        location: ./commercetools/consumeSkuMessageCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+        inputs:
+          topicName: skus-connect-jdbc
+      consume-sku-message-with-retry:
+        location: ./commercetools/consumeSkuMessageWithRetryCT/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000

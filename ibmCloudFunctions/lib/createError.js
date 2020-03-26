@@ -115,6 +115,13 @@ module.exports = {
             `Failure to update style ats in run of consume sku message; skuData: ${skuData}.`
         ),
     },
+    consumeSkuMessageCt: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-sku-message-ct',
+            `Failure in run of consume sku message; params: ${params}.`
+        )
+    },
     consumeCatalogMessage: {
         failed: (originalError, params) => new CustomError(
             originalError,
