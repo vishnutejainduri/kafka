@@ -81,7 +81,8 @@ global.main = async function (params) {
                     imagesToBeSynced.push({
                         mediaContainer,
                         url,
-                        zoomUrl
+                        zoomUrl,
+                        hasImage: true
                     });
                 } else {
                     // This mediacontainer has images, but none in our crop OR no URL for some reason
@@ -107,7 +108,8 @@ global.main = async function (params) {
                 return {
                     objectID: imageData.mediaContainer.code.match(/\d+/)[0] || imageData.mediaContainer.code,
                     image: imageData.url,
-                    imageZoom: imageData.zoomUrl
+                    imageZoom: imageData.zoomUrl,
+                    hasImage: imageData.hasImage
                 };
             });
         const mediaContainerIds = imagesToBeSynced.map((imageData) => imageData.mediaContainer._id)

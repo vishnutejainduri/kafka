@@ -30,3 +30,4 @@
         limits:
           memorySize: 512
           timeout: 600000
+# TODO: add rules from SKU CT (they got lost in a merge conflict resolution)

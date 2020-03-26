@@ -1,29 +1,10 @@
 const { getExistingCtStyle } = require('../utils');
-const { attributeNames, BARCODE_NAMESPACE } = require('../constants');
-
-/**
- * START FROM SKU PR. DELETE LATER
- */
-const getCtSkuFromCtStyle = (skuId, ctStyle) => {
-  // We want the SKU with the most recent changes, which we assume is the
-  // staged one, if there are staged changes
-  const skus = ctStyle.masterData[ctStyle.masterData.hasStagedChanges ? 'staged' : 'current'].variants;
-  return skus.find(variant => variant.sku === skuId); // in CT, the SKU ID is simply called 'sku'
-};
-
-const getCtSkuAttributeValue = (ctSku, attributeName) => {
-  const foundAttribute = ctSku.attributes.find(attribute => attribute.name === attributeName);
-  if (!foundAttribute) return undefined;
-  return foundAttribute.value;
-};
-/**
- * END COPIED FROM SKU PR. DELETE LATER
- */
+const { skuAttributeNames, BARCODE_NAMESPACE } = require('../constants');
+const  { getCtSkuFromCtStyle, getCtSkuAttributeValue } = require('../consumeSkuMessageCT/utils');
 
 const getBarcodeFromCt = async (barcode, { client, requestBuilder }) => {
   const method = 'GET';
   const uri = `${requestBuilder.customObjects.build()}/${BARCODE_NAMESPACE}/${barcode.barcode}`;
-  console.log(uri);
 
   try { // the CT client throws an error if it gets a 404 response
     const response = await client.execute({ method, uri }); 
@@ -55,7 +36,7 @@ const removeDuplicateIds = keyValueDocumentReferences => {
 };
 
 const getBarcodeUpdateAction = (barcode, sku) => {
-  const existingBarcodeReferences = getCtSkuAttributeValue(sku, attributeNames.BARCODES) || [];
+  const existingBarcodeReferences = getCtSkuAttributeValue(sku, skuAttributeNames.BARCODES) || [];
   const newBarcodeReference = { id: barcode.ctBarcodeReference, typeId: 'key-value-document' };
   const allBarcodeReferences = removeDuplicateIds([...existingBarcodeReferences, newBarcodeReference]);
 

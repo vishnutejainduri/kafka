@@ -31,10 +31,15 @@ const formatLanguageKeys = message => (
 // Dates that we get from Kafka are in Unix time (possibly shifted to ET?).
 // This function standardizes the format of the dates and sets the key to the
 // corresponding attribute in CT.
-const formatDates = message => ({
-  ...message,
-  styleLastModifiedInternal: new Date(message.lastModifiedDate)
-});
+const formatDates = message => {
+  if (message.lastModifiedDate !== undefined && message.lastModifiedDate !== null) {
+    return {
+      ...message,
+      styleLastModifiedInternal: new Date(message.lastModifiedDate)
+    };
+  }
+  return message;
+};
 
 // When parsing style messages for updating CT, we rely mostly on
 // `parseMessageStyle`, which is also used when adding styles to MongoDB. But
