@@ -31,6 +31,18 @@ const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
   }
 };
 
+const formatAttributeValue = (style, actionObj, attribute, attributeType) => {
+  if (attributeType === 'money') {
+    actionObj.value = {
+      currencyCode: currencyCodes.CAD,
+      centAmount: style[attribute]
+    }
+    if (!style[attribute]) delete actionObj.value;
+  }
+
+  return actionObj;
+};
+
 // Returns true iff the given attribute is a custom attribute on the HR product
 // type defined in CT
 const isCustomAttribute = attribute => {
@@ -46,19 +58,13 @@ const getActionsFromStyle = (style, productType) => {
   const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => {
       const attributeTypeOj = productType.attributes.find((attributeType) => attributeType.name === attribute)
       const attributeType = attributeTypeOj ? attributeTypeOj.type.name : null;
-      const actionObj = {
+      let actionObj = {
         action: 'setAttributeInAllVariants',
         name: attribute,
         value: style[attribute]
       };
       
-      if (attributeType === 'money') {
-        actionObj.value = {
-          currencyCode: currencyCodes.CAD,
-          centAmount: style[attribute]
-        }
-        if (!style[attribute]) delete actionObj.value;
-      }
+      actionObj = formatAttributeValue(style, actionObj, attribute, attributeType);
 
       return actionObj;
     }
@@ -113,21 +119,12 @@ const getAttributesFromStyle = (style, productType) => {
   
   return customAttributesToCreate.map(attribute => {
       const attributeType = productType.attributes.find((attributeType) => attributeType.name === attribute).type.name;
-      const attributeCreation = {
+      let attributeCreation = {
         name: attribute,
         value: style[attribute]
       };
 
-      if (attributeType === 'money') {
-        if (!style[attribute]) {
-          delete attributeCreation.value;
-        } else {
-          attributeCreation.value = {
-            currencyCode: currencyCodes.CAD,
-            centAmount: style[attribute]
-          }
-        }
-      }
+      attributeCreation = formatAttributeValue(style, attributeCreation, attribute, attributeType);
       return attributeCreation;
     }
   );

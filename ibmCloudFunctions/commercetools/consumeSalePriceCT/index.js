@@ -39,12 +39,12 @@ const main = async params => {
   ));
   pricesToUpdate = pricesToUpdate.filter(update => update);
 
-  const stylePromises = (
+  const updateStylePricesPromises = (
     pricesToUpdate
       .map(addErrorHandling(updateStylePrice.bind(null, ctHelpers, productTypeId)))
   );
   
-  return Promise.all(stylePromises)
+  return Promise.all(updateStylePricesPromises)
     .then(passDownAnyMessageErrors)
     .catch(handleErrors);
 };
