@@ -137,7 +137,7 @@ describe('consumeCatalogueMessageCT', () => {
           'LASTMODIFIEDDATE': 1000000000000,
           'BARCODE': 'barcode',
           'SUBTYPE': 'subType',
-          'SKU_ID': 'skuId',
+          'SKU_ID': '1',
           'STYLEID': 'styleId',
           'FKORGANIZATIONNO': '1'
         }

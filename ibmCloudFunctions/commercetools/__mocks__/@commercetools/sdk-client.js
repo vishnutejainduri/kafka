@@ -1,8 +1,13 @@
+const mockSku = {
+  sku: '1',
+  attributes: []
+};
+
 const ctProduct = {
   version: 1,
   masterData: {
     current: {
-      variants: [],
+      variants: [mockSku],
       masterVariant: {
         attributes: []
       }
@@ -10,7 +15,7 @@ const ctProduct = {
     staged: {
       variants: [],
       masterVariant: {
-        attributes: []
+        attributes: [mockSku]
       }
     }
   }
