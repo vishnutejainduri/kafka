@@ -4,16 +4,37 @@ const ctProduct = {
     current: {
       variants: [],
       masterVariant: {
-        attributes: []
+        attributes: [],
+        prices: []
       }
     },
     staged: {
       variants: [],
       masterVariant: {
-        attributes: []
+        attributes: [],
+        prices: []
       }
     }
-  }
+  },
+  //this is a mock for product type onwards actually
+  attributes: [{
+    name: 'isOnlineSale',
+    type: {
+      name: 'text'
+    }
+  },
+  {
+    name: 'onlineSalePrice',
+    type: {
+      name: 'money'
+    }
+  },
+  {
+    name: 'onlineDiscount',
+    type: {
+      name: 'text'
+    }
+  }]
 };
 
 const mockClient = {

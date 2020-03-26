@@ -151,6 +151,13 @@ module.exports = {
             `Failure in run of consume catalog message CT; params: ${params}.`
         )
     },
+    consumeSalePriceCT: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-sale-price-ct',
+            `Failure in run of consume sale price CT; params: ${params}.`
+        ),
+    },
     calculateAvailableToSell: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(
             originalError,

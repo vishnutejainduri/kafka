@@ -1,5 +1,5 @@
-const { getExistingCtStyle } = require('../utils');
-const { skuAttributeNames } = require('../constants');
+const { getExistingCtStyle } = require('../styleUtils');
+const { skuAttributeNames } = require('../constantsCt');
 const { addRetries } = require('../../product-consumers/utils');
 
 const isSkuAttributeThatShouldUpdate = attribute => {

@@ -6,7 +6,7 @@ const {
   updateStyle,
   existingCtStyleIsNewer,
   getCtStyleAttributeValue
-} = require('../../utils');
+} = require('../../styleUtils');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -217,12 +217,12 @@ describe('createStyle', () => {
 describe('updateStyle', () => {
   it('throws an error if the given style lacks an ID', () => {
     const styleWithNoId = {};
-    return expect(updateStyle(styleWithNoId, '1', mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
+    return expect(updateStyle(styleWithNoId, '1', 'product-type-reference-id', mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
   });
 
   it('throws an error if called without a version number', () => {
     const style = { id: '1' };
-    return expect(updateStyle(style, undefined, mockedCtHelpers)).rejects.toThrow('Invalid arguments: must include \'version\'');
+    return expect(updateStyle(style, undefined,'product-type-reference-id', mockedCtHelpers)).rejects.toThrow('Invalid arguments: must include \'version\'');
   });
 });
 
