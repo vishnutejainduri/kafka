@@ -104,7 +104,28 @@ describe('getBarcodeUpdateAction', () => {
     };
 
     expect(getBarcodeUpdateAction(jestaBarcode, ctSkuWithNoBarcodes)).toEqual(expectedAction);
-  })
+  });
+
+  it('does not duplicate barcodes if you try to add a pre-existing barcode', () => {
+    const barcodes = [{ id: 'bar', typeId: 'key-value-document' }]; // same ID as `jestaBarcode` above
+
+    const ctSkuWithPreExistingBarcode = {
+      id: '1',
+      sku: '1',
+      attributes: [{ name: 'barcodes', value: barcodes }]
+    };
+
+    const expectedAction = {
+      action: 'setAttribute',
+      name: 'barcodes',
+      sku: '1',
+      value: [
+        { id: 'bar', typeId: 'key-value-document' }
+      ]
+    };
+
+    expect(getBarcodeUpdateAction(jestaBarcode, ctSkuWithPreExistingBarcode)).toEqual(expectedAction);
+  });
 });
 
 describe('consumeCatalogueMessageCT', () => {

@@ -47,11 +47,17 @@ const createOrUpdateBarcode = async (barcode, { client, requestBuilder }) => {
   return response.body;
 };
 
+const removeDuplicateIds = keyValueDocumentReferences => {
+    const ids = keyValueDocumentReferences.map(({ id }) => id);
+    const uniqueIds = Array.from(new Set(ids));
+    const uniqueKeyValueDocumentReferences = uniqueIds.map(id => ({ id, typeId: 'key-value-document' }));
+    return uniqueKeyValueDocumentReferences;
+};
+
 const getBarcodeUpdateAction = (barcode, sku) => {
-  console.log('SKU', sku);
   const existingBarcodeReferences = getCtSkuAttributeValue(sku, attributeNames.BARCODES) || [];
   const newBarcodeReference = { id: barcode.ctBarcodeReference, typeId: 'key-value-document' };
-  const allBarcodeReferences = [...existingBarcodeReferences, newBarcodeReference];
+  const allBarcodeReferences = removeDuplicateIds([...existingBarcodeReferences, newBarcodeReference]);
 
   return {
     action: 'setAttribute',
@@ -93,10 +99,19 @@ const handleBarcode = async (ctHelpers, barcode) => {
   if (!existingBarcode) {
     const newCtBarcode = await createOrUpdateBarcode(barcode, ctHelpers);
     return addBarcodeToSku({ ...barcode, ctBarcodeReference: newCtBarcode.id }, ctHelpers);
-  } else if (existingCtBarcodeIsNewer(existingBarcode, barcode)) {
-    return null;
+  } else {
+    // If the barcode exists, the SKU should already contain a reference to it,
+    // but we call `addBarcodeToSku` here to make extra-sure. There's no danger
+    // of adding duplicate barcodes, since those are filtered out by
+    // `addBarcodeToSku`.
+    await addBarcodeToSku({ ...barcode, ctBarcodeReference: existingBarcode.id }, ctHelpers);
+
+    if (existingCtBarcodeIsNewer(existingBarcode, barcode)) {
+      return null;
+    }
+
+    return createOrUpdateBarcode(barcode, ctHelpers);
   }
-  return createOrUpdateBarcode(barcode, ctHelpers);
 };
 
 module.exports = {
