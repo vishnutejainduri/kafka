@@ -189,7 +189,15 @@ async function getRetryBatches(params, limit = 50) {
     const collection = await getRetryCollection(params);
     const result = [];
     await collection
-        .find()
+        .find({
+            "messages": {
+                $elemMatch: {
+                    "value.metadata.nextRetry": {
+                        $lte: new Date().getTime()
+                    }
+                }
+            }
+        })
         .limit(limit)
         .forEach(document => {
             result.push(document);
