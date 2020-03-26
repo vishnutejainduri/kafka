@@ -68,3 +68,9 @@
         feed: /whisk.system/alarms/alarm
         inputs:
           cron: "*/1 * * * *"
+      every-midnight:
+        feed: /whisk.system/alarms/alarm
+        inputs:
+          cron: "0 0 * * *"
+          timezone: "America/Toronto"
+
