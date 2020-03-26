@@ -2,3 +2,7 @@
       catalog-rule-ct:
         action: consume-catalog-message-with-retry-ct
         trigger: catalog-ct-trigger
+      barcode-rule-ct:
+        action: consume-barcode-message-with-retry-ct
+        trigger: barcode-ct-trigger
+
