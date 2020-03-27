@@ -1,0 +1,61 @@
+    rules:
+      catalog-rule:
+        action: consume-catalog-message-with-retry
+        trigger: catalog-trigger
+      styles-basic-rule:
+        action: consume-styles-basic-message-with-retry
+        trigger: styles-basic-trigger
+      threshold-rule:
+        action: consume-threshold-message-with-retry
+        trigger: threshold-trigger
+      sku-rule:
+        action: consume-sku-message-with-retry
+        trigger: sku-trigger
+      barcode-rule:
+        action: consume-barcode-message-with-retry
+        trigger: barcode-trigger
+      medias-rule:
+        action: consume-medias-message-with-retry
+        trigger: medias-trigger
+      stores-rule:
+        action: consume-stores-message-with-retry
+        trigger: stores-trigger
+      storefulfill-rule:
+        action: consume-storesfulfill-message-with-retry
+        trigger: storefulfill-trigger
+      dep27fulfill-rule:
+        action: consume-dep27fulfill-message-with-retry
+        trigger: dep27fulfill-trigger
+      media-containers-rule:
+        action: consume-media-containers-message-with-retry
+        trigger: media-containers-trigger
+      add-media-container-to-queue-message-rule:
+        action: add-media-container-to-queue-message-with-retry
+        trigger: media-containers-trigger
+      sale-price-sequence-rule:
+        action: update-pricing-sequence
+        trigger: sale-price-trigger
+      algolia-images-rule:
+        action: update-algolia-image
+        trigger: every-minute
+      algolia-inventory-rule:
+        action: update-algolia-inventory
+        trigger: every-minute
+      bulk-ats-rule:
+        action: bulk-calculate-available-to-sell
+        trigger: every-minute
+      algolia-delete-create-rule:
+        action: delete-create-algolia-styles
+        trigger: every-minute
+      algolia-catalog-rule:
+        action: update-algolia-style-with-retry
+        trigger: catalog-trigger
+      update-inventory-sequence-rule:
+        action: update-inventory-sequence
+        trigger: sku-inventory-trigger
+      add-facets-to-queue-rule:
+        action: add-facets-to-bulk-import-queue-with-retry
+        trigger: facets-trigger
+      algolia-facets-rule:
+        action: update-algolia-facets
+        trigger: every-minute

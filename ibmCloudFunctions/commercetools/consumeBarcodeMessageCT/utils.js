@@ -1,5 +1,5 @@
-const { getExistingCtStyle } = require('../utils');
-const { skuAttributeNames, BARCODE_NAMESPACE } = require('../constants');
+const { getExistingCtStyle } = require('../styleUtils');
+const { skuAttributeNames, BARCODE_NAMESPACE } = require('../constantsCt');
 const  { getCtSkuFromCtStyle, getCtSkuAttributeValue } = require('../consumeSkuMessageCT/utils');
 
 const getBarcodeFromCt = async (barcode, { client, requestBuilder }) => {

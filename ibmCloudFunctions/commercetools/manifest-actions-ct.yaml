@@ -30,4 +30,19 @@
         limits:
           memorySize: 512
           timeout: 600000
+      consume-sale-price-ct:
+        location: ./commercetools/consumeSalePriceCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+        inputs:
+          topicName: prices-connect-jdbc 
+      consume-sale-price-with-retry-ct:
+        location: ./commercetools/consumeSalePriceWithRetryCT/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
 # TODO: add rules from SKU CT (they got lost in a merge conflict resolution)

@@ -1,4 +1,4 @@
-const { createOrUpdateStyle } = require('../utils');
+const { createOrUpdateStyle } = require('../styleUtils');
 const { filterStyleMessages } = require('../../lib/parseStyleMessage');
 const { parseStyleMessageCt } = require('../../lib/parseStyleMessageCt');
 const createError = require('../../lib/createError');
@@ -38,7 +38,7 @@ const main = params => {
     stylesToCreateOrUpdate
       .map(addErrorHandling(createOrUpdateStyle.bind(null, ctHelpers, productTypeId)))
   );
-  
+
   return Promise.all(stylePromises)
     .then(passDownAnyMessageErrors)
     .catch(handleErrors);

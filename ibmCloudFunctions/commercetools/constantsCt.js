@@ -13,6 +13,10 @@ const styleAttributeNames = {
   WEB_STATUS: 'webStatus',
   VSN: 'vsn',
   STYLE_LAST_MODIFIED_INTERNAL: 'styleLastModifiedInternal',
+  ORIGINAL_PRICE: 'originalPrice',
+  ONLINE_SALE_PRICE: 'onlineSalePrice',
+  IS_ONLINE_SALE: 'isOnlineSale',
+  ONLINE_DISCOUNT: 'onlineDiscount'
 };
 
 /**
@@ -30,8 +34,13 @@ const skuAttributeNames = {
 
 const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
 
+const currencyCodes = {
+  CAD: 'CAD'
+};
+
 module.exports = {
   BARCODE_NAMESPACE,
   styleAttributeNames,
-  skuAttributeNames
+  skuAttributeNames,
+  currencyCodes
 };

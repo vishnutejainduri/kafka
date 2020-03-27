@@ -6,6 +6,11 @@ const mockRequestBuilder = {
   customObjects: {
     byKey: () => mockRequestBuilder.customObjects,
     build: () => mockRequestBuilder.customObjects
+  },
+  productTypes: {
+    byKey: () => mockRequestBuilder.productTypes,
+    byId: () => mockRequestBuilder.productTypes,
+    build: () => mockRequestBuilder.productTypes
   }
 };
 

@@ -93,5 +93,7 @@ function generateUpdateFromParsedMessage(update, priceData, styleData) {
 module.exports = {
     parsePriceMessage,
     filterPriceMessages,
-    generateUpdateFromParsedMessage
+    generateUpdateFromParsedMessage,
+    ONLINE_SITE_ID,
+    IN_STORE_SITE_ID
 };
