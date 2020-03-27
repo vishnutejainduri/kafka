@@ -1,6 +1,7 @@
 const mockSku = {
   sku: '1',
-  attributes: []
+  attributes: [],
+  prices: []
 };
 
 const ctProduct = {
