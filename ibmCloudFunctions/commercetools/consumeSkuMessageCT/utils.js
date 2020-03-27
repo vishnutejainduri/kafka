@@ -15,9 +15,9 @@ const isSkuAttributeThatShouldUpdate = attribute => {
 
 // This is to help filter CT SKU update actions. Basically, CT will throw an
 // error if you try to set a non-existing attribute to `null`, but it allows
-// you to set an *existing* attribute to `null`. In these case, it will remove
+// you to set an *existing* attribute to `null`. In these cases, it will remove
 // the attribute from the SKU. We don't want to simply filter out `null` values
-// because we might want to clear existing values.
+// because then we won't clear existing values that should be cleared.
 const isExistingAttributeOrNonNullish = (ctSku, action) => {
   if (action.value !== null && action.value !== undefined) return true;
   if (getCtSkuAttributeValue(ctSku, action.name) !== undefined) return true;
@@ -114,21 +114,30 @@ const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
   return ctSkuLastModifiedDate.getTime() > givenSku.skuLastModifiedInternal.getTime();
 };
 
+// We don't wrap the entire `createOrUpdateSku` function in `addRetries`
+// because we don't want to waste time retrying if the failure was because
+// the style associated with the SKU doesn't exist in CT.
+// This is mainly for retrying when we get "Version mismatch" errors, which
+// are unfortunately common.
+const RETRY_LIMIT = 2;
+const createSkuWithRetries = addRetries(createSku, RETRY_LIMIT, console.error);
+const updateSkuWithRetries = addRetries(updateSku, RETRY_LIMIT, console.error);
+
 const createOrUpdateSku = async (ctHelpers, sku) => {
   const existingCtStyle = await getExistingCtStyle(sku.styleId, ctHelpers);
   if (!existingCtStyle) throw new Error(`Style with id ${sku.styleId} does not exist in CT`);
   const existingCtSku = getCtSkuFromCtStyle(sku.id, existingCtStyle);
   
   if (!existingCtSku) {
-    return createSku(sku, existingCtStyle, ctHelpers);
+    return createSkuWithRetries(sku, existingCtStyle, ctHelpers);
   } if (existingCtSkuIsNewer(existingCtSku, sku)) {
     return null;
   }
-  return updateSku(sku, existingCtSku, existingCtStyle, ctHelpers);
+  return updateSkuWithRetries(sku, existingCtSku, existingCtStyle, ctHelpers);
 };
 
 module.exports = {
-  createOrUpdateSku: addRetries(createOrUpdateSku, 2, console.error),
+  createOrUpdateSku,
   formatSkuRequestBody,
   getActionsFromSku,
   existingCtSkuIsNewer,
