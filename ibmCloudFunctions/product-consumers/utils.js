@@ -120,16 +120,20 @@ const formatLoggerErrorMessage = (retries, retryLimit, err) => (
  * Returns a function which will invoke `func` up to `retryLimit` times if the
  * previous invocation thew an error. After it reaches `retryLimit`, it throws
  * the most recent error it encountered. Optionally takes a `logger` which is
- * called with an error string when an error is caught.
+ * called with an error string when an error is caught. Also optionally takes
+ * an array of numbers, `doNotRetryCodes`. If an error's code matches a number in
+ * `doNotRetryCodes`, the function will not retry even if it has not yet reached
+ * the retry limit.
  * @param {Function} func 
  * @param {Number} retryLimit 
  * @param {Function} logger
  */
-const addRetries = (func, retryLimit, logger = () => {}) => {
+const addRetries = (func, retryLimit, logger = () => {}, doNotRetryCodes = []) => {
     const functionWithRetries = async (retries = 0, ...args) => {
         try {
             return await func(...args);
         } catch(err) {
+            if (doNotRetryCodes.includes(err.code)) return err;
             logger(formatLoggerErrorMessage(retries, retryLimit, err));
             if (retries === retryLimit) return err;
             return await functionWithRetries(retries + 1, ...args);

@@ -105,21 +105,27 @@ describe('formatSkuRequestBody', () => {
     hasStagedChanges: false
   };
 
+  const existingSku = { sku: 'sku-01', attributes: [] };
+
   it('returns a string', () => {
     expect(typeof formatSkuRequestBody(sku, style, true) === 'string').toBe(true);
   });
 
   it('returns the correct body to create a new SKU', () => {
     const expectedBody = '{"version":1,"actions":[{"action":"addVariant","sku":"sku-01","attributes":[{"name":"season","value":"Winter 2020"}]},{"action":"setAttribute","sku":"sku-01","name":"colorId","value":"c1"},{"action":"setAttribute","sku":"sku-01","name":"sizeId","value":"s1"}]}';
-    const actualBody = formatSkuRequestBody(sku, style, true);
+    const actualBody = formatSkuRequestBody(sku, style, null);
     expect(actualBody).toBe(expectedBody);
   });
 
   it('returns the correct body to update an existing a SKU', () => {
     const expectedBody = '{"version":1,"actions":[{"action":"setAttribute","sku":"sku-01","name":"colorId","value":"c1"},{"action":"setAttribute","sku":"sku-01","name":"sizeId","value":"s1"}]}';
-    const actualBody = formatSkuRequestBody(sku, style, false);
+    const actualBody = formatSkuRequestBody(sku, style, existingSku);
     expect(actualBody).toBe(expectedBody);
   });
+
+  // TODO: Add more test cases to be sure that nullish values are handled
+  // correctly. See comments to`isExistingAttributeOrNonNullish` and
+  // `hasNonNullishValue` for an explanation of what we need to look out for.
 });
 
 describe('existingCtSkuIsNewer', () => {

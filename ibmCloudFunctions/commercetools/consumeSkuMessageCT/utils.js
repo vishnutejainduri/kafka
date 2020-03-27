@@ -2,22 +2,49 @@ const { getExistingCtStyle } = require('../styleUtils');
 const { skuAttributeNames } = require('../constantsCt');
 const { addRetries } = require('../../product-consumers/utils');
 
+const getCtSkuAttributeValue = (ctSku, attributeName) => {
+  const foundAttribute = ctSku.attributes.find(attribute => attribute.name === attributeName);
+  if (!foundAttribute) return undefined;
+  return foundAttribute.value;
+};
+
 const isSkuAttributeThatShouldUpdate = attribute => {
   const skuAttributesThatShouldUpdate = Object.values(skuAttributeNames);
   return skuAttributesThatShouldUpdate.includes(attribute);
 };
 
+// This is to help filter CT SKU update actions. Basically, CT will throw an
+// error if you try to set a non-existing attribute to `null`, but it allows
+// you to set an *existing* attribute to `null`. In these cases, it will remove
+// the attribute from the SKU. We don't want to simply filter out `null` values
+// because then we won't clear existing values that should be cleared.
+const isExistingAttributeOrNonNullish = (ctSku, action) => {
+  if (action.value !== null && action.value !== undefined) return true;
+  if (getCtSkuAttributeValue(ctSku, action.name) !== undefined) return true;
+  return false;
+};
+
+// Like `isExistingAttributeOrNonNullish`, this is used to filter CT SKU update
+// actions. Used for the case when the SKU doesn't already exist in CT. Since
+// the SKU doesn't already exist, it has no pre-existing attributes, so CT will throw
+// an error if you tacitly tell it to remove any of these non-exist attributes
+// by setting a value to `null`.
+const hasNonNullishValue = action => (action.value !== null && action.value !== undefined);
+
 // Returns an array of CT actions, each of which tells CT to set a different
 // attribute of the given SKU
-const getActionsFromSku = sku => {
+const getActionsFromSku = (sku, existingSku = null) => {
   const attributes = Object.keys(sku).filter(isSkuAttributeThatShouldUpdate);
 
-  return attributes.map(attribute => ({
+  const actions = attributes.map(attribute => ({
     action: 'setAttribute',
     sku: sku.id,
     name: attribute,
     value: sku[attribute]
   }));
+
+  if (existingSku) return actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
+  return actions.filter(hasNonNullishValue);
 };
 
 // Returns a CT action which tells CT to create a new SKU with the style-level
@@ -39,29 +66,29 @@ const getCreationAction = (sku, style) => {
   };
 };
 
-const formatSkuRequestBody = (sku, style, create) => {
-  const actionsThatSetSkuAttributes = getActionsFromSku(sku);
+const formatSkuRequestBody = (sku, style, existingSku = null) => {
+  const actionsThatSetSkuAttributes = getActionsFromSku(sku, existingSku);
   const creationAction = getCreationAction(sku, style);
   const actionsIncludingCreateActions = [creationAction, ...actionsThatSetSkuAttributes];
 
   return JSON.stringify({
     version: style.version,
-    actions: create ? actionsIncludingCreateActions : actionsThatSetSkuAttributes
+    actions: existingSku ? actionsThatSetSkuAttributes : actionsIncludingCreateActions
   });
 };
 
 const createSku = (sku, style, { client, requestBuilder }) => {
   const method = 'POST';
   const uri = requestBuilder.products.byKey(sku.styleId).build();
-  const body = formatSkuRequestBody(sku, style, true);
+  const body = formatSkuRequestBody(sku, style, null);
 
   return client.execute({ method, uri, body });
 };
 
-const updateSku = (sku, style, { client, requestBuilder }) => {
+const updateSku = (sku, existingCtSku, style, { client, requestBuilder }) => {
   const method = 'POST';
   const uri = requestBuilder.products.byKey(sku.styleId).build();
-  const body = formatSkuRequestBody(sku, style, false);
+  const body = formatSkuRequestBody(sku, style, existingCtSku);
 
   return client.execute({ method, uri, body });
 };
@@ -78,12 +105,6 @@ const getCtSkuFromCtStyle = (skuId, ctStyle) => {
   return skus.find(variant => variant.sku === skuId); // in CT, the SKU ID is simply called 'sku'
 };
 
-const getCtSkuAttributeValue = (ctSku, attributeName) => {
-  const foundAttribute = ctSku.attributes.find(attribute => attribute.name === attributeName);
-  if (!foundAttribute) return undefined;
-  return foundAttribute.value;
-};
-
 const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
   const ctSkuLastModifiedString = getCtSkuAttributeValue(existingCtSku, skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL);
   if (!ctSkuLastModifiedString) throw new Error('CT product variant lacks last modified date');
@@ -93,9 +114,15 @@ const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
   return ctSkuLastModifiedDate.getTime() > givenSku.skuLastModifiedInternal.getTime();
 };
 
+const getStyleNotFoundError = styleId => {
+  const err = new Error(`Style with id ${styleId} does not exist in CT`);
+  err.code = 404; // so we can let `addRetries` know that it shouldn't retry these failures
+  return err;
+};
+
 const createOrUpdateSku = async (ctHelpers, sku) => {
   const existingCtStyle = await getExistingCtStyle(sku.styleId, ctHelpers);
-  if (!existingCtStyle) throw new Error(`Style with id ${sku.styleId} does not exist in CT`);
+  if (!existingCtStyle) throw getStyleNotFoundError(sku.styleId);
   const existingCtSku = getCtSkuFromCtStyle(sku.id, existingCtStyle);
   
   if (!existingCtSku) {
@@ -103,11 +130,14 @@ const createOrUpdateSku = async (ctHelpers, sku) => {
   } if (existingCtSkuIsNewer(existingCtSku, sku)) {
     return null;
   }
-  return updateSku(sku, existingCtStyle, ctHelpers);
+  return updateSku(sku, existingCtSku, existingCtStyle, ctHelpers);
 };
 
+const RETRY_LIMIT = 2;
+const ERRORS_NOT_TO_RETRY = [404]
+
 module.exports = {
-  createOrUpdateSku: addRetries(createOrUpdateSku, 2, console.error),
+  createOrUpdateSku: addRetries(createOrUpdateSku, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY),
   formatSkuRequestBody,
   getActionsFromSku,
   existingCtSkuIsNewer,
