@@ -15,7 +15,7 @@
         "@commercetools/sdk-middleware-auth": "^6.0.5",
         "@commercetools/sdk-middleware-http": "^6.0.5",
         "ajv": "^6.10.2",
-        "mongodb": "^3.4.1",
+        "mongodb": "^3.5.5",
         "mongodb-client-encryption": "^1.0.0",
         "node-fetch": "^2.6.0",
         "saslprep": "^1.0.3"
