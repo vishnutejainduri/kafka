@@ -114,30 +114,30 @@ const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
   return ctSkuLastModifiedDate.getTime() > givenSku.skuLastModifiedInternal.getTime();
 };
 
-// We don't wrap the entire `createOrUpdateSku` function in `addRetries`
-// because we don't want to waste time retrying if the failure was because
-// the style associated with the SKU doesn't exist in CT.
-// This is mainly for retrying when we get "Version mismatch" errors, which
-// are unfortunately common.
-const RETRY_LIMIT = 2;
-const createSkuWithRetries = addRetries(createSku, RETRY_LIMIT, console.error);
-const updateSkuWithRetries = addRetries(updateSku, RETRY_LIMIT, console.error);
+const getStyleNotFoundError = styleId => {
+  const err = new Error(`Style with id ${styleId} does not exist in CT`);
+  err.code = 404; // so we can let `addRetries` know that it shouldn't retry these failures
+  return err;
+};
 
 const createOrUpdateSku = async (ctHelpers, sku) => {
   const existingCtStyle = await getExistingCtStyle(sku.styleId, ctHelpers);
-  if (!existingCtStyle) throw new Error(`Style with id ${sku.styleId} does not exist in CT`);
+  if (!existingCtStyle) throw getStyleNotFoundError(sku.styleId);
   const existingCtSku = getCtSkuFromCtStyle(sku.id, existingCtStyle);
   
   if (!existingCtSku) {
-    return createSkuWithRetries(sku, existingCtStyle, ctHelpers);
+    return createSku(sku, existingCtStyle, ctHelpers);
   } if (existingCtSkuIsNewer(existingCtSku, sku)) {
     return null;
   }
-  return updateSkuWithRetries(sku, existingCtSku, existingCtStyle, ctHelpers);
+  return updateSku(sku, existingCtSku, existingCtStyle, ctHelpers);
 };
 
+const RETRY_LIMIT = 2;
+const ERRORS_NOT_TO_RETRY = [404]
+
 module.exports = {
-  createOrUpdateSku,
+  createOrUpdateSku: addRetries(createOrUpdateSku, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY),
   formatSkuRequestBody,
   getActionsFromSku,
   existingCtSkuIsNewer,
