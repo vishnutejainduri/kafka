@@ -261,6 +261,18 @@ async function storeInvalidMessages(params, invalidMessages) {
     }
 }
 
+async function deleteOldBatches(params, days = 28) {
+    const collections = await Promise.all([
+        getMessagesCollection(params),
+        getRetryCollection(params),
+        getDlqCollection(params)
+    ]);
+
+    const threshold = (new Date()).getTime() - 1000 * 60 * 60 * 24 * days
+    const batchIsOld = { "metadata.activationInfo.end": { $lt: threshold } }
+    return Promise.all(collections.map(collection => collection.deleteMany(batchIsOld)))
+}
+
 module.exports = {
     getMessagesCollection,
     storeBatch,
@@ -275,5 +287,6 @@ module.exports = {
     getRetryBatches,
     getUpdateRetryBatch,
     getDeleteRetryBatch,
-    storeInvalidMessages
+    storeInvalidMessages,
+    deleteOldBatches
 };
