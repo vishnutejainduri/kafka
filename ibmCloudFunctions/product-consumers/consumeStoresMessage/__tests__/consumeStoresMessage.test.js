@@ -55,6 +55,13 @@ describe('consumeStoresMessage', () => {
         // returns nothing/undefined if successfully run
         expect(response).toBe(undefined);
     });
+    it('correct message; goes through bulk ats code for dep27', async () => {
+        params.DEP27_FULFILL_STATUS = 'N';
+
+        const response = await consumeStoresMessage(params);
+        // returns nothing/undefined if successfully run
+        expect(response).toBe(undefined);
+    });
 });
 
 describe('getBulkAtsStyles', () => {
