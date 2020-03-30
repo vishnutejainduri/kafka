@@ -163,9 +163,11 @@ const getCtSkusFromCtStyle = (skus, ctStyle) => (
 // "Out of date" = the given SKU's last modified date is before the existing CT
 // SKU's last modified date
 const getOutOfDateSkuIds = (existingCtSkus, skus) => (
-  existingCtSkus.filter(
-    ctSku => existingCtSkuIsNewer(ctSku, skus.find(sku => sku.id === ctSku.sku))
-  ).map(sku => sku.sku)
+  existingCtSkus.filter(ctSku => {
+    const correspondingJestaSku = skus.find(sku => sku.id === ctSku.sku);
+    if (!correspondingJestaSku) return false;
+    return existingCtSkuIsNewer(ctSku, correspondingJestaSku);
+  }).map(sku => sku.sku)
 );
 
 const createOrUpdateSkus = skus => {

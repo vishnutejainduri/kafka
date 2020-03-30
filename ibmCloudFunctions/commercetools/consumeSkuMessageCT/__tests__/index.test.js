@@ -8,6 +8,7 @@ const {
   getCtSkusFromCtStyle,
   getCtSkuAttributeValue,
   getCreationAction,
+  getOutOfDateSkuIds,
   groupByStyleId
 } = require('../utils');
 
@@ -331,5 +332,33 @@ describe('getCtSkusFromCtStyle', () => {
   it('returns an array of matching SKUs when some exist', () => {
     const skus = [{ id: 'sku-1'}, { id: 'sku-2' }];
     expect(getCtSkusFromCtStyle(skus, ctStyle)).toEqual([{ sku: 'sku-1' }, { sku: 'sku-2'}]);
+  });
+});
+
+describe('getOutOfDateSkuIds', () => {
+  const ctSkuAttributes = [{ name: 'skuLastModifiedInternal', value: new Date(50) }];
+
+  const ctSkus = [
+    { sku: 'sku-1', skuLastModifiedInternal: new Date(50), attributes: ctSkuAttributes },
+    { sku: 'sku-2', skuLastModifiedInternal: new Date(50), attributes: ctSkuAttributes },
+    { sku: 'sku-3', skuLastModifiedInternal: new Date(50), attributes: ctSkuAttributes }
+  ];
+
+  const outOfDateSku1 = { id: 'sku-1', skuLastModifiedInternal: new Date(0) };
+  const outOfDateSku2 = { id: 'sku-2', skuLastModifiedInternal: new Date(0) };
+  const outOfDateSku3 = { id: 'sku-3', skuLastModifiedInternal: new Date(0) };
+
+  const upToDateSku1 = { id: 'sku-1', skuLastModifiedInternal: new Date(100) };
+  const upToDateSku2 = { id: 'sku-2', skuLastModifiedInternal: new Date(100) };
+  const upToDateSku3 = { id: 'sku-3', skuLastModifiedInternal: new Date(100) };
+
+  it('returns an array with the out of date SKU IDs', () => {
+    expect(getOutOfDateSkuIds(ctSkus, [outOfDateSku1, upToDateSku2, outOfDateSku3])).toEqual(['sku-1', 'sku-3']);
+    expect(getOutOfDateSkuIds(ctSkus, [outOfDateSku1, outOfDateSku2, upToDateSku3])).toEqual(['sku-1', 'sku-2']);
+    expect(getOutOfDateSkuIds(ctSkus, [upToDateSku1, outOfDateSku2, upToDateSku3])).toEqual(['sku-2']);
+  });
+
+  it('returns an empty array when there are no out of date SKUs', () => {
+    expect(getOutOfDateSkuIds(ctSkus, [upToDateSku1, upToDateSku2])).toEqual([]);
   });
 });
