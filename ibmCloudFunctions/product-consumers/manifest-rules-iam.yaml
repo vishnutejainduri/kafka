@@ -59,3 +59,12 @@
       algolia-facets-rule:
         action: update-algolia-facets
         trigger: every-minute
+      resolve-messages-logs-rule:
+        action: resolve-messages-logs
+        trigger: every-minute
+      handle-messages-logs-rule:
+        action: handle-messages-logs
+        trigger: every-minute
+      cleanup-messages-logs-rule:
+        action: cleanup-messages-logs
+        trigger: every-minute
