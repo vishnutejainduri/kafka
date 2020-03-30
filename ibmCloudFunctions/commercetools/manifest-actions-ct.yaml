@@ -21,7 +21,6 @@
           memorySize: 512
           timeout: 600000
         inputs:
-          collectionName: $BARCODES_COLLECTION_NAME
           topicName: barcodes-connect-jdbc
       consume-barcode-message-with-retry-ct:
         location: ./commercetools/consumeBarcodeMessageWithRetryCT/dist/bundle.js
@@ -45,4 +44,18 @@
         limits:
           memorySize: 512
           timeout: 600000
-# TODO: add rules from SKU CT (they got lost in a merge conflict resolution)
+      consume-sku-message-ct:
+        location: ./commercetools/consumeSkuMessageCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+        inputs:
+          topicName: skus-connect-jdbc
+      consume-sku-message-with-retry-ct:
+        location: ./commercetools/consumeSkuMessageWithRetryCT/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
