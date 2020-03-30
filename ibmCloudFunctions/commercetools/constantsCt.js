@@ -33,6 +33,7 @@ const skuAttributeNames = {
 };
 
 const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
+const KEY_VALUE_DOCUMENT = 'key-value-document'; // reference-type of custom objects in CT
 
 const currencyCodes = {
   CAD: 'CAD'
@@ -40,6 +41,7 @@ const currencyCodes = {
 
 module.exports = {
   BARCODE_NAMESPACE,
+  KEY_VALUE_DOCUMENT,
   styleAttributeNames,
   skuAttributeNames,
   currencyCodes

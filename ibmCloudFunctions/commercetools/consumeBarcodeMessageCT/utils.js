@@ -1,5 +1,5 @@
 const { getExistingCtStyle } = require('../styleUtils');
-const { skuAttributeNames, BARCODE_NAMESPACE } = require('../constantsCt');
+const { skuAttributeNames, BARCODE_NAMESPACE, KEY_VALUE_DOCUMENT } = require('../constantsCt');
 const { getCtSkuFromCtStyle, getCtSkuAttributeValue } = require('../consumeSkuMessageCT/utils');
 const { addRetries } = require('../../product-consumers/utils');
 
@@ -32,13 +32,13 @@ const createOrUpdateBarcode = async (barcode, { client, requestBuilder }) => {
 const removeDuplicateIds = keyValueDocumentReferences => {
     const ids = keyValueDocumentReferences.map(({ id }) => id);
     const uniqueIds = Array.from(new Set(ids));
-    const uniqueKeyValueDocumentReferences = uniqueIds.map(id => ({ id, typeId: 'key-value-document' }));
+    const uniqueKeyValueDocumentReferences = uniqueIds.map(id => ({ id, typeId: KEY_VALUE_DOCUMENT }));
     return uniqueKeyValueDocumentReferences;
 };
 
 const getBarcodeUpdateAction = (barcode, sku) => {
   const existingBarcodeReferences = getCtSkuAttributeValue(sku, skuAttributeNames.BARCODES) || [];
-  const newBarcodeReference = { id: barcode.ctBarcodeReference, typeId: 'key-value-document' };
+  const newBarcodeReference = { id: barcode.ctBarcodeReference, typeId: KEY_VALUE_DOCUMENT };
   const allBarcodeReferences = removeDuplicateIds([...existingBarcodeReferences, newBarcodeReference]);
 
   return {
