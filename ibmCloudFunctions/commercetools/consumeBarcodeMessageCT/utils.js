@@ -1,6 +1,7 @@
 const { getExistingCtStyle } = require('../styleUtils');
 const { skuAttributeNames, BARCODE_NAMESPACE } = require('../constantsCt');
-const  { getCtSkuFromCtStyle, getCtSkuAttributeValue } = require('../consumeSkuMessageCT/utils');
+const { getCtSkuFromCtStyle, getCtSkuAttributeValue } = require('../consumeSkuMessageCT/utils');
+const { addRetries } = require('../../product-consumers/utils');
 
 const getBarcodeFromCt = async (barcode, { client, requestBuilder }) => {
   const method = 'GET';
@@ -103,7 +104,7 @@ const handleBarcode = async (ctHelpers, barcode) => {
 };
 
 module.exports = {
-  handleBarcode,
+  handleBarcode: addRetries(handleBarcode, 2, console.error, [404]),
   createOrUpdateBarcode,
   getBarcodeFromCt,
   getBarcodeUpdateAction,
