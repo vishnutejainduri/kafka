@@ -67,4 +67,4 @@
         trigger: every-minute
       cleanup-messages-logs-rule:
         action: cleanup-messages-logs
-        trigger: every-minute
+        trigger: every-midnight
