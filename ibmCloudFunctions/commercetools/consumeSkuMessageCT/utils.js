@@ -134,7 +134,7 @@ const createOrUpdateSku = async (ctHelpers, sku) => {
 };
 
 const RETRY_LIMIT = 2;
-const ERRORS_NOT_TO_RETRY = [404]
+const ERRORS_NOT_TO_RETRY = [404];
 
 module.exports = {
   createOrUpdateSku: addRetries(createOrUpdateSku, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY),

@@ -103,11 +103,15 @@ const handleBarcode = async (ctHelpers, barcode) => {
   }
 };
 
+const RETRY_LIMIT = 2;
+const ERRORS_NOT_TO_RETRY = [404];
+
 module.exports = {
-  handleBarcode: addRetries(handleBarcode, 2, console.error, [404]),
+  handleBarcode: addRetries(handleBarcode, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY),
   createOrUpdateBarcode,
   getBarcodeFromCt,
   getBarcodeUpdateAction,
   addBarcodeToSku,
-  existingCtBarcodeIsNewer
+  existingCtBarcodeIsNewer,
+  removeDuplicateIds
 };

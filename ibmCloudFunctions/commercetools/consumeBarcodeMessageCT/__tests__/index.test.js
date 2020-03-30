@@ -1,5 +1,9 @@
 const consumeBarcodeMessageCT = require('..');
-const { existingCtBarcodeIsNewer, getBarcodeUpdateAction } = require('../utils');
+const {
+  existingCtBarcodeIsNewer,
+  getBarcodeUpdateAction,
+  removeDuplicateIds
+} = require('../utils');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -125,6 +129,22 @@ describe('getBarcodeUpdateAction', () => {
     };
 
     expect(getBarcodeUpdateAction(jestaBarcode, ctSkuWithPreExistingBarcode)).toEqual(expectedAction);
+  });
+});
+
+describe('removeDuplicateIds', () => {
+  it('returns an empty array if given an empty array', () => {
+    expect(removeDuplicateIds([]).length).toBe(0);
+  });
+
+  it('returns an array with the same elements if given an array with no duplicate ids', () => {
+    const noDuplicateIds = [{ id: '1', typeId: 'key-value-document'}, {id: '2', typeId: 'key-value-document'}];
+    expect(removeDuplicateIds(noDuplicateIds)).toEqual(noDuplicateIds);
+  });
+
+  it('returns an array with the duplicates removed if given an array with duplicate ids', () => {
+    const duplicateIds = [{ id: '1', typeId: 'key-value-document'}, {id: '1', typeId: 'key-value-document'}];
+    expect(removeDuplicateIds(duplicateIds)).toEqual([duplicateIds[0]]);
   });
 });
 
