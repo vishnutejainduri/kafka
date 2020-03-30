@@ -44,7 +44,7 @@ function parseStoreMessage(msg) {
 
     storeObj['isVisible'] = storeObj.isOutlet
                             ? false
-                            : !storeObj.isOutlet && storeObj.posEnabled && (currentDate > storeObj.dateClosed || storeObj === null)
+                            : !storeObj.isOutlet && storeObj.posEnabled && (currentDate < storeObj.dateClosed || storeObj === null)
                               ? true
                               : false
     return storeObj;
