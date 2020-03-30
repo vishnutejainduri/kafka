@@ -48,13 +48,20 @@ const getBarcodeUpdateAction = (barcode, sku) => {
   };
 };
 
+const getNotFoundError = message => {
+  const err = new Error(message);
+  err.code = 404;
+  return err;
+};
+
 const addBarcodeToSku = async (barcode, { client, requestBuilder }) => {
   const style = await getExistingCtStyle(barcode.styleId, { client, requestBuilder });
-  if (!style) throw new Error(`Style ${barcode.styleId} not found in CT`);
+  if (!style) throw getNotFoundError(`Style ${barcode.styleId} not found in CT`);
 
   const sku = getCtSkuFromCtStyle(barcode.skuId, style);
-  const action = getBarcodeUpdateAction(barcode, sku);
+  if (!sku) throw getNotFoundError(`SKU ${barcode.skuId} not found in CT`);
 
+  const action = getBarcodeUpdateAction(barcode, sku);
   const method = 'POST';
   const uri = requestBuilder.products.byKey(barcode.styleId).build();
   const body = JSON.stringify({
