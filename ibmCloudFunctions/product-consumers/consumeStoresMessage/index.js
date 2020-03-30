@@ -42,6 +42,7 @@ const main = async function (params) {
             if (!currentStoreData ||
                 (currentStoreData.canOnlineFulfill !== storeData.canOnlineFulfill) ||
                 (currentStoreData.isOutlet !== storeData.isOutlet) ||
+                (currentStoreData.canFulfillDep27 !== storeData.canFulfillDep27) ||
                 (currentStoreData.isVisible !== storeData.isVisible)) {
                   let bulkStyleAtsUpdates = bulkAtsRecalculateQueue.initializeUnorderedBulkOp();
                   bulkStyleAtsUpdates = await getBulkAtsStyles(bulkStyleAtsUpdates, storeData, inventory);
