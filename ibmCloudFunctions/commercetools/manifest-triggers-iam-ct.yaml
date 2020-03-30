@@ -14,3 +14,8 @@
         inputs:
           isJSONData: true
           topic: skus-connect-jdbc
+      styles-basic-ct-trigger:
+        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: styles-basic-connect-jdbc

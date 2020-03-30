@@ -8,3 +8,6 @@
       sku-rule-ct:
         action: /${ORG}_${SPACE}/commercetools/consume-sku-message-with-retry-ct
         trigger: sku-ct-trigger
+      styles-basic-rule-ct:
+        action: /${ORG}_${SPACE}/commercetools/consume-styles-basic-message-with-retry-ct
+        trigger: styles-basic-ct-trigger
