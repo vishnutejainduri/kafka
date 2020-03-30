@@ -5,6 +5,7 @@ const {
   formatSkuRequestBody,
   existingCtSkuIsNewer,
   getCtSkuFromCtStyle,
+  getCtSkusFromCtStyle,
   getCtSkuAttributeValue,
   getCreationAction,
   groupByStyleId
@@ -306,5 +307,29 @@ describe('groupByStyleId', () => {
 
   it('returns an empty array if given an empty array', () => {
     expect(groupByStyleId([])).toEqual([]);
+  });
+});
+
+describe('getCtSkusFromCtStyle', () => {
+  const ctStyle = {
+    masterData: {
+      current: {
+        variants: [{ sku: 'sku-1' }, { sku: 'sku-2'}, { sku: 'sku-3' }],
+        masterVariant: {
+          attributes: []
+        }
+      },
+      hasStagedChanges: false
+    }
+  };
+
+  it('returns an empty array if no matching SKUs exist on the style', () => {
+    const skus = [{ id: 'sku-4'}, { id: 'sku-5' }];
+    expect(getCtSkusFromCtStyle(skus, ctStyle)).toEqual([]);
+  });
+
+  it('returns an array of matching SKUs when some exist', () => {
+    const skus = [{ id: 'sku-1'}, { id: 'sku-2' }];
+    expect(getCtSkusFromCtStyle(skus, ctStyle)).toEqual([{ sku: 'sku-1' }, { sku: 'sku-2'}]);
   });
 });

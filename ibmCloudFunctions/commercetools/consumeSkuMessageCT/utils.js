@@ -153,8 +153,40 @@ const createOrUpdateSku = async (ctHelpers, sku) => {
   return updateSku(sku, existingCtSku, existingCtStyle, ctHelpers);
 };
 
+const getCtSkusFromCtStyle = (skus, ctStyle) => (
+  skus.map(
+    sku => getCtSkuFromCtStyle(sku.id, ctStyle)
+  ).filter(Boolean)
+);
+
+// TODO: add error handling function?
+// "Out of date" = the given SKU's last modified date is before the existing CT
+// SKU's last modified date
+const getOutOfDateSkuIds = (existingCtSkus, skus) => (
+  existingCtSkus.filter(
+    ctSku => existingCtSkuIsNewer(ctSku, skus.find(sku => sku.id === ctSku.sku))
+  ).map(sku => sku.sku)
+);
+
+const createOrUpdateSkus = skus => {
+  throw new Error('TODO');
+};
+
+const handleSkuBatch = async (ctHelpers, skus) => {
+  if (skus.length === 0) return null;
+  const styleId = skus[0].styleId; // all the SKUs in the batch have the same style ID
+  const existingCtStyle = await getExistingCtStyle(styleId, ctHelpers);
+  if (!existingCtStyle) throw getStyleNotFoundError(styleId);
+
+  const existingCtSkus = getCtSkusFromCtStyle(skus, existingCtStyle);
+  const outOfDateSkuIds = getOutOfDateSkuIds(existingCtSkus, skus);
+  const skusThatShouldBeCreatedOrUpdated = skus.filter(sku => (!outOfDateSkuIds.includes(sku.id)));
+
+  return createOrUpdateSkus(skusThatShouldBeCreatedOrUpdated, existingCtSkus, ctHelpers);
+};
+
 const RETRY_LIMIT = 2;
-const ERRORS_NOT_TO_RETRY = [404]
+const ERRORS_NOT_TO_RETRY = [404];
 
 module.exports = {
   createOrUpdateSku: addRetries(createOrUpdateSku, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY),
@@ -164,5 +196,7 @@ module.exports = {
   getCtSkuFromCtStyle,
   getCtSkuAttributeValue,
   getCreationAction,
+  getCtSkusFromCtStyle,
+  getOutOfDateSkuIds,
   groupByStyleId
 };
