@@ -158,6 +158,13 @@ module.exports = {
             `Failure in run of consume sale price CT; params: ${params}.`
         ),
     },
+    consumeStylesBasicMessageCT: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-styles-basic-message-ct',
+            `Failure in run of consume styles basic message CT; params: ${params}.`
+        ),
+    },
     calculateAvailableToSell: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(
             originalError,

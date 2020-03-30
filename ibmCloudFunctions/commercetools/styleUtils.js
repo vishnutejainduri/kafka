@@ -201,12 +201,12 @@ const getCtStyleAttribute = (ctStyle, attributeName) => {
 
 // Used to determine whether we should update the style in CT. Deals with race
 // conditions.
-const existingCtStyleIsNewer = (existingCtStyle, givenStyle) => {
-  const existingCtStyleDate = new Date(getCtStyleAttribute(existingCtStyle, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL));
+const existingCtStyleIsNewer = (existingCtStyle, givenStyle, dateAttribute) => {
+  const existingCtStyleDate = new Date(getCtStyleAttribute(existingCtStyle, dateAttribute));
   if (!existingCtStyleDate) return false;
-  if (!givenStyle.styleLastModifiedInternal) return false;
+  if (!givenStyle.lastModifiedDate) return false;
 
-  return existingCtStyleDate.getTime() > givenStyle.styleLastModifiedInternal.getTime();
+  return existingCtStyleDate.getTime() >= (new Date(givenStyle.lastModifiedDate)).getTime();
 };
 
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
@@ -217,7 +217,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
       // the given style isn't currently stored in CT, so we create a new one
       return createStyle(style, productType, ctHelpers);
     }
-    if (existingCtStyleIsNewer(existingCtStyle, style)) {
+    if (existingCtStyleIsNewer(existingCtStyle, style, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)) {
       // the given style is out of date, so we don't add it to CT
       return null;
     }
