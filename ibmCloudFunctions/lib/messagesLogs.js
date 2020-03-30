@@ -273,7 +273,7 @@ async function deleteOldBatches(params) {
         getDlqCollection(params)
     ]);
 
-    const threshold = (new Date()).getTime() - 1000 * 60 * 60 * 24 * 28
+    const threshold = (new Date()).getTime() - 1000 * 60 * 60 * 24 * (params.messagesLogsPersistenceDays || 28)
     const activationIsOld = { recordTime: { $lt: threshold } }
     const batchIsOld = { "metadata.activationInfo.end": { $lt: threshold } }
 
