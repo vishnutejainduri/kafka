@@ -92,7 +92,7 @@ const getActionsFromStyle = (style, productType) => {
           }
         } 
     }))
-      : null
+      : [];
 
   const allUpdateActions = (
     [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...currentPriceActions]
