@@ -2,6 +2,26 @@ const { getExistingCtStyle } = require('../styleUtils');
 const { skuAttributeNames } = require('../constantsCt');
 const { addRetries } = require('../../product-consumers/utils');
 
+// Takes array of SKUs. Returns an array that contains each style ID that a SKU
+// has, with duplicates removed.
+const getUniqueStyleIds = skus => {
+  const uniqueStyleIdsSet = skus.reduce((previousStyleIds, currentSku) => (
+    previousStyleIds.add(currentSku.styleId)
+  ), new Set());
+
+  return Array.from(uniqueStyleIdsSet);
+};
+
+// Returns an array of arrays. Each sub-array contains SKUs with matching style
+// IDs.
+const groupByStyleId = skus => {
+  const uniqueStyleIds = getUniqueStyleIds(skus);
+  
+  return uniqueStyleIds.map(styleId => (
+    skus.filter(sku => sku.styleId === styleId)
+  ));
+};
+
 const getCtSkuAttributeValue = (ctSku, attributeName) => {
   const foundAttribute = ctSku.attributes.find(attribute => attribute.name === attributeName);
   if (!foundAttribute) return undefined;
@@ -143,5 +163,6 @@ module.exports = {
   existingCtSkuIsNewer,
   getCtSkuFromCtStyle,
   getCtSkuAttributeValue,
-  getCreationAction
+  getCreationAction,
+  groupByStyleId
 };

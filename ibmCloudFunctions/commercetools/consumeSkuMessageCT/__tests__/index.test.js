@@ -6,7 +6,8 @@ const {
   existingCtSkuIsNewer,
   getCtSkuFromCtStyle,
   getCtSkuAttributeValue,
-  getCreationAction
+  getCreationAction,
+  groupByStyleId
 } = require('../utils');
 
 jest.mock('@commercetools/sdk-client');
@@ -277,5 +278,33 @@ describe('getCreationAction', () => {
 
   it('returns the correct object when given style has staged changes', () => {
     expect(getCreationAction(sku, ctStyleWithStagedChanges)).toMatchObject(expected);
+  });
+});
+
+describe('groupByStyleId', () => {
+  const sku1 =  { id: 'sku-1', styleId: 'style-1'};
+  const sku2 =  { id: 'sku-2', styleId: 'style-1'};
+  const sku3 =  { id: 'sku-3', styleId: 'style-2'};
+
+  it('returns correctly grouped SKUs when some have matching style IDs', () => {
+    const skusSomeWithMatchingStyleIds = [sku1, sku2, sku3];
+    const expected = [[sku1, sku2], [sku3]];
+    expect(groupByStyleId(skusSomeWithMatchingStyleIds)).toEqual(expected);
+  });
+
+  it('returns correctly grouped SKUs when none have matching style IDs', () => {
+    const skusAllWithDifferentStyleIds = [sku1, sku3];
+    const expected = [[sku1], [sku3]];
+    expect(groupByStyleId(skusAllWithDifferentStyleIds)).toEqual(expected);
+  });
+
+  it('returns correctly grouped SKU when given a single SKU', () => {
+    const singleSku = [sku1];
+    const expected = [[sku1]];
+    expect(groupByStyleId(singleSku)).toEqual(expected);
+  });
+
+  it('returns an empty array if given an empty array', () => {
+    expect(groupByStyleId([])).toEqual([]);
   });
 });
