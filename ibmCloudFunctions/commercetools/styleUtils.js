@@ -206,11 +206,13 @@ const getCtStyleAttribute = (ctStyle, attributeName) => {
 // Used to determine whether we should update the style in CT. Deals with race
 // conditions.
 const existingCtStyleIsNewer = (existingCtStyle, givenStyle, dateAttribute) => {
-  const existingCtStyleDate = new Date(getCtStyleAttribute(existingCtStyle, dateAttribute));
-  if (!existingCtStyleDate) return false;
+  const existingCtStyleDateAttributeValue = getCtStyleAttribute(existingCtStyle, dateAttribute);
+  if (!existingCtStyleDateAttributeValue) return false;
   if (!givenStyle[dateAttribute]) return false;
 
-  return existingCtStyleDate.getTime() >= givenStyle[dateAttribute].getTime();
+  const existingCtStyleDate = new Date(existingCtStyleDateAttributeValue);
+
+  return existingCtStyleDate.getTime() >= givenStyle[dateAttribute].getTime()
 };
 
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
