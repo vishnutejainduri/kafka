@@ -170,8 +170,38 @@ const getOutOfDateSkuIds = (existingCtSkus, skus) => (
   }).map(sku => sku.sku)
 );
 
-const createOrUpdateSkus = skus => {
-  throw new Error('TODO');
+
+// TODO: check CT action limit.
+// TODO: check whether there are multiple SKUs to add with same id. filter out all but the newest one. (maybe do this check earlier)
+// Note: we've already check to make sure each SKU should update
+const getActionsFromSkus = (skus, existingCtSkus, ctStyle) => (
+  skus.reduce((previousActions, sku) => {
+    const matchingCtSku = existingCtSkus.find(ctSku => ctSku.sku == sku.id);
+    const attributeUpdateActions = getActionsFromSku(sku, matchingCtSku);
+
+    if (matchingCtSku) return [...previousActions, ...attributeUpdateActions];
+
+    const createSkuAction = getCreationAction(sku, ctStyle); // the SKU doesn't already exist in CT, so we need to create it
+    return [...previousActions, createSkuAction, ...attributeUpdateActions];
+  }, [])
+);
+
+const formatSkuBatchRequestBody = (skusToCreateOrUpdate, ctStyle, existingCtSkus) => {
+  const actions = getActionsFromSkus(skusToCreateOrUpdate, existingCtSkus, ctStyle);
+
+  return JSON.stringify({
+    version: ctStyle.version,
+    actions
+  });
+};
+
+const createOrUpdateSkus = (skusToCreateOrUpdate, existingCtSkus, ctStyle, { client, requestBuilder }) => {
+  const method = 'POST';
+  const styleId = skusToCreateOrUpdate[0].styleId;
+  const uri = requestBuilder.products.byKey(styleId).build();
+  const body = formatSkuBatchRequestBody(skusToCreateOrUpdate, ctStyle, existingCtSkus);
+
+  return client.execute({ method, uri, body });
 };
 
 const handleSkuBatch = async (ctHelpers, skus) => {
@@ -182,9 +212,14 @@ const handleSkuBatch = async (ctHelpers, skus) => {
 
   const existingCtSkus = getCtSkusFromCtStyle(skus, existingCtStyle);
   const outOfDateSkuIds = getOutOfDateSkuIds(existingCtSkus, skus);
-  const skusThatShouldBeCreatedOrUpdated = skus.filter(sku => (!outOfDateSkuIds.includes(sku.id)));
+  const skusToCreateOrUpdate = skus.filter(sku => (!outOfDateSkuIds.includes(sku.id)));
 
-  return createOrUpdateSkus(skusThatShouldBeCreatedOrUpdated, existingCtSkus, ctHelpers);
+  return createOrUpdateSkus(
+    skusToCreateOrUpdate,
+    existingCtSkus,
+    existingCtStyle,
+    ctHelpers
+  );
 };
 
 const RETRY_LIMIT = 2;
@@ -194,6 +229,7 @@ module.exports = {
   createOrUpdateSku: addRetries(createOrUpdateSku, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY),
   formatSkuRequestBody,
   getActionsFromSku,
+  getActionsFromSkus,
   existingCtSkuIsNewer,
   getCtSkuFromCtStyle,
   getCtSkuAttributeValue,

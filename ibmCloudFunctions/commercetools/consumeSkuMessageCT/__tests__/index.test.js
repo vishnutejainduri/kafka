@@ -2,6 +2,7 @@ const parseSkuMessageCt = require('../../../lib/parseSkuMessageCt');
 const consumeSkuMessageCT = require('..');
 const {
   getActionsFromSku,
+  getActionsFromSkus,
   formatSkuRequestBody,
   existingCtSkuIsNewer,
   getCtSkuFromCtStyle,
@@ -360,5 +361,47 @@ describe('getOutOfDateSkuIds', () => {
 
   it('returns an empty array when there are no out of date SKUs', () => {
     expect(getOutOfDateSkuIds(ctSkus, [upToDateSku1, upToDateSku2])).toEqual([]);
+  });
+});
+
+describe('getActionsFromSkus', () => {
+  const ctStyle = {
+    masterData: {
+      current: {
+        variants: [{ sku: 'sku-1' }, { sku: 'sku-2'}, { sku: 'sku-3' }],
+        masterVariant: {
+          attributes: [
+            {name: 'season', value: 'Winter'}
+          ]
+        }
+      },
+      hasStagedChanges: false
+    },
+    version: 1
+  };
+
+  const sku1 = { id: 'sku-1', skuLastModifiedInternal: new Date(100), colorId: 'R' };
+  const sku2 = { id: 'sku-2', skuLastModifiedInternal: new Date(100), colorId: 'G' };
+  const sku3 = { id: 'sku-3', skuLastModifiedInternal: new Date(100), colorId: 'B' };
+  const sku4 = { id: 'sku-4', skuLastModifiedInternal: new Date(100), colorId: 'A' };
+
+  it('returns the right actions when given only existing SKUs', () => {
+    const skus = [sku1, sku2, sku3];
+    const existingCtSkus = [{ sku: 'sku-1' }, { sku: 'sku-2'}, { sku: 'sku-3' }];
+    const expected = [{"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-1", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-1", "value": "R"}, {"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-2", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-2", "value": "G"}, {"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-3", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-3", "value": "B"}];
+    expect(getActionsFromSkus(skus, existingCtSkus, ctStyle)).toEqual(expected);
+  });
+
+  it('returns the right actions when given both existing and new SKUs', () => {
+    const skus = [sku1, sku2, sku3, sku4];
+    const existingCtSkus = [{ sku: 'sku-1' }, { sku: 'sku-2'}, { sku: 'sku-3' }];
+    const expected = [{"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-1", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-1", "value": "R"}, {"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-2", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-2", "value": "G"}, {"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-3", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-3", "value": "B"}, {"action": "addVariant", "attributes": [{"name": "season", "value": "Winter"}], "sku": "sku-4"}, {"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-4", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-4", "value": "A"}];
+    expect(getActionsFromSkus(skus, existingCtSkus, ctStyle)).toEqual(expected);
+  });
+
+  it('returns an empty array when given an empty array of SKUs', () => {
+    const existingCtSkus = [{ sku: 'sku-1' }, { sku: 'sku-2'}, { sku: 'sku-3' }];
+    expect(getActionsFromSkus([], [], ctStyle)).toEqual([]);
+    expect(getActionsFromSkus([], existingCtSkus, ctStyle)).toEqual([]);
   });
 });
