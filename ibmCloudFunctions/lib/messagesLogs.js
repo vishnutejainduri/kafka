@@ -262,7 +262,7 @@ async function storeInvalidMessages(params, invalidMessages) {
     }
 }
 
-async function deleteOldBatches(params) {
+async function deleteOldBatches(params, messagesLogsPersistenceDays = 60) {
     const [
         messagesCollection,
         retryCollction,
@@ -273,7 +273,7 @@ async function deleteOldBatches(params) {
         getDlqCollection(params)
     ]);
 
-    const threshold = (new Date()).getTime() - 1000 * 60 * 60 * 24 * (params.messagesLogsPersistenceDays || 28)
+    const threshold = (new Date()).getTime() - 1000 * 60 * 60 * 24 * messagesLogsPersistenceDays
     const activationIsOld = { recordTime: { $lt: threshold } }
     const batchIsOld = { "metadata.activationInfo.end": { $lt: threshold } }
 
