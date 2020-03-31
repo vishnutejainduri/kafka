@@ -137,7 +137,7 @@ const createStyle = async (style, productType, { client, requestBuilder }) => {
   const uri = requestBuilder.products.build();
   const attributes = getAttributesFromStyle(style, productType);
 
-  const body = JSON.stringify({
+  const body = {
     key: style.id, // the style ID is stored as a key, since we can't set a custom ID in CT
     name: style.name,
     description: style.marketingDescription,
@@ -150,13 +150,7 @@ const createStyle = async (style, productType, { client, requestBuilder }) => {
     // associated with a style that has no SKUs associated with it yet, we need
     // to create a dummy product variant.
     masterVariant: {
-      attributes,
-      prices: [{
-        value: {
-          currencyCode: currencyCodes.CAD,
-          centAmount: style.originalPrice
-        } 
-      }]
+      attributes
     },
     // TODO: Figure out what to put for the slug. It's required and must be
     // unique, but will we even make use of it? Right now I'm just putting the
@@ -165,9 +159,19 @@ const createStyle = async (style, productType, { client, requestBuilder }) => {
       'en-CA': style.id,
       'fr-CA': style.id
     }
-  });
+  };
 
-  return client.execute({ method, uri, body });
+  if (style.originalPrice) {
+    body.masterVariant.prices = [{
+        value: {
+          currencyCode: currencyCodes.CAD,
+          centAmount: style.originalPrice
+        } 
+      }];
+  }
+  const requestBody = JSON.stringify(body);
+
+  return client.execute({ method, uri, body: requestBody });
 };
 
 /**

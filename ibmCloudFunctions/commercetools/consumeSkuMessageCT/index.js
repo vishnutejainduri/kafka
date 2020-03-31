@@ -21,6 +21,7 @@ const main = params => {
   log(createLog.params('consumeSkuMessageCT', params));
   validateParams(params);
   const handleErrors = err => { throw createError.consumeSkuMessageCt.failed(err, params) };
+  const { productTypeId } = params;
 
   if (!ctHelpers) {
     ctHelpers = getCtHelpers(params);
@@ -34,7 +35,7 @@ const main = params => {
 
   const skuPromises = (
     skusToCreateOrUpdate
-      .map(addErrorHandling(createOrUpdateSku.bind(null, ctHelpers)))
+      .map(addErrorHandling(createOrUpdateSku.bind(null, ctHelpers, productTypeId)))
   );
   
   return Promise.all(skuPromises)

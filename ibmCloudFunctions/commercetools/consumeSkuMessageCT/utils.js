@@ -1,4 +1,4 @@
-const { getExistingCtStyle } = require('../styleUtils');
+const { getExistingCtStyle, createStyle } = require('../styleUtils');
 const { skuAttributeNames } = require('../constantsCt');
 const { addRetries } = require('../../product-consumers/utils');
 
@@ -114,15 +114,19 @@ const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
   return ctSkuLastModifiedDate.getTime() >= givenSku.skuLastModifiedInternal.getTime();
 };
 
-const getStyleNotFoundError = styleId => {
+/*const getStyleNotFoundError = styleId => {
   const err = new Error(`Style with id ${styleId} does not exist in CT`);
   err.code = 404; // so we can let `addRetries` know that it shouldn't retry these failures
   return err;
-};
+};*/
 
-const createOrUpdateSku = async (ctHelpers, sku) => {
+const createOrUpdateSku = async (ctHelpers, productTypeId, sku) => {
   const existingCtStyle = await getExistingCtStyle(sku.styleId, ctHelpers);
-  if (!existingCtStyle) throw getStyleNotFoundError(sku.styleId);
+  if (!existingCtStyle) {
+    // create dummy style where none exists
+    const result = await createStyle ({ id: sku.styleId, name: {} }, { id: productTypeId }, ctHelpers);
+    console.log('result', JSON.stringify(result));
+  }
   const existingCtSku = getCtSkuFromCtStyle(sku.id, existingCtStyle);
   
   if (!existingCtSku) {
