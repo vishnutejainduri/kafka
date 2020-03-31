@@ -141,6 +141,9 @@ const getStyleNotFoundError = styleId => {
   return err;
 };
 
+// This is an old function which we used to use to update individual SKUs.
+// Now we update SKUs in batches, so this function doesn't get used anymore.
+// It's been left in case we change our minds and decide to use it the future.
 const createOrUpdateSku = async (ctHelpers, sku) => {
   const existingCtStyle = await getExistingCtStyle(sku.styleId, ctHelpers);
   if (!existingCtStyle) throw getStyleNotFoundError(sku.styleId);
@@ -194,6 +197,8 @@ const formatSkuBatchRequestBody = (skusToCreateOrUpdate, ctStyle, existingCtSkus
 };
 
 const createOrUpdateSkus = (skusToCreateOrUpdate, existingCtSkus, ctStyle, { client, requestBuilder }) => {
+  if (skusToCreateOrUpdate.length === 0) return null;
+
   const method = 'POST';
   const styleId = skusToCreateOrUpdate[0].styleId;
   const uri = requestBuilder.products.byKey(styleId).build();
