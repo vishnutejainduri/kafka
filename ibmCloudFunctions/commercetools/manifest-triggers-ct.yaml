@@ -19,3 +19,8 @@
         inputs:
           isJSONData: true
           topic: skus-connect-jdbc
+      styles-basic-ct-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: styles-basic-connect-jdbc

@@ -7,6 +7,7 @@ const {
   existingCtStyleIsNewer,
   getCtStyleAttributeValue
 } = require('../../styleUtils');
+const { styleAttributeNames } = require('../../constantsCt');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -181,16 +182,16 @@ describe('parseStyleMessageCt', () => {
 
 describe('existingCtStyleIsNewer', () => {
   it('returns true if existing CT style is newer than the given JESTA style', () => {
-    expect(existingCtStyleIsNewer(ctStyleNewer, jestaStyle)).toBe(true);
+    expect(existingCtStyleIsNewer(ctStyleNewer, jestaStyle, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)).toBe(true);
   });
 
   it ('returns false if existing CT style is older than the given JESTA style', () => {
-    expect(existingCtStyleIsNewer(ctStyleOlder, jestaStyle)).toBe(false);
+    expect(existingCtStyleIsNewer(ctStyleOlder, jestaStyle, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)).toBe(false);
   });
 
   it('returns `false` if JESTA style lacks a value for `styleLastModifiedInternal`', () => {
     const jestaStyleWithoutModifiedDate = {...jestaStyle, styleLastModifiedInternal: undefined };
-    expect(existingCtStyleIsNewer(ctStyleOlder, jestaStyleWithoutModifiedDate)).toBe(false);
+    expect(existingCtStyleIsNewer(ctStyleOlder, jestaStyleWithoutModifiedDate, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)).toBe(false);
   });
 
   it('returns `false` if CT style lacks a value for `styleLastModifiedInternal`', () => {
