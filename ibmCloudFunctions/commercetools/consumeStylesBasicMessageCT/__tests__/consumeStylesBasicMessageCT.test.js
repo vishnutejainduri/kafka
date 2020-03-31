@@ -63,7 +63,6 @@ describe('updateStyleOutlet', () => {
         .filter(addErrorHandling(filterStyleBasicMessage))
         .map(addErrorHandling(parseStyleBasicMessageCt))
     const response = await updateStyleOutlet(mockedCtHelpers, validParams.productTypeId, result[0]);
-    console.log('response', JSON.stringify(response));
     expect(response).toBeTruthy();
   });
 });

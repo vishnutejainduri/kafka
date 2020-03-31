@@ -204,9 +204,9 @@ const getCtStyleAttribute = (ctStyle, attributeName) => {
 const existingCtStyleIsNewer = (existingCtStyle, givenStyle, dateAttribute) => {
   const existingCtStyleDate = new Date(getCtStyleAttribute(existingCtStyle, dateAttribute));
   if (!existingCtStyleDate) return false;
-  if (!givenStyle.lastModifiedDate) return false;
+  if (!givenStyle[dateAttribute]) return false;
 
-  return existingCtStyleDate.getTime() >= (new Date(givenStyle.lastModifiedDate)).getTime();
+  return existingCtStyleDate.getTime() >= givenStyle[dateAttribute].getTime();
 };
 
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
