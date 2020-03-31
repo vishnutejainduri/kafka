@@ -31,7 +31,6 @@ const main = params => {
     params.messages
       .filter(addErrorHandling(filterStyleMessages))
       .map(addErrorHandling(parseStyleMessageCt))
-      .filter(addErrorHandling(style => style.webStatus)) // false `webStatus` indicates that the style shouldn't be available online, we we don't store these styles
   );
 
   const stylePromises = (
