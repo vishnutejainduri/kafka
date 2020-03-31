@@ -4,6 +4,7 @@ const {
   getActionsFromSku,
   getActionsFromSkus,
   formatSkuRequestBody,
+  formatSkuBatchRequestBody,
   existingCtSkuIsNewer,
   getCtSkuFromCtStyle,
   getCtSkusFromCtStyle,
@@ -403,5 +404,35 @@ describe('getActionsFromSkus', () => {
     const existingCtSkus = [{ sku: 'sku-1' }, { sku: 'sku-2'}, { sku: 'sku-3' }];
     expect(getActionsFromSkus([], [], ctStyle)).toEqual([]);
     expect(getActionsFromSkus([], existingCtSkus, ctStyle)).toEqual([]);
+  });
+});
+
+describe('formatSkuBatchRequestBody', () => {
+  const ctStyle = {
+    masterData: {
+      current: {
+        variants: [{ sku: 'sku-1' }, { sku: 'sku-2'}, { sku: 'sku-3' }],
+        masterVariant: {
+          attributes: [
+            {name: 'season', value: 'Winter'}
+          ]
+        }
+      },
+      hasStagedChanges: false
+    },
+    version: 1
+  };
+
+  const sku1 = { id: 'sku-1', skuLastModifiedInternal: new Date(100), colorId: 'R' };
+  const sku2 = { id: 'sku-2', skuLastModifiedInternal: new Date(100), colorId: 'G' };
+  const sku3 = { id: 'sku-3', skuLastModifiedInternal: new Date(100), colorId: 'B' };
+  const sku4 = { id: 'sku-4', skuLastModifiedInternal: new Date(100), colorId: 'A' };
+
+  const skus = [sku1, sku2, sku3, sku4];
+  const existingCtSkus = [{ sku: 'sku-1' }, { sku: 'sku-2'}, { sku: 'sku-3' }];
+
+  it('returns the correct request body', () => {
+    const correctBody = "{\"version\":1,\"actions\":[{\"action\":\"setAttribute\",\"sku\":\"sku-1\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-1\",\"name\":\"colorId\",\"value\":\"R\"},{\"action\":\"setAttribute\",\"sku\":\"sku-2\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-2\",\"name\":\"colorId\",\"value\":\"G\"},{\"action\":\"setAttribute\",\"sku\":\"sku-3\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-3\",\"name\":\"colorId\",\"value\":\"B\"},{\"action\":\"addVariant\",\"sku\":\"sku-4\",\"attributes\":[{\"name\":\"season\",\"value\":\"Winter\"}]},{\"action\":\"setAttribute\",\"sku\":\"sku-4\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-4\",\"name\":\"colorId\",\"value\":\"A\"}]}";
+    expect(formatSkuBatchRequestBody(skus, ctStyle, existingCtSkus)).toEqual(correctBody);
   });
 });
