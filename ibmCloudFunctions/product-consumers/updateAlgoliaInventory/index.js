@@ -56,7 +56,7 @@ global.main = async function (params) {
             .catch(originalError => {
                 throw createError.updateAlgoliaInventory.failedToGetStyle(originalError, style);
             });
-        if (!styleData || !styleData.ats || styleData.isOutlet) return null;
+        if (!styleData || styleData.isOutlet) return null;
         const styleSkus = await skus.find({ styleId: style.styleId }).toArray();
         const styleAts = await productApiRequest(params, `/inventory/ats/${styleData._id}`)
             .catch(originalError => {
