@@ -319,6 +319,13 @@
         limits:
           memorySize: 2048
           timeout: 600000
+      cleanup-messages-logs:
+        location: ./product-consumers/cleanupMessagesLogs/dist/bundle.js
+        inputs:
+          messagesLogsPersistenceDays: $MESSAGES_LOGS_PERSISTENCE_DAYS
+        limites:
+          memorySize: 2048
+          timeout: 600000
     sequences:
       update-pricing-sequence:
         actions: update-algolia-price,consume-sale-price
