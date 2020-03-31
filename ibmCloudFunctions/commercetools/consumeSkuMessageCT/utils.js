@@ -111,7 +111,7 @@ const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
   if (!givenSku.skuLastModifiedInternal) throw new Error('JESTA SKU lacks last modified date');
 
   const ctSkuLastModifiedDate = new Date(ctSkuLastModifiedString);
-  return ctSkuLastModifiedDate.getTime() > givenSku.skuLastModifiedInternal.getTime();
+  return ctSkuLastModifiedDate.getTime() >= givenSku.skuLastModifiedInternal.getTime();
 };
 
 const getStyleNotFoundError = styleId => {
@@ -134,7 +134,7 @@ const createOrUpdateSku = async (ctHelpers, sku) => {
 };
 
 const RETRY_LIMIT = 2;
-const ERRORS_NOT_TO_RETRY = [404]
+const ERRORS_NOT_TO_RETRY = [404];
 
 module.exports = {
   createOrUpdateSku: addRetries(createOrUpdateSku, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY),

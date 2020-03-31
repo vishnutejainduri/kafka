@@ -2,6 +2,9 @@
       catalog-rule-ct:
         action: /${ORG}_${SPACE}/commercetools/consume-catalog-message-with-retry-ct
         trigger: catalog-ct-trigger
+      barcode-rule-ct:
+        action: /${ORG}_${SPACE}/commercetools/consume-barcode-message-with-retry-ct
+        trigger: barcode-ct-trigger
       price-rule-ct:
         action: /${ORG}_${SPACE}/commercetools/consume-sale-price-with-retry-ct
         trigger: price-ct-trigger

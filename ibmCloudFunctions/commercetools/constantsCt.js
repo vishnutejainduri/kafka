@@ -28,14 +28,20 @@ const skuAttributeNames = {
   COLOR_ID: 'colorId',
   SIZE_ID: 'sizeId',
   SIZE: 'size',
-  DIMENSION_ID: 'dimensionId'
+  DIMENSION_ID: 'dimensionId',
+  BARCODES: 'barcodes'
 };
+
+const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
+const KEY_VALUE_DOCUMENT = 'key-value-document'; // reference-type of custom objects in CT
 
 const currencyCodes = {
   CAD: 'CAD'
 };
 
 module.exports = {
+  BARCODE_NAMESPACE,
+  KEY_VALUE_DOCUMENT,
   styleAttributeNames,
   skuAttributeNames,
   currencyCodes
