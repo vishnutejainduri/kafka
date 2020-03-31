@@ -2,6 +2,7 @@ const { getExistingCtStyle } = require('../styleUtils');
 const { skuAttributeNames } = require('../constantsCt');
 const { addRetries } = require('../../product-consumers/utils');
 
+// Helper for `groupByStyleId`.
 // Takes array of SKUs. Returns an array that contains each style ID that a SKU
 // has, with duplicates removed.
 const getUniqueStyleIds = skus => {
@@ -159,9 +160,6 @@ const getCtSkusFromCtStyle = (skus, ctStyle) => (
   ).filter(Boolean)
 );
 
-// TODO: add error handling function?
-// "Out of date" = the given SKU's last modified date is before the existing CT
-// SKU's last modified date
 const getOutOfDateSkuIds = (existingCtSkus, skus) => (
   existingCtSkus.filter(ctSku => {
     const correspondingJestaSku = skus.find(sku => sku.id === ctSku.sku);
@@ -171,9 +169,9 @@ const getOutOfDateSkuIds = (existingCtSkus, skus) => (
 );
 
 
-// TODO: check CT action limit.
-// TODO: check whether there are multiple SKUs to add with same id. filter out all but the newest one. (maybe do this check earlier)
-// Note: we've already check to make sure each SKU should update
+// Note: When calling this function, you should already have made sure that
+// each SKU you give it should be updated (e.g., that it's not out of date).
+// This function doesn't make those checks.
 const getActionsFromSkus = (skus, existingCtSkus, ctStyle) => (
   skus.reduce((previousActions, sku) => {
     const matchingCtSku = existingCtSkus.find(ctSku => ctSku.sku == sku.id);
@@ -204,9 +202,12 @@ const createOrUpdateSkus = (skusToCreateOrUpdate, existingCtSkus, ctStyle, { cli
   return client.execute({ method, uri, body });
 };
 
+// Takes an array of SKUs, all of which have the same style ID. Since they all
+// have the same style ID, they can all be updated with a single call to CT.
+// This is why we batch them.
 const handleSkuBatch = async (ctHelpers, skus) => {
   if (skus.length === 0) return null;
-  const styleId = skus[0].styleId; // all the SKUs in the batch have the same style ID
+  const styleId = skus[0].styleId;
   const existingCtStyle = await getExistingCtStyle(styleId, ctHelpers);
   if (!existingCtStyle) throw getStyleNotFoundError(styleId);
 
@@ -237,5 +238,6 @@ module.exports = {
   getCreationAction,
   getCtSkusFromCtStyle,
   getOutOfDateSkuIds,
-  groupByStyleId
+  groupByStyleId,
+  handleSkuBatch: addRetries(handleSkuBatch, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY)
 };

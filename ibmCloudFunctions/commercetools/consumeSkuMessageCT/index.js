@@ -1,4 +1,4 @@
-const { createOrUpdateSku } = require('./utils');
+const { groupByStyleId, handleSkuBatch } = require('./utils');
 const { filterSkuMessage } = require('../../lib/parseSkuMessage');
 const parseSkuMessageCt = require('../../lib/parseSkuMessageCt');
 const createError = require('../../lib/createError');
@@ -32,12 +32,16 @@ const main = params => {
       .map(addErrorHandling(parseSkuMessageCt))
   );
 
-  const skuPromises = (
-    skusToCreateOrUpdate
-      .map(addErrorHandling(createOrUpdateSku.bind(null, ctHelpers)))
+  // We group SKUs by style ID to avoid concurrency problems when trying to
+  // add or update SKUs that belong to the same style at the same time
+  const skusGroupedByStyleId = groupByStyleId(skusToCreateOrUpdate);
+
+  const skuBatchPromises = (
+    skusGroupedByStyleId
+      .map(addErrorHandling(handleSkuBatch.bind(null, ctHelpers)))
   );
   
-  return Promise.all(skuPromises)
+  return Promise.all(skuBatchPromises)
     .then(passDownAnyMessageErrors)
     .catch(handleErrors);
 };
