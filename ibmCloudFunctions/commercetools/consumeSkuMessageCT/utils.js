@@ -98,22 +98,6 @@ const formatSkuRequestBody = (sku, style, existingSku = null) => {
   });
 };
 
-const createSku = (sku, style, { client, requestBuilder }) => {
-  const method = 'POST';
-  const uri = requestBuilder.products.byKey(sku.styleId).build();
-  const body = formatSkuRequestBody(sku, style, null);
-
-  return client.execute({ method, uri, body });
-};
-
-const updateSku = (sku, existingCtSku, style, { client, requestBuilder }) => {
-  const method = 'POST';
-  const uri = requestBuilder.products.byKey(sku.styleId).build();
-  const body = formatSkuRequestBody(sku, style, existingCtSku);
-
-  return client.execute({ method, uri, body });
-};
-
 // Returns the matching staged SKU if one exists. Otherwise returns the
 // matching current SKU if one exists, or `undefined` if no matching
 // current SKU exists.
@@ -139,22 +123,6 @@ const getStyleNotFoundError = styleId => {
   const err = new Error(`Style with id ${styleId} does not exist in CT`);
   err.code = 404; // so we can let `addRetries` know that it shouldn't retry these failures
   return err;
-};
-
-// This is an old function which we used to use to update individual SKUs.
-// Now we update SKUs in batches, so this function doesn't get used anymore.
-// It's been left in case we change our minds and decide to use it the future.
-const createOrUpdateSku = async (ctHelpers, sku) => {
-  const existingCtStyle = await getExistingCtStyle(sku.styleId, ctHelpers);
-  if (!existingCtStyle) throw getStyleNotFoundError(sku.styleId);
-  const existingCtSku = getCtSkuFromCtStyle(sku.id, existingCtStyle);
-  
-  if (!existingCtSku) {
-    return createSku(sku, existingCtStyle, ctHelpers);
-  } if (existingCtSkuIsNewer(existingCtSku, sku)) {
-    return null;
-  }
-  return updateSku(sku, existingCtSku, existingCtStyle, ctHelpers);
 };
 
 const getCtSkusFromCtStyle = (skus, ctStyle) => (
@@ -271,7 +239,6 @@ const RETRY_LIMIT = 2;
 const ERRORS_NOT_TO_RETRY = [404];
 
 module.exports = {
-  createOrUpdateSku: addRetries(createOrUpdateSku, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY),
   formatSkuRequestBody,
   formatSkuBatchRequestBody,
   getActionsFromSku,
