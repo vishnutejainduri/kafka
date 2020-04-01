@@ -118,7 +118,7 @@ const createOrUpdateSku = async (ctHelpers, productTypeId, sku) => {
   let existingCtStyle = await getExistingCtStyle(sku.styleId, ctHelpers);
   if (!existingCtStyle) {
     // create dummy style where none exists
-    existingCtStyle = await createStyle ({ id: sku.styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, ctHelpers).body;
+    existingCtStyle = (await createStyle ({ id: sku.styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, ctHelpers)).body;
   }
   const existingCtSku = getCtSkuFromCtStyle(sku.id, existingCtStyle);
   
