@@ -121,6 +121,34 @@ const handleBarcode = async (ctHelpers, barcode) => {
   }
 };
 
+const createOrUpdateBarcodes = (barcodes, ctHelpers) => (
+  Promise.all(barcodes.map(barcode => createOrUpdateBarcode(barcode, ctHelpers)))
+);
+
+const getExistingCtBarcodes = (barcodes, ctHelpers) => (
+  Promise.all(barcodes.map(barcode => getBarcodeFromCt(barcode, ctHelpers)))
+);
+
+const getOutOfDateBarcodeIds = (existingCtBarcodes, barcodes) => (
+  existingCtBarcodes.filter(ctBarcode => {
+    const correspondingJestaBarcode = barcodes.find(({ barcode }) => barcode === ctBarcode.key);
+    if (!correspondingJestaBarcode) return false;
+    return existingCtBarcodeIsNewer(ctBarcode, correspondingJestaBarcode);
+  }).map(barcode => barcode.key)
+);
+
+const addBarcodesToSkus = () => {};
+
+// Note: all given barcodes must have same the style ID
+const handleBarcodeBatch = async (ctHelpers, barcodes) => {
+  const existingCtBarcodes = await getExistingCtBarcodes(barcodes, ctHelpers);
+  const outOfDateBarcodeNumbers = getOutOfDateBarcodeIds(existingCtBarcodes, barcodes);
+  const barcodesToCreateOrUpdate = barcodes.filter(({ barcode }) => !outOfDateBarcodeNumbers.includes(barcode)); // we create or update all barcodes that aren't of out of date
+  const createdOrUpdatedBarcodes = await createOrUpdateBarcodes(barcodesToCreateOrUpdate, ctHelpers);
+
+  return addBarcodesToSkus(createdOrUpdatedBarcodes, barcodes, ctHelpers);
+};
+
 const RETRY_LIMIT = 2;
 const ERRORS_NOT_TO_RETRY = [404];
 
@@ -132,5 +160,6 @@ module.exports = {
   addBarcodeToSku,
   existingCtBarcodeIsNewer,
   removeDuplicateIds,
-  groupBarcodesByStyleId
+  groupBarcodesByStyleId,
+  getOutOfDateBarcodeIds
 };

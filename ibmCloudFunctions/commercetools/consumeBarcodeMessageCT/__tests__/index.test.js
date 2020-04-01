@@ -3,7 +3,8 @@ const {
   existingCtBarcodeIsNewer,
   getBarcodeUpdateAction,
   removeDuplicateIds,
-  groupBarcodesByStyleId
+  groupBarcodesByStyleId,
+  getOutOfDateBarcodeIds
 } = require('../utils');
 
 jest.mock('@commercetools/sdk-client');
@@ -188,7 +189,7 @@ describe('consumeCatalogueMessageCT', () => {
 
 describe('groupBarcodesByStyleId', () => {
   const barcode1 = {
-    lastModifiedDate: 100,
+    lastModifiedDate: new Date(100),
     barcode: '1101',
     subType: 'subType',
     skuId: '1',
@@ -196,7 +197,7 @@ describe('groupBarcodesByStyleId', () => {
   };
 
   const barcode2 = {
-    lastModifiedDate: 100,
+    lastModifiedDate: new Date(100),
     barcode: '1102',
     subType: 'subType',
     skuId: '2',
@@ -204,7 +205,7 @@ describe('groupBarcodesByStyleId', () => {
   };
 
   const barcode3 = {
-    lastModifiedDate: 100,
+    lastModifiedDate: new Date(100),
     barcode: '1103',
     subType: 'subType',
     skuId: '3',
@@ -224,6 +225,75 @@ describe('groupBarcodesByStyleId', () => {
   it('returns an empty array when given an empty array', () => {
     expect(groupBarcodesByStyleId([])).toEqual([]);
   });
+});
 
+describe('getOutOfDateBarcodeIds', () => {
+  const barcode1 = {
+    lastModifiedDate: new Date(50),
+    barcode: '1101',
+    subType: 'subType',
+    skuId: '1',
+    styleId: '001',
+  };
 
+  const barcode2 = {
+    lastModifiedDate: new Date(0),
+    barcode: '1102',
+    subType: 'subType',
+    skuId: '2',
+    styleId: '001',
+  };
+
+  const barcode3 = {
+    lastModifiedDate: new Date(50),
+    barcode: '1103',
+    subType: 'subType',
+    skuId: '3',
+    styleId: '002',
+  };
+
+  const barcodes = [barcode1, barcode2, barcode3];
+
+  const newerCtBarcode = {
+    id: 'foo',
+    version: 1,
+    container: 'barcodes',
+    key: '1102',
+    value: {
+      styleId: '1',
+      skuId: '1',
+      subType: 'subType',
+      barcode: '1102',
+      lastModifiedDate: '1970-01-01T00:00:00.050Z' // equivalent to new Date(50)
+    }
+  };
+
+  const olderCtBarcode = {
+    id: 'foo',
+    version: 1,
+    container: 'barcodes',
+    key: '1101',
+    value: {
+      styleId: '1',
+      skuId: '1',
+      subType: 'subType',
+      barcode: '1101',
+      lastModifiedDate: '1970-01-01T00:00:00.000Z' // equivalent to new Date(0)
+    }
+  };
+
+  it('returns an array of out of date barcode IDs', () => {
+    expect(getOutOfDateBarcodeIds([newerCtBarcode], barcodes)).toEqual(['1102']);
+    expect(getOutOfDateBarcodeIds([newerCtBarcode, olderCtBarcode], barcodes)).toEqual(['1102']);
+  });
+
+  it('returns an empty array when no given barcodes are out of date', () => {
+    expect(getOutOfDateBarcodeIds([olderCtBarcode], barcodes)).toEqual([]);
+    expect(getOutOfDateBarcodeIds([], barcodes)).toEqual([]);
+  });
+
+  it('returns an empty array when given an empty array of barcodes', () => {
+    expect(getOutOfDateBarcodeIds([olderCtBarcode], [])).toEqual([]);
+    expect(getOutOfDateBarcodeIds([], [])).toEqual([]);
+  });
 });
