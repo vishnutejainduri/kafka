@@ -119,12 +119,6 @@ const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
   return ctSkuLastModifiedDate.getTime() > givenSku.skuLastModifiedInternal.getTime();
 };
 
-const getStyleNotFoundError = styleId => {
-  const err = new Error(`Style with id ${styleId} does not exist in CT`);
-  err.code = 404; // so we can let `addRetries` know that it shouldn't retry these failures
-  return err;
-};
-
 const getCtSkusFromCtStyle = (skus, ctStyle) => (
   skus.map(
     sku => getCtSkuFromCtStyle(sku.id, ctStyle)
@@ -221,7 +215,7 @@ const handleSkuBatch = async (ctHelpers, skus) => {
   if (skus.length === 0) return null;
   const styleId = skus[0].styleId;
   const existingCtStyle = await getExistingCtStyle(styleId, ctHelpers);
-  if (!existingCtStyle) throw getStyleNotFoundError(styleId);
+  if (!existingCtStyle) return null; // TODO: create dummy style (HRC-2063)
 
   const existingCtSkus = getCtSkusFromCtStyle(skus, existingCtStyle);
   const outOfDateSkuIds = getOutOfDateSkuIds(existingCtSkus, skus);
