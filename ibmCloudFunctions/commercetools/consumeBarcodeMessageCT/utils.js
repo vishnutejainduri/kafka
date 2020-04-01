@@ -53,16 +53,14 @@ const addBarcodeToSku = async (barcode, productTypeId, ctHelpers) => {
   let style = await getExistingCtStyle(barcode.styleId, ctHelpers);
   if (!style) {
     // create dummy style since none exists
-    style = await createStyle ({ id: barcode.styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, ctHelpers).body;
+    style = (await createStyle ({ id: barcode.styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, ctHelpers)).body;
   }
 
   let sku = getCtSkuFromCtStyle(barcode.skuId, style);
   if (!sku) {
     // create dummy sku since none exists
-    style = await createSku ({ id: barcode.skuId, styleId: barcode.styleId }, style, ctHelpers).body;
-    console.log('style', style);
+    style = (await createSku ({ id: barcode.skuId, styleId: barcode.styleId }, style, ctHelpers)).body;
     sku = getCtSkuFromCtStyle(barcode.skuId, style);
-    console.log('sku', sku);
   }
 
   const action = getBarcodeUpdateAction(barcode, sku);
