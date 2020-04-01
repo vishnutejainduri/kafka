@@ -1,6 +1,63 @@
 const { addRetries } = require('../product-consumers/utils');
 const { styleAttributeNames, currencyCodes } = require('./constantsCt');
 
+const categoryNameToKey = (categoryName) => categoryName.replace(/\s/g, '_')
+
+const getCategory = async (category, { client, requestBuilder }) => {
+  const method = 'GET';
+
+  const uri = requestBuilder.categories.byKey(category).build();
+
+  try {
+    const response = await client.execute({ method, uri });
+    return response.body;
+  } catch (err) {
+      if (err.code === 404) return null; 
+      throw err;
+  }
+};
+
+const getCategories = async (style, ctHelpers) => {
+  const categories = await Promise.all([
+    getCategory(categoryNameToKey(style.level1Category['en-CA']), ctHelpers),
+    getCategory(categoryNameToKey(style.level2Category['en-CA']), ctHelpers),
+    getCategory(categoryNameToKey(style.level3Category['en-CA']), ctHelpers)
+  ]);
+
+  if (!categories[0]) categories[0] = await createCategory(style.level1Category, null, ctHelpers);
+  if (!categories[1]) categories[1] = await createCategory(style.level2Category, categories[0], ctHelpers);
+  if (!categories[2]) categories[2] = await createCategory(style.level3Category, categories[1], ctHelpers);
+
+  return categories;
+};
+
+const createCategory = async (categoryName, parentCategory, { client, requestBuilder }) => {
+  const method = 'POST';
+  const uri = requestBuilder.categories.build();
+
+  const categoryKey = categoryNameToKey(categoryName['en-CA']);
+
+  const body = {
+    key: categoryKey,
+    name: categoryName,
+    slug: {
+      'en-CA': categoryKey,
+      'fr-CA': categoryKey
+    }
+  };
+
+  if (parentCategory) {
+    body.parent = {
+      id: parentCategory.id,
+      typeId: 'category'
+    };
+  }
+
+  const requestBody = JSON.stringify(body);
+
+  return client.execute({ method, uri, body: requestBody });
+};
+
 const getProductType = async (productTypeId, { client, requestBuilder }) => {
   const method = 'GET';
 
@@ -216,6 +273,8 @@ const existingCtStyleIsNewer = (existingCtStyle, givenStyle, dateAttribute) => {
 };
 
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
+    const categories = await getCategories(style, ctHelpers);
+
     const productType = await getProductType(productTypeId, ctHelpers);
     const existingCtStyle = await getExistingCtStyle(style.id, ctHelpers);
 
