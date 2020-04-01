@@ -3,6 +3,24 @@ const { skuAttributeNames, BARCODE_NAMESPACE, KEY_VALUE_DOCUMENT } = require('..
 const { getCtSkuFromCtStyle, getCtSkuAttributeValue } = require('../consumeSkuMessageCT/utils');
 const { addRetries } = require('../../product-consumers/utils');
 
+const getUniqueAttributeValues = attributeName => items => {
+  const uniqueAttributeValues = items.reduce((previousUniqueValues, item) => (
+    previousUniqueValues.add(item[attributeName])
+  ), new Set());
+
+  return Array.from(uniqueAttributeValues);
+};
+
+const groupByAttribute = attributeName => items => {
+  const uniqueAttributeValues = getUniqueAttributeValues(attributeName)(items);
+
+  return uniqueAttributeValues.map(value => (
+    items.filter(item => item[attributeName] === value)
+  ));
+};
+
+const groupBarcodesByStyleId = groupByAttribute('styleId');
+
 const getBarcodeFromCt = async (barcode, { client, requestBuilder }) => {
   const method = 'GET';
   const uri = `${requestBuilder.customObjects.build()}/${BARCODE_NAMESPACE}/${barcode.barcode}`;
@@ -113,5 +131,6 @@ module.exports = {
   getBarcodeUpdateAction,
   addBarcodeToSku,
   existingCtBarcodeIsNewer,
-  removeDuplicateIds
+  removeDuplicateIds,
+  groupBarcodesByStyleId
 };

@@ -2,7 +2,8 @@ const consumeBarcodeMessageCT = require('..');
 const {
   existingCtBarcodeIsNewer,
   getBarcodeUpdateAction,
-  removeDuplicateIds
+  removeDuplicateIds,
+  groupBarcodesByStyleId
 } = require('../utils');
 
 jest.mock('@commercetools/sdk-client');
@@ -183,4 +184,46 @@ describe('consumeCatalogueMessageCT', () => {
     const response = await consumeBarcodeMessageCT(validParams);
     expect(response).toBeUndefined();
   });
+});
+
+describe('groupBarcodesByStyleId', () => {
+  const barcode1 = {
+    lastModifiedDate: 100,
+    barcode: '1101',
+    subType: 'subType',
+    skuId: '1',
+    styleId: '001',
+  };
+
+  const barcode2 = {
+    lastModifiedDate: 100,
+    barcode: '1102',
+    subType: 'subType',
+    skuId: '2',
+    styleId: '001',
+  };
+
+  const barcode3 = {
+    lastModifiedDate: 100,
+    barcode: '1103',
+    subType: 'subType',
+    skuId: '3',
+    styleId: '002',
+  };
+
+  const barcodes = [barcode1, barcode2, barcode3];
+
+  it('correctly groups by style ID when given array of barcodes some of which share the same style ID', () => {
+    expect(groupBarcodesByStyleId(barcodes)).toEqual([[barcode1, barcode2], [barcode3]]);
+  });
+
+  it('correctly groups by style ID when given array of barcodes all of which have different style IDs', () => {
+    expect(groupBarcodesByStyleId([barcode1, barcode3])).toEqual([[barcode1], [barcode3]]);
+  });
+
+  it('returns an empty array when given an empty array', () => {
+    expect(groupBarcodesByStyleId([])).toEqual([]);
+  });
+
+
 });
