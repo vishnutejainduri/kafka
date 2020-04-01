@@ -107,7 +107,7 @@ const getCtSkuFromCtStyle = (skuId, ctStyle) => {
 
 const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
   const ctSkuLastModifiedString = getCtSkuAttributeValue(existingCtSku, skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL);
-  if (!ctSkuLastModifiedString) throw new Error('CT product variant lacks last modified date');
+  if (!ctSkuLastModifiedString) return false;
   if (!givenSku.skuLastModifiedInternal) throw new Error('JESTA SKU lacks last modified date');
 
   const ctSkuLastModifiedDate = new Date(ctSkuLastModifiedString);
@@ -140,5 +140,6 @@ module.exports = {
   existingCtSkuIsNewer,
   getCtSkuFromCtStyle,
   getCtSkuAttributeValue,
-  getCreationAction
+  getCreationAction,
+  createSku
 };
