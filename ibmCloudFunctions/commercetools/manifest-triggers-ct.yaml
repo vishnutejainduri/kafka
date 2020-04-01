@@ -4,6 +4,11 @@
         inputs:
           isJSONData: true
           topic: styles-connect-jdbc-CATALOG
+      barcode-ct-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: barcodes-connect-jdbc
       price-ct-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
@@ -14,3 +19,8 @@
         inputs:
           isJSONData: true
           topic: skus-connect-jdbc
+      styles-basic-ct-trigger:
+        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
+        inputs:
+          isJSONData: true
+          topic: styles-basic-connect-jdbc

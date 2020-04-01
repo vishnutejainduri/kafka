@@ -116,7 +116,7 @@ const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
   if (!givenSku.skuLastModifiedInternal) throw new Error('JESTA SKU lacks last modified date');
 
   const ctSkuLastModifiedDate = new Date(ctSkuLastModifiedString);
-  return ctSkuLastModifiedDate.getTime() > givenSku.skuLastModifiedInternal.getTime();
+  return ctSkuLastModifiedDate.getTime() >= givenSku.skuLastModifiedInternal.getTime();
 };
 
 const getCtSkusFromCtStyle = (skus, ctStyle) => (

@@ -14,6 +14,21 @@
         limits:
           memorySize: 512
           timeout: 600000
+      consume-barcode-message-ct:
+        location: ./commercetools/consumeBarcodeMessageCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+        inputs:
+          topicName: barcodes-connect-jdbc
+      consume-barcode-message-with-retry-ct:
+        location: ./commercetools/consumeBarcodeMessageWithRetryCT/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
       consume-sale-price-ct:
         location: ./commercetools/consumeSalePriceCT/dist/bundle.js
         runtime: nodejs:10
@@ -39,6 +54,21 @@
           topicName: skus-connect-jdbc
       consume-sku-message-with-retry-ct:
         location: ./commercetools/consumeSkuMessageWithRetryCT/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+      consume-styles-basic-message-ct:
+        location: ./commercetools/consumeStylesBasicMessageCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+        inputs:
+          topicName: styles-basic-connect-jdbc 
+      consume-styles-basic-message-with-retry-ct:
+        location: ./commercetools/consumeStylesBasicMessageWithRetryCT/dist/bundle.js
         conductor: true
         runtime: nodejs:10
         limits:

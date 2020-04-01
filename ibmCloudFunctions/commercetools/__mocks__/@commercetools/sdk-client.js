@@ -1,8 +1,14 @@
+const mockSku = {
+  sku: '1',
+  attributes: [],
+  prices: []
+};
+
 const ctProduct = {
   version: 1,
   masterData: {
     current: {
-      variants: [],
+      variants: [mockSku],
       masterVariant: {
         attributes: [],
         prices: []
@@ -11,7 +17,7 @@ const ctProduct = {
     staged: {
       variants: [],
       masterVariant: {
-        attributes: [],
+        attributes: [mockSku],
         prices: []
       }
     }
@@ -38,7 +44,7 @@ const ctProduct = {
 };
 
 const mockClient = {
-  execute: () => ({ body: ctProduct })
+  execute: () => ({ body: { ...ctProduct, value: { lastModifiedDate: '1970-01-01T00:00:00.050Z' } }})
 };
 
 const sdkClient = {

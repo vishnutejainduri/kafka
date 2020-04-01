@@ -103,7 +103,8 @@ async function storeBatch(params) {
                 activationId: process.env.__OW_ACTIVATION_ID,
                 transactionId,
                 messages,
-                resolved: false
+                resolved: false,
+                recordTime: (new Date()).getTime()
             });
         return result;
     } catch (error) {
@@ -261,6 +262,28 @@ async function storeInvalidMessages(params, invalidMessages) {
     }
 }
 
+async function deleteOldBatches(params, messagesLogsPersistenceDays = 60) {
+    const [
+        messagesCollection,
+        retryCollction,
+        dlqCollection
+    ] = await Promise.all([
+        getMessagesCollection(params),
+        getRetryCollection(params),
+        getDlqCollection(params)
+    ]);
+
+    const threshold = (new Date()).getTime() - 1000 * 60 * 60 * 24 * messagesLogsPersistenceDays
+    const activationIsOld = { recordTime: { $lt: threshold } }
+    const batchIsOld = { "metadata.activationInfo.end": { $lt: threshold } }
+
+    return Promise.all([
+        messagesCollection.deleteMany(activationIsOld),
+        retryCollction.deleteMany(batchIsOld),
+        dlqCollection.deleteMany(batchIsOld)
+    ])
+}
+
 module.exports = {
     getMessagesCollection,
     storeBatch,
@@ -275,5 +298,6 @@ module.exports = {
     getRetryBatches,
     getUpdateRetryBatch,
     getDeleteRetryBatch,
-    storeInvalidMessages
+    storeInvalidMessages,
+    deleteOldBatches
 };

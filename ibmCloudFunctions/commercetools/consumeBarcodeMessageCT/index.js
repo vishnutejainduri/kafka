@@ -1,6 +1,5 @@
-const { createOrUpdateStyle } = require('../styleUtils');
-const { filterStyleMessages } = require('../../lib/parseStyleMessage');
-const { parseStyleMessageCt } = require('../../lib/parseStyleMessageCt');
+const { filterBarcodeMessage, parseBarcodeMessage } = require('../../lib/parseBarcodeMessage');
+const { handleBarcode } = require('./utils');
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
 const getCtHelpers = require('../../lib/commercetoolsSdk');
@@ -18,27 +17,26 @@ const {
 let ctHelpers;
 
 const main = params => {
-  log(createLog.params('consumeCatalogMessageCT', params));
+  log(createLog.params('consumeBarcodeMessageCT', params));
   validateParams(params);
-  const handleErrors = err => { throw createError.consumeCatalogMessageCT.failed(err, params) };
-  const { productTypeId } = params;
+  const handleErrors = err => { throw createError.consumeBarcodeMessageCT.failed(err, params) };
 
   if (!ctHelpers) {
     ctHelpers = getCtHelpers(params);
   }
   
-  const stylesToCreateOrUpdate = (
+  const barcodesToCreateOrUpdate = (
     params.messages
-      .filter(addErrorHandling(filterStyleMessages))
-      .map(addErrorHandling(parseStyleMessageCt))
+      .filter(addErrorHandling(filterBarcodeMessage))
+      .map(addErrorHandling(parseBarcodeMessage))
   );
 
-  const stylePromises = (
-    stylesToCreateOrUpdate
-      .map(addErrorHandling(createOrUpdateStyle.bind(null, ctHelpers, productTypeId)))
+  const barcodePromises = (
+    barcodesToCreateOrUpdate
+      .map(addErrorHandling(handleBarcode.bind(null, ctHelpers)))
   );
-
-  return Promise.all(stylePromises)
+  
+  return Promise.all(barcodePromises)
     .then(passDownAnyMessageErrors)
     .catch(handleErrors);
 };

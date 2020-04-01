@@ -35,7 +35,7 @@ const getCollection = (collectionName) => {
         case 'stores':
             return {
                 updateOne: async ({ _id }) => ({ _id }),
-                findOne: async () => ({ _id: 'success', canOnlineFulfill: true, isOutlet: false, isVisible: true }),
+                findOne: async () => ({ _id: 'success', canOnlineFulfill: true, canFulfillDep27: true, isOutlet: false, isVisible: true }),
             }; 
         case 'skus':
             return {

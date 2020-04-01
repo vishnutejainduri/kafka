@@ -16,7 +16,9 @@ const styleAttributeNames = {
   ORIGINAL_PRICE: 'originalPrice',
   ONLINE_SALE_PRICE: 'onlineSalePrice',
   IS_ONLINE_SALE: 'isOnlineSale',
-  ONLINE_DISCOUNT: 'onlineDiscount'
+  ONLINE_DISCOUNT: 'onlineDiscount',
+  STYLE_OUTLET_LAST_MODIFIED_INTERNAL: 'styleOutletLastModifiedInternal',
+  IS_OUTLET: 'isOutlet'
 };
 
 /**
@@ -28,14 +30,20 @@ const skuAttributeNames = {
   COLOR_ID: 'colorId',
   SIZE_ID: 'sizeId',
   SIZE: 'size',
-  DIMENSION_ID: 'dimensionId'
+  DIMENSION_ID: 'dimensionId',
+  BARCODES: 'barcodes'
 };
+
+const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
+const KEY_VALUE_DOCUMENT = 'key-value-document'; // reference-type of custom objects in CT
 
 const currencyCodes = {
   CAD: 'CAD'
 };
 
 module.exports = {
+  BARCODE_NAMESPACE,
+  KEY_VALUE_DOCUMENT,
   styleAttributeNames,
   skuAttributeNames,
   currencyCodes
