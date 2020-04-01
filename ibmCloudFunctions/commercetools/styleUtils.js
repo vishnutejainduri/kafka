@@ -3,6 +3,33 @@ const { styleAttributeNames, currencyCodes } = require('./constantsCt');
 
 const categoryNameToKey = (categoryName) => categoryName.replace(/\s/g, '_')
 
+const createCategory = async (categoryName, parentCategory, { client, requestBuilder }) => {
+  const method = 'POST';
+  const uri = requestBuilder.categories.build();
+
+  const categoryKey = categoryNameToKey(categoryName['en-CA']);
+
+  const body = {
+    key: categoryKey,
+    name: categoryName,
+    slug: {
+      'en-CA': categoryKey,
+      'fr-CA': categoryKey
+    }
+  };
+
+  if (parentCategory) {
+    body.parent = {
+      id: parentCategory.id,
+      typeId: 'category'
+    };
+  }
+
+  const requestBody = JSON.stringify(body);
+
+  return client.execute({ method, uri, body: requestBody });
+};
+
 const getCategory = async (category, { client, requestBuilder }) => {
   const method = 'GET';
 
@@ -29,33 +56,6 @@ const getCategories = async (style, ctHelpers) => {
   if (!categories[2]) categories[2] = await createCategory(style.level3Category, categories[1], ctHelpers);
 
   return categories;
-};
-
-const createCategory = async (categoryName, parentCategory, { client, requestBuilder }) => {
-  const method = 'POST';
-  const uri = requestBuilder.categories.build();
-
-  const categoryKey = categoryNameToKey(categoryName['en-CA']);
-
-  const body = {
-    key: categoryKey,
-    name: categoryName,
-    slug: {
-      'en-CA': categoryKey,
-      'fr-CA': categoryKey
-    }
-  };
-
-  if (parentCategory) {
-    body.parent = {
-      id: parentCategory.id,
-      typeId: 'category'
-    };
-  }
-
-  const requestBody = JSON.stringify(body);
-
-  return client.execute({ method, uri, body: requestBody });
 };
 
 const getProductType = async (productTypeId, { client, requestBuilder }) => {
@@ -274,7 +274,8 @@ const existingCtStyleIsNewer = (existingCtStyle, givenStyle, dateAttribute) => {
 
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     const categories = await getCategories(style, ctHelpers);
-
+    console.log('categories', JSON.stringify(categories));
+  
     const productType = await getProductType(productTypeId, ctHelpers);
     const existingCtStyle = await getExistingCtStyle(style.id, ctHelpers);
 
