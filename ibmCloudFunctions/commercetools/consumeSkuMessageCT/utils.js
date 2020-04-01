@@ -143,5 +143,6 @@ module.exports = {
   existingCtSkuIsNewer,
   getCtSkuFromCtStyle,
   getCtSkuAttributeValue,
-  getCreationAction
+  getCreationAction,
+  createSku
 };
