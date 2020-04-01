@@ -75,7 +75,7 @@ const addBarcodeToSku = async (barcode, productTypeId, ctHelpers) => {
 };
 
 const existingCtBarcodeIsNewer = (existingCtBarcode, givenBarcode) => {
-  if (!existingCtBarcode.value.lastModifiedDate) throw new Error(`CT barcode lacks last modified date (object reference: ${existingCtBarcode.id})`);
+  if (!existingCtBarcode.value.lastModifiedDate) return false;
   if (!givenBarcode.lastModifiedDate) throw new Error(`Given barcode lacks last modified date (barcode number: ${givenBarcode.barcode})`);
   const existingCtBarcodeDate = new Date(existingCtBarcode.value.lastModifiedDate); // the date is stored as a UTC string in CT
   const givenBarcodeDate = new Date(givenBarcode.lastModifiedDate); // the date is stored as a Unix time integer in JESTA
