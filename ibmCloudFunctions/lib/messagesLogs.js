@@ -265,7 +265,7 @@ async function storeInvalidMessages(params, invalidMessages) {
 async function deleteOldBatches(params, cutoff) {
     const [
         messagesCollection,
-        retryCollction,
+        retryCollection,
         dlqCollection
     ] = await Promise.all([
         getMessagesCollection(params),
@@ -277,7 +277,7 @@ async function deleteOldBatches(params, cutoff) {
 
     const [deletedMessages, deletedRetries, deletedDlqs] = await Promise.all([
         messagesCollection.deleteMany(activationIsOld),
-        retryCollction.deleteMany(batchIsOld),
+        retryCollection.deleteMany(batchIsOld),
         dlqCollection.deleteMany(batchIsOld)
     ]);
 
