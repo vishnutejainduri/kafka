@@ -207,6 +207,45 @@ const createOrUpdateSkus = (skusToCreateOrUpdate, existingCtSkus, ctStyle, { cli
   return client.execute({ method, uri, body });
 };
 
+// Helper for `groupBySkuId`
+const getUniqueSkuIds = skus => {
+  const uniqueSkuIdsSet = skus.reduce((previousSkuIds, currentSku) => (
+    previousSkuIds.add(currentSku.id)
+  ), new Set());
+
+  return Array.from(uniqueSkuIdsSet);
+};
+
+// Helper for `removeDuplicateSkus`
+const groupBySkuId = skus => {
+  const uniqueSkuIds = getUniqueSkuIds(skus);
+
+  return uniqueSkuIds.map(skuId => (
+    skus.filter(sku => sku.id === skuId)
+  ));
+};
+
+// Helper for `removeDuplicateSkus`
+const getMostUpToDateSku = skus => {
+  const skusSortedByDate = skus.sort((sku1, sku2) => (
+    sku2[skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL] - sku1[skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL]
+  ));
+
+  return skusSortedByDate[0];
+};
+
+// There is a small chance that there will be multiple messages in the same
+// batch telling us to update or create the same SKU. In these cases, we throw
+// out all but the most up to date SKU in the batch.
+const removeDuplicateSkus = skus => {
+  const skusGroupedById = groupBySkuId(skus);
+
+  return skusGroupedById.reduce((filteredSkus, skuBatch) => {
+    const mostUpToDateSku = getMostUpToDateSku(skuBatch);
+    return [...filteredSkus, mostUpToDateSku];    
+  }, []);
+};
+
 // Takes an array of SKUs, all of which have the same style ID. Since they all
 // have the same style ID, they can all be updated with a single call to CT.
 // This is why we batch them.
@@ -218,7 +257,7 @@ const handleSkuBatch = async (ctHelpers, skus) => {
 
   const existingCtSkus = getCtSkusFromCtStyle(skus, existingCtStyle);
   const outOfDateSkuIds = getOutOfDateSkuIds(existingCtSkus, skus);
-  const skusToCreateOrUpdate = skus.filter(sku => (!outOfDateSkuIds.includes(sku.id)));
+  const skusToCreateOrUpdate = removeDuplicateSkus(skus.filter(sku => (!outOfDateSkuIds.includes(sku.id))));
 
   return createOrUpdateSkus(
     skusToCreateOrUpdate,
@@ -243,6 +282,8 @@ module.exports = {
   getCreationAction,
   getCtSkusFromCtStyle,
   getOutOfDateSkuIds,
+  getMostUpToDateSku,
   groupByStyleId,
+  removeDuplicateSkus,
   handleSkuBatch: addRetries(handleSkuBatch, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY)
 };

@@ -11,6 +11,8 @@ const {
   getCtSkuAttributeValue,
   getCreationAction,
   getOutOfDateSkuIds,
+  getMostUpToDateSku,
+  removeDuplicateSkus,
   groupByStyleId
 } = require('../utils');
 
@@ -434,5 +436,39 @@ describe('formatSkuBatchRequestBody', () => {
   it('returns the correct request body', () => {
     const correctBody = "{\"version\":1,\"actions\":[{\"action\":\"setAttribute\",\"sku\":\"sku-1\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-1\",\"name\":\"colorId\",\"value\":\"R\"},{\"action\":\"setAttribute\",\"sku\":\"sku-2\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-2\",\"name\":\"colorId\",\"value\":\"G\"},{\"action\":\"setAttribute\",\"sku\":\"sku-3\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-3\",\"name\":\"colorId\",\"value\":\"B\"},{\"action\":\"addVariant\",\"sku\":\"sku-4\",\"attributes\":[{\"name\":\"season\",\"value\":\"Winter\"}]},{\"action\":\"setAttribute\",\"sku\":\"sku-4\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-4\",\"name\":\"colorId\",\"value\":\"A\"}]}";
     expect(formatSkuBatchRequestBody(skus, ctStyle, existingCtSkus)).toEqual(correctBody);
+  });
+});
+
+describe('getMostUpToDateSku', () => {
+  it('returns the most up to date SKU when given an array of SKUs', () => {
+    const oldSku = { id: '1', skuLastModifiedInternal: new Date(0) };
+    const newestSku = { id: '1', skuLastModifiedInternal: new Date(100) };
+    const olderSku = { id: '1', skuLastModifiedInternal: new Date(0)};
+    const skus = [oldSku, newestSku, olderSku];
+
+    expect(getMostUpToDateSku(skus)).toEqual(newestSku);
+    expect(getMostUpToDateSku([oldSku])).toEqual(oldSku);
+  });
+
+  it('returns `undefined` when given an empty array', () => {
+    expect(getMostUpToDateSku([])).toBeUndefined();
+  });
+});
+
+describe('removeDuplicateSkus', () => {
+  const sku1 = { id: '1', skuLastModifiedInternal: new Date(0), colorId: 'R' };
+  const sku1Duplicate1 = { id: '1', skuLastModifiedInternal: new Date(50), colorId: 'G' };
+  const sku1Duplicate2 = { id: '1', skuLastModifiedInternal: new Date(100), colorId: 'B' };
+  const sku2 = { id: '2', skuLastModifiedInternal: new Date(0) };
+  const sku3 = { id: '3', skuLastModifiedInternal: new Date(0) };
+
+  it('returns an array matching the given array when there are no duplicate SKUs', () => {
+    const skusWithNoDuplicates = [sku1, sku2, sku3];
+    expect(removeDuplicateSkus(skusWithNoDuplicates)).toEqual(skusWithNoDuplicates);
+  });
+
+  it('returns an array with oldest duplicate SKUs removed when given an array that contains duplicate SKUs', () => {
+    const skusWithDuplicates = [sku1, sku1Duplicate1, sku1Duplicate2, sku2, sku3];
+    expect(removeDuplicateSkus(skusWithDuplicates)).toEqual([sku1Duplicate2, sku2, sku3]);
   });
 });
