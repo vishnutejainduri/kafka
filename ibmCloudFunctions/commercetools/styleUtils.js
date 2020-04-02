@@ -1,7 +1,7 @@
 const { addRetries } = require('../product-consumers/utils');
 const { styleAttributeNames, currencyCodes } = require('./constantsCt');
 
-const categoryNameToKey = (categoryName) => categoryName.replace(/\s/g, '_')
+const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
 
 const createCategory = async (categoryName, parentCategory, { client, requestBuilder }) => {
   const method = 'POST';
@@ -51,9 +51,9 @@ const getCategories = async (style, ctHelpers) => {
     getCategory(categoryNameToKey(style.level3Category['en-CA']), ctHelpers)
   ]);
 
-  if (!categories[0]) categories[0] = await createCategory(style.level1Category, null, ctHelpers);
-  if (!categories[1]) categories[1] = await createCategory(style.level2Category, categories[0], ctHelpers);
-  if (!categories[2]) categories[2] = await createCategory(style.level3Category, categories[1], ctHelpers);
+  if (!categories[0]) categories[0] = (await createCategory(style.level1Category, null, ctHelpers)).body;
+  if (!categories[1]) categories[1] = (await createCategory(style.level2Category, categories[0], ctHelpers)).body;
+  if (!categories[2]) categories[2] = (await createCategory(style.level3Category, categories[1], ctHelpers)).body;
 
   return categories;
 };
@@ -316,6 +316,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     // the given style is up-to-date and an earlier version of it is already
     // stored in CT, so we just need to update its attributes
     const categories = await getCategories(style, ctHelpers);
+    console.log('categories', JSON.stringify(categories));
     return updateStyle(style, existingCtStyle, productType, categories, ctHelpers);
 };
 
