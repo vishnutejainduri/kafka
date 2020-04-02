@@ -1,4 +1,4 @@
-const { getExistingCtStyle } = require('../styleUtils');
+const { getExistingCtStyle, createStyle } = require('../styleUtils');
 const { skuAttributeNames } = require('../constantsCt');
 const { addRetries } = require('../../product-consumers/utils');
 
@@ -112,7 +112,7 @@ const getCtSkuFromCtStyle = (skuId, ctStyle) => {
 
 const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
   const ctSkuLastModifiedString = getCtSkuAttributeValue(existingCtSku, skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL);
-  if (!ctSkuLastModifiedString) throw new Error('CT product variant lacks last modified date');
+  if (!ctSkuLastModifiedString) return false;
   if (!givenSku[skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL]) throw new Error('JESTA SKU lacks last modified date');
 
   const ctSkuLastModifiedDate = new Date(ctSkuLastModifiedString);
@@ -211,11 +211,14 @@ const removeDuplicateSkus = skus => {
 // Takes an array of SKUs, all of which have the same style ID. Since they all
 // have the same style ID, they can all be updated with a single call to CT.
 // This is why we batch them.
-const handleSkuBatch = async (ctHelpers, skus) => {
+const handleSkuBatch = async (ctHelpers, productTypeId, skus) => {
   if (skus.length === 0) return null;
   const styleId = skus[0].styleId;
-  const existingCtStyle = await getExistingCtStyle(styleId, ctHelpers);
-  if (!existingCtStyle) return null; // TODO: create dummy style (HRC-2063)
+  let existingCtStyle = await getExistingCtStyle(styleId, ctHelpers);
+  if (!existingCtStyle) {
+    // create dummy style where none exists
+    existingCtStyle = (await createStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, ctHelpers)).body;
+  }
 
   const existingCtSkus = getCtSkusFromCtStyle(skus, existingCtStyle);
   const outOfDateSkuIds = getOutOfDateSkuIds(existingCtSkus, skus);

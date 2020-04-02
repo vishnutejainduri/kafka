@@ -20,6 +20,7 @@ const main = params => {
   log(createLog.params('consumeBarcodeMessageCT', params));
   validateParams(params);
   const handleErrors = err => { throw createError.consumeBarcodeMessageCT.failed(err, params) };
+  const { productTypeId } = params;
 
   if (!ctHelpers) {
     ctHelpers = getCtHelpers(params);
@@ -33,7 +34,7 @@ const main = params => {
 
   const barcodePromises = (
     barcodesToCreateOrUpdate
-      .map(addErrorHandling(handleBarcode.bind(null, ctHelpers)))
+      .map(addErrorHandling(handleBarcode.bind(null, ctHelpers, productTypeId)))
   );
   
   return Promise.all(barcodePromises)

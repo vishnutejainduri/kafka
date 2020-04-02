@@ -21,6 +21,7 @@ const main = params => {
   log(createLog.params('consumeSkuMessageCT', params));
   validateParams(params);
   const handleErrors = err => { throw createError.consumeSkuMessageCt.failed(err, params) };
+  const { productTypeId } = params;
 
   if (!ctHelpers) {
     ctHelpers = getCtHelpers(params);
@@ -38,7 +39,7 @@ const main = params => {
 
   const skuBatchPromises = (
     skusGroupedByStyleId
-      .map(addErrorHandling(handleSkuBatch.bind(null, ctHelpers)))
+      .map(addErrorHandling(handleSkuBatch.bind(null, ctHelpers, productTypeId)))
   );
   
   return Promise.all(skuBatchPromises)
