@@ -109,7 +109,7 @@ const isCustomAttribute = attribute => {
 
 // Returns an array of actions, each of which tells CT to update a different
 // attribute of the given style
-const getActionsFromStyle = (style, productType) => {
+const getActionsFromStyle = (style, productType, categories, existingCtStyle) => {
   const customAttributesToUpdate = Object.keys(style).filter(isCustomAttribute);
 
   const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => {
@@ -137,6 +137,29 @@ const getActionsFromStyle = (style, productType) => {
     ? { action: 'setDescription', description: style.marketingDescription }
     : null;
 
+  // handle categories
+  const existingCtStyleData = existingCtStyle.masterData.hasStagedChanges
+    ? existingCtStyle.masterData.staged
+    : existingCtStyle.masterData.current
+  const existingCategoryIds = existingCtStyleData.categories
+    ? existingCtStyleData.categories.map(category => category.id)
+    : null
+  const categoryIds = categories
+    ? categories.map(category => category.id)
+    : null
+
+  // category actions, remove only those not present in coming request
+  const categoriesRemoveAction = categoryIds && existingCategoryIds
+    ? existingCategoryIds.filter(categoryId => !categoryIds.includes(categoryId))
+        .map(categoryId => ({ action: 'removeFromCategory', category: { id: categoryId, typeId: 'category' } }))
+    : null;
+
+  // category actions, add only those not present already in CT
+  const categoriesAddAction = categoryIds && existingCategoryIds
+    ? categoryIds.filter(categoryId => !existingCategoryIds.includes(categoryId))
+      .map(categoryId => ({ action: 'addToCategory', category: { id: categoryId, typeId: 'category' } }))
+    : null;
+
   const currentPriceActions = style.variantPrices
       ? style.variantPrices.map((variantPrice) => ({
         action: variantPrice.price ? 'changePrice' : 'addPrice',
@@ -151,22 +174,21 @@ const getActionsFromStyle = (style, productType) => {
     }))
       : [];
 
-  const allUpdateActions = (
-    [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...currentPriceActions]
-      .filter(Boolean) // removes the `null` actions, if there are any
-  );
+  const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...currentPriceActions].filter(Boolean);
+  if (categoriesRemoveAction) categoriesRemoveAction.forEach(action => allUpdateActions.push(action));
+  if (categoriesAddAction) categoriesAddAction.forEach(action => allUpdateActions.push(action));
 
   return allUpdateActions;
 };
 
-const updateStyle = async (style, version, productType, { client, requestBuilder }) => {
+const updateStyle = async (style, existingCtStyle, productType, categories, { client, requestBuilder }) => {
   if (!style.id) throw new Error('Style lacks required key \'id\'');
-  if (!version) throw new Error('Invalid arguments: must include \'version\'');
+  if (!existingCtStyle.version) throw new Error('Invalid arguments: must include existing style \'version\'');
 
   const method = 'POST';
   const uri = requestBuilder.products.byKey(style.id).build();
-  const actions = getActionsFromStyle(style, productType);
-  const body = JSON.stringify({ version, actions });
+  const actions = getActionsFromStyle(style, productType, categories, existingCtStyle);
+  const body = JSON.stringify({ version: existingCtStyle.version, actions });
 
   return client.execute({ method, uri, body });
 };
@@ -279,14 +301,12 @@ const existingCtStyleIsNewer = (existingCtStyle, givenStyle, dateAttribute) => {
 };
 
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
-    const categories = await getCategories(style, ctHelpers);
-    console.log('categories', JSON.stringify(categories));
-  
     const productType = await getProductType(productTypeId, ctHelpers);
     const existingCtStyle = await getExistingCtStyle(style.id, ctHelpers);
 
     if (!existingCtStyle) {
       // the given style isn't currently stored in CT, so we create a new one
+      const categories = await getCategories(style, ctHelpers);
       return createStyle(style, productType, categories, ctHelpers);
     }
     if (existingCtStyleIsNewer(existingCtStyle, style, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)) {
@@ -295,7 +315,8 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     }
     // the given style is up-to-date and an earlier version of it is already
     // stored in CT, so we just need to update its attributes
-    return updateStyle(style, existingCtStyle.version, productType, ctHelpers);
+    const categories = await getCategories(style, ctHelpers);
+    return updateStyle(style, existingCtStyle, productType, categories, ctHelpers);
 };
 
 module.exports = {
