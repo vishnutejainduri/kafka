@@ -327,5 +327,8 @@ module.exports = {
   getCtStyleAttributeValue,
   getCtStyleAttribute,
   getProductType,
-  getExistingCtStyle
+  getExistingCtStyle,
+  getCategory,
+  getCategories,
+  createCategory
 };

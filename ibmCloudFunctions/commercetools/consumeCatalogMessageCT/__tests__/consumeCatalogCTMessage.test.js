@@ -1,11 +1,16 @@
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const consumeCatalogueMessageCT = require('..');
 const { parseStyleMessageCt, formatLanguageKeys } = require('../../../lib/parseStyleMessageCt');
+const { filterStyleMessages } = require('../../../lib/parseStyleMessage');
+const { addErrorHandling } = require('../../../product-consumers/utils');
 const {
   createStyle,
   updateStyle,
   existingCtStyleIsNewer,
-  getCtStyleAttributeValue
+  getCtStyleAttributeValue,
+  getCategory,
+  getCategories,
+  createCategory
 } = require('../../styleUtils');
 const { styleAttributeNames } = require('../../constantsCt');
 
@@ -224,6 +229,39 @@ describe('updateStyle', () => {
   it('throws an error if called without a version number', () => {
     const style = { id: '1' };
     return expect(updateStyle(style, {} ,'product-type-reference-id', null, mockedCtHelpers)).rejects.toThrow('Invalid arguments: must include existing style \'version\'');
+  });
+});
+
+describe('getCategory', () => {
+  it('correct message; return mock data', async () => {
+    const categoryName = validParams.messages[0].value.CATAGORY;
+    return expect(await getCategory(categoryName, mockedCtHelpers)).toBeInstanceOf(Object);
+  });
+});
+
+describe('getCategories', () => {
+  it('correct message; return mock data', async () => {
+     const result =  
+        validParams.messages
+        .filter(addErrorHandling(filterStyleMessages))
+        .map(addErrorHandling(parseStyleMessageCt))
+    const response = await getCategories(result[0], mockedCtHelpers);
+    expect(response).toBeInstanceOf(Object);
+  });
+});
+
+describe('createCategory', () => {
+  it('correct message; return mock data', async () => {
+     const result =  
+        validParams.messages
+        .filter(addErrorHandling(filterStyleMessages))
+        .map(addErrorHandling(parseStyleMessageCt))
+    const categories = await getCategories(result[0], mockedCtHelpers);
+    const categoryName = result[0].level2Category;
+
+    const response = await createCategory(categoryName, categories[0], mockedCtHelpers);
+
+    expect(response).toBeInstanceOf(Object);
   });
 });
 
