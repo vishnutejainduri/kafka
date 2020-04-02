@@ -1,7 +1,6 @@
 const { getExistingCtStyle, createStyle } = require('../styleUtils');
 const { skuAttributeNames, BARCODE_NAMESPACE, KEY_VALUE_DOCUMENT } = require('../constantsCt');
-const { getCtSkuFromCtStyle, getCtSkusFromCtStyle, getCtSkuAttributeValue, getCreationAction } = require('../consumeSkuMessageCT/utils');
-const { addRetries } = require('../../product-consumers/utils');
+const { getCtSkusFromCtStyle, getCtSkuAttributeValue, getCreationAction } = require('../consumeSkuMessageCT/utils');
 
 const getUniqueAttributeValues = attributeName => items => {
   const uniqueAttributeValues = items.reduce((previousUniqueValues, item) => (
@@ -54,45 +53,6 @@ const removeDuplicateIds = keyValueDocumentReferences => {
     return uniqueKeyValueDocumentReferences;
 };
 
-const getBarcodeUpdateAction = (barcode, sku) => {
-  const existingBarcodeReferences = getCtSkuAttributeValue(sku, skuAttributeNames.BARCODES) || [];
-  const newBarcodeReference = { id: barcode.ctBarcodeReference, typeId: KEY_VALUE_DOCUMENT };
-  const allBarcodeReferences = removeDuplicateIds([...existingBarcodeReferences, newBarcodeReference]);
-
-  return {
-    action: 'setAttribute',
-    sku: barcode.skuId,
-    name: 'barcodes',
-    value: allBarcodeReferences
-  };
-};
-
-// depricated
-const addBarcodeToSku = async (barcode, productTypeId, ctHelpers) => {
-  let style = await getExistingCtStyle(barcode.styleId, ctHelpers);
-  if (!style) {
-    // create dummy style since none exists
-    style = (await createStyle ({ id: barcode.styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, ctHelpers)).body;
-  }
-
-  let sku = getCtSkuFromCtStyle(barcode.skuId, style);
-  if (!sku) {
-    // create dummy sku since none exists
-    style = (await createSku ({ id: barcode.skuId, styleId: barcode.styleId }, style, ctHelpers)).body;
-    sku = getCtSkuFromCtStyle(barcode.skuId, style);
-  }
-
-  const action = getBarcodeUpdateAction(barcode, sku);
-  const method = 'POST';
-  const uri = ctHelpers.requestBuilder.products.byKey(barcode.styleId).build();
-  const body = JSON.stringify({
-    version: style.version,
-    actions: [action] 
-  });
-
-  return ctHelpers.client.execute({ method, uri, body });
-};
-
 const existingCtBarcodeIsNewer = (existingCtBarcode, givenBarcode) => {
   if (!existingCtBarcode.value.lastModifiedDate) return false;
   if (!givenBarcode.lastModifiedDate) throw new Error(`Given barcode lacks last modified date (barcode number: ${givenBarcode.barcode})`);
@@ -102,35 +62,12 @@ const existingCtBarcodeIsNewer = (existingCtBarcode, givenBarcode) => {
   return existingCtBarcodeDate.getTime() >= givenBarcodeDate.getTime();
 };
 
-
-// deprecated
-const handleBarcode = async (ctHelpers, productTypeId, barcode) => {
-  const existingBarcode = await getBarcodeFromCt(barcode, ctHelpers);
-
-  if (!existingBarcode) {
-    const newCtBarcode = await createOrUpdateBarcode(barcode, ctHelpers);
-    return addBarcodeToSku({ ...barcode, ctBarcodeReference: newCtBarcode.id }, productTypeId, ctHelpers);
-  } else {
-    // If the barcode exists, the SKU should already contain a reference to it,
-    // but we call `addBarcodeToSku` here to make extra-sure. There's no danger
-    // of adding duplicate barcodes, since those are filtered out by
-    // `addBarcodeToSku`.
-    await addBarcodeToSku({ ...barcode, ctBarcodeReference: existingBarcode.id }, productTypeId, ctHelpers);
-
-    if (existingCtBarcodeIsNewer(existingBarcode, barcode)) {
-      return null;
-    }
-
-    return createOrUpdateBarcode(barcode, ctHelpers);
-  }
-};
-
 const createOrUpdateBarcodes = (barcodes, ctHelpers) => (
   Promise.all(barcodes.map(barcode => createOrUpdateBarcode(barcode, ctHelpers)))
 );
 
-const getExistingCtBarcodes = (barcodes, ctHelpers) => (
-  Promise.all(barcodes.map(barcode => getBarcodeFromCt(barcode, ctHelpers)))
+const getExistingCtBarcodes = async (barcodes, ctHelpers) => (
+  (await Promise.all(barcodes.map(barcode => getBarcodeFromCt(barcode, ctHelpers)))).filter(Boolean) // non-existent barcodes are `null`, so we filter them out
 );
 
 const getOutOfDateBarcodeIds = (existingCtBarcodes, barcodes) => (
@@ -165,7 +102,7 @@ const getBarcodeBatchUpdateActions = (barcodes, skus) => (
 // Returns an array that contains the SKU ID of any barcode for which a SKU
 // does not exist in `existingSkus`
 const getMissingSkuIds = (existingSkus, barcodes) => {
-  const orphanBarcodes = barcodes.filter(barcode => !existingSkus.some(sku => sku.sku === barcode.value.skuId)); // TODO: fix tests
+  const orphanBarcodes = barcodes.filter(barcode => !existingSkus.some(sku => sku.sku === barcode.value.skuId));
   const missingSkuIds = orphanBarcodes.map(barcode => barcode.value.skuId);
 
   return [...new Set(missingSkuIds)]; // remove duplicates IDs by adding them to a set
@@ -188,10 +125,10 @@ const createDummySkusWithGivenIds = async (style, skuIds, { client, requestBuild
 };
 
 const addBarcodesToSkus = async (barcodes, productTypeId, ctHelpers) => {
-  const { client, requestBuilder } = ctHelpers;
-
   if (barcodes.length === 0) return null;
+  const { client, requestBuilder } = ctHelpers;
   const styleId = barcodes[0].value.styleId;
+
   let style = await getExistingCtStyle(styleId, ctHelpers);
   if (!style) {
     // create dummy style since none exists
@@ -214,7 +151,7 @@ const addBarcodesToSkus = async (barcodes, productTypeId, ctHelpers) => {
 
 // Note: all given barcodes must have same the style ID
 const handleBarcodeBatch = async (ctHelpers, productType, barcodes) => {
-  const existingCtBarcodes = (await getExistingCtBarcodes(barcodes, ctHelpers)).filter(Boolean); // non-existent barcodes are `null`, so we filter them out
+  const existingCtBarcodes = await getExistingCtBarcodes(barcodes, ctHelpers);
   const outOfDateBarcodeNumbers = getOutOfDateBarcodeIds(existingCtBarcodes, barcodes);
   const barcodesToCreateOrUpdate = barcodes.filter(({ barcode }) => !outOfDateBarcodeNumbers.includes(barcode)); // we create or update all barcodes that aren't of out of date
   const createdOrUpdatedBarcodes = await createOrUpdateBarcodes(barcodesToCreateOrUpdate, ctHelpers);
@@ -225,18 +162,12 @@ const handleBarcodeBatch = async (ctHelpers, productType, barcodes) => {
   return addBarcodesToSkus(createdOrUpdatedBarcodes, productType, ctHelpers);
 };
 
-const RETRY_LIMIT = 2;
-const ERRORS_NOT_TO_RETRY = [404];
-
 module.exports = {
-  handleBarcode: addRetries(handleBarcode, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY), // deprecated
   handleBarcodeBatch,
   createOrUpdateBarcode,
   getBarcodeFromCt,
-  getBarcodeUpdateAction, // deprecated
   getSingleSkuBarcodeUpdateAction,
   getBarcodeBatchUpdateActions,
-  addBarcodeToSku,
   existingCtBarcodeIsNewer,
   removeDuplicateIds,
   groupBarcodesByStyleId,

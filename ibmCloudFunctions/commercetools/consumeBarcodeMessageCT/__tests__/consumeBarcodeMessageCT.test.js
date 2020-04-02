@@ -1,7 +1,6 @@
 const consumeBarcodeMessageCT = require('..');
 const {
   existingCtBarcodeIsNewer,
-  getBarcodeUpdateAction, // deprecated
   getSingleSkuBarcodeUpdateAction,
   getBarcodeBatchUpdateActions,
   removeDuplicateIds,
@@ -73,78 +72,6 @@ describe('existingCtBarcodeIsNewer', () => {
   it('throws an informative error if the existing CT barcode lacks a last modified date', () => {
     const ctBarcodeWithoutDate = { ...ctBarcode, value: {} };
     expect(existingCtBarcodeIsNewer(ctBarcodeWithoutDate, newJestaBarcode)).toBe(false);
-  });
-});
-
-describe('getBarcodeUpdateAction', () => {
-  const jestaBarcode = {
-    lastModifiedDate: 100,
-    barcode: '1101',
-    subType: 'subType',
-    skuId: '1',
-    styleId: '1',
-    ctBarcodeReference: 'bar'
-  };
-
-  it('returns the correct CT update action object', () => {
-    const barcodes = [{ id: 'foo', typeId: 'key-value-document' }];
-
-    const ctSku = {
-      id: '1',
-      sku: '1',
-      attributes: [{ name: 'barcodes', value: barcodes }]
-    };
-
-    const expectedAction = {
-      action: 'setAttribute',
-      name: 'barcodes',
-      sku: '1',
-      value: [
-        { id: 'foo', typeId: 'key-value-document' },
-        { id: 'bar', typeId: 'key-value-document' }
-      ]
-    };
-    expect(getBarcodeUpdateAction(jestaBarcode, ctSku)).toEqual(expectedAction);
-  });
-
-  it('works when there are no pre-existing CT barcodes', () => {
-    const ctSkuWithNoBarcodes = {
-      id: '1',
-      sku: '1',
-      attributes: []
-    };
-
-    const expectedAction = {
-      action: 'setAttribute',
-      name: 'barcodes',
-      sku: '1',
-      value: [
-        { id: 'bar', typeId: 'key-value-document' }
-      ]
-    };
-
-    expect(getBarcodeUpdateAction(jestaBarcode, ctSkuWithNoBarcodes)).toEqual(expectedAction);
-  });
-
-  it('does not duplicate barcodes if you try to add a pre-existing barcode', () => {
-    const barcodes = [{ id: 'bar', typeId: 'key-value-document' }]; // same ID as `jestaBarcode` above
-
-    const ctSkuWithPreExistingBarcode = {
-      id: '1',
-      sku: '1',
-      attributes: [{ name: 'barcodes', value: barcodes }]
-    };
-
-    const expectedAction = {
-      action: 'setAttribute',
-      name: 'barcodes',
-      sku: '1',
-      value: [
-        { id: 'bar', typeId: 'key-value-document' }
-      ]
-    };
-
-    expect(getBarcodeUpdateAction(jestaBarcode, ctSkuWithPreExistingBarcode)).toEqual(expectedAction);
   });
 });
 
