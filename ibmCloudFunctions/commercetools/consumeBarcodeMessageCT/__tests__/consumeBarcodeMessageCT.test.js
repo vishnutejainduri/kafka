@@ -6,7 +6,8 @@ const {
   getBarcodeBatchUpdateActions,
   removeDuplicateIds,
   groupBarcodesByStyleId,
-  getOutOfDateBarcodeIds
+  getOutOfDateBarcodeIds,
+  getMissingSkuIds
 } = require('../utils');
 
 jest.mock('@commercetools/sdk-client');
@@ -14,6 +15,18 @@ jest.mock('@commercetools/api-request-builder');
 jest.mock('@commercetools/sdk-middleware-auth');
 jest.mock('@commercetools/sdk-middleware-http');
 jest.mock('node-fetch');
+
+const getMockCtBarcode = (barcodeNumber, reference, skuId = '1', styleId = '1', lastModifiedDate = '1970-01-01T00:00:00.100Z') => ({
+  id: reference,
+  key: barcodeNumber,
+  value: {
+    lastModifiedDate: lastModifiedDate,
+    barcode: barcodeNumber,
+    subType: 'subType',
+    skuId,
+    styleId
+  }
+});
 
 describe('existingCtBarcodeIsNewer', () => {
   const ctBarcode = {
@@ -376,18 +389,6 @@ describe('getSingleSkuBarcodeUpdateAction', () => {
 });
 
 describe('getBarcodeBatchUpdateActions', () => {
-  const getMockCtBarcode = (barcodeNumber, reference, skuId = '1', styleId = '1', lastModifiedDate = '1970-01-01T00:00:00.100Z') => ({
-    id: reference,
-    key: barcodeNumber,
-    value: {
-      lastModifiedDate: lastModifiedDate,
-      barcode: barcodeNumber,
-      subType: 'subType',
-      skuId,
-      styleId
-    }
-  });
-
   const barcode1 = getMockCtBarcode('0001', 'foo', '1');
   const barcode2 = getMockCtBarcode('0002', 'bar', '1');
   const barcode3 = getMockCtBarcode('0003', 'baz', '2');
@@ -449,5 +450,33 @@ describe('getBarcodeBatchUpdateActions', () => {
     ];
 
     expect(getBarcodeBatchUpdateActions(barcodesToAddToSkus, [ctSkuWithPreexistingBarcode])).toEqual(expectedActions);
+  });
+});
+
+describe('getMissingSkuIds', () => {
+  const barcode1 = { value: { skuId: '1' } };
+  const barcode1a = { value: { skuId: '1' } };
+  const barcode2 = { value: { skuId: '2' } };
+  const barcode3 = { value: { skuId: '3' } };
+  const barcode4 = { value: { skuId: '4' } };
+  const barcodes = [barcode1, barcode1a, barcode2, barcode3, barcode4];
+  
+  const ctSku1 = { sku: '1', attributes: [] };
+  const ctSku2 = { sku: '2', attributes: [] };
+  const ctSku3 = { sku: '3', attributes: [] };
+  const ctSku4 = { sku: '4', attributes: [] };
+
+  it('returns the correct SKU IDs when some SKUs are missing', () => {
+    const skus = [ctSku1, ctSku3];
+    expect(getMissingSkuIds(skus, barcodes)).toEqual(['2', '4']);
+  });
+
+  it('returns an empty array when no SKUs are missing', () => {
+    const skus = [ctSku1, ctSku2, ctSku3, ctSku4];
+    expect(getMissingSkuIds(skus, barcodes)).toEqual([]);
+  });
+
+  it('works correctly when the given array of SKUs is empty', () => {
+    expect(getMissingSkuIds([], barcodes)).toEqual(['1', '2', '3', '4']);    
   });
 });

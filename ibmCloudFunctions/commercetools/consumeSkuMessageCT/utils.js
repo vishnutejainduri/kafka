@@ -24,6 +24,7 @@ const groupByStyleId = skus => {
 };
 
 const getCtSkuAttributeValue = (ctSku, attributeName) => {
+  if (!ctSku.attributes) return undefined;
   const foundAttribute = ctSku.attributes.find(attribute => attribute.name === attributeName);
   if (!foundAttribute) return undefined;
   return foundAttribute.value;

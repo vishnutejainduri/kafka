@@ -19,7 +19,7 @@ let ctHelpers;
 const main = params => {
   log(createLog.params('consumeBarcodeMessageCT', params));
   validateParams(params);
-  const handleErrors = err => { console.log('@@@', err); throw createError.consumeBarcodeMessageCT.failed(err, params) };
+  const handleErrors = err => { throw createError.consumeBarcodeMessageCT.failed(err, params) };
   const { productTypeId } = params;
 
   if (!ctHelpers) {
