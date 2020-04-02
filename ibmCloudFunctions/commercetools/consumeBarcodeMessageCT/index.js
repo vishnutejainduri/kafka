@@ -36,7 +36,7 @@ const main = params => {
 
   const barcodeBatchPromises = (
     barcodesGroupedByStyleId
-      .map(addErrorHandling(handleBarcodeBatch.bind(null, ctHelpers, productTypeId)))
+      .map(addErrorHandling(handleBarcodeBatch(ctHelpers, productTypeId)))
   );
   
   return Promise.all(barcodeBatchPromises)

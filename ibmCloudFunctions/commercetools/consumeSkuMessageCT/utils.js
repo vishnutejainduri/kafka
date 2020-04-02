@@ -1,27 +1,9 @@
 const { getExistingCtStyle, createStyle } = require('../styleUtils');
 const { skuAttributeNames } = require('../constantsCt');
 const { addRetries } = require('../../product-consumers/utils');
+const { groupByAttribute } = require('../../lib/utils');
 
-// Helper for `groupByStyleId`.
-// Takes array of SKUs. Returns an array that contains each style ID that a SKU
-// has, with duplicates removed.
-const getUniqueStyleIds = skus => {
-  const uniqueStyleIdsSet = skus.reduce((previousStyleIds, currentSku) => (
-    previousStyleIds.add(currentSku.styleId)
-  ), new Set());
-
-  return Array.from(uniqueStyleIdsSet);
-};
-
-// Returns an array of arrays. Each sub-array contains SKUs with matching style
-// IDs.
-const groupByStyleId = skus => {
-  const uniqueStyleIds = getUniqueStyleIds(skus);
-  
-  return uniqueStyleIds.map(styleId => (
-    skus.filter(sku => sku.styleId === styleId)
-  ));
-};
+const groupByStyleId = groupByAttribute('styleId');
 
 const getCtSkuAttributeValue = (ctSku, attributeName) => {
   if (!ctSku.attributes) return undefined;
@@ -170,23 +152,7 @@ const createOrUpdateSkus = (skusToCreateOrUpdate, existingCtSkus, ctStyle, { cli
   return client.execute({ method, uri, body });
 };
 
-// Helper for `groupBySkuId`
-const getUniqueSkuIds = skus => {
-  const uniqueSkuIdsSet = skus.reduce((previousSkuIds, currentSku) => (
-    previousSkuIds.add(currentSku.id)
-  ), new Set());
-
-  return Array.from(uniqueSkuIdsSet);
-};
-
-// Helper for `removeDuplicateSkus`
-const groupBySkuId = skus => {
-  const uniqueSkuIds = getUniqueSkuIds(skus);
-
-  return uniqueSkuIds.map(skuId => (
-    skus.filter(sku => sku.id === skuId)
-  ));
-};
+const groupBySkuId = groupByAttribute('id');
 
 // Helper for `removeDuplicateSkus`
 const getMostUpToDateSku = skus => {

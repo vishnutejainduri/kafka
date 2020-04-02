@@ -1,22 +1,7 @@
 const { getExistingCtStyle, createStyle } = require('../styleUtils');
 const { skuAttributeNames, BARCODE_NAMESPACE, KEY_VALUE_DOCUMENT } = require('../constantsCt');
 const { getCtSkusFromCtStyle, getCtSkuAttributeValue, getCreationAction } = require('../consumeSkuMessageCT/utils');
-
-const getUniqueAttributeValues = attributeName => items => {
-  const uniqueAttributeValues = items.reduce((previousUniqueValues, item) => (
-    previousUniqueValues.add(item[attributeName])
-  ), new Set());
-
-  return Array.from(uniqueAttributeValues);
-};
-
-const groupByAttribute = attributeName => items => {
-  const uniqueAttributeValues = getUniqueAttributeValues(attributeName)(items);
-
-  return uniqueAttributeValues.map(value => (
-    items.filter(item => item[attributeName] === value)
-  ));
-};
+const { groupByAttribute } = require('../../lib/utils');
 
 const groupBarcodesByStyleId = groupByAttribute('styleId');
 
@@ -67,7 +52,8 @@ const createOrUpdateBarcodes = (barcodes, ctHelpers) => (
 );
 
 const getExistingCtBarcodes = async (barcodes, ctHelpers) => (
-  (await Promise.all(barcodes.map(barcode => getBarcodeFromCt(barcode, ctHelpers)))).filter(Boolean) // non-existent barcodes are `null`, so we filter them out
+  (await Promise.all(barcodes.map(barcode => getBarcodeFromCt(barcode, ctHelpers))))
+    .filter(Boolean) // non-existent barcodes are `null`, so we filter them out
 );
 
 const getOutOfDateBarcodeIds = (existingCtBarcodes, barcodes) => (
@@ -108,6 +94,9 @@ const getMissingSkuIds = (existingSkus, barcodes) => {
   return [...new Set(missingSkuIds)]; // remove duplicates IDs by adding them to a set
 };
 
+// Returns a two element array of the form [newSkus, newStyleVersion], where
+// `newSkus` is an array of objects representing the newly created SKUs, and
+// `newStyleVersion` is the new version number of the style in CT.
 const createDummySkusWithGivenIds = async (style, skuIds, { client, requestBuilder }) => {
   if (skuIds.length === 0) return [[], style.version];
   const createSkuActions = skuIds.map(id => getCreationAction({ id }, style));
@@ -149,11 +138,13 @@ const addBarcodesToSkus = async (barcodes, productTypeId, ctHelpers) => {
   return client.execute({ method, uri, body });
 };
 
-// Note: all given barcodes must have same the style ID
-const handleBarcodeBatch = async (ctHelpers, productType, barcodes) => {
+// Takes an array of barcodes, all of which have the same style ID. Since they
+// all have the same style ID, references to them all can be added to the
+// corresponding style with a single call to CT. This is why we batch them.
+const handleBarcodeBatch = (ctHelpers, productType) => async barcodes => {
   const existingCtBarcodes = await getExistingCtBarcodes(barcodes, ctHelpers);
-  const outOfDateBarcodeNumbers = getOutOfDateBarcodeIds(existingCtBarcodes, barcodes);
-  const barcodesToCreateOrUpdate = barcodes.filter(({ barcode }) => !outOfDateBarcodeNumbers.includes(barcode)); // we create or update all barcodes that aren't of out of date
+  const outOfDateBarcodeIds = getOutOfDateBarcodeIds(existingCtBarcodes, barcodes);
+  const barcodesToCreateOrUpdate = barcodes.filter(({ barcode }) => !outOfDateBarcodeIds.includes(barcode)); // we create or update all barcodes that aren't of out of date
   const createdOrUpdatedBarcodes = await createOrUpdateBarcodes(barcodesToCreateOrUpdate, ctHelpers);
 
   // For some of these barcodes, they should already be added to the relevant
@@ -173,5 +164,6 @@ module.exports = {
   groupBarcodesByStyleId,
   getOutOfDateBarcodeIds,
   getMissingSkuIds,
-  createDummySkusWithGivenIds
+  createDummySkusWithGivenIds,
+  groupByAttribute
 };

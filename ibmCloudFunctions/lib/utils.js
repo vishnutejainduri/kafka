@@ -6,6 +6,23 @@ function camelCase(str) {
     });
 }
 
+const getUniqueAttributeValues = attributeName => items => {
+    const uniqueAttributeValues = items.reduce((previousUniqueValues, item) => (
+      previousUniqueValues.add(item[attributeName])
+    ), new Set());
+  
+    return Array.from(uniqueAttributeValues);
+  };
+  
+const groupByAttribute = attributeName => items => {
+    const uniqueAttributeValues = getUniqueAttributeValues(attributeName)(items);
+
+    return uniqueAttributeValues.map(value => (
+        items.filter(item => item[attributeName] === value)
+    ));
+};
+
 module.exports = {
-    camelCase
+    camelCase,
+    groupByAttribute
 };
