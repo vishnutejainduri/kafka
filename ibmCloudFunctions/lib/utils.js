@@ -22,7 +22,17 @@ const groupByAttribute = attributeName => items => {
     ));
 };
 
+const getMostUpToDateObject = dateName => objects => {
+    if (objects.length === 0) return null;
+    const objectsSortedByDate = objects.sort((object1, object2) => (
+        object2[dateName] - object1[dateName]
+      ));
+
+    return objectsSortedByDate[0];
+};
+
 module.exports = {
     camelCase,
-    groupByAttribute
+    groupByAttribute,
+    getMostUpToDateObject
 };

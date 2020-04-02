@@ -1,7 +1,7 @@
 const { getExistingCtStyle, createStyle } = require('../styleUtils');
 const { skuAttributeNames, BARCODE_NAMESPACE, KEY_VALUE_DOCUMENT } = require('../constantsCt');
 const { getCtSkusFromCtStyle, getCtSkuAttributeValue, getCreationAction } = require('../consumeSkuMessageCT/utils');
-const { groupByAttribute } = require('../../lib/utils');
+const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
 
 const groupBarcodesByStyleId = groupByAttribute('styleId');
 
@@ -138,13 +138,28 @@ const addBarcodesToSkus = async (barcodes, productTypeId, ctHelpers) => {
   return client.execute({ method, uri, body });
 };
 
+const groupByBarcode = groupByAttribute('barcode');
+const getMostUpToDateBarcode = getMostUpToDateObject('lastModifiedDate');
+
+// There is a small chance that there will be multiple messages in the same
+// batch telling us to update or create the same barcode. In these cases, we throw
+// out all but the most up to date barcode in the batch.
+const removeDuplicateBarcodes = barcodes => {
+  const barcodesGroupedById = groupByBarcode(barcodes);
+
+  return barcodesGroupedById.reduce((filteredBarcodes, barcodeBatch) => {
+    const mostUpToDateBarcode = getMostUpToDateBarcode(barcodeBatch);
+    return [...filteredBarcodes, mostUpToDateBarcode];    
+  }, []);
+};
+
 // Takes an array of barcodes, all of which have the same style ID. Since they
 // all have the same style ID, references to them all can be added to the
 // corresponding style with a single call to CT. This is why we batch them.
 const handleBarcodeBatch = (ctHelpers, productType) => async barcodes => {
   const existingCtBarcodes = await getExistingCtBarcodes(barcodes, ctHelpers);
   const outOfDateBarcodeIds = getOutOfDateBarcodeIds(existingCtBarcodes, barcodes);
-  const barcodesToCreateOrUpdate = barcodes.filter(({ barcode }) => !outOfDateBarcodeIds.includes(barcode)); // we create or update all barcodes that aren't of out of date
+  const barcodesToCreateOrUpdate = removeDuplicateBarcodes(barcodes.filter(({ barcode }) => !outOfDateBarcodeIds.includes(barcode))); // we create or update all barcodes that aren't of out of date
   const createdOrUpdatedBarcodes = await createOrUpdateBarcodes(barcodesToCreateOrUpdate, ctHelpers);
 
   // For some of these barcodes, they should already be added to the relevant
@@ -165,5 +180,5 @@ module.exports = {
   getOutOfDateBarcodeIds,
   getMissingSkuIds,
   createDummySkusWithGivenIds,
-  groupByAttribute
+  removeDuplicateBarcodes
 };

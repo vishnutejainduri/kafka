@@ -6,7 +6,8 @@ const {
   removeDuplicateIds,
   groupBarcodesByStyleId,
   getOutOfDateBarcodeIds,
-  getMissingSkuIds
+  getMissingSkuIds,
+  removeDuplicateBarcodes
 } = require('../utils');
 
 jest.mock('@commercetools/sdk-client');
@@ -405,5 +406,23 @@ describe('getMissingSkuIds', () => {
 
   it('works correctly when the given array of SKUs is empty', () => {
     expect(getMissingSkuIds([], barcodes)).toEqual(['1', '2', '3', '4']);    
+  });
+});
+
+describe('removeDuplicateBarcodes', () => {
+  const barcode1 = { barcode: '1', lastModifiedDate: new Date(0), subtype: 'A' };
+  const barcode1Duplicate1 = { barcode: '1', lastModifiedDate: new Date(50), subtype: 'B' };
+  const barcode1Duplicate2 = { barcode: '1', lastModifiedDate: new Date(100), subtype: 'C' };
+  const barcode2 = { barcode: '2', lastModifiedDate: new Date(0) };
+  const barcode3 = { barcode: '3', lastModifiedDate: new Date(0) };
+
+  it('returns an array matching the given array when there are no duplicate barcodes', () => {
+    const barcodesWithNoDuplicates = [barcode1, barcode2, barcode3];
+    expect(removeDuplicateBarcodes(barcodesWithNoDuplicates)).toEqual(barcodesWithNoDuplicates);
+  });
+
+  it('returns an array with oldest duplicate barcodes removed when given an array that contains duplicate barcodes', () => {
+    const barcodesWithDuplicates = [barcode1, barcode1Duplicate1, barcode1Duplicate2, barcode2, barcode3];
+    expect(removeDuplicateBarcodes(barcodesWithDuplicates)).toEqual([barcode1Duplicate2, barcode2, barcode3]);
   });
 });
