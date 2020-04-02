@@ -1,7 +1,9 @@
 const consumeBarcodeMessageCT = require('..');
 const {
   existingCtBarcodeIsNewer,
-  getBarcodeUpdateAction,
+  getBarcodeUpdateAction, // deprecated
+  getSingleSkuBarcodeUpdateAction,
+  getBarcodeBatchUpdateActions,
   removeDuplicateIds,
   groupBarcodesByStyleId,
   getOutOfDateBarcodeIds
@@ -295,5 +297,158 @@ describe('getOutOfDateBarcodeIds', () => {
   it('returns an empty array when given an empty array of barcodes', () => {
     expect(getOutOfDateBarcodeIds([olderCtBarcode], [])).toEqual([]);
     expect(getOutOfDateBarcodeIds([], [])).toEqual([]);
+  });
+});
+
+describe('getSingleSkuBarcodeUpdateAction', () => {
+  const ctBarcode = {
+    id: 'bar',
+    key: '1101',
+    value: {
+      lastModifiedDate: 100,
+      barcode: '1101',
+      subType: 'subType',
+      skuId: '1',
+      styleId: '1',
+      ctBarcodeReference: 'bar'
+    }
+  };
+
+  it('returns the correct CT update action object', () => {
+    const barcodes = [{ id: 'foo', typeId: 'key-value-document' }];
+
+    const ctSku = {
+      id: '1',
+      sku: '1',
+      attributes: [{ name: 'barcodes', value: barcodes }]
+    };
+
+    const expectedAction = {
+      action: 'setAttribute',
+      name: 'barcodes',
+      sku: '1',
+      value: [
+        { id: 'foo', typeId: 'key-value-document' },
+        { id: 'bar', typeId: 'key-value-document' }
+      ]
+    };
+    expect(getSingleSkuBarcodeUpdateAction([ctBarcode], ctSku)).toEqual(expectedAction);
+  });
+
+  it('works when there are no pre-existing CT barcodes', () => {
+    const ctSkuWithNoBarcodes = {
+      id: '1',
+      sku: '1',
+      attributes: []
+    };
+
+    const expectedAction = {
+      action: 'setAttribute',
+      name: 'barcodes',
+      sku: '1',
+      value: [
+        { id: 'bar', typeId: 'key-value-document' }
+      ]
+    };
+
+    expect(getSingleSkuBarcodeUpdateAction([ctBarcode], ctSkuWithNoBarcodes)).toEqual(expectedAction);
+  });
+
+  it('does not duplicate barcodes if you try to add a pre-existing barcode', () => {
+    const barcodes = [{ id: 'bar', typeId: 'key-value-document' }]; // same ID as `ctBarcode` above
+
+    const ctSkuWithPreExistingBarcode = {
+      id: '1',
+      sku: '1',
+      attributes: [{ name: 'barcodes', value: barcodes }]
+    };
+
+    const expectedAction = {
+      action: 'setAttribute',
+      name: 'barcodes',
+      sku: '1',
+      value: [
+        { id: 'bar', typeId: 'key-value-document' }
+      ]
+    };
+
+    expect(getSingleSkuBarcodeUpdateAction([ctBarcode], ctSkuWithPreExistingBarcode)).toEqual(expectedAction);
+  });
+});
+
+describe('getBarcodeBatchUpdateActions', () => {
+  const getMockCtBarcode = (barcodeNumber, reference, skuId = '1', styleId = '1', lastModifiedDate = '1970-01-01T00:00:00.100Z') => ({
+    id: reference,
+    key: barcodeNumber,
+    value: {
+      lastModifiedDate: lastModifiedDate,
+      barcode: barcodeNumber,
+      subType: 'subType',
+      skuId,
+      styleId
+    }
+  });
+
+  const barcode1 = getMockCtBarcode('0001', 'foo', '1');
+  const barcode2 = getMockCtBarcode('0002', 'bar', '1');
+  const barcode3 = getMockCtBarcode('0003', 'baz', '2');
+  const barcode4 = getMockCtBarcode('0004', 'bat', '1');
+
+  const ctSkuWithPreexistingBarcode = {
+    id: '1',
+    sku: '1',
+    attributes: [{ name: 'barcodes', value: [{ id: 'foo', typeId: 'key-value-document' }] }]
+  };
+
+  const ctSkuWithNoBarocdes = {
+    id: '2',
+    sku: '2',
+    attributes: []
+  };
+
+  const skus = [ctSkuWithPreexistingBarcode, ctSkuWithNoBarocdes];
+
+  it('returns the correct array when different barcodes belong to different SKUs', () => {
+    const barcodesToAddToSkus = [barcode1, barcode2, barcode3, barcode4];
+    const expectedActions = [
+      {
+        action: 'setAttribute',
+        name: 'barcodes',
+        sku: '1',
+        value: [
+          { id: 'foo', typeId: 'key-value-document' },
+          { id: 'bar', typeId: 'key-value-document' },
+          { id: 'bat', typeId: 'key-value-document' }
+
+        ]
+      },
+      {
+        action: 'setAttribute',
+        name: 'barcodes',
+        sku: '2',
+        value: [
+          { id: 'baz', typeId: 'key-value-document' },
+        ]
+      }
+    ];
+
+    expect(getBarcodeBatchUpdateActions(barcodesToAddToSkus, skus)).toEqual(expectedActions);
+  });
+
+  it('returns the correct array when all barcodes belong to the same SKU', () => {
+    const barcodesToAddToSkus = [barcode1, barcode4];
+    const expectedActions = [
+      {
+        action: 'setAttribute',
+        name: 'barcodes',
+        sku: '1',
+        value: [
+          { id: 'foo', typeId: 'key-value-document' },
+          { id: 'bat', typeId: 'key-value-document' }
+        ]
+      }
+    ];
+
+    expect(getBarcodeBatchUpdateActions(barcodesToAddToSkus, [ctSkuWithPreexistingBarcode])).toEqual(expectedActions);
   });
 });
