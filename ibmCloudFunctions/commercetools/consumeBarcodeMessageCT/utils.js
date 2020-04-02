@@ -1,4 +1,4 @@
-const { getExistingCtStyle } = require('../styleUtils');
+const { getExistingCtStyle, createStyle } = require('../styleUtils');
 const { skuAttributeNames, BARCODE_NAMESPACE, KEY_VALUE_DOCUMENT } = require('../constantsCt');
 const { getCtSkuFromCtStyle, getCtSkusFromCtStyle, getCtSkuAttributeValue } = require('../consumeSkuMessageCT/utils');
 const { addRetries } = require('../../product-consumers/utils');
@@ -67,32 +67,34 @@ const getBarcodeUpdateAction = (barcode, sku) => {
   };
 };
 
-const getNotFoundError = message => {
-  const err = new Error(message);
-  err.code = 404;
-  return err;
-};
+// depricated
+const addBarcodeToSku = async (barcode, productTypeId, ctHelpers) => {
+  let style = await getExistingCtStyle(barcode.styleId, ctHelpers);
+  if (!style) {
+    // create dummy style since none exists
+    style = (await createStyle ({ id: barcode.styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, ctHelpers)).body;
+  }
 
-const addBarcodeToSku = async (barcode, { client, requestBuilder }) => {
-  const style = await getExistingCtStyle(barcode.styleId, { client, requestBuilder });
-  if (!style) throw getNotFoundError(`Style ${barcode.styleId} not found in CT`);
-
-  const sku = getCtSkuFromCtStyle(barcode.skuId, style);
-  if (!sku) throw getNotFoundError(`SKU ${barcode.skuId} not found in CT`);
+  let sku = getCtSkuFromCtStyle(barcode.skuId, style);
+  if (!sku) {
+    // create dummy sku since none exists
+    style = (await createSku ({ id: barcode.skuId, styleId: barcode.styleId }, style, ctHelpers)).body;
+    sku = getCtSkuFromCtStyle(barcode.skuId, style);
+  }
 
   const action = getBarcodeUpdateAction(barcode, sku);
   const method = 'POST';
-  const uri = requestBuilder.products.byKey(barcode.styleId).build();
+  const uri = ctHelpers.requestBuilder.products.byKey(barcode.styleId).build();
   const body = JSON.stringify({
     version: style.version,
     actions: [action] 
   });
 
-  return client.execute({ method, uri, body });
+  return ctHelpers.client.execute({ method, uri, body });
 };
 
 const existingCtBarcodeIsNewer = (existingCtBarcode, givenBarcode) => {
-  if (!existingCtBarcode.value.lastModifiedDate) throw new Error(`CT barcode lacks last modified date (object reference: ${existingCtBarcode.id})`);
+  if (!existingCtBarcode.value.lastModifiedDate) return false;
   if (!givenBarcode.lastModifiedDate) throw new Error(`Given barcode lacks last modified date (barcode number: ${givenBarcode.barcode})`);
   const existingCtBarcodeDate = new Date(existingCtBarcode.value.lastModifiedDate); // the date is stored as a UTC string in CT
   const givenBarcodeDate = new Date(givenBarcode.lastModifiedDate); // the date is stored as a Unix time integer in JESTA
@@ -100,18 +102,20 @@ const existingCtBarcodeIsNewer = (existingCtBarcode, givenBarcode) => {
   return existingCtBarcodeDate.getTime() >= givenBarcodeDate.getTime();
 };
 
-const handleBarcode = async (ctHelpers, barcode) => {
+
+// deprecated
+const handleBarcode = async (ctHelpers, productTypeId, barcode) => {
   const existingBarcode = await getBarcodeFromCt(barcode, ctHelpers);
 
   if (!existingBarcode) {
     const newCtBarcode = await createOrUpdateBarcode(barcode, ctHelpers);
-    return addBarcodeToSku({ ...barcode, ctBarcodeReference: newCtBarcode.id }, ctHelpers);
+    return addBarcodeToSku({ ...barcode, ctBarcodeReference: newCtBarcode.id }, productTypeId, ctHelpers);
   } else {
     // If the barcode exists, the SKU should already contain a reference to it,
     // but we call `addBarcodeToSku` here to make extra-sure. There's no danger
     // of adding duplicate barcodes, since those are filtered out by
     // `addBarcodeToSku`.
-    await addBarcodeToSku({ ...barcode, ctBarcodeReference: existingBarcode.id }, ctHelpers);
+    await addBarcodeToSku({ ...barcode, ctBarcodeReference: existingBarcode.id }, productTypeId, ctHelpers);
 
     if (existingCtBarcodeIsNewer(existingBarcode, barcode)) {
       return null;
@@ -158,24 +162,27 @@ const getBarcodeBatchUpdateActions = (barcodes, skus) => (
   })
 );
 
-const addBarcodesToSkus = async (barcodes, { client, requestBuilder }) => {
+const addBarcodesToSkus = async (barcodes, productTypeId, ctHelpers) => {
   if (barcodes.length === 0) return null;
   const styleId = barcodes[0].value.styleId;
-  const style = await getExistingCtStyle(styleId, { client, requestBuilder });
-  if (!style) throw getNotFoundError(`Style ${styleId} not found in CT`); // TODO: create missing style if necessary
+  let style = await getExistingCtStyle(styleId, ctHelpers);
+  if (!style) {
+    // create dummy style since none exists
+    style = (await createStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, ctHelpers)).body;
+  }
 
   const uniqueSkuIds = [...new Set(barcodes.map(barcode => barcode.value.skuId))];
   const skus = getCtSkusFromCtStyle(uniqueSkuIds.map(id => ({ id })), style); // TODO: create missing SKUs if necessary
   const actions = getBarcodeBatchUpdateActions(barcodes, skus);
   const method = 'POST';
-  const uri = requestBuilder.products.byKey(styleId).build();
+  const uri = ctHelpers.requestBuilder.products.byKey(styleId).build();
   const body = JSON.stringify({ version: style.version, actions });
 
-  return client.execute({ method, uri, body });
+  return ctHelpers.client.execute({ method, uri, body });
 };
 
 // Note: all given barcodes must have same the style ID
-const handleBarcodeBatch = async (ctHelpers, barcodes) => {
+const handleBarcodeBatch = async (ctHelpers, productType, barcodes) => {
   const existingCtBarcodes = (await getExistingCtBarcodes(barcodes, ctHelpers)).filter(Boolean); // non-existent barcodes are `null`, so we filter them out
   const outOfDateBarcodeNumbers = getOutOfDateBarcodeIds(existingCtBarcodes, barcodes);
   const barcodesToCreateOrUpdate = barcodes.filter(({ barcode }) => !outOfDateBarcodeNumbers.includes(barcode)); // we create or update all barcodes that aren't of out of date
@@ -184,14 +191,14 @@ const handleBarcodeBatch = async (ctHelpers, barcodes) => {
   // For some of these barcodes, they should already be added to the relevant
   // SKUs, but it makes the code simpler to add all of them, whether or not
   // they have already been added.
-  return addBarcodesToSkus(createdOrUpdatedBarcodes, ctHelpers);
+  return addBarcodesToSkus(createdOrUpdatedBarcodes, productType, ctHelpers);
 };
 
 const RETRY_LIMIT = 2;
 const ERRORS_NOT_TO_RETRY = [404];
 
 module.exports = {
-  handleBarcode: addRetries(handleBarcode, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY),
+  handleBarcode: addRetries(handleBarcode, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY), // deprecated
   handleBarcodeBatch,
   createOrUpdateBarcode,
   getBarcodeFromCt,

@@ -59,8 +59,7 @@ describe('existingCtBarcodeIsNewer', () => {
 
   it('throws an informative error if the existing CT barcode lacks a last modified date', () => {
     const ctBarcodeWithoutDate = { ...ctBarcode, value: {} };
-    const expectedErrorMessage = 'CT barcode lacks last modified date (object reference: foo)'
-    expect(() => existingCtBarcodeIsNewer(ctBarcodeWithoutDate, newJestaBarcode)).toThrow(expectedErrorMessage);
+    expect(existingCtBarcodeIsNewer(ctBarcodeWithoutDate, newJestaBarcode)).toBe(false);
   });
 });
 
@@ -152,7 +151,7 @@ describe('removeDuplicateIds', () => {
   });
 });
 
-describe('consumeCatalogueMessageCT', () => {
+describe('consumeBarcodeMessageCT', () => {
   const validParams = {
     topicName: 'barcodes-connect-jdbc',
     messages: [{

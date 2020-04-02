@@ -262,26 +262,30 @@ async function storeInvalidMessages(params, invalidMessages) {
     }
 }
 
-async function deleteOldBatches(params, messagesLogsPersistenceDays = 60) {
+async function deleteOldBatches(params, cutoff) {
     const [
         messagesCollection,
-        retryCollction,
+        retryCollection,
         dlqCollection
     ] = await Promise.all([
         getMessagesCollection(params),
         getRetryCollection(params),
         getDlqCollection(params)
     ]);
+    const activationIsOld = { recordTime: { $lt: cutoff } }
+    const batchIsOld = { "metadata.activationInfo.end": { $lt: cutoff } }
 
-    const threshold = (new Date()).getTime() - 1000 * 60 * 60 * 24 * messagesLogsPersistenceDays
-    const activationIsOld = { recordTime: { $lt: threshold } }
-    const batchIsOld = { "metadata.activationInfo.end": { $lt: threshold } }
-
-    return Promise.all([
+    const [deletedMessages, deletedRetries, deletedDlqs] = await Promise.all([
         messagesCollection.deleteMany(activationIsOld),
-        retryCollction.deleteMany(batchIsOld),
+        retryCollection.deleteMany(batchIsOld),
         dlqCollection.deleteMany(batchIsOld)
-    ])
+    ]);
+
+    return {
+        deletedMessages,
+        deletedRetries,
+        deletedDlqs
+    }
 }
 
 module.exports = {
