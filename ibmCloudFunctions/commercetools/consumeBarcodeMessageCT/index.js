@@ -1,5 +1,5 @@
 const { filterBarcodeMessage, parseBarcodeMessage } = require('../../lib/parseBarcodeMessage');
-const { handleBarcode } = require('./utils');
+const { groupBarcodesByStyleId, handleBarcodeBatch } = require('./utils');
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
 const getCtHelpers = require('../../lib/commercetoolsSdk');
@@ -31,12 +31,14 @@ const main = params => {
       .map(addErrorHandling(parseBarcodeMessage))
   );
 
-  const barcodePromises = (
-    barcodesToCreateOrUpdate
-      .map(addErrorHandling(handleBarcode.bind(null, ctHelpers)))
+  const barcodesGroupedByStyleId = groupBarcodesByStyleId(barcodesToCreateOrUpdate);
+
+  const barcodeBatchPromises = (
+    barcodesGroupedByStyleId
+      .map(addErrorHandling(handleBarcodeBatch.bind(null, ctHelpers)))
   );
   
-  return Promise.all(barcodePromises)
+  return Promise.all(barcodeBatchPromises)
     .then(passDownAnyMessageErrors)
     .catch(handleErrors);
 };
