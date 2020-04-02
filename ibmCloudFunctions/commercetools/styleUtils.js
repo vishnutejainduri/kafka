@@ -187,7 +187,7 @@ const getAttributesFromStyle = (style, productType) => {
   );
 };
 
-const createStyle = async (style, productType, { client, requestBuilder }) => {
+const createStyle = async (style, productType, categories, { client, requestBuilder }) => {
   if (!style.id) throw new Error('Style lacks required key \'id\'');
 
   const method = 'POST';
@@ -225,6 +225,12 @@ const createStyle = async (style, productType, { client, requestBuilder }) => {
           centAmount: style.originalPrice
         } 
       }];
+  }
+  if (categories) {
+    body.categories = categories.map(category => ({
+      typeId: 'category',
+      id: category.id
+    }));
   }
   const requestBody = JSON.stringify(body);
 
@@ -281,7 +287,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
 
     if (!existingCtStyle) {
       // the given style isn't currently stored in CT, so we create a new one
-      return createStyle(style, productType, ctHelpers);
+      return createStyle(style, productType, categories, ctHelpers);
     }
     if (existingCtStyleIsNewer(existingCtStyle, style, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)) {
       // the given style is out of date, so we don't add it to CT
