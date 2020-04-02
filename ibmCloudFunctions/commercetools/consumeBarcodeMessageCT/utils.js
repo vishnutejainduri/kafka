@@ -158,15 +158,14 @@ const getBarcodeBatchUpdateActions = (barcodes, skus) => (
   })
 );
 
-// TODO: confirm that this works
 const addBarcodesToSkus = async (barcodes, { client, requestBuilder }) => {
   if (barcodes.length === 0) return null;
-  const styleId = barcodes[0].styleId;
+  const styleId = barcodes[0].value.styleId;
   const style = await getExistingCtStyle(styleId, { client, requestBuilder });
   if (!style) throw getNotFoundError(`Style ${styleId} not found in CT`); // TODO: create missing style if necessary
 
-  // TODO: create any missing SKUs
-  const skus = getCtSkusFromCtStyle(barcodes.map(barcode => ({ id: barcode.skuId }), style));
+  const uniqueSkuIds = [...new Set(barcodes.map(barcode => barcode.value.skuId))];
+  const skus = getCtSkusFromCtStyle(uniqueSkuIds.map(id => ({ id })), style); // TODO: create missing SKUs if necessary
   const actions = getBarcodeBatchUpdateActions(barcodes, skus);
   const method = 'POST';
   const uri = requestBuilder.products.byKey(styleId).build();
@@ -177,7 +176,7 @@ const addBarcodesToSkus = async (barcodes, { client, requestBuilder }) => {
 
 // Note: all given barcodes must have same the style ID
 const handleBarcodeBatch = async (ctHelpers, barcodes) => {
-  const existingCtBarcodes = await getExistingCtBarcodes(barcodes, ctHelpers);
+  const existingCtBarcodes = (await getExistingCtBarcodes(barcodes, ctHelpers)).filter(Boolean); // non-existent barcodes are `null`, so we filter them out
   const outOfDateBarcodeNumbers = getOutOfDateBarcodeIds(existingCtBarcodes, barcodes);
   const barcodesToCreateOrUpdate = barcodes.filter(({ barcode }) => !outOfDateBarcodeNumbers.includes(barcode)); // we create or update all barcodes that aren't of out of date
   const createdOrUpdatedBarcodes = await createOrUpdateBarcodes(barcodesToCreateOrUpdate, ctHelpers);
@@ -193,6 +192,7 @@ const ERRORS_NOT_TO_RETRY = [404];
 
 module.exports = {
   handleBarcode: addRetries(handleBarcode, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY),
+  handleBarcodeBatch,
   createOrUpdateBarcode,
   getBarcodeFromCt,
   getBarcodeUpdateAction, // deprecated
