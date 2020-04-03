@@ -20,6 +20,7 @@
         limits:
           memorySize: 512
           timeout: 600000
+          concurrent: 1
         inputs:
           topicName: barcodes-connect-jdbc
       consume-barcode-message-with-retry-ct:
@@ -29,6 +30,7 @@
         limits:
           memorySize: 512
           timeout: 600000
+          concurrent: 1
       consume-sale-price-ct:
         location: ./commercetools/consumeSalePriceCT/dist/bundle.js
         runtime: nodejs:10
