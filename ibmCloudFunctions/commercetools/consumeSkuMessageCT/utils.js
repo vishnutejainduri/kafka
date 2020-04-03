@@ -1,8 +1,11 @@
 const { getExistingCtStyle, createStyle } = require('../styleUtils');
 const { skuAttributeNames } = require('../constantsCt');
-const { addRetries } = require('../../product-consumers/utils');
+const { groupByAttribute } = require('../../lib/utils');
+
+const groupByStyleId = groupByAttribute('styleId');
 
 const getCtSkuAttributeValue = (ctSku, attributeName) => {
+  if (!ctSku.attributes) return undefined;
   const foundAttribute = ctSku.attributes.find(attribute => attribute.name === attributeName);
   if (!foundAttribute) return undefined;
   return foundAttribute.value;
@@ -77,22 +80,6 @@ const formatSkuRequestBody = (sku, style, existingSku = null) => {
   });
 };
 
-const createSku = (sku, style, { client, requestBuilder }) => {
-  const method = 'POST';
-  const uri = requestBuilder.products.byKey(sku.styleId).build();
-  const body = formatSkuRequestBody(sku, style, null);
-
-  return client.execute({ method, uri, body });
-};
-
-const updateSku = (sku, existingCtSku, style, { client, requestBuilder }) => {
-  const method = 'POST';
-  const uri = requestBuilder.products.byKey(sku.styleId).build();
-  const body = formatSkuRequestBody(sku, style, existingCtSku);
-
-  return client.execute({ method, uri, body });
-};
-
 // Returns the matching staged SKU if one exists. Otherwise returns the
 // matching current SKU if one exists, or `undefined` if no matching
 // current SKU exists.
@@ -108,38 +95,100 @@ const getCtSkuFromCtStyle = (skuId, ctStyle) => {
 const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
   const ctSkuLastModifiedString = getCtSkuAttributeValue(existingCtSku, skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL);
   if (!ctSkuLastModifiedString) return false;
-  if (!givenSku.skuLastModifiedInternal) throw new Error('JESTA SKU lacks last modified date');
+  if (!givenSku[skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL]) throw new Error('JESTA SKU lacks last modified date');
 
   const ctSkuLastModifiedDate = new Date(ctSkuLastModifiedString);
-  return ctSkuLastModifiedDate.getTime() >= givenSku.skuLastModifiedInternal.getTime();
+  return ctSkuLastModifiedDate.getTime() >= givenSku[skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL].getTime();
 };
 
-const createOrUpdateSku = async (ctHelpers, productTypeId, sku) => {
-  let existingCtStyle = await getExistingCtStyle(sku.styleId, ctHelpers);
-  if (!existingCtStyle) {
-    // create dummy style where none exists
-    existingCtStyle = (await createStyle ({ id: sku.styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
-  }
-  const existingCtSku = getCtSkuFromCtStyle(sku.id, existingCtStyle);
-  
-  if (!existingCtSku) {
-    return createSku(sku, existingCtStyle, ctHelpers);
-  } if (existingCtSkuIsNewer(existingCtSku, sku)) {
-    return null;
-  }
-  return updateSku(sku, existingCtSku, existingCtStyle, ctHelpers);
+const getCtSkusFromCtStyle = (skus, ctStyle) => (
+  skus.map(
+    sku => getCtSkuFromCtStyle(sku.id, ctStyle)
+  ).filter(Boolean)
+);
+
+const getOutOfDateSkuIds = (existingCtSkus, skus) => (
+  existingCtSkus.filter(ctSku => {
+    const correspondingJestaSku = skus.find(sku => sku.id === ctSku.sku);
+    if (!correspondingJestaSku) return false;
+    return existingCtSkuIsNewer(ctSku, correspondingJestaSku);
+  }).map(sku => sku.sku)
+);
+
+
+// Note: When calling this function, you should already have made sure that
+// each SKU you give it should be updated (e.g., that it's not out of date).
+// This function doesn't make those checks.
+const getActionsFromSkus = (skus, existingCtSkus, ctStyle) => (
+  skus.reduce((previousActions, sku) => {
+    const matchingCtSku = existingCtSkus.find(ctSku => ctSku.sku == sku.id);
+    const attributeUpdateActions = getActionsFromSku(sku, matchingCtSku);
+
+    if (matchingCtSku) return [...previousActions, ...attributeUpdateActions];
+
+    const createSkuAction = getCreationAction(sku, ctStyle); // the SKU doesn't already exist in CT, so we need to create it
+    return [...previousActions, createSkuAction, ...attributeUpdateActions];
+  }, [])
+);
+
+const formatSkuBatchRequestBody = (skusToCreateOrUpdate, ctStyle, existingCtSkus) => {
+  const actions = getActionsFromSkus(skusToCreateOrUpdate, existingCtSkus, ctStyle);
+
+  return JSON.stringify({
+    version: ctStyle.version,
+    actions
+  });
 };
 
-const RETRY_LIMIT = 2;
-const ERRORS_NOT_TO_RETRY = [404];
+const createOrUpdateSkus = (skusToCreateOrUpdate, existingCtSkus, ctStyle, { client, requestBuilder }) => {
+  if (skusToCreateOrUpdate.length === 0) return null;
+
+  const method = 'POST';
+  const styleId = skusToCreateOrUpdate[0].styleId;
+  const uri = requestBuilder.products.byKey(styleId).build();
+  const body = formatSkuBatchRequestBody(skusToCreateOrUpdate, ctStyle, existingCtSkus);
+
+  return client.execute({ method, uri, body });
+};
+
+const groupBySkuId = groupByAttribute('id');
+
+// Helper for `removeDuplicateSkus`
+const getMostUpToDateSku = skus => {
+  const skusSortedByDate = skus.sort((sku1, sku2) => (
+    sku2[skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL] - sku1[skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL]
+  ));
+
+  return skusSortedByDate[0];
+};
+
+// There is a small chance that there will be multiple messages in the same
+// batch telling us to update or create the same SKU. In these cases, we throw
+// out all but the most up to date SKU in the batch.
+const removeDuplicateSkus = skus => {
+  const skusGroupedById = groupBySkuId(skus);
+
+  return skusGroupedById.reduce((filteredSkus, skuBatch) => {
+    const mostUpToDateSku = getMostUpToDateSku(skuBatch);
+    return [...filteredSkus, mostUpToDateSku];    
+  }, []);
+};
 
 module.exports = {
-  createOrUpdateSku: addRetries(createOrUpdateSku, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY),
   formatSkuRequestBody,
+  formatSkuBatchRequestBody,
   getActionsFromSku,
+  getActionsFromSkus,
   existingCtSkuIsNewer,
   getCtSkuFromCtStyle,
   getCtSkuAttributeValue,
   getCreationAction,
-  createSku
+  getCtSkusFromCtStyle,
+  getOutOfDateSkuIds,
+  getMostUpToDateSku,
+  getExistingCtStyle,
+  groupByStyleId,
+  removeDuplicateSkus,
+  createStyle,
+  createOrUpdateSkus
 };

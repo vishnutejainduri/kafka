@@ -6,6 +6,33 @@ function camelCase(str) {
     });
 }
 
+const getUniqueAttributeValues = attributeName => items => {
+    const uniqueAttributeValues = items.reduce((previousUniqueValues, item) => (
+      previousUniqueValues.add(item[attributeName])
+    ), new Set());
+  
+    return Array.from(uniqueAttributeValues);
+  };
+  
+const groupByAttribute = attributeName => items => {
+    const uniqueAttributeValues = getUniqueAttributeValues(attributeName)(items);
+
+    return uniqueAttributeValues.map(value => (
+        items.filter(item => item[attributeName] === value)
+    ));
+};
+
+const getMostUpToDateObject = dateName => objects => {
+    if (objects.length === 0) return null;
+    const objectsSortedByDate = objects.sort((object1, object2) => (
+        object2[dateName] - object1[dateName]
+      ));
+
+    return objectsSortedByDate[0];
+};
+
 module.exports = {
-    camelCase
+    camelCase,
+    groupByAttribute,
+    getMostUpToDateObject
 };
