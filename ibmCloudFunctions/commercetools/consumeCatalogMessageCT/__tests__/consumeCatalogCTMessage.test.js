@@ -10,7 +10,8 @@ const {
   getCtStyleAttributeValue,
   getCategory,
   getCategories,
-  createCategory
+  createCategory,
+  categoryNameToKey
 } = require('../../styleUtils');
 const { styleAttributeNames } = require('../../constantsCt');
 
@@ -258,8 +259,9 @@ describe('createCategory', () => {
         .map(addErrorHandling(parseStyleMessageCt))
     const categories = await getCategories(result[0], mockedCtHelpers);
     const categoryName = result[0].level2Category;
+    const categoryKey = categoryNameToKey(result[0].level1Category + result[0].level2Category);
 
-    const response = await createCategory(categoryName, categories[0], mockedCtHelpers);
+    const response = await createCategory(categoryKey, categoryName, categories[0], mockedCtHelpers);
 
     expect(response).toBeInstanceOf(Object);
   });

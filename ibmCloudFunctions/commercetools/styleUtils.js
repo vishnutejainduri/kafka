@@ -3,11 +3,9 @@ const { styleAttributeNames, currencyCodes } = require('./constantsCt');
 
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
 
-const createCategory = async (categoryName, parentCategory, { client, requestBuilder }) => {
+const createCategory = async (categoryKey, categoryName, parentCategory, { client, requestBuilder }) => {
   const method = 'POST';
   const uri = requestBuilder.categories.build();
-
-  const categoryKey = categoryNameToKey(categoryName['en-CA']);
 
   const body = {
     key: categoryKey,
@@ -27,7 +25,8 @@ const createCategory = async (categoryName, parentCategory, { client, requestBui
 
   const requestBody = JSON.stringify(body);
 
-  return client.execute({ method, uri, body: requestBody });
+  const response = await client.execute({ method, uri, body: requestBody });
+  return response.body;
 };
 
 const getCategory = async (category, { client, requestBuilder }) => {
@@ -45,15 +44,19 @@ const getCategory = async (category, { client, requestBuilder }) => {
 };
 
 const getCategories = async (style, ctHelpers) => {
+  const level1CategoryKey = categoryNameToKey(style.level1Category['en-CA']);
+  const level2CategoryKey = categoryNameToKey(style.level1Category['en-CA'] + style.level2Category['en-CA']);
+  const level3CategoryKey = categoryNameToKey(style.level1Category['en-CA'] + style.level2Category['en-CA'] + style.level3Category['en-CA']);
+
   const categories = await Promise.all([
-    getCategory(categoryNameToKey(style.level1Category['en-CA']), ctHelpers),
-    getCategory(categoryNameToKey(style.level2Category['en-CA']), ctHelpers),
-    getCategory(categoryNameToKey(style.level3Category['en-CA']), ctHelpers)
+    getCategory(level1CategoryKey, ctHelpers),
+    getCategory(level2CategoryKey, ctHelpers),
+    getCategory(level3CategoryKey, ctHelpers)
   ]);
 
-  if (!categories[0]) categories[0] = (await createCategory(style.level1Category, null, ctHelpers)).body;
-  if (!categories[1]) categories[1] = (await createCategory(style.level2Category, categories[0], ctHelpers)).body;
-  if (!categories[2]) categories[2] = (await createCategory(style.level3Category, categories[1], ctHelpers)).body;
+  if (!categories[0]) categories[0] = await createCategory(level1CategoryKey, style.level1Category, null, ctHelpers);
+  if (!categories[1]) categories[1] = await createCategory(level2CategoryKey, style.level2Category, categories[0], ctHelpers);
+  if (!categories[2]) categories[2] = await createCategory(level3CategoryKey, style.level3Category, categories[1], ctHelpers);
 
   return categories;
 };
@@ -330,5 +333,6 @@ module.exports = {
   getExistingCtStyle,
   getCategory,
   getCategories,
-  createCategory
+  createCategory,
+  categoryNameToKey
 };
