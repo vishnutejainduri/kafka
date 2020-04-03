@@ -174,30 +174,6 @@ const removeDuplicateSkus = skus => {
   }, []);
 };
 
-// Takes an array of SKUs, all of which have the same style ID. Since they all
-// have the same style ID, they can all be updated with a single call to CT.
-// This is why we batch them.
-const handleSkuBatch = async (ctHelpers, productTypeId, skus) => {
-  if (skus.length === 0) return null;
-  const styleId = skus[0].styleId;
-  let existingCtStyle = await getExistingCtStyle(styleId, ctHelpers);
-  if (!existingCtStyle) {
-    // create dummy style where none exists
-    existingCtStyle = (await createStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
-  }
-
-  const existingCtSkus = getCtSkusFromCtStyle(skus, existingCtStyle);
-  const outOfDateSkuIds = getOutOfDateSkuIds(existingCtSkus, skus);
-  const skusToCreateOrUpdate = removeDuplicateSkus(skus.filter(sku => (!outOfDateSkuIds.includes(sku.id))));
-
-  return createOrUpdateSkus(
-    skusToCreateOrUpdate,
-    existingCtSkus,
-    existingCtStyle,
-    ctHelpers
-  );
-};
-
 module.exports = {
   formatSkuRequestBody,
   formatSkuBatchRequestBody,
@@ -210,7 +186,9 @@ module.exports = {
   getCtSkusFromCtStyle,
   getOutOfDateSkuIds,
   getMostUpToDateSku,
+  getExistingCtStyle,
   groupByStyleId,
   removeDuplicateSkus,
-  handleSkuBatch
+  createStyle,
+  createOrUpdateSkus
 };
