@@ -1,5 +1,5 @@
 const { addRetries } = require('../product-consumers/utils');
-const { styleAttributeNames, currencyCodes } = require('./constantsCt');
+const { styleAttributeNames, currencyCodes, languageKeys } = require('./constantsCt');
 
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
 
@@ -11,8 +11,8 @@ const createCategory = async (categoryKey, categoryName, parentCategory, { clien
     key: categoryKey,
     name: categoryName,
     slug: {
-      'en-CA': categoryKey,
-      'fr-CA': categoryKey
+      [languageKeys.ENGLISH]: categoryKey,
+      [languageKeys.FRENCH]: categoryKey
     }
   };
 
@@ -44,9 +44,9 @@ const getCategory = async (category, { client, requestBuilder }) => {
 };
 
 const getCategories = async (style, ctHelpers) => {
-  const level1CategoryKey = categoryNameToKey(style.level1Category['en-CA']);
-  const level2CategoryKey = categoryNameToKey(style.level1Category['en-CA'] + style.level2Category['en-CA']);
-  const level3CategoryKey = categoryNameToKey(style.level1Category['en-CA'] + style.level2Category['en-CA'] + style.level3Category['en-CA']);
+  const level1CategoryKey = categoryNameToKey(style.level1Category[languageKeys.ENGLISH]);
+  const level2CategoryKey = categoryNameToKey(style.level1Category[languageKeys.ENGLISH] + style.level2Category[languageKeys.ENGLISH]);
+  const level3CategoryKey = categoryNameToKey(style.level1Category[languageKeys.ENGLISH] + style.level2Category[languageKeys.ENGLISH] + style.level3Category[languageKeys.ENGLISH]);
 
   const categories = await Promise.all([
     getCategory(level1CategoryKey, ctHelpers),
@@ -155,13 +155,13 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   const categoriesRemoveAction = categoryIds && existingCategoryIds
     ? existingCategoryIds.filter(categoryId => !categoryIds.includes(categoryId))
         .map(categoryId => ({ action: 'removeFromCategory', category: { id: categoryId, typeId: 'category' } }))
-    : null;
+    : [];
 
   // category actions, add only those not present already in CT
   const categoriesAddAction = categoryIds && existingCategoryIds
     ? categoryIds.filter(categoryId => !existingCategoryIds.includes(categoryId))
       .map(categoryId => ({ action: 'addToCategory', category: { id: categoryId, typeId: 'category' } }))
-    : null;
+    : [];
 
   const currentPriceActions = style.variantPrices
       ? style.variantPrices.map((variantPrice) => ({
@@ -177,9 +177,8 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
     }))
       : [];
 
-  const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...currentPriceActions].filter(Boolean);
-  if (categoriesRemoveAction) categoriesRemoveAction.forEach(action => allUpdateActions.push(action));
-  if (categoriesAddAction) categoriesAddAction.forEach(action => allUpdateActions.push(action));
+  const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...currentPriceActions, 
+    ...categoriesAddAction, ...categoriesRemoveAction].filter(Boolean);
 
   return allUpdateActions;
 };
@@ -238,8 +237,8 @@ const createStyle = async (style, productType, categories, { client, requestBuil
     // unique, but will we even make use of it? Right now I'm just putting the
     // style ID since I know that's unique.
     slug: {
-      'en-CA': style.id,
-      'fr-CA': style.id
+      [languageKeys.ENGLISH]: style.id,
+      [languageKeys.FRENCH]: style.id
     }
   };
 
