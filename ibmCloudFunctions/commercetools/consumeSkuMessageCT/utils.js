@@ -184,7 +184,7 @@ const handleSkuBatch = async (ctHelpers, productTypeId, skus) => {
   let existingCtStyle = await getExistingCtStyle(styleId, ctHelpers);
   if (!existingCtStyle) {
     // create dummy style where none exists
-    existingCtStyle = (await createStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, ctHelpers)).body;
+    existingCtStyle = (await createStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
   }
 
   const existingCtSkus = getCtSkusFromCtStyle(skus, existingCtStyle);

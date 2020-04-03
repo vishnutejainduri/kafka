@@ -121,7 +121,8 @@ const addBarcodesToSkus = async (barcodes, productTypeId, ctHelpers) => {
   let style = await getExistingCtStyle(styleId, ctHelpers);
   if (!style) {
     // create dummy style since none exists
-    style = (await createStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, ctHelpers)).body;
+    style = (await createStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
+
   }
 
   const uniqueSkuIds = [...new Set(barcodes.map(barcode => barcode.value.skuId))];

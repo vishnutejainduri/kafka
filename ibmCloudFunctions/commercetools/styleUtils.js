@@ -1,5 +1,65 @@
 const { addRetries } = require('../product-consumers/utils');
-const { styleAttributeNames, currencyCodes } = require('./constantsCt');
+const { styleAttributeNames, currencyCodes, languageKeys } = require('./constantsCt');
+
+const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
+
+const createCategory = async (categoryKey, categoryName, parentCategory, { client, requestBuilder }) => {
+  const method = 'POST';
+  const uri = requestBuilder.categories.build();
+
+  const body = {
+    key: categoryKey,
+    name: categoryName,
+    slug: {
+      [languageKeys.ENGLISH]: categoryKey,
+      [languageKeys.FRENCH]: categoryKey
+    }
+  };
+
+  if (parentCategory) {
+    body.parent = {
+      id: parentCategory.id,
+      typeId: 'category'
+    };
+  }
+
+  const requestBody = JSON.stringify(body);
+
+  const response = await client.execute({ method, uri, body: requestBody });
+  return response.body;
+};
+
+const getCategory = async (category, { client, requestBuilder }) => {
+  const method = 'GET';
+
+  const uri = requestBuilder.categories.byKey(category).build();
+
+  try {
+    const response = await client.execute({ method, uri });
+    return response.body;
+  } catch (err) {
+      if (err.code === 404) return null; 
+      throw err;
+  }
+};
+
+const getCategories = async (style, ctHelpers) => {
+  const level1CategoryKey = categoryNameToKey(style.level1Category[languageKeys.ENGLISH]);
+  const level2CategoryKey = categoryNameToKey(style.level1Category[languageKeys.ENGLISH] + style.level2Category[languageKeys.ENGLISH]);
+  const level3CategoryKey = categoryNameToKey(style.level1Category[languageKeys.ENGLISH] + style.level2Category[languageKeys.ENGLISH] + style.level3Category[languageKeys.ENGLISH]);
+
+  const categories = await Promise.all([
+    getCategory(level1CategoryKey, ctHelpers),
+    getCategory(level2CategoryKey, ctHelpers),
+    getCategory(level3CategoryKey, ctHelpers)
+  ]);
+
+  if (!categories[0]) categories[0] = await createCategory(level1CategoryKey, style.level1Category, null, ctHelpers);
+  if (!categories[1]) categories[1] = await createCategory(level2CategoryKey, style.level2Category, categories[0], ctHelpers);
+  if (!categories[2]) categories[2] = await createCategory(level3CategoryKey, style.level3Category, categories[1], ctHelpers);
+
+  return categories;
+};
 
 const getProductType = async (productTypeId, { client, requestBuilder }) => {
   const method = 'GET';
@@ -52,7 +112,7 @@ const isCustomAttribute = attribute => {
 
 // Returns an array of actions, each of which tells CT to update a different
 // attribute of the given style
-const getActionsFromStyle = (style, productType) => {
+const getActionsFromStyle = (style, productType, categories, existingCtStyle) => {
   const customAttributesToUpdate = Object.keys(style).filter(isCustomAttribute);
 
   const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => {
@@ -80,6 +140,29 @@ const getActionsFromStyle = (style, productType) => {
     ? { action: 'setDescription', description: style.marketingDescription }
     : null;
 
+  // handle categories
+  const existingCtStyleData = existingCtStyle.masterData.hasStagedChanges
+    ? existingCtStyle.masterData.staged
+    : existingCtStyle.masterData.current
+  const existingCategoryIds = existingCtStyleData.categories
+    ? existingCtStyleData.categories.map(category => category.id)
+    : null
+  const categoryIds = categories
+    ? categories.map(category => category.id)
+    : null
+
+  // category actions, remove only those not present in coming request
+  const categoriesRemoveAction = categoryIds && existingCategoryIds
+    ? existingCategoryIds.filter(categoryId => !categoryIds.includes(categoryId))
+        .map(categoryId => ({ action: 'removeFromCategory', category: { id: categoryId, typeId: 'category' } }))
+    : [];
+
+  // category actions, add only those not present already in CT
+  const categoriesAddAction = categoryIds && existingCategoryIds
+    ? categoryIds.filter(categoryId => !existingCategoryIds.includes(categoryId))
+      .map(categoryId => ({ action: 'addToCategory', category: { id: categoryId, typeId: 'category' } }))
+    : [];
+
   const currentPriceActions = style.variantPrices
       ? style.variantPrices.map((variantPrice) => ({
         action: variantPrice.price ? 'changePrice' : 'addPrice',
@@ -94,22 +177,20 @@ const getActionsFromStyle = (style, productType) => {
     }))
       : [];
 
-  const allUpdateActions = (
-    [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...currentPriceActions]
-      .filter(Boolean) // removes the `null` actions, if there are any
-  );
+  const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...currentPriceActions, 
+    ...categoriesAddAction, ...categoriesRemoveAction].filter(Boolean);
 
   return allUpdateActions;
 };
 
-const updateStyle = async (style, version, productType, { client, requestBuilder }) => {
+const updateStyle = async (style, existingCtStyle, productType, categories, { client, requestBuilder }) => {
   if (!style.id) throw new Error('Style lacks required key \'id\'');
-  if (!version) throw new Error('Invalid arguments: must include \'version\'');
+  if (!existingCtStyle.version) throw new Error('Invalid arguments: must include existing style \'version\'');
 
   const method = 'POST';
   const uri = requestBuilder.products.byKey(style.id).build();
-  const actions = getActionsFromStyle(style, productType);
-  const body = JSON.stringify({ version, actions });
+  const actions = getActionsFromStyle(style, productType, categories, existingCtStyle);
+  const body = JSON.stringify({ version: existingCtStyle.version, actions });
 
   return client.execute({ method, uri, body });
 };
@@ -130,7 +211,7 @@ const getAttributesFromStyle = (style, productType) => {
   );
 };
 
-const createStyle = async (style, productType, { client, requestBuilder }) => {
+const createStyle = async (style, productType, categories, { client, requestBuilder }) => {
   if (!style.id) throw new Error('Style lacks required key \'id\'');
 
   const method = 'POST';
@@ -156,8 +237,8 @@ const createStyle = async (style, productType, { client, requestBuilder }) => {
     // unique, but will we even make use of it? Right now I'm just putting the
     // style ID since I know that's unique.
     slug: {
-      'en-CA': style.id,
-      'fr-CA': style.id
+      [languageKeys.ENGLISH]: style.id,
+      [languageKeys.FRENCH]: style.id
     }
   };
 
@@ -168,6 +249,12 @@ const createStyle = async (style, productType, { client, requestBuilder }) => {
           centAmount: style.originalPrice
         } 
       }];
+  }
+  if (categories) {
+    body.categories = categories.map(category => ({
+      typeId: 'category',
+      id: category.id
+    }));
   }
   const requestBody = JSON.stringify(body);
 
@@ -221,7 +308,8 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
 
     if (!existingCtStyle) {
       // the given style isn't currently stored in CT, so we create a new one
-      return createStyle(style, productType, ctHelpers);
+      const categories = await getCategories(style, ctHelpers);
+      return createStyle(style, productType, categories, ctHelpers);
     }
     if (existingCtStyleIsNewer(existingCtStyle, style, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)) {
       // the given style is out of date, so we don't add it to CT
@@ -229,7 +317,8 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     }
     // the given style is up-to-date and an earlier version of it is already
     // stored in CT, so we just need to update its attributes
-    return updateStyle(style, existingCtStyle.version, productType, ctHelpers);
+    const categories = await getCategories(style, ctHelpers);
+    return updateStyle(style, existingCtStyle, productType, categories, ctHelpers);
 };
 
 module.exports = {
@@ -240,5 +329,9 @@ module.exports = {
   getCtStyleAttributeValue,
   getCtStyleAttribute,
   getProductType,
-  getExistingCtStyle
+  getExistingCtStyle,
+  getCategory,
+  getCategories,
+  createCategory,
+  categoryNameToKey
 };
