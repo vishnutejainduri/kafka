@@ -154,32 +154,19 @@ const removeDuplicateBarcodes = barcodes => {
   }, []);
 };
 
-// Takes an array of barcodes, all of which have the same style ID. Since they
-// all have the same style ID, references to them all can be added to the
-// corresponding style with a single call to CT. This is why we batch them.
-const handleBarcodeBatch = (ctHelpers, productType) => async barcodes => {
-  const existingCtBarcodes = await getExistingCtBarcodes(barcodes, ctHelpers);
-  const outOfDateBarcodeIds = getOutOfDateBarcodeIds(existingCtBarcodes, barcodes);
-  const barcodesToCreateOrUpdate = removeDuplicateBarcodes(barcodes.filter(({ barcode }) => !outOfDateBarcodeIds.includes(barcode))); // we create or update all barcodes that aren't of out of date
-  const createdOrUpdatedBarcodes = await createOrUpdateBarcodes(barcodesToCreateOrUpdate, ctHelpers);
-
-  // For some of these barcodes, they should already be added to the relevant
-  // SKUs, but it makes the code simpler to add all of them, whether or not
-  // they have already been added.
-  return addBarcodesToSkus(createdOrUpdatedBarcodes, productType, ctHelpers);
-};
-
 module.exports = {
-  handleBarcodeBatch,
   createOrUpdateBarcode,
+  createOrUpdateBarcodes,
   getBarcodeFromCt,
   getSingleSkuBarcodeUpdateAction,
   getBarcodeBatchUpdateActions,
   existingCtBarcodeIsNewer,
+  getExistingCtBarcodes,
   removeDuplicateIds,
   groupBarcodesByStyleId,
   getOutOfDateBarcodeIds,
   getMissingSkuIds,
   createDummySkusWithGivenIds,
-  removeDuplicateBarcodes
+  removeDuplicateBarcodes,
+  addBarcodesToSkus
 };
