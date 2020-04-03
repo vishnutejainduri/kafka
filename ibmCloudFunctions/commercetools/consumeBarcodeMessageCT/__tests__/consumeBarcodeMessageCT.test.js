@@ -275,7 +275,7 @@ describe('getSingleSkuBarcodeUpdateAction', () => {
     expect(getSingleSkuBarcodeUpdateAction([ctBarcode], ctSku)).toEqual(expectedAction);
   });
 
-  it('works when there are no pre-existing CT barcodes', () => {
+  it('returns the correct action when are no pre-existing CT barcodes on the given SKU', () => {
     const ctSkuWithNoBarcodes = {
       id: '1',
       sku: '1',
@@ -336,7 +336,7 @@ describe('getBarcodeBatchUpdateActions', () => {
 
   const skus = [ctSkuWithPreexistingBarcode, ctSkuWithNoBarocdes];
 
-  it('returns the correct array when different barcodes belong to different SKUs', () => {
+  it('returns any array consisting of one action per SKU when different barcodes belong to different SKUs', () => {
     const barcodesToAddToSkus = [barcode1, barcode2, barcode3, barcode4];
     const expectedActions = [
       {
@@ -363,7 +363,7 @@ describe('getBarcodeBatchUpdateActions', () => {
     expect(getBarcodeBatchUpdateActions(barcodesToAddToSkus, skus)).toEqual(expectedActions);
   });
 
-  it('returns the correct array when all barcodes belong to the same SKU', () => {
+  it('returns an array with a single action when all barcodes belong to the same SKU', () => {
     const barcodesToAddToSkus = [barcode1, barcode4];
     const expectedActions = [
       {
@@ -416,7 +416,7 @@ describe('removeDuplicateBarcodes', () => {
   const barcode2 = { barcode: '2', lastModifiedDate: new Date(0) };
   const barcode3 = { barcode: '3', lastModifiedDate: new Date(0) };
 
-  it('returns an array matching the given array when there are no duplicate barcodes', () => {
+  it('returns an equal array when there are no duplicate barcodes', () => {
     const barcodesWithNoDuplicates = [barcode1, barcode2, barcode3];
     expect(removeDuplicateBarcodes(barcodesWithNoDuplicates)).toEqual(barcodesWithNoDuplicates);
   });
