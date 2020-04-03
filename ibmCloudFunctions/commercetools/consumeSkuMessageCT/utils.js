@@ -1,6 +1,5 @@
 const { getExistingCtStyle, createStyle } = require('../styleUtils');
 const { skuAttributeNames } = require('../constantsCt');
-const { addRetries } = require('../../product-consumers/utils');
 const { groupByAttribute } = require('../../lib/utils');
 
 const groupByStyleId = groupByAttribute('styleId');
@@ -199,9 +198,6 @@ const handleSkuBatch = async (ctHelpers, productTypeId, skus) => {
   );
 };
 
-const RETRY_LIMIT = 2;
-const ERRORS_NOT_TO_RETRY = [404];
-
 module.exports = {
   formatSkuRequestBody,
   formatSkuBatchRequestBody,
@@ -216,5 +212,5 @@ module.exports = {
   getMostUpToDateSku,
   groupByStyleId,
   removeDuplicateSkus,
-  handleSkuBatch: addRetries(handleSkuBatch, RETRY_LIMIT, console.error, ERRORS_NOT_TO_RETRY)
+  handleSkuBatch
 };
