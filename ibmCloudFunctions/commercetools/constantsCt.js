@@ -41,10 +41,16 @@ const currencyCodes = {
   CAD: 'CAD'
 };
 
+const languageKeys = {
+  ENGLISH: 'en-CA',
+  FRENCH: 'fr-CA'
+};
+
 module.exports = {
   BARCODE_NAMESPACE,
   KEY_VALUE_DOCUMENT,
   styleAttributeNames,
   skuAttributeNames,
-  currencyCodes
+  currencyCodes,
+  languageKeys
 };

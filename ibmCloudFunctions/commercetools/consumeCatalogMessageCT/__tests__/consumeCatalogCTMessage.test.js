@@ -1,11 +1,17 @@
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const consumeCatalogueMessageCT = require('..');
 const { parseStyleMessageCt, formatLanguageKeys } = require('../../../lib/parseStyleMessageCt');
+const { filterStyleMessages } = require('../../../lib/parseStyleMessage');
+const { addErrorHandling } = require('../../../product-consumers/utils');
 const {
   createStyle,
   updateStyle,
   existingCtStyleIsNewer,
-  getCtStyleAttributeValue
+  getCtStyleAttributeValue,
+  getCategory,
+  getCategories,
+  createCategory,
+  categoryNameToKey
 } = require('../../styleUtils');
 const { styleAttributeNames } = require('../../constantsCt');
 
@@ -211,19 +217,53 @@ describe('existingCtStyleIsNewer', () => {
 describe('createStyle', () => {
   it('throws an error if the given style lacks an ID', () => {
     const styleWithNoId = {};
-    return expect(createStyle(styleWithNoId, '1', mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
+    return expect(createStyle(styleWithNoId, {}, null, mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
   });
 });
 
 describe('updateStyle', () => {
   it('throws an error if the given style lacks an ID', () => {
     const styleWithNoId = {};
-    return expect(updateStyle(styleWithNoId, '1', 'product-type-reference-id', mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
+    return expect(updateStyle(styleWithNoId, { version: '1' }, 'product-type-reference-id', null, mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
   });
 
   it('throws an error if called without a version number', () => {
     const style = { id: '1' };
-    return expect(updateStyle(style, undefined,'product-type-reference-id', mockedCtHelpers)).rejects.toThrow('Invalid arguments: must include \'version\'');
+    return expect(updateStyle(style, {} ,'product-type-reference-id', null, mockedCtHelpers)).rejects.toThrow('Invalid arguments: must include existing style \'version\'');
+  });
+});
+
+describe('getCategory', () => {
+  it('correct message; return mock data', async () => {
+    const categoryName = validParams.messages[0].value.CATAGORY;
+    return expect(await getCategory(categoryName, mockedCtHelpers)).toBeInstanceOf(Object);
+  });
+});
+
+describe('getCategories', () => {
+  it('correct message; return mock data', async () => {
+     const result =  
+        validParams.messages
+        .filter(addErrorHandling(filterStyleMessages))
+        .map(addErrorHandling(parseStyleMessageCt))
+    const response = await getCategories(result[0], mockedCtHelpers);
+    expect(response).toBeInstanceOf(Object);
+  });
+});
+
+describe('createCategory', () => {
+  it('correct message; return mock data', async () => {
+     const result =  
+        validParams.messages
+        .filter(addErrorHandling(filterStyleMessages))
+        .map(addErrorHandling(parseStyleMessageCt))
+    const categories = await getCategories(result[0], mockedCtHelpers);
+    const categoryName = result[0].level2Category;
+    const categoryKey = categoryNameToKey(result[0].level1Category + result[0].level2Category);
+
+    const response = await createCategory(categoryKey, categoryName, categories[0], mockedCtHelpers);
+
+    expect(response).toBeInstanceOf(Object);
   });
 });
 

@@ -11,7 +11,11 @@ const mockRequestBuilder = {
     byKey: () => mockRequestBuilder.productTypes,
     byId: () => mockRequestBuilder.productTypes,
     build: () => mockRequestBuilder.productTypes
-  }
+  },
+  categories: {
+    byKey: () => mockRequestBuilder.categories,
+    build: () => mockRequestBuilder.categories
+  },
 };
 
 const requestBuilder = {

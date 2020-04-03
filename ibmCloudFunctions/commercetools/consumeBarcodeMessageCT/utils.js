@@ -53,7 +53,7 @@ const addBarcodeToSku = async (barcode, productTypeId, ctHelpers) => {
   let style = await getExistingCtStyle(barcode.styleId, ctHelpers);
   if (!style) {
     // create dummy style since none exists
-    style = (await createStyle ({ id: barcode.styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, ctHelpers)).body;
+    style = (await createStyle ({ id: barcode.styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
   }
 
   let sku = getCtSkuFromCtStyle(barcode.skuId, style);
