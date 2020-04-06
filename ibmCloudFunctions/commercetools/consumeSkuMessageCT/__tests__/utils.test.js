@@ -100,7 +100,7 @@ describe('formatSkuRequestBody', () => {
   });
 
   it('returns the correct body to create a new SKU', () => {
-    const expectedBody = '{"version":1,"actions":[{"action":"addVariant","sku":"sku-01","attributes":[{"name":"season","value":"Winter 2020"}]},{"action":"setAttribute","sku":"sku-01","name":"colorId","value":"c1"},{"action":"setAttribute","sku":"sku-01","name":"sizeId","value":"s1"}]}';
+    const expectedBody = '{"version":1,"actions":[{"action":"addVariant","sku":"sku-01","attributes":[{"name":"season","value":"Winter 2020"}],"staged":false},{"action":"setAttribute","sku":"sku-01","name":"colorId","value":"c1"},{"action":"setAttribute","sku":"sku-01","name":"sizeId","value":"s1"}]}';
     const actualBody = formatSkuRequestBody(sku, style, null);
     expect(actualBody).toBe(expectedBody);
   });
@@ -256,7 +256,7 @@ describe('getCreationAction', () => {
   const expected = {
     action: 'addVariant',
     sku: 'sku-01',
-    attributes: [{ name: 'brand', value: 'foo' }]
+    attributes: [{ name: 'brand', value: 'foo' }],
   };
 
   it('returns the correct object when given the style has no staged changes', () => {
@@ -379,7 +379,7 @@ describe('getActionsFromSkus', () => {
   it('returns the right actions when given both existing and new SKUs', () => {
     const skus = [sku1, sku2, sku3, sku4];
     const existingCtSkus = [{ sku: 'sku-1' }, { sku: 'sku-2'}, { sku: 'sku-3' }];
-    const expected = [{"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-1", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-1", "value": "R"}, {"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-2", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-2", "value": "G"}, {"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-3", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-3", "value": "B"}, {"action": "addVariant", "attributes": [{"name": "season", "value": "Winter"}], "sku": "sku-4"}, {"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-4", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-4", "value": "A"}];
+    const expected = [{"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-1", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-1", "value": "R"}, {"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-2", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-2", "value": "G"}, {"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-3", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-3", "value": "B"}, {"action": "addVariant", "attributes": [{"name": "season", "value": "Winter"}], "staged": false, "sku": "sku-4"}, {"action": "setAttribute", "name": "skuLastModifiedInternal", "sku": "sku-4", "value": new Date("1970-01-01T00:00:00.100Z")}, {"action": "setAttribute", "name": "colorId", "sku": "sku-4", "value": "A"}];
     expect(getActionsFromSkus(skus, existingCtSkus, ctStyle)).toEqual(expected);
   });
 
@@ -415,7 +415,7 @@ describe('formatSkuBatchRequestBody', () => {
   const existingCtSkus = [{ sku: 'sku-1' }, { sku: 'sku-2'}, { sku: 'sku-3' }];
 
   it('returns the correct request body', () => {
-    const correctBody = "{\"version\":1,\"actions\":[{\"action\":\"setAttribute\",\"sku\":\"sku-1\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-1\",\"name\":\"colorId\",\"value\":\"R\"},{\"action\":\"setAttribute\",\"sku\":\"sku-2\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-2\",\"name\":\"colorId\",\"value\":\"G\"},{\"action\":\"setAttribute\",\"sku\":\"sku-3\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-3\",\"name\":\"colorId\",\"value\":\"B\"},{\"action\":\"addVariant\",\"sku\":\"sku-4\",\"attributes\":[{\"name\":\"season\",\"value\":\"Winter\"}]},{\"action\":\"setAttribute\",\"sku\":\"sku-4\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-4\",\"name\":\"colorId\",\"value\":\"A\"}]}";
+    const correctBody = "{\"version\":1,\"actions\":[{\"action\":\"setAttribute\",\"sku\":\"sku-1\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-1\",\"name\":\"colorId\",\"value\":\"R\"},{\"action\":\"setAttribute\",\"sku\":\"sku-2\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-2\",\"name\":\"colorId\",\"value\":\"G\"},{\"action\":\"setAttribute\",\"sku\":\"sku-3\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-3\",\"name\":\"colorId\",\"value\":\"B\"},{\"action\":\"addVariant\",\"sku\":\"sku-4\",\"attributes\":[{\"name\":\"season\",\"value\":\"Winter\"}],\"staged\":false},{\"action\":\"setAttribute\",\"sku\":\"sku-4\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\"},{\"action\":\"setAttribute\",\"sku\":\"sku-4\",\"name\":\"colorId\",\"value\":\"A\"}]}";
     expect(formatSkuBatchRequestBody(skus, ctStyle, existingCtSkus)).toEqual(correctBody);
   });
 });

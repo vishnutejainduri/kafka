@@ -65,7 +65,8 @@ const getCreationAction = (sku, style) => {
   return {
     action: 'addVariant',
     sku: sku.id,
-    attributes
+    attributes,
+    staged: false
   };
 };
 
