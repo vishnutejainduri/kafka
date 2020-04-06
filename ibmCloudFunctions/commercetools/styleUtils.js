@@ -263,6 +263,19 @@ const createStyle = async (style, productType, categories, { client, requestBuil
   return client.execute({ method, uri, body: requestBody });
 };
 
+// When you create a style in CT, it starts out unpublished. You need to make
+// an additional API call to tell CT to publish it.
+const createAndPublishStyle = async (styleToCreate, productType, categories, ctHelpers) => {
+  const { client, requestBuilder } = ctHelpers;
+  const newStyle = (await createStyle(styleToCreate, productType, categories, ctHelpers)).body;
+
+  const method = 'POST';
+  const uri = requestBuilder.products.byKey(newStyle.key).build();
+  const body = JSON.stringify({ version: newStyle.version, actions: [{ name: 'publish', scope: 'All' }] });
+
+  return client.execute({ method, uri, body }); // TODO: make sure this is formatted correctly
+};
+
 /**
  * Returns the value of the attribute in the given CT style. The value is taken
  * from the master variant. Returns `undefined` if the attribute does not exist.
@@ -325,6 +338,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
 
 module.exports = {
   createStyle,
+  createAndPublishStyle,
   updateStyle,
   createOrUpdateStyle: addRetries(createOrUpdateStyle, 2, console.error),
   existingCtStyleIsNewer,
