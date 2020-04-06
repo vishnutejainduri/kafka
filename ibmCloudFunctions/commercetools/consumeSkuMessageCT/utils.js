@@ -1,5 +1,5 @@
 const { getExistingCtStyle, createStyle } = require('../styleUtils');
-const { skuAttributeNames } = require('../constantsCt');
+const { skuAttributeNames, STAGED } = require('../constantsCt');
 const { groupByAttribute } = require('../../lib/utils');
 
 const groupByStyleId = groupByAttribute('styleId');
@@ -66,7 +66,7 @@ const getCreationAction = (sku, style) => {
     action: 'addVariant',
     sku: sku.id,
     attributes,
-    staged: false
+    staged: STAGED
   };
 };
 
