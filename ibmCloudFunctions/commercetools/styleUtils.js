@@ -324,7 +324,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     if (!existingCtStyle) {
       // the given style isn't currently stored in CT, so we create a new one
       const categories = await getCategories(style, ctHelpers);
-      return createStyle(style, productType, categories, ctHelpers);
+      return createAndPublishStyle(style, productType, categories, ctHelpers);
     }
     if (existingCtStyleIsNewer(existingCtStyle, style, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)) {
       // the given style is out of date, so we don't add it to CT
