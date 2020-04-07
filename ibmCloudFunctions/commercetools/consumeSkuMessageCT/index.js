@@ -6,7 +6,7 @@ const getCtHelpers = require('../../lib/commercetoolsSdk');
 const {
   groupByStyleId,
   getExistingCtStyle,
-  createStyle,
+  createAndPublishStyle,
   getCtSkusFromCtStyle,
   getOutOfDateSkuIds,
   removeDuplicateSkus,
@@ -30,7 +30,7 @@ const syncSkuBatchToCt = async (ctHelpers, productTypeId, skus) => {
   let existingCtStyle = await getExistingCtStyle(styleId, ctHelpers);
   if (!existingCtStyle) {
     // create dummy style where none exists
-    existingCtStyle = (await createStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
+    existingCtStyle = (await createAndPublishStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
   }
 
   const existingCtSkus = getCtSkusFromCtStyle(skus, existingCtStyle);

@@ -1,5 +1,4 @@
-const { addRetries } = require('../product-consumers/utils');
-const { styleAttributeNames, currencyCodes, languageKeys } = require('./constantsCt');
+const { styleAttributeNames, currencyCodes, languageKeys, isStaged } = require('./constantsCt');
 
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
 
@@ -121,7 +120,8 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
       let actionObj = {
         action: 'setAttributeInAllVariants',
         name: attribute,
-        value: style[attribute]
+        value: style[attribute],
+        staged: isStaged
       };
       
       actionObj = formatAttributeValue(style, actionObj, attribute, attributeType);
@@ -133,11 +133,11 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   // `name` and `description` aren't custom attributes of products in CT, so
   // their update actions differ from the others
   const nameUpdateAction = style.name
-    ? { action: 'changeName', name: style.name }
+    ? { action: 'changeName', name: style.name, staged: isStaged }
     : null;
   
   const descriptionUpdateAction = style.marketingDescription
-    ? { action: 'setDescription', description: style.marketingDescription }
+    ? { action: 'setDescription', description: style.marketingDescription, staged: isStaged }
     : null;
 
   // handle categories
@@ -154,13 +154,13 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   // category actions, remove only those not present in coming request
   const categoriesRemoveAction = categoryIds && existingCategoryIds
     ? existingCategoryIds.filter(categoryId => !categoryIds.includes(categoryId))
-        .map(categoryId => ({ action: 'removeFromCategory', category: { id: categoryId, typeId: 'category' } }))
+        .map(categoryId => ({ action: 'removeFromCategory', category: { id: categoryId, typeId: 'category', staged: isStaged } }))
     : [];
 
   // category actions, add only those not present already in CT
   const categoriesAddAction = categoryIds && existingCategoryIds
     ? categoryIds.filter(categoryId => !existingCategoryIds.includes(categoryId))
-      .map(categoryId => ({ action: 'addToCategory', category: { id: categoryId, typeId: 'category' } }))
+      .map(categoryId => ({ action: 'addToCategory', category: { id: categoryId, typeId: 'category' }, staged: isStaged }))
     : [];
 
   const currentPriceActions = style.variantPrices
@@ -173,7 +173,8 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
             currencyCode: currencyCodes.CAD,
             centAmount: variantPrice.updatedPrice.currentPrice
           }
-        } 
+        },
+        staged: isStaged
     }))
       : [];
 
@@ -261,6 +262,19 @@ const createStyle = async (style, productType, categories, { client, requestBuil
   return client.execute({ method, uri, body: requestBody });
 };
 
+// When you create a style in CT, it starts out unpublished. You need to make
+// an additional API call to tell CT to publish it.
+const createAndPublishStyle = async (styleToCreate, productType, categories, ctHelpers) => {
+  const { client, requestBuilder } = ctHelpers;
+  const newStyle = (await createStyle(styleToCreate, productType, categories, ctHelpers)).body;
+
+  const method = 'POST';
+  const uri = requestBuilder.products.byKey(newStyle.key).build();
+  const body = JSON.stringify({ version: newStyle.version, actions: [{ action: 'publish', scope: 'All' }] });
+
+  return client.execute({ method, uri, body });
+};
+
 /**
  * Returns the value of the attribute in the given CT style. The value is taken
  * from the master variant. Returns `undefined` if the attribute does not exist.
@@ -309,7 +323,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     if (!existingCtStyle) {
       // the given style isn't currently stored in CT, so we create a new one
       const categories = await getCategories(style, ctHelpers);
-      return createStyle(style, productType, categories, ctHelpers);
+      return createAndPublishStyle(style, productType, categories, ctHelpers);
     }
     if (existingCtStyleIsNewer(existingCtStyle, style, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)) {
       // the given style is out of date, so we don't add it to CT
@@ -323,8 +337,9 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
 
 module.exports = {
   createStyle,
+  createAndPublishStyle,
   updateStyle,
-  createOrUpdateStyle: addRetries(createOrUpdateStyle, 2, console.error),
+  createOrUpdateStyle,
   existingCtStyleIsNewer,
   getCtStyleAttributeValue,
   getCtStyleAttribute,

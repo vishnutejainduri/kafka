@@ -1,5 +1,5 @@
-const { getExistingCtStyle, createStyle } = require('../styleUtils');
-const { skuAttributeNames, BARCODE_NAMESPACE, KEY_VALUE_DOCUMENT } = require('../constantsCt');
+const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
+const { skuAttributeNames, BARCODE_NAMESPACE, KEY_VALUE_DOCUMENT, isStaged } = require('../constantsCt');
 const { getCtSkusFromCtStyle, getCtSkuAttributeValue, getCreationAction } = require('../consumeSkuMessageCT/utils');
 const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
 
@@ -73,7 +73,8 @@ const getSingleSkuBarcodeUpdateAction = (barcodes, sku) => {
     action: 'setAttribute',
     sku: sku.sku, // the SKU id in commercetools is just called `sku`
     name: 'barcodes',
-    value: allBarcodeReferences
+    value: allBarcodeReferences,
+    staged: isStaged
   };
 };
 
@@ -121,7 +122,7 @@ const addBarcodesToSkus = async (barcodes, productTypeId, ctHelpers) => {
   let style = await getExistingCtStyle(styleId, ctHelpers);
   if (!style) {
     // create dummy style since none exists
-    style = (await createStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
+    style = (await createAndPublishStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
 
   }
 

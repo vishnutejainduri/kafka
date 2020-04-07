@@ -232,7 +232,8 @@ describe('getSingleSkuBarcodeUpdateAction', () => {
       value: [
         { id: 'foo', typeId: 'key-value-document' },
         { id: 'bar', typeId: 'key-value-document' }
-      ]
+      ],
+      staged: false
     };
     expect(getSingleSkuBarcodeUpdateAction([ctBarcode], ctSku)).toEqual(expectedAction);
   });
@@ -250,7 +251,8 @@ describe('getSingleSkuBarcodeUpdateAction', () => {
       sku: '1',
       value: [
         { id: 'bar', typeId: 'key-value-document' }
-      ]
+      ],
+      staged: false
     };
 
     expect(getSingleSkuBarcodeUpdateAction([ctBarcode], ctSkuWithNoBarcodes)).toEqual(expectedAction);
@@ -271,7 +273,8 @@ describe('getSingleSkuBarcodeUpdateAction', () => {
       sku: '1',
       value: [
         { id: 'bar', typeId: 'key-value-document' }
-      ]
+      ],
+      staged: false
     };
 
     expect(getSingleSkuBarcodeUpdateAction([ctBarcode], ctSkuWithPreExistingBarcode)).toEqual(expectedAction);
@@ -310,7 +313,8 @@ describe('getBarcodeBatchUpdateActions', () => {
           { id: 'bar', typeId: 'key-value-document' },
           { id: 'bat', typeId: 'key-value-document' }
 
-        ]
+        ],
+        staged: false
       },
       {
         action: 'setAttribute',
@@ -318,7 +322,8 @@ describe('getBarcodeBatchUpdateActions', () => {
         sku: '2',
         value: [
           { id: 'baz', typeId: 'key-value-document' },
-        ]
+        ],
+        staged: false
       }
     ];
 
@@ -335,7 +340,8 @@ describe('getBarcodeBatchUpdateActions', () => {
         value: [
           { id: 'foo', typeId: 'key-value-document' },
           { id: 'bat', typeId: 'key-value-document' }
-        ]
+        ],
+        staged: false
       }
     ];
 
