@@ -1,4 +1,4 @@
-const { styleAttributeNames, currencyCodes, languageKeys, STAGED } = require('./constantsCt');
+const { styleAttributeNames, currencyCodes, languageKeys, IS_STAGED } = require('./constantsCt');
 
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
 
@@ -121,7 +121,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
         action: 'setAttributeInAllVariants',
         name: attribute,
         value: style[attribute],
-        staged: STAGED
+        staged: IS_STAGED
       };
       
       actionObj = formatAttributeValue(style, actionObj, attribute, attributeType);
@@ -133,11 +133,11 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   // `name` and `description` aren't custom attributes of products in CT, so
   // their update actions differ from the others
   const nameUpdateAction = style.name
-    ? { action: 'changeName', name: style.name, staged: STAGED }
+    ? { action: 'changeName', name: style.name, staged: IS_STAGED }
     : null;
   
   const descriptionUpdateAction = style.marketingDescription
-    ? { action: 'setDescription', description: style.marketingDescription, staged: STAGED }
+    ? { action: 'setDescription', description: style.marketingDescription, staged: IS_STAGED }
     : null;
 
   // handle categories
@@ -154,13 +154,13 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   // category actions, remove only those not present in coming request
   const categoriesRemoveAction = categoryIds && existingCategoryIds
     ? existingCategoryIds.filter(categoryId => !categoryIds.includes(categoryId))
-        .map(categoryId => ({ action: 'removeFromCategory', category: { id: categoryId, typeId: 'category', staged: STAGED } }))
+        .map(categoryId => ({ action: 'removeFromCategory', category: { id: categoryId, typeId: 'category', staged: IS_STAGED } }))
     : [];
 
   // category actions, add only those not present already in CT
   const categoriesAddAction = categoryIds && existingCategoryIds
     ? categoryIds.filter(categoryId => !existingCategoryIds.includes(categoryId))
-      .map(categoryId => ({ action: 'addToCategory', category: { id: categoryId, typeId: 'category' }, staged: STAGED }))
+      .map(categoryId => ({ action: 'addToCategory', category: { id: categoryId, typeId: 'category' }, staged: IS_STAGED }))
     : [];
 
   const currentPriceActions = style.variantPrices
@@ -174,7 +174,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
             centAmount: variantPrice.updatedPrice.currentPrice
           }
         },
-        staged: STAGED
+        staged: IS_STAGED
     }))
       : [];
 
