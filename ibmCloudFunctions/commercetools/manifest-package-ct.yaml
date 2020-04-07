@@ -1,0 +1,24 @@
+packages:
+  commercetools:
+    inputs:
+      nameSpace: $SPACE
+      cloudFunctionsNamespace: $CLOUD_FUNCTIONS_NAMESPACE
+      mongoUri: $MONGO_URI # although the CT Cloud Functions don't store product data in MongoDB, they do rely on MongoDB for logging
+      mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+      dbName: $DB_NAME
+      kafkaBrokers: $KAFKA_BROKERS
+      kafkaUsername: $KAFKA_USERNAME
+      kafkaPassword: $KAFKA_PASSWORD
+      kafkaInvalidMessagesDlqTopicName: $KAFKA_INVALID_MESSAGES_DLQ_TOPIC_NAME
+      messagesMongoUri: $MESSAGES_MONGO_URI
+      messagesMongoCertificateBase64: $MESSAGES_MONGO_CERTIFICATE_BASE64
+      cloudFunctionsRestEndpoint: $CLOUD_FUNCTIONS_REST_ENDPOINT
+      cloudFunctionsRestUsername: $CLOUD_FUNCTIONS_REST_USERNAME
+      cloudFunctionsRestPassword: $CLOUD_FUNCTIONS_REST_PASSWORD
+      ctpProjectKey: $CTP_PROJECT_KEY
+      ctpClientId: $CTP_CLIENT_ID
+      ctpClientSecret: $CTP_CLIENT_SECRET
+      ctpAuthUrl: $CTP_AUTH_URL
+      ctpApiUrl: $CTP_API_URL
+      ctpScopes: $CTP_SCOPES # see https://docs.commercetools.com/http-api-scopes
+      productTypeId: $PRODUCT_TYPE_ID # reference to the Product Type on CT

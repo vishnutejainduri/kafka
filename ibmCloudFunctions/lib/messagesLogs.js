@@ -91,15 +91,45 @@ async function getValuesCollection({
 async function storeBatch(params) {
     try {
         const collection = await getMessagesCollection(params);
+        const transactionId = process.env.__OW_TRANSACTION_ID;
+        let messages = params.messages;
+        if (params.messages === null) {
+            // for messages in a sequence, only the first step has the messages as stored in Kafka topics
+            // for the subsequent steps we copy the messages e.g. see calculateAvailableToSell/index.js
+            messages = (await collection.findOne({ transactionId }, { projection: { messages: 1 }})).messages;
+        }
         const result = await collection
             .insertOne({
                 activationId: process.env.__OW_ACTIVATION_ID,
-                messages: params.messages,
-                resolved: false
+                transactionId,
+                messages,
+                resolved: false,
+                recordTime: (new Date()).getTime()
             });
         return result;
     } catch (error) {
         log(createLog.messagesLog.failedToStoreBatch(error));
+        return error;
+    }
+}
+
+async function updateBatchWithFailureIndexes(params, failureIndexes) {
+    try {
+        const collection = await getMessagesCollection(params);
+        const transactionId = process.env.__OW_TRANSACTION_ID;
+        const result = await collection
+            .updateOne({
+                activationId: process.env.__OW_ACTIVATION_ID,
+                transactionId,
+            }, {
+              $set: {
+                resolved: 'partial',
+                failureIndexes
+              }
+            });
+        return result;
+    } catch (error) {
+        log(createLog.messagesLog.failedToUpdateBatchWithFailureIndexes(error));
         return error;
     }
 }
@@ -120,11 +150,11 @@ async function getStoreRetryMessages(params) {
     }
 }
 
-async function findUnresolvedBatches(params, limit = 100) {
+async function findBatches(params, limit = 50) {
     const collection = await getMessagesCollection(params);
     let result = [];
     await collection
-        .find({ resolved: false }, { projection: { activationId: 1 } })
+        .find({}, { projection: { activationId: 1, failureIndexes: 1 } })
         .limit(limit)
         .forEach(document => {
             result.push(document);
@@ -160,7 +190,15 @@ async function getRetryBatches(params, limit = 50) {
     const collection = await getRetryCollection(params);
     const result = [];
     await collection
-        .find()
+        .find({
+            "messages": {
+                $elemMatch: {
+                    "value.metadata.nextRetry": {
+                        $lte: new Date().getTime()
+                    }
+                }
+            }
+        })
         .limit(limit)
         .forEach(document => {
             result.push(document);
@@ -187,7 +225,7 @@ async function getStoreValues(params) {
 async function getDeleteBatch(params) {
     const collection = await getMessagesCollection(params);
     return async function(activationId) {
-        const result = await collection.deleteOne({ activationId });        
+        const result = await collection.deleteOne({ activationId });
         return result;
     }
 }
@@ -224,10 +262,37 @@ async function storeInvalidMessages(params, invalidMessages) {
     }
 }
 
+async function deleteOldBatches(params, cutoff) {
+    const [
+        messagesCollection,
+        retryCollection,
+        dlqCollection
+    ] = await Promise.all([
+        getMessagesCollection(params),
+        getRetryCollection(params),
+        getDlqCollection(params)
+    ]);
+    const activationIsOld = { recordTime: { $lt: cutoff } }
+    const batchIsOld = { "metadata.activationInfo.end": { $lt: cutoff } }
+
+    const [deletedMessages, deletedRetries, deletedDlqs] = await Promise.all([
+        messagesCollection.deleteMany(activationIsOld),
+        retryCollection.deleteMany(batchIsOld),
+        dlqCollection.deleteMany(batchIsOld)
+    ]);
+
+    return {
+        deletedMessages,
+        deletedRetries,
+        deletedDlqs
+    }
+}
+
 module.exports = {
     getMessagesCollection,
     storeBatch,
-    findUnresolvedBatches,
+    updateBatchWithFailureIndexes,
+    findBatches,
     findTimedoutBatchesActivationIds,
     getFindMessages,
     getDeleteBatch,
@@ -237,5 +302,6 @@ module.exports = {
     getRetryBatches,
     getUpdateRetryBatch,
     getDeleteRetryBatch,
-    storeInvalidMessages
+    storeInvalidMessages,
+    deleteOldBatches
 };

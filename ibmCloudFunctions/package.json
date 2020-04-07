@@ -9,7 +9,7 @@
   "scripts": {
     "test": "jest",
     "test:dev": "jest --watch",
-    "pretest": "eslint './lib/**' './product-consumers/**'"
+    "pretest": "eslint './lib/**' './product-consumers/**' './commercetools/**'"
   },
   "author": "",
   "license": "ISC",

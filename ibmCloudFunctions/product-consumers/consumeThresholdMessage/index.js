@@ -2,9 +2,11 @@ const { parseThresholdMessage } = require('../../lib/parseThresholdMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { addErrorHandling, log, createLog } = require('../utils');
+const messagesLogs = require('../../lib/messagesLogs');
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('consumeThresholdMessage', params));
+
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
     const { messages, ...paramsExcludingMessages } = params;
@@ -90,11 +92,35 @@ global.main = async function (params) {
         };
     })
     .then((results) => {
-        const errors = results.filter((res) => res instanceof Error);
+        const failureIndexes = [];
+        const errors = results.filter((res, index) => {
+            if (res instanceof Error) {
+                failureIndexes.push(index);
+                return true;
+            }
+        });
+
         if (errors.length > 0) {
-            throw createError.consumeThresholdMessage.partialFailure(params.messages, errors);
+            log.error(createError.consumeThresholdMessage.partialFailure(params.messages, errors));
+        }
+
+        return {
+            failureIndexes,
+            errors
         }
     })
+}
+
+global.main = async function (params) {
+  return Promise.all([
+      main(params),
+      messagesLogs.storeBatch(params)
+  ]).then(async ([result]) => {
+      if (result.failureIndexes.length > 0) {
+        await messagesLogs.updateBatchWithFailureIndexes(params, result.failureIndexes);
+      }
+      return result;
+  });
 }
 
 module.exports = global.main;

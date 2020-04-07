@@ -115,6 +115,13 @@ module.exports = {
             `Failure to update style ats in run of consume sku message; skuData: ${skuData}.`
         ),
     },
+    consumeSkuMessageCt: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-sku-message-ct',
+            `Failure in run of consume sku message; params: ${params}.`
+        )
+    },
     consumeCatalogMessage: {
         failed: (originalError, params) => new CustomError(
             originalError,
@@ -136,6 +143,34 @@ module.exports = {
             'failed-bulk-ats-insert',
             `Failed to insert a style for bulk ats recalculation; style data: ${styleData}.`
         )
+    },
+    consumeCatalogMessageCT: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-catalog-message-ct',
+            `Failure in run of consume catalog message CT; params: ${params}.`
+        )
+    },
+    consumeBarcodeMessageCT: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-barcode-message-ct',
+            `Failure in run of consume barcode message CT; params: ${params}.`
+        )
+    },
+    consumeSalePriceCT: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-sale-price-ct',
+            `Failure in run of consume sale price CT; params: ${params}.`
+        ),
+    },
+    consumeStylesBasicMessageCT: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-styles-basic-message-ct',
+            `Failure in run of consume styles basic message CT; params: ${params}.`
+        ),
     },
     calculateAvailableToSell: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(
@@ -192,6 +227,15 @@ module.exports = {
             originalError,
             'failed-bulk-ats-insert',
             `Failed to insert a style for bulk ats recalculation; ats data: ${atsData}.`
+        ),
+        partialFailure: (messages, messageFailures) => new CustomError(
+            null,
+            'partial-failure-calculate-available-to-sell',
+            `Failed to update ${messageFailures.length} out of ${messages.length} messages.`,
+            {
+                messages: JSON.stringify(messages),
+                messageFailures: JSON.stringify(messageFailures)
+            }
         )
     },
     bulkCalculateAvailableToSell: {

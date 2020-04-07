@@ -31,9 +31,8 @@ const updateAlgoliaFacetQueueWithErrorHandling = algoliaFacetQueue => addErrorHa
     createError.addFacetsToBulkImportQueue.failedUpdateFacetQueue
 );
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params("addFacetsToBulkImportQueue", params));
-    messagesLogs.storeBatch(params);
 
     let algoliaFacetQueue;
     try {
@@ -55,6 +54,13 @@ global.main = async function (params) {
             };
         }
     });
+}
+
+global.main = async function (params) {
+  return Promise.all([
+      main(params),
+      messagesLogs.storeBatch(params)
+  ]).then(([result]) => result);
 }
 
 module.exports = global.main;

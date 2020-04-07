@@ -4,9 +4,8 @@ const getCollection = require('../../lib/getCollection');
 const messagesLogs = require('../../lib/messagesLogs');
 const createError = require('../../lib/createError');
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('consumeBarcodeMessage', params));
-    messagesLogs.storeBatch(params);
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
@@ -54,6 +53,13 @@ global.main = async function (params) {
             throw e;
         }
     });
+}
+
+global.main = async function (params) {
+  return Promise.all([
+      main(params),
+      messagesLogs.storeBatch(params)
+  ]).then(([result]) => result);
 }
 
 module.exports = global.main;

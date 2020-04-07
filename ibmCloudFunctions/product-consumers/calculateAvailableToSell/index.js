@@ -2,9 +2,11 @@ const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { addErrorHandling, log, createLog } = require('../utils');
 const { handleSkuAtsUpdate } = require('./utils');
+const messagesLogs = require('../../lib/messagesLogs');
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('calculateAvailableToSell', params));
+
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
     const { messages, ...paramsExcludingMessages } = params;
@@ -41,7 +43,7 @@ global.main = async function (params) {
                                   return createError.calculateAvailableToSell.failedGetStore(originalError, atsData);
                               });
 
-          if (!storeData || !skuData || !styleData || storeData.isOutlet) return null;
+          if (!storeData || !skuData || !styleData || storeData.isOutlet || !storeData.isVisible) return null;
 
           let atsUpdates = [];
 
@@ -66,19 +68,38 @@ global.main = async function (params) {
                             })
         }))
     )
-    .then((results) => {
-        const errors = results.filter((res) => res instanceof Error);
-        if (errors.length > 0) {
-            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
-            e.failedUpdatesErrors = errors;
-            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-
-            throw e;
-        }
-    })
     .catch(originalError => {
         throw createError.calculateAvailableToSell.failed(originalError, paramsExcludingMessages);
+    })
+    .then((results) => {
+        const failureIndexes = [];
+        const errors = results.filter((res, index) => {
+            if (res instanceof Error) {
+                failureIndexes.push(index);
+                return true;
+            }
+        });
+
+        if (errors.length > 0) {
+            log.error(createError.calculateAvailableToSell.failedAddToAlgoliaQueue(results, errors))
+        }
+        return {
+            errors,
+            failureIndexes
+        }
     });
 };
+
+global.main = async function (params) {
+    return Promise.all([
+        main(params),
+        messagesLogs.storeBatch(params)
+    ]).then(async ([result]) => {
+        if (result.failureIndexes && result.failureIndexes.length > 0) {
+          await messagesLogs.updateBatchWithFailureIndexes(params, result.failureIndexes);
+        }
+        return result;
+    });
+}
 
 module.exports = global.main;

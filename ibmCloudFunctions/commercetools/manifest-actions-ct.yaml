@@ -1,0 +1,96 @@
+    actions:
+      consume-catalog-message-ct:
+        location: ./commercetools/consumeCatalogMessageCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+          concurrent: 1
+          minuteRate: 6
+        inputs:
+          topicName: styles-connect-jdbc-CATALOG
+      consume-catalog-message-with-retry-ct:
+        location: ./commercetools/consumeCatalogMessageWithRetryCT/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+          concurrent: 1
+          minuteRate: 6
+      consume-barcode-message-ct:
+        location: ./commercetools/consumeBarcodeMessageCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+          concurrent: 1
+          minuteRate: 6
+        inputs:
+          topicName: barcodes-connect-jdbc
+      consume-barcode-message-with-retry-ct:
+        location: ./commercetools/consumeBarcodeMessageWithRetryCT/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+          concurrent: 1
+          minuteRate: 6
+      consume-sale-price-ct:
+        location: ./commercetools/consumeSalePriceCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+          concurrent: 1
+          minuteRate: 6
+        inputs:
+          topicName: prices-connect-jdbc 
+      consume-sale-price-with-retry-ct:
+        location: ./commercetools/consumeSalePriceWithRetryCT/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+          concurrent: 1
+          minuteRate: 6
+      consume-sku-message-ct:
+        location: ./commercetools/consumeSkuMessageCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+          concurrent: 1
+          minuteRate: 6
+        inputs:
+          topicName: skus-connect-jdbc
+      consume-sku-message-with-retry-ct:
+        location: ./commercetools/consumeSkuMessageWithRetryCT/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+          concurrent: 1
+          minuteRate: 6
+      consume-styles-basic-message-ct:
+        location: ./commercetools/consumeStylesBasicMessageCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+          concurrent: 1
+          minuteRate: 6
+        inputs:
+          topicName: styles-basic-connect-jdbc 
+      consume-styles-basic-message-with-retry-ct:
+        location: ./commercetools/consumeStylesBasicMessageWithRetryCT/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+          concurrent: 1
+          minuteRate: 6

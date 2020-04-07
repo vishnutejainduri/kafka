@@ -1,3 +1,5 @@
+const { MAX_RETRIES } = require('../utils');
+
 // Note: only parameters starting with `mock` are allowed
 // https://github.com/facebook/jest/blob/116303baf711df37304986897582eb8078aa24d8/packages/babel-plugin-jest-hoist/src/index.ts#L17
 function mockModules({
@@ -47,7 +49,6 @@ function mockModules({
     });
 }
 
-
 describe('resolveMessagesLogs', function() {
     beforeEach(() => {
         jest.resetModules();
@@ -78,13 +79,17 @@ describe('resolveMessagesLogs', function() {
         expect(await resolveMessagesLogs({})).toEqual({
             resolveBatchesResult: [{
                 activationId: mockBatch.activationId,
-                success: true
+                success: true,
+                messagesByNextAction: {
+                    retried: 0,
+                    dlqed: 0
+                }
             }],
             unresolvedBatches: [mockBatch]
         });
     });
 
-    it('returns a dlq message for a failed batch that is not timedout', async function() {
+    it('returns a retry message for a failed batch that has a message that has not been retried at all', async function() {
         const mockBatch = {
             activationId: 'some-activationId'
         };
@@ -108,7 +113,11 @@ describe('resolveMessagesLogs', function() {
         expect(await resolveMessagesLogs({})).toEqual({
             resolveBatchesResult: [{
                 activationId: mockBatch.activationId,
-                success: true
+                success: true,
+                messagesByNextAction: {
+                    retried: 1,
+                    dlqed: 0
+                }
             }],
             unresolvedBatches: [{
                 ...mockBatch
@@ -116,17 +125,59 @@ describe('resolveMessagesLogs', function() {
         });
     });
 
-    it('returns a retry message for a failed batch that is timedout', async function() {
+    it('returns a dlq message for a failed batch that has a message that has exceeded maximum retries', async function() {
         const mockBatch = {
-            activationId: 'some-activationId',
+            activationId: 'some-activationId'
         };
         const mockActivationInfo = {
             annotations: [{
                 key: 'timeout',
-                value: true
+                value: false
             }],
             response: {
                 success: false
+            }
+        };
+        const mockMessage = {
+            id: 'some-message',
+            value: {
+                id: 'some-id',
+                metadata: {
+                    lastRetry: 0,
+                    nextRetry: 0,
+                    retries: MAX_RETRIES
+                }
+            }
+        };
+        mockModules({ mockBatch, mockActivationInfo, mockMessage });
+        const resolveMessagesLogs = require('../index');
+        expect(await resolveMessagesLogs({})).toEqual({
+            resolveBatchesResult: [{
+                activationId: mockBatch.activationId,
+                success: true,
+                messagesByNextAction: {
+                    retried: 0,
+                    dlqed: 1
+                }
+            }],
+            unresolvedBatches: [{
+                ...mockBatch
+            }]
+        });
+    });
+
+    it('returns a retry message for a batch with partial failure even if batch is successful', async function() {
+        const mockBatch = {
+            activationId: 'some-activationId',
+            failureIndexes: [0]
+        };
+        const mockActivationInfo = {
+            annotations: [{
+                key: 'timeout',
+                value: false
+            }],
+            response: {
+                success: true
             },
             end: 0
         };
@@ -146,7 +197,54 @@ describe('resolveMessagesLogs', function() {
         expect(await resolveMessagesLogs({})).toEqual({
             resolveBatchesResult: [{
                 activationId: mockBatch.activationId,
+                success: true,
+                messagesByNextAction: {
+                    retried: 1,
+                    dlqed: 0
+                }
+            }],
+            unresolvedBatches: [{
+                ...mockBatch
+            }]
+        });
+    });
+
+    it('returns dlq message for a batch with partial failure that has been retried more than the limit', async function() {
+        const mockBatch = {
+            activationId: 'some-activationId',
+            failureIndexes: [0]
+        };
+        const mockActivationInfo = {
+            annotations: [{
+                key: 'timeout',
+                value: false
+            }],
+            response: {
                 success: true
+            },
+            end: 0
+        };
+        const mockMessage = {
+            id: 'some-message',
+            value: {
+                id: 'some-id',
+                metadata: {
+                    lastRetry: 0,
+                    nextRetry: 0,
+                    retries: MAX_RETRIES
+                }
+            }
+        };
+        mockModules({ mockBatch, mockActivationInfo, mockMessage });
+        const resolveMessagesLogs = require('../index');
+        expect(await resolveMessagesLogs({})).toEqual({
+            resolveBatchesResult: [{
+                activationId: mockBatch.activationId,
+                success: true,
+                messagesByNextAction: {
+                    retried: 0,
+                    dlqed: 1
+                }
             }],
             unresolvedBatches: [{
                 ...mockBatch

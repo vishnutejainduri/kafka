@@ -2,8 +2,9 @@ const { filterSkuMessage, parseSkuMessage } = require('../../lib/parseSkuMessage
 const { addErrorHandling, log, createLog } = require('../utils');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
+const messagesLogs = require('../../lib/messagesLogs');
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('consumeSkuMessage', params));
 
     if (!params.topicName) {
@@ -50,6 +51,13 @@ global.main = async function (params) {
             throw e;
         }
     });
+}
+
+global.main = async function (params) {
+  return Promise.all([
+      main(params),
+      messagesLogs.storeBatch(params)
+  ]).then(([result]) => result);
 }
 
 module.exports = global.main;

@@ -5,9 +5,8 @@ const createError = require('../../lib/createError');
 
 const { createLog, addErrorHandling, log } = require('../utils');
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('consumeSkuInventoryMessage', params));
-    messagesLogs.storeBatch(params);
 
     // messages is not used, but paramsExcludingMessages is used
     // eslint-disable-next-line no-unused-vars
@@ -48,7 +47,13 @@ global.main = async function (params) {
         )
     )
     .then((results) => {
-        const errors = results.filter((res) => res instanceof Error);
+        const failureIndexes = [];
+        const errors = results.filter((res, index) => {
+            if (res instanceof Error) {
+                failureIndexes.push(index);
+                return true;
+            }
+        });
         const successes = results.filter((res) => !(res instanceof Error) && res);
 
         if (errors.length > 0) {
@@ -62,12 +67,25 @@ global.main = async function (params) {
 
         return {
             ...paramsExcludingMessages,
-            messages: successes
+            messages: successes,
+            failureIndexes
         };
     })
     .catch(originalError => {
         throw createError.consumeInventoryMessage.failed(originalError, params);
     });
 };
+
+global.main = async function (params) {
+  return Promise.all([
+      main(params),
+      messagesLogs.storeBatch(params)
+  ]).then(async ([result]) => {
+      if (result.failureIndexes.length > 0) {
+        await messagesLogs.updateBatchWithFailureIndexes(params, result.failureIndexes);
+      }
+      return result;
+  });
+}
 
 module.exports = global.main;
