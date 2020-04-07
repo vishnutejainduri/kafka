@@ -1,5 +1,5 @@
 const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
-const { skuAttributeNames, BARCODE_NAMESPACE, KEY_VALUE_DOCUMENT, IS_STAGED } = require('../constantsCt');
+const { skuAttributeNames, BARCODE_NAMESPACE, KEY_VALUE_DOCUMENT, isStaged } = require('../constantsCt');
 const { getCtSkusFromCtStyle, getCtSkuAttributeValue, getCreationAction } = require('../consumeSkuMessageCT/utils');
 const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
 
@@ -74,7 +74,7 @@ const getSingleSkuBarcodeUpdateAction = (barcodes, sku) => {
     sku: sku.sku, // the SKU id in commercetools is just called `sku`
     name: 'barcodes',
     value: allBarcodeReferences,
-    staged: IS_STAGED
+    staged: isStaged
   };
 };
 
