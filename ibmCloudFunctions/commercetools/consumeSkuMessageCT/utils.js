@@ -1,4 +1,4 @@
-const { getExistingCtStyle, createStyle } = require('../styleUtils');
+const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
 const { skuAttributeNames, STAGED } = require('../constantsCt');
 const { groupByAttribute } = require('../../lib/utils');
 
@@ -43,7 +43,8 @@ const getActionsFromSku = (sku, existingSku = null) => {
     action: 'setAttribute',
     sku: sku.id,
     name: attribute,
-    value: sku[attribute]
+    value: sku[attribute],
+    staged: STAGED
   }));
 
   if (existingSku) return actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
@@ -190,6 +191,6 @@ module.exports = {
   getExistingCtStyle,
   groupByStyleId,
   removeDuplicateSkus,
-  createStyle,
+  createAndPublishStyle,
   createOrUpdateSkus
 };

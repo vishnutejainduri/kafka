@@ -1,4 +1,3 @@
-const { addRetries } = require('../product-consumers/utils');
 const { styleAttributeNames, currencyCodes, languageKeys, STAGED } = require('./constantsCt');
 
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
@@ -271,9 +270,9 @@ const createAndPublishStyle = async (styleToCreate, productType, categories, ctH
 
   const method = 'POST';
   const uri = requestBuilder.products.byKey(newStyle.key).build();
-  const body = JSON.stringify({ version: newStyle.version, actions: [{ name: 'publish', scope: 'All' }] });
+  const body = JSON.stringify({ version: newStyle.version, actions: [{ action: 'publish', scope: 'All' }] });
 
-  return client.execute({ method, uri, body }); // TODO: make sure this is formatted correctly
+  return client.execute({ method, uri, body });
 };
 
 /**
@@ -340,7 +339,7 @@ module.exports = {
   createStyle,
   createAndPublishStyle,
   updateStyle,
-  createOrUpdateStyle: addRetries(createOrUpdateStyle, 2, console.error),
+  createOrUpdateStyle,
   existingCtStyleIsNewer,
   getCtStyleAttributeValue,
   getCtStyleAttribute,
