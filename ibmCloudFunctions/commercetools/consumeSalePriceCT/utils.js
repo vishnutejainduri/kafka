@@ -1,4 +1,3 @@
-const { addRetries } = require('../../product-consumers/utils');
 const { getExistingCtStyle, getCtStyleAttribute, updateStyle, getProductType } = require('../styleUtils');
 const { styleAttributeNames } = require('../constantsCt');
 const { generateUpdateFromParsedMessage } = require('../../lib/parsePriceMessage');
@@ -98,10 +97,10 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
 const updateStylePrice = async (ctHelpers, productTypeId, updatedPrice) => {
     const productType = await getProductType(productTypeId, ctHelpers);
 
-    return updateStyle(updatedPrice, updatedPrice.ctStyleVersion, productType, ctHelpers);
+    return updateStyle(updatedPrice, updatedPrice.ctStyleVersion, productType, null, ctHelpers);
 };
 
 module.exports = {
   preparePriceUpdate,
-  updateStylePrice: addRetries(updateStylePrice, 2, console.error),
+  updateStylePrice,
 };
