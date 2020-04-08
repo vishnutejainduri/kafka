@@ -97,12 +97,7 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
 const updateStylePrice = async (ctHelpers, productTypeId, updatedPrice) => {
     const productType = await getProductType(productTypeId, ctHelpers);
 
-    // It looks odd that we're passing the same value as the first and second
-    // arguments into `updateStyle`, but this is not a mistake. Basically, 
-    // `updatedPrice` holds both the info expected to be given in the first
-    // argument to `updateStyle` and the info expected to be given in the
-    // second argument to `updateStyle`.
-    return updateStyle(updatedPrice, updatedPrice, productType, null, ctHelpers);
+    return updateStyle({ style: updatedPrice, existingCtStyle: updatedPrice, productType, ctHelpers });
 };
 
 module.exports = {
