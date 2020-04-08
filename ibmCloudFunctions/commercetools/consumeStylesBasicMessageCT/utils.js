@@ -12,7 +12,7 @@ const updateStyleOutlet = async (ctHelpers, productTypeId, stylesBasicMessage) =
     if (existingCtStyleIsNewer(existingCtStyle, stylesBasicMessage, styleAttributeNames.STYLE_OUTLET_LAST_MODIFIED_INTERNAL)) {
       return null;
     }
-    return updateStyle(stylesBasicMessage, existingCtStyle.version, productType, ctHelpers);
+    return updateStyle(stylesBasicMessage, existingCtStyle.version, productType, null, ctHelpers);
 };
 
 module.exports = {
