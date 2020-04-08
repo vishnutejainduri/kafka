@@ -141,10 +141,10 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
     : null;
 
   // handle categories
-  const existingCtStyleData = existingCtStyle.masterData.hasStagedChanges
+  const existingCtStyleData = existingCtStyle.masterData && (existingCtStyle.masterData.hasStagedChanges
     ? existingCtStyle.masterData.staged
-    : existingCtStyle.masterData.current
-  const existingCategoryIds = existingCtStyleData.categories
+    : existingCtStyle.masterData.current)
+  const existingCategoryIds = existingCtStyleData && existingCtStyleData.categories
     ? existingCtStyleData.categories.map(category => category.id)
     : null
   const categoryIds = categories

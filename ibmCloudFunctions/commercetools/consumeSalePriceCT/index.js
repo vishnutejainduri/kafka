@@ -23,7 +23,7 @@ let ctHelpers;
 const main = async params => {
   log(createLog.params('consumeSalePriceCT', params));
   validateParams(params);
-  const handleErrors = err => createError.consumeSalePriceCT.failed(err, params);
+  const handleErrors = err => { throw createError.consumeSalePriceCT.failed(err, params) };
   const { productTypeId } = params;
 
   if (!ctHelpers) {

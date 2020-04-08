@@ -81,7 +81,7 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
         return null;
     }
 
-    updatedPrices.ctStyleVersion = existingCtStyle.version;
+    updatedPrices.version = existingCtStyle.version;
     updatedPrices.id = priceUpdate.styleId;
 
     //the following three values come from index 0, they should be identical at all times at anywhere in the index
@@ -97,7 +97,7 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
 const updateStylePrice = async (ctHelpers, productTypeId, updatedPrice) => {
     const productType = await getProductType(productTypeId, ctHelpers);
 
-    return updateStyle(updatedPrice, updatedPrice.ctStyleVersion, productType, null, ctHelpers);
+    return updateStyle(updatedPrice, updatedPrice, productType, null, ctHelpers);
 };
 
 module.exports = {
