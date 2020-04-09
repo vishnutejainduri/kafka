@@ -141,10 +141,10 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
     : null;
 
   // handle categories
-  const existingCtStyleData = existingCtStyle.masterData.hasStagedChanges
+  const existingCtStyleData = existingCtStyle.masterData && (existingCtStyle.masterData.hasStagedChanges
     ? existingCtStyle.masterData.staged
-    : existingCtStyle.masterData.current
-  const existingCategoryIds = existingCtStyleData.categories
+    : existingCtStyle.masterData.current)
+  const existingCategoryIds = existingCtStyleData && existingCtStyleData.categories
     ? existingCtStyleData.categories.map(category => category.id)
     : null
   const categoryIds = categories
@@ -184,7 +184,8 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   return allUpdateActions;
 };
 
-const updateStyle = async (style, existingCtStyle, productType, categories, { client, requestBuilder }) => {
+const updateStyle = async ({ style, existingCtStyle, productType, categories, ctHelpers }) => {
+  const { client, requestBuilder } = ctHelpers;
   if (!style.id) throw new Error('Style lacks required key \'id\'');
   if (!existingCtStyle.version) throw new Error('Invalid arguments: must include existing style \'version\'');
 
@@ -332,7 +333,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     // the given style is up-to-date and an earlier version of it is already
     // stored in CT, so we just need to update its attributes
     const categories = await getCategories(style, ctHelpers);
-    return updateStyle(style, existingCtStyle, productType, categories, ctHelpers);
+    return updateStyle({ style, existingCtStyle, productType, categories, ctHelpers });
 };
 
 module.exports = {

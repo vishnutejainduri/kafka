@@ -224,12 +224,12 @@ describe('createStyle', () => {
 describe('updateStyle', () => {
   it('throws an error if the given style lacks an ID', () => {
     const styleWithNoId = {};
-    return expect(updateStyle(styleWithNoId, { version: '1' }, 'product-type-reference-id', null, mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
+    return expect(updateStyle({ style: styleWithNoId, existingCtStyle: { version: '1' }, productType: 'product-type-reference-id', categories: null, ctHelpers: mockedCtHelpers })).rejects.toThrow('Style lacks required key \'id\'');
   });
 
   it('throws an error if called without a version number', () => {
     const style = { id: '1' };
-    return expect(updateStyle(style, {} ,'product-type-reference-id', null, mockedCtHelpers)).rejects.toThrow('Invalid arguments: must include existing style \'version\'');
+    return expect(updateStyle({ style, existingCtStyle: {} , productType: 'product-type-reference-id', categories: null, ctHelpers: mockedCtHelpers })).rejects.toThrow('Invalid arguments: must include existing style \'version\'');
   });
 });
 

@@ -1,6 +1,6 @@
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const consumeSalePriceCT = require('..');
-const { preparePriceUpdate } = require('../utils');
+const { preparePriceUpdate, updateStylePrice } = require('../utils');
 const {
     filterPriceMessages,
     parsePriceMessage,
@@ -71,5 +71,11 @@ describe('consumeSalePriceCT', () => {
   it('correct params', async () => {
     const response = await consumeSalePriceCT(validParams);
     return expect(response).toBe(undefined);
+  });
+});
+
+describe('updateStylePrice', () => {
+  it('returns an object when it is given `ctHelpers`, a product type, and a price', async () => {
+    expect(typeof await updateStylePrice(mockedCtHelpers, '1', { version: 1, id: '1' }) === 'object').toBe(true);
   });
 });
