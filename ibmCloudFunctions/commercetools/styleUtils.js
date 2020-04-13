@@ -109,6 +109,11 @@ const isCustomAttribute = attribute => {
   return styleCustomAttributes.includes(attribute);
 };
 
+const getUniqueCategoryIdsFromCategories = categories => {
+  if (!categories) return null;
+  return [...new Set(categories.map(category => category.id))];
+};
+
 // Returns an array of actions, each of which tells CT to update a different
 // attribute of the given style
 const getActionsFromStyle = (style, productType, categories, existingCtStyle) => {
@@ -147,9 +152,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   const existingCategoryIds = existingCtStyleData && existingCtStyleData.categories
     ? existingCtStyleData.categories.map(category => category.id)
     : null
-  const categoryIds = categories
-    ? categories.map(category => category.id)
-    : null
+  const categoryIds = getUniqueCategoryIdsFromCategories(categories);
 
   // category actions, remove only those not present in coming request
   const categoriesRemoveAction = categoryIds && existingCategoryIds
@@ -348,6 +351,7 @@ module.exports = {
   getExistingCtStyle,
   getCategory,
   getCategories,
+  getUniqueCategoryIdsFromCategories,
   createCategory,
   categoryNameToKey
 };
