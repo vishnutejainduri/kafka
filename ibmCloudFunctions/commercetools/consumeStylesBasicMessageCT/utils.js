@@ -1,4 +1,3 @@
-const { addRetries } = require('../../product-consumers/utils');
 const { getExistingCtStyle, getProductType, existingCtStyleIsNewer, updateStyle } = require('../styleUtils');
 const { styleAttributeNames } = require('../constantsCt');
 
@@ -12,9 +11,9 @@ const updateStyleOutlet = async (ctHelpers, productTypeId, stylesBasicMessage) =
     if (existingCtStyleIsNewer(existingCtStyle, stylesBasicMessage, styleAttributeNames.STYLE_OUTLET_LAST_MODIFIED_INTERNAL)) {
       return null;
     }
-    return updateStyle(stylesBasicMessage, existingCtStyle.version, productType, null, ctHelpers);
+    return updateStyle({ style: stylesBasicMessage, existingCtStyle, productType, ctHelpers});
 };
 
 module.exports = {
-  updateStyleOutlet: addRetries(updateStyleOutlet, 2, console.error),
+  updateStyleOutlet
 };
