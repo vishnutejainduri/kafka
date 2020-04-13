@@ -40,7 +40,6 @@ const main = async function (params) {
       throw createError.failedDbConnection(originalError); 
     }
 
-
     return Promise.all(params.messages
         .filter(filterStyleBasicMessage)
         .map(parseStyleBasicMessage)
