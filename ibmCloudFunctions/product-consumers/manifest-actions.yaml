@@ -311,6 +311,8 @@
         location: ./product-consumers/schemaValidation/dist/bundle.js
       resolve-messages-logs:
         location: ./product-consumers/resolveMessagesLogs/dist/bundle.js
+        inputs:
+          maxRetries: maxRetries
         limits:
           memorySize: 2048
           timeout: 600000

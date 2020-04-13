@@ -20,9 +20,9 @@ function getValueWithUpdatedMetadata(value, activationEndTime) {
     };
 }
 
-function groupMessagesByNextAction(messages, activationEndTime ) {
+function groupMessagesByNextAction(messages, activationEndTime, maxRetries = MAX_RETRIES) {
     return messages.reduce(function ({ retry, dlq }, message) {
-        if (message.value.metadata && message.value.metadata.retries >= MAX_RETRIES) {
+        if (message.value.metadata && message.value.metadata.retries >= maxRetries) {
             dlq.push(message);
         } else {
             retry.push({
