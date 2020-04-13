@@ -50,7 +50,7 @@ describe('groupMessagesByNextAction', function() {
         });
     });
 
-    it("groups messages that has been retried more than MAX_RETRIES into dlq", function() {
+    it("groups messages that has been retried more than the default maxRetries into dlq", function() {
       const retries = MAX_RETRIES;
         const dlqMessages = {
             id: 'dlqValue',
@@ -65,7 +65,23 @@ describe('groupMessagesByNextAction', function() {
             dlq: [dlqMessages]
         })
     });
-    it("groups messages that has been retried less  han MAX_RETRIES into retry and update their metadata", function() {
+    it("groups messages that has been retried more than a specified maxRetries into dlq", function() {
+        const maxRetries = 2;
+        const retries = maxRetries;
+          const dlqMessages = {
+              id: 'dlqValue',
+              value: {
+                  metadata: {
+                      retries
+                  }
+              }
+          };
+          expect(groupMessagesByNextAction([dlqMessages], activationEndTime, maxRetries)).toEqual({
+              retry: [],
+              dlq: [dlqMessages]
+          })
+      });
+    it("groups messages that has been retried less  than the default maxRetries into retry and update their metadata", function() {
         const retries =  MAX_RETRIES - 1;
         const retryMessage = {
             id: 'retryValue',

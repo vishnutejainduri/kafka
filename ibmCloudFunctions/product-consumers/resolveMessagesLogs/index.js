@@ -46,7 +46,7 @@ global.main = async function(params) {
             const messages = hasFailed
                 ? allMessages
                 : allMessages.filter((_, index) => failureIndexes.includes(index));
-            messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end);
+            messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end, params.maxRetries);
             if (messagesByNextAction.dlq.length) {
                 const storeDlqMessages = await getStoreDlqMessages(params);
                 log.error(`DLQing messages: ${messagesByNextAction.dlq.length} messages DLQed with activation info: ${activationInfo}`)

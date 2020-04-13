@@ -21,3 +21,4 @@ packages:
       cloudFunctionsRestUsername: $CLOUD_FUNCTIONS_REST_USERNAME
       cloudFunctionsRestPassword: $CLOUD_FUNCTIONS_REST_PASSWORD
       messagesLogsPersistenceDays: $MESSAGES_LOGS_PERSISTENCE_DAYS
+      maxRetries: $MAX_RETRIES
