@@ -20,7 +20,7 @@ const validParams = {
       value: {
         LAST_MODIFIED_DATE: 1000000000000,
         STYLE_ID: 'styleId',
-        BRAND_ID: 'brandId'
+        BRAND_ID: '1'
       }
   }],
   mongoUri: 'mongo-uri',
