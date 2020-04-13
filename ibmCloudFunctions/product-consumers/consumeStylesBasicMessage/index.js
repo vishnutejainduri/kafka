@@ -82,10 +82,10 @@ const main = async function (params) {
 }
 
 global.main = async function (params) {
-  return await Promise.all([
+  return Promise.all([
       main(params),
       messagesLogs.storeBatch(params)
-  ])[0];
+  ]).then(([result]) => result);
 }
 
 module.exports = global.main;
