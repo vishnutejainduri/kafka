@@ -3,6 +3,7 @@ const { styleAttributeNames, currencyCodes, languageKeys, isStaged } = require('
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
 
 const createCategory = async (categoryKey, categoryName, parentCategory, { client, requestBuilder }) => {
+  if (!categoryKey) return null;
   const method = 'POST';
   const uri = requestBuilder.categories.build();
 
@@ -29,6 +30,7 @@ const createCategory = async (categoryKey, categoryName, parentCategory, { clien
 };
 
 const getCategory = async (category, { client, requestBuilder }) => {
+  if (!category) return null;
   const method = 'GET';
 
   const uri = requestBuilder.categories.byKey(category).build();
@@ -57,7 +59,7 @@ const getCategories = async (style, ctHelpers) => {
   if (!categories[1]) categories[1] = await createCategory(level2CategoryKey, style.level2Category, categories[0], ctHelpers);
   if (!categories[2]) categories[2] = await createCategory(level3CategoryKey, style.level3Category, categories[1], ctHelpers);
 
-  return categories;
+  return categories.filter(Boolean);
 };
 
 const getProductType = async (productTypeId, { client, requestBuilder }) => {
