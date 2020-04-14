@@ -3,7 +3,7 @@ const { styleAttributeNames, currencyCodes, languageKeys, isStaged } = require('
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
 
 const createCategory = async (categoryKey, categoryName, parentCategory, { client, requestBuilder }) => {
-  if (!categoryKey) return null;
+  if (!categoryKey || !categoryName) return null;
   const method = 'POST';
   const uri = requestBuilder.categories.build();
 
