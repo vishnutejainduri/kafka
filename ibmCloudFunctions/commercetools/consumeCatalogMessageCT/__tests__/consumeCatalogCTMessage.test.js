@@ -268,14 +268,14 @@ describe('createCategory', () => {
   });
 
   it('returns `null` when given a falsy value as a category key', async () => {
-   const response = await createCategory('', 'categoryName', 'parentCategory', mockedCtHelpers);
-   expect(response).toBe(null);
- });
+    const response = await createCategory('', 'categoryName', 'parentCategory', mockedCtHelpers);
+    expect(response).toBe(null);
+  });
 
- it('returns `null` when given a falsy value as a category name', async () => {
-  const response = await createCategory('categoryKey', '', 'parentCategory', mockedCtHelpers);
-  expect(response).toBe(null);
-});
+  it('returns `null` when given a falsy value as a category name', async () => {
+    const response = await createCategory('categoryKey', '', 'parentCategory', mockedCtHelpers);
+    expect(response).toBe(null);
+  });
 });
 
 describe('consumeCatalogueMessageCT', () => {
