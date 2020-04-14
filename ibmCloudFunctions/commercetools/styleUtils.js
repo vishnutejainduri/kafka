@@ -165,15 +165,21 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
 
   const currentPriceActions = style.variantPrices
       ? style.variantPrices.map((variantPrice) => ({
-        action: variantPrice.price ? 'changePrice' : 'addPrice',
+        action: variantPrice.price 
+                ? variantPrice.updatedPrice.currentPrice
+                  ? 'changePrice'
+                  : 'removePrice'
+                : 'addPrice',
         priceId: variantPrice.price ? variantPrice.price.id : null,
         variantId: variantPrice.price ? null : variantPrice.variantId,
-        price: {
-          value: {
-            currencyCode: currencyCodes.CAD,
-            centAmount: variantPrice.updatedPrice.currentPrice
-          }
-        },
+        price: variantPrice.updatedPrice.currentPrice
+                ? {
+                    value: {
+                      currencyCode: currencyCodes.CAD,
+                      centAmount: variantPrice.updatedPrice.currentPrice
+                    }
+                  }
+                : null,
         staged: isStaged
     }))
       : [];
