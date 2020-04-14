@@ -12,7 +12,7 @@ In this directory you'll find:
 - `logging` - resources and instructions for setting up logging with LogDNA
 
 When starting with a new cluster, you must:
-1. set up VPN connectivity with the resources in the `ibmCloudK8sVPN` folder (Note: optional at the moment, since we have a public IP for JESTA)
+1. set up VPN connectivity with the resources in the `ibmCloudK8sVPN` folder (Note: You'll need to contact HR and provide them with the IPs of the cluster to whitelist them)
 2. set up Ingress with the resources in the `ibmCloudK8sIngress` folder.
 3. deploy the connectors with the instructions below.
 
