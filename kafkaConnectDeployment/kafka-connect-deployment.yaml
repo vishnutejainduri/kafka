@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: kafka-connect-host
-          image: us.icr.io/hrretailplatform/kafkaconnecthost:5.3.2
+          image: us.icr.io/hrretailplatform/kafkaconnecthost:5.3.3
           ports:
             - containerPort: 28083
           env:
