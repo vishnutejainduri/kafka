@@ -10,6 +10,7 @@ const {
   getCtStyleAttributeValue,
   getCategory,
   getCategories,
+  getUniqueCategoryIdsFromCategories,
   createCategory,
   categoryNameToKey
 } = require('../../styleUtils');
@@ -265,6 +266,16 @@ describe('createCategory', () => {
 
     expect(response).toBeInstanceOf(Object);
   });
+
+  it('returns `null` when given a falsy value as a category key', async () => {
+    const response = await createCategory('', 'categoryName', 'parentCategory', mockedCtHelpers);
+    expect(response).toBe(null);
+  });
+
+  it('returns `null` when given a falsy value as a category name', async () => {
+    const response = await createCategory('categoryKey', '', 'parentCategory', mockedCtHelpers);
+    expect(response).toBe(null);
+  });
 });
 
 describe('consumeCatalogueMessageCT', () => {
@@ -276,5 +287,27 @@ describe('consumeCatalogueMessageCT', () => {
   it('returns `undefined` if given valid params', async () => {
     const response = await consumeCatalogueMessageCT(validParams);
     expect(response).toBeUndefined();
+  });
+});
+
+
+describe('getUniqueCategoryIdsFromCategories', () => {
+  it('returns an array of all category IDs when there are no duplicate IDs', () => {
+    const allUniqueCategories = [{ id: '1' }, { id: '2' }, { id: '3' }];
+    expect(getUniqueCategoryIdsFromCategories(allUniqueCategories)).toEqual(['1', '2', '3']);
+  });
+
+  it('returns an array of only the unique category IDs when there are duplicate IDs', () => {
+    const categoriesWithDuplicateIds = [{ id: '1' }, { id: '1' }, { id: '2' }];
+    expect(getUniqueCategoryIdsFromCategories(categoriesWithDuplicateIds)).toEqual(['1', '2']);
+  });
+
+  it('returns an empty array when given an empty array', () => {
+    expect(getUniqueCategoryIdsFromCategories([])).toEqual([]);
+  });
+
+  it('returns `null` when given a falsy argument', () => {
+    expect(getUniqueCategoryIdsFromCategories(undefined)).toBe(null);
+    expect(getUniqueCategoryIdsFromCategories(null)).toBe(null);
   });
 });

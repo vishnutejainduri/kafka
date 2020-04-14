@@ -3,6 +3,7 @@ const { styleAttributeNames, currencyCodes, languageKeys, isStaged } = require('
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
 
 const createCategory = async (categoryKey, categoryName, parentCategory, { client, requestBuilder }) => {
+  if (!categoryKey || !categoryName) return null;
   const method = 'POST';
   const uri = requestBuilder.categories.build();
 
@@ -29,6 +30,7 @@ const createCategory = async (categoryKey, categoryName, parentCategory, { clien
 };
 
 const getCategory = async (category, { client, requestBuilder }) => {
+  if (!category) return null;
   const method = 'GET';
 
   const uri = requestBuilder.categories.byKey(category).build();
@@ -57,7 +59,7 @@ const getCategories = async (style, ctHelpers) => {
   if (!categories[1]) categories[1] = await createCategory(level2CategoryKey, style.level2Category, categories[0], ctHelpers);
   if (!categories[2]) categories[2] = await createCategory(level3CategoryKey, style.level3Category, categories[1], ctHelpers);
 
-  return categories;
+  return categories.filter(Boolean);
 };
 
 const getProductType = async (productTypeId, { client, requestBuilder }) => {
@@ -109,6 +111,11 @@ const isCustomAttribute = attribute => {
   return styleCustomAttributes.includes(attribute);
 };
 
+const getUniqueCategoryIdsFromCategories = categories => {
+  if (!categories) return null;
+  return [...new Set(categories.map(category => category.id))];
+};
+
 // Returns an array of actions, each of which tells CT to update a different
 // attribute of the given style
 const getActionsFromStyle = (style, productType, categories, existingCtStyle) => {
@@ -147,9 +154,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   const existingCategoryIds = existingCtStyleData && existingCtStyleData.categories
     ? existingCtStyleData.categories.map(category => category.id)
     : null
-  const categoryIds = categories
-    ? categories.map(category => category.id)
-    : null
+  const categoryIds = getUniqueCategoryIdsFromCategories(categories);
 
   // category actions, remove only those not present in coming request
   const categoriesRemoveAction = categoryIds && existingCategoryIds
@@ -348,6 +353,7 @@ module.exports = {
   getExistingCtStyle,
   getCategory,
   getCategories,
+  getUniqueCategoryIdsFromCategories,
   createCategory,
   categoryNameToKey
 };
