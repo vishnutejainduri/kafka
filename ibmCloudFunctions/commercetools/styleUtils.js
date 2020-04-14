@@ -169,18 +169,29 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
     : [];
 
   const currentPriceActions = style.variantPrices
-      ? style.variantPrices.map((variantPrice) => ({
-        action: variantPrice.price ? 'changePrice' : 'addPrice',
-        priceId: variantPrice.price ? variantPrice.price.id : null,
-        variantId: variantPrice.price ? null : variantPrice.variantId,
-        price: {
-          value: {
-            currencyCode: currencyCodes.CAD,
-            centAmount: variantPrice.updatedPrice.currentPrice
-          }
-        },
-        staged: isStaged
-    }))
+      ? style.variantPrices.map((variantPrice) => {
+        const priceUpdate = {
+          price: {
+            value: {
+              currencyCode: currencyCodes.CAD,
+              centAmount: variantPrice.updatedPrice.currentPrice
+            }
+          },
+          staged: isStaged
+        };
+        if (!variantPrice.price) {
+          priceUpdate.action = 'addPrice';
+          priceUpdate.variantId = variantPrice.variantId;
+        } else if (variantPrice.updatedPrice.currentPrice) {
+          priceUpdate.action = 'changePrice';
+          priceUpdate.priceId = variantPrice.price.id;
+        } else {
+          priceUpdate.action = 'removePrice';
+          priceUpdate.priceId = variantPrice.price.id;
+          delete priceUpdate.price;
+        }
+        return priceUpdate;
+    })
       : [];
 
   const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...currentPriceActions, 
