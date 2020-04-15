@@ -124,18 +124,22 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => {
       const attributeTypeOj = productType.attributes.find((attributeType) => attributeType.name === attribute)
       const attributeType = attributeTypeOj ? attributeTypeOj.type.name : null;
-      let actionObj = {
-        action: 'setAttributeInAllVariants',
-        name: attribute,
-        value: style[attribute],
-        staged: isStaged
-      };
+      if (style[attribute]) {
+        let actionObj = {
+          action: 'setAttributeInAllVariants',
+          name: attribute,
+          value: style[attribute],
+          staged: isStaged
+        };
       
-      actionObj = formatAttributeValue(style, actionObj, attribute, attributeType);
+        actionObj = formatAttributeValue(style, actionObj, attribute, attributeType);
 
-      return actionObj;
+        return actionObj;
+      } else {
+        return null;
+      }
     }
-  );
+  ).filter(actionObj => actionObj)
 
   // `name` and `description` aren't custom attributes of products in CT, so
   // their update actions differ from the others
@@ -218,15 +222,19 @@ const getAttributesFromStyle = (style, productType) => {
   
   return customAttributesToCreate.map(attribute => {
       const attributeType = productType.attributes.find((attributeType) => attributeType.name === attribute).type.name;
-      let attributeCreation = {
-        name: attribute,
-        value: style[attribute]
-      };
+      if (style[attribute]) {
+        let attributeCreation = {
+          name: attribute,
+          value: style[attribute]
+        };
 
-      attributeCreation = formatAttributeValue(style, attributeCreation, attribute, attributeType);
-      return attributeCreation;
+        attributeCreation = formatAttributeValue(style, attributeCreation, attribute, attributeType);
+        return attributeCreation;
+      } else {
+        return null;
+      }
     }
-  );
+  ).filter(attributeCreation => attributeCreation)
 };
 
 const createStyle = async (style, productType, categories, { client, requestBuilder }) => {
