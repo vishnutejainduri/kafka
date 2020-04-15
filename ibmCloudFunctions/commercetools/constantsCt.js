@@ -18,7 +18,8 @@ const styleAttributeNames = {
   IS_ONLINE_SALE: 'isOnlineSale',
   ONLINE_DISCOUNT: 'onlineDiscount',
   STYLE_OUTLET_LAST_MODIFIED_INTERNAL: 'styleOutletLastModifiedInternal',
-  IS_OUTLET: 'isOutlet'
+  IS_OUTLET: 'isOutlet',
+  RELATED_PRODUCT_ID: 'relatedProductId'
 };
 
 /**
