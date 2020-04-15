@@ -139,7 +139,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
         return null;
       }
     }
-  ).filter(attribute => attribute)
+  ).filter(actionObj => actionObj)
 
   // `name` and `description` aren't custom attributes of products in CT, so
   // their update actions differ from the others
@@ -234,7 +234,7 @@ const getAttributesFromStyle = (style, productType) => {
         return null;
       }
     }
-  ).filter(attribute => attribute)
+  ).filter(attributeCreation => attributeCreation)
 };
 
 const createStyle = async (style, productType, categories, { client, requestBuilder }) => {
