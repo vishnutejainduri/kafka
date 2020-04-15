@@ -42,12 +42,14 @@ to deploy all Cloud Functions.
 - Command:
     - $: ibmcloud fn service bind $SERVICE $ACTION_NAME --instance $INSTANCE_NAME --keyname $CREDENTIALS_NAME
     e.g. ibmcloud fn service bind messagehub "eventStreamsStaging" --instance KafkaConnectStagingEventStreams --keyname cloud-functions
+- Notes:
+    - 'messagehub' is the service name of event streams e.g. run 'ibmcloud resource service-instance KafkaConnectStagingEventStreams'
 
 - References:
     - https://cloud.ibm.com/unifiedsupport/cases?number=CS1558634
     - https://cloud.ibm.com/docs/openwhisk?topic=cloud-functions-services#services_bind
 
-4. (optional test) Create a trigger with a messageHubFeed
+4. (optional test) Create a trigger with a messageHubFeed, associate it with an action, and monitor if the action is beig invoked for new messages in Kafka instance.
 - Parameters:
     - $: export TOPIC_NAME=<String name of the topic to consume messages from>
     e.g. export TOPIC_NAME="inventory-connect-jdbc-SKUINVENTORY"
@@ -58,3 +60,7 @@ to deploy all Cloud Functions.
 # Config
 All config should be specified in the toolchain's Environment Properties and referenced
 in the `manifest.yaml`.
+
+
+NOTE The binding will respond only to new messages; in order to test, either manually send new messages to Kafka or create the Kafka Connectors after the binding is already done.
+ 
