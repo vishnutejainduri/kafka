@@ -18,7 +18,7 @@ to deploy all Cloud Functions.
     - $: export MESSAGING_FEED_BINDING=<String name of /whisk.system/messaging binding>
     e.g. export MESSAGING_FEED_BINDING="eventStreamsStaging"
     - $: export KAFKA_BROKERS_SASL=<String[] array of broker addresses>
-    e.g. export KAFKA_BROKERS_SASL=["broker-1-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093","broker-3-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093","broker-4-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093","broker-0-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093","broker-2-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093","broker-5-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093"]
+    e.g. export KAFKA_BROKERS_SASL=["broker-3-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093","broker-5-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093","broker-4-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093","broker-0-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093","broker-2-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093","broker-1-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093"]
     - $: export KAFKA_USERNAME=<String: Event Streams username>
     e.g. export KAFKA_USERNAME="token"
     - $: export KAFKA_PASSWORD=<String: Event Streams password>
@@ -36,11 +36,13 @@ to deploy all Cloud Functions.
     - $: export SERVICE=messagehub
     - $: export ACTION_NAME=$MESSAGING_FEED_BINDING
     - $: export INSTANCE_NAME=<String name of messagehub service instance>
-    e.g. export INSTANCE_NAME=kafkaConnectStaginEventStreams
+    e.g. export INSTANCE_NAME=KafkaConnectStagingEventStreams
     - $: export CREDENTIALS_NAME=<String name of the credentials associated with the service instance>
     e.g. export CREDENTIALS_NAME=cloud-functions
 - Command:
     - $: ibmcloud fn service bind $SERVICE $ACTION_NAME --instance $INSTANCE_NAME --keyname $CREDENTIALS_NAME
+    e.g. ibmcloud fn service bind messagehub "eventStreamsStaging" --instance KafkaConnectStagingEventStreams --keyname cloud-functions
+
 - References:
     - https://cloud.ibm.com/unifiedsupport/cases?number=CS1558634
     - https://cloud.ibm.com/docs/openwhisk?topic=cloud-functions-services#services_bind
