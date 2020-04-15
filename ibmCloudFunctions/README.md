@@ -9,14 +9,14 @@ to deploy all Cloud Functions.
 1. Set the Cloud Functions namespace:
 - Parameters:
     - $: export CLOUD_FUNCTIONS_NAMESPACE=<String Cloud Functions namespace>
-    e.g. export CLOUD_FUNCTIONS_NAMESPACE="platform-development"
+    e.g. export CLOUD_FUNCTIONS_NAMESPACE="platform-staging"
 - Command:
     - $: ibmcloud fn property set --namespace $CLOUD_FUNCTIONS_NAMESPACE
 
 2. An '/whisk.system/messaging' package bound the credentials of the Event Streams instance that will be used as the messages feed should be created:
 - Parameters:
     - $: export MESSAGING_FEED_BINDING=<String name of /whisk.system/messaging binding>
-    e.g. export MESSAGING_FEED_BINDING="eventStreamsDevelopment"
+    e.g. export MESSAGING_FEED_BINDING="eventStreamsStaging"
     - $: export KAFKA_BROKERS_SASL=<String[] array of broker addresses>
     e.g. export KAFKA_BROKERS_SASL=["broker-1-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093","broker-3-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093","broker-4-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093","broker-0-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093","broker-2-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093","broker-5-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093"]
     - $: export KAFKA_USERNAME=<String: Event Streams username>
@@ -36,7 +36,7 @@ to deploy all Cloud Functions.
     - $: export SERVICE=messagehub
     - $: export ACTION_NAME=$MESSAGING_FEED_BINDING
     - $: export INSTANCE_NAME=<String name of messagehub service instance>
-    e.g. export INSTANCE_NAME=kafkaConnectDevelopmentEventStreams
+    e.g. export INSTANCE_NAME=kafkaConnectStaginEventStreams
     - $: export CREDENTIALS_NAME=<String name of the credentials associated with the service instance>
     e.g. export CREDENTIALS_NAME=cloud-functions
 - Command:
@@ -51,7 +51,7 @@ to deploy all Cloud Functions.
     e.g. export TOPIC_NAME="inventory-connect-jdbc-SKUINVENTORY"
 - Command:
     $: ibmcloud fn trigger create kafka-trigger -f $MESSAGING_FEED_BINDING/messageHubFeed -p topic $TOPIC_NAME -p "isJSONData" true
-    e.g. ibmcloud fn trigger create kafka-trigger -f "eventStreamsDevelopment/messageHubFeed" -p topic "inventory-connect-jdbc-SKUINVENTORY" -p "isJSONData" true
+    e.g. ibmcloud fn trigger create kafka-trigger -f "eventStreamsStaging/messageHubFeed" -p topic "inventory-connect-jdbc-SKUINVENTORY" -p "isJSONData" true
 
 # Config
 All config should be specified in the toolchain's Environment Properties and referenced

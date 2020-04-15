@@ -39,10 +39,12 @@ Further details:
 3a. Set the context of kubectl to the cluster hosting Kafka Connect. Run `ibmcloud ks cluster-config --cluster <cluster_id>`
 The output will contain an "export KUBECONFIG=..." statement. Copy and run that statement in terminal.
 
-3b. For Dev: 
-    Run `kubectl apply -f configs/ingress-dev.yaml`
-    For Prod:
-    Run `kubectl apply -f configs/ingress-prod.yaml`
+3b. For Development: 
+    Run `kubectl apply -f configs/ingress-development.yaml`
+    For Staging: 
+    Run `kubectl apply -f configs/ingress-staging.yaml`
+    For Production:
+    Run `kubectl apply -f configs/ingress-production.yaml`
 
 *Parameters*
 - host: 'Ingress subdomain' from the 'Overview' tab of the cluster
