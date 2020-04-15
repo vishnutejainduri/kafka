@@ -1,4 +1,4 @@
-const { getExistingCtStyle, getProductType, existingCtStyleIsNewer, updateStyle } = require('../styleUtils');
+const { getExistingCtStyle, getProductType, existingCtStyleIsNewer, updateStyle, createAndPublishStyle } = require('../styleUtils');
 const { styleAttributeNames } = require('../constantsCt');
 
 const updateStyleOutlet = async (ctHelpers, productTypeId, stylesBasicMessage) => {
@@ -6,7 +6,7 @@ const updateStyleOutlet = async (ctHelpers, productTypeId, stylesBasicMessage) =
     const existingCtStyle = await getExistingCtStyle(stylesBasicMessage.id, ctHelpers);
 
     if (!existingCtStyle) {
-      throw new Error('Style does not exist');
+      existingCtStyle = (await createAndPublishStyle ({ id: stylesFacetMessage.id, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
     }
     if (existingCtStyleIsNewer(existingCtStyle, stylesBasicMessage, styleAttributeNames.STYLE_OUTLET_LAST_MODIFIED_INTERNAL)) {
       return null;

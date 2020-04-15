@@ -151,6 +151,13 @@ module.exports = {
             `Failure in run of consume catalog message CT; params: ${params}.`
         )
     },
+    consumeFacetMessageCT: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-facet-message-ct',
+            `Failure in run of consume facet message CT; params: ${params}.`
+        )
+    },
     consumeBarcodeMessageCT: {
         failed: (originalError, params) => new CustomError(
             originalError,
