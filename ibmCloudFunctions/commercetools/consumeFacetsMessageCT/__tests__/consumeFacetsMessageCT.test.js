@@ -57,7 +57,7 @@ describe('consumeFacetsMessageCT', () => {
 describe('parseFacetMessageCt', () => {
   it('correct message; promo sticker', () => {
     const response = parseFacetMessageCt(validParams.messages[0]);
-    expect(response.promotionalSticker instanceof Object).toBe(true);
+    expect(response).toEqual({ _id: 'styleId', id: 'styleId', promotionalSticker: { 'en-CA': 'descEng', 'fr-CA': 'descFr' } });
   });
 });
 
