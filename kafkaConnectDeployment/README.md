@@ -130,7 +130,12 @@ kubectl create secret generic eventstreams-kafka-connect-standard \
 ## production
 ```bash
 kubectl create secret generic eventstreams-kafka-connect-standard \
-  --from-literal=CONNECT_BOOTSTRAP_SERVERS="broker-5-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-4-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-3-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-1-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-0-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-2-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093"   \
+  --from-literal=CONNECT_BOOTSTRAP_SERVERS="broker-5-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093",
+    "broker-4-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093",
+    "broker-3-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093",
+    "broker-1-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093",
+    "broker-0-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093",
+    "broker-2-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093"   \
   --from-literal=CONNECT_REST_PORT=28083   \
   --from-literal=CONNECT_GROUP_ID="platform"   \
   --from-literal=CONNECT_CONFIG_STORAGE_TOPIC="platform-connect-config"   \
@@ -189,3 +194,9 @@ example calls:
 
 VERY IMPORTANT - Delete the NodePort ingress when setup is complete!
 *Note* There is no need to deploy NodePort if you have successfully setup Ingress; NodePort is only for testing purposes.
+
+# Troubleshooting
+- If Kafka Connect cannot create the initial topics by itself, they can be manually created:
+  - $: ibmcloud es topic-create --name platform-connect-offsets -p 25 --config cleanup.policy="compact,delete" --config retention.ms=-1
+  - $: ibmcloud es topic-create --name platform-connect-status -p 5 --config cleanup.policy="compact,delete" --config retention.ms=-1
+  - $: ibmcloud es topic-create --name platform-connect-config --config cleanup.policy="compact,delete" --config retention.ms=-1 
