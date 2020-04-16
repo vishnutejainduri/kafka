@@ -13,15 +13,15 @@ spec:
       labels:
         app: kafka-connect-standard
     spec:
-      nodeSelector:
-        kafkaconnect: 'true'
       containers:
         - name: kafka-connect-standard-host
           image: us.icr.io/hrretailplatform/kafkaconnecthost:5.3.3
           resources:
+            # Resoure request allows us to have one high capacity node with multiple lower capacity nodes in the same cluster
+            # while ensuring that our Kafka Connect is deployed in the one with the higher capacity.
             requests:
-              memory: "4Gi"
-              cpu: "2.5"
+              memory: "12Gi"
+              cpu: "3.5"       
             limits:
               memory: "12Gi"
               cpu: "3.5"
