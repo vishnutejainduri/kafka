@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: kafka-ingress
   annotations:
-    ingress.bluemix.net/appid-auth: "bindSecret=binding-platformprodservicesappid namespace=default requestType=api serviceName=kafka-connect"
+    ingress.bluemix.net/appid-auth: "bindSecret=binding-platformprodservicesappid namespace=default requestType=api serviceName=kafka-connect-standard"
 spec:
   tls:
   - hosts:
@@ -15,5 +15,5 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: kafka-connect
+          serviceName: kafka-connect-standard
           servicePort: 80
