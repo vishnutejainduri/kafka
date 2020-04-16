@@ -129,8 +129,8 @@ kubectl create secret generic eventstreams-kafka-connect-standard \
 
 ## production
 ```bash
-kubectl create secret generic eventstreams-kafka-connect \
-  --from-literal=CONNECT_BOOTSTRAP_SERVERS="kafka01-prod02.messagehub.services.us-south.bluemix.net:9093,kafka04-prod02.messagehub.services.us-south.bluemix.net:9093,kafka03-prod02.messagehub.services.us-south.bluemix.net:9093,kafka05-prod02.messagehub.services.us-south.bluemix.net:9093,kafka02-prod02.messagehub.services.us-south.bluemix.net:9093"   \
+kubectl create secret generic eventstreams-kafka-connect-standard \
+  --from-literal=CONNECT_BOOTSTRAP_SERVERS="broker-5-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-4-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-3-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-1-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-0-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-2-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093"   \
   --from-literal=CONNECT_REST_PORT=28083   \
   --from-literal=CONNECT_GROUP_ID="platform"   \
   --from-literal=CONNECT_CONFIG_STORAGE_TOPIC="platform-connect-config"   \
@@ -149,13 +149,13 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_KAFKA_LOG4J_ROOT_LOGLEVEL=INFO \
   --from-literal=CONNECT_CONNECT_LOG4J_ROOT_LOGLEVEL=INFO   \
   --from-literal=CONNECT_PLUGIN_PATH=/usr/share/java,/etc/kafka-connect/jars \
-  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="IjgbHlmYOUFuxiOp" password="A2BYpLuR4jQkh7KIyGY3jNE7Kt01Llbd";'  \
+  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="C5QCCPl5XV9dZTpFRVvwHWZDiPM-_cNG3PGS-5Gl9QQ9";'  \
   --from-literal=CONNECT_SECURITY_PROTOCOL=SASL_SSL  \
   --from-literal=CONNECT_SASL_MECHANISM=PLAIN  \
   --from-literal=CONNECT_SSL_PROTOCOL=TLSv1.2  \
   --from-literal=CONNECT_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
   --from-literal=CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS  \
-  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="IjgbHlmYOUFuxiOp" password="A2BYpLuR4jQkh7KIyGY3jNE7Kt01Llbd";'  \
+  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="C5QCCPl5XV9dZTpFRVvwHWZDiPM-_cNG3PGS-5Gl9QQ9";'  \
   --from-literal=CONNECT_PRODUCER_SECURITY_PROTOCOL=SASL_SSL  \
   --from-literal=CONNECT_PRODUCER_SASL_MECHANISM=PLAIN  \
   --from-literal=CONNECT_PRODUCER_SSL_PROTOCOL=TLSv1.2  \
