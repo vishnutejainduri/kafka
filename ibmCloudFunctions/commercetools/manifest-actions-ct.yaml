@@ -74,3 +74,18 @@
         limits:
           memorySize: 512
           timeout: 600000
+      consume-facets-message-ct:
+        location: ./commercetools/consumeFacetsMessageCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+        inputs:
+          topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
+      consume-facets-message-with-retry-ct:
+        location: ./commercetools/consumeFacetsMessageWithRetryCT/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000

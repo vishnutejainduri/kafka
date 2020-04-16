@@ -14,3 +14,6 @@
       styles-basic-rule-ct:
         action: /${ORG}_${SPACE}/commercetools/consume-styles-basic-message-with-retry-ct
         trigger: styles-basic-ct-trigger
+      facets-rule-ct:
+        action: /${ORG}_${SPACE}/commercetools/consume-facets-message-with-retry-ct
+        trigger: facets-ct-trigger
