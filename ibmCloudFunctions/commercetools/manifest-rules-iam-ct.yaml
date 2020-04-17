@@ -14,3 +14,6 @@
       styles-basic-rule-ct:
         action: consume-styles-basic-message-with-retry-ct
         trigger: styles-basic-ct-trigger
+      facets-rule-ct:
+        action: consume-facets-message-with-retry-ct
+        trigger: facets-ct-trigger
