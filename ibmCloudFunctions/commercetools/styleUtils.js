@@ -1,6 +1,7 @@
 const { styleAttributeNames, currencyCodes, languageKeys, isStaged } = require('./constantsCt');
 
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
+const DPM_ROOT_CATEGORY = 'DPM ROOT CATEGORY';
 
 const createCategory = async (categoryKey, categoryName, parentCategory, { client, requestBuilder }) => {
   if (!categoryKey || !categoryName) return null;
@@ -45,21 +46,24 @@ const getCategory = async (category, { client, requestBuilder }) => {
 };
 
 const getCategories = async (style, ctHelpers) => {
-  const level1CategoryKey = categoryNameToKey(style.level1Category[languageKeys.ENGLISH]);
-  const level2CategoryKey = categoryNameToKey(style.level1Category[languageKeys.ENGLISH] + style.level2Category[languageKeys.ENGLISH]);
-  const level3CategoryKey = categoryNameToKey(style.level1Category[languageKeys.ENGLISH] + style.level2Category[languageKeys.ENGLISH] + style.level3Category[languageKeys.ENGLISH]);
+  const level0CategoryKey = categoryNameToKey(DPM_ROOT_CATEGORY);
+  const level1CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[languageKeys.ENGLISH]);
+  const level2CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[languageKeys.ENGLISH] + style.level2Category[languageKeys.ENGLISH]);
+  const level3CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[languageKeys.ENGLISH] + style.level2Category[languageKeys.ENGLISH] + style.level3Category[languageKeys.ENGLISH]);
 
   const categories = await Promise.all([
+    getCategory(level0CategoryKey, ctHelpers),
     getCategory(level1CategoryKey, ctHelpers),
     getCategory(level2CategoryKey, ctHelpers),
     getCategory(level3CategoryKey, ctHelpers)
   ]);
 
-  if (!categories[0]) categories[0] = await createCategory(level1CategoryKey, style.level1Category, null, ctHelpers);
-  if (!categories[1]) categories[1] = await createCategory(level2CategoryKey, style.level2Category, categories[0], ctHelpers);
-  if (!categories[2]) categories[2] = await createCategory(level3CategoryKey, style.level3Category, categories[1], ctHelpers);
+  if (!categories[0]) categories[0] = await createCategory(level0CategoryKey, { 'en-CA': DPM_ROOT_CATEGORY, 'fr-CA': DPM_ROOT_CATEGORY }, null, ctHelpers);
+  if (!categories[1]) categories[1] = await createCategory(level1CategoryKey, style.level1Category, categories[0], ctHelpers);
+  if (!categories[2]) categories[2] = await createCategory(level2CategoryKey, style.level2Category, categories[1], ctHelpers);
+  if (!categories[3]) categories[3] = await createCategory(level3CategoryKey, style.level3Category, categories[2], ctHelpers);
 
-  return categories.filter(Boolean);
+  return categories.slice(1, categories.length).filter(Boolean);
 };
 
 const getProductType = async (productTypeId, { client, requestBuilder }) => {
