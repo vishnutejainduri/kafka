@@ -124,22 +124,17 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => {
       const attributeTypeOj = productType.attributes.find((attributeType) => attributeType.name === attribute)
       const attributeType = attributeTypeOj ? attributeTypeOj.type.name : null;
-      if (style[attribute]) {
-        let actionObj = {
-          action: 'setAttributeInAllVariants',
-          name: attribute,
-          value: style[attribute],
-          staged: isStaged
-        };
-      
-        actionObj = formatAttributeValue(style, actionObj, attribute, attributeType);
+      let actionObj = {
+        action: 'setAttributeInAllVariants',
+        name: attribute,
+        value: style[attribute],
+        staged: isStaged
+      };
+    
+      actionObj = formatAttributeValue(style, actionObj, attribute, attributeType);
 
-        return actionObj;
-      } else {
-        return null;
-      }
-    }
-  ).filter(actionObj => actionObj)
+      return actionObj;
+  })
 
   // `name` and `description` aren't custom attributes of products in CT, so
   // their update actions differ from the others
@@ -183,19 +178,21 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
           },
           staged: isStaged
         };
-        if (!variantPrice.price) {
+        if (!variantPrice.price && variantPrice.updatedPrice.currentPrice) {
           priceUpdate.action = 'addPrice';
           priceUpdate.variantId = variantPrice.variantId;
-        } else if (variantPrice.updatedPrice.currentPrice) {
+        } else if (variantPrice.price && variantPrice.updatedPrice.currentPrice) {
           priceUpdate.action = 'changePrice';
           priceUpdate.priceId = variantPrice.price.id;
-        } else {
+        } else if (variantPrice.price && !variantPrice.updatedPrice.currentPrice) {
           priceUpdate.action = 'removePrice';
           priceUpdate.priceId = variantPrice.price.id;
           delete priceUpdate.price;
+        } else {
+          return null;
         }
         return priceUpdate;
-    })
+    }).filter(priceUpdate => priceUpdate)
       : [];
 
   const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...currentPriceActions, 
@@ -222,19 +219,14 @@ const getAttributesFromStyle = (style, productType) => {
   
   return customAttributesToCreate.map(attribute => {
       const attributeType = productType.attributes.find((attributeType) => attributeType.name === attribute).type.name;
-      if (style[attribute]) {
-        let attributeCreation = {
-          name: attribute,
-          value: style[attribute]
-        };
+      let attributeCreation = {
+        name: attribute,
+        value: style[attribute]
+      };
 
-        attributeCreation = formatAttributeValue(style, attributeCreation, attribute, attributeType);
-        return attributeCreation;
-      } else {
-        return null;
-      }
-    }
-  ).filter(attributeCreation => attributeCreation)
+      attributeCreation = formatAttributeValue(style, attributeCreation, attribute, attributeType);
+      return attributeCreation;
+  })
 };
 
 const createStyle = async (style, productType, categories, { client, requestBuilder }) => {
