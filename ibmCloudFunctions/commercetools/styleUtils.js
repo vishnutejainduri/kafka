@@ -223,14 +223,18 @@ const getAttributesFromStyle = (style, productType) => {
   
   return customAttributesToCreate.map(attribute => {
       const attributeType = productType.attributes.find((attributeType) => attributeType.name === attribute).type.name;
-      let attributeCreation = {
-        name: attribute,
-        value: style[attribute]
-      };
+      if (style[attribute]) {
+        let attributeCreation = {
+          name: attribute,
+          value: style[attribute]
+        };
 
-      attributeCreation = formatAttributeValue(style, attributeCreation, attribute, attributeType);
-      return attributeCreation;
-  })
+        attributeCreation = formatAttributeValue(style, attributeCreation, attribute, attributeType);
+        return attributeCreation;
+      } else {
+        return null;
+      }
+  }).filter(attributeCreation => attributeCreation)
 };
 
 const createStyle = async (style, productType, categories, { client, requestBuilder }) => {
