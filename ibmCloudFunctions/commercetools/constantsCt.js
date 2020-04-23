@@ -36,6 +36,14 @@ const skuAttributeNames = {
   BARCODES: 'barcodes'
 };
 
+/**
+ * Custom CT order attributes that apply to orders/carts
+ * @enum {String}
+ */
+const orderAttributeNames = {
+  ORDER_LAST_MODIFIED_DATE: 'orderLastModifiedDate',
+};
+
 const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
 const KEY_VALUE_DOCUMENT = 'key-value-document'; // reference-type of custom objects in CT
 const isStaged = false;
@@ -54,6 +62,7 @@ module.exports = {
   KEY_VALUE_DOCUMENT,
   styleAttributeNames,
   skuAttributeNames,
+  orderAttributeNames,
   currencyCodes,
   languageKeys,
   isStaged
