@@ -2,7 +2,7 @@ const rp = require('request-promise');
 
 const { addErrorHandling, log } = require('../utils');
 const {
-    findBatches,
+    findUnresolvedBatches,
     getDeleteBatch,
     getFindMessages,
     getStoreDlqMessages,
@@ -91,7 +91,7 @@ global.main = async function(params) {
     }
 
     try {
-        const unresolvedBatches = await findBatches(params);
+        const unresolvedBatches = await findUnresolvedBatches(params);
         const resolveBatchesResult = await Promise.all(
             unresolvedBatches.map(addErrorHandling(resolveBatchWithActivationInfo))
         );

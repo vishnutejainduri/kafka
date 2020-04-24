@@ -151,11 +151,14 @@ async function getStoreRetryMessages(params) {
     }
 }
 
-async function findBatches(params, limit = 50) {
+async function findUnresolvedBatches(params, limit = 50) {
     const collection = await getMessagesCollection(params);
     let result = [];
+    // maximum runtime of a cloud function is 10 minutes,
+    // so after 15 minutes activation info should definitely be available unless somethings wrong on IBM side
+    const cutoff = (new Date()).getTime() - 15 * 60 * 1000;
     await collection
-        .find({}, { projection: { activationId: 1, failureIndexes: 1 } })
+        .find({ recordTime: { $lt: cutoff } }, { projection: { activationId: 1, failureIndexes: 1 } })
         .limit(limit)
         .forEach(document => {
             result.push(document);
@@ -293,7 +296,7 @@ module.exports = {
     getMessagesCollection,
     storeBatch,
     updateBatchWithFailureIndexes,
-    findBatches,
+    findUnresolvedBatches,
     findTimedoutBatchesActivationIds,
     getFindMessages,
     getDeleteBatch,
