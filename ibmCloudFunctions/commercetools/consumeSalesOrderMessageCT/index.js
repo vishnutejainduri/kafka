@@ -1,4 +1,4 @@
-const { updateOrderStatus } = require('./utils');
+const { updateOrderStatus } = require('../orderUtils');
 const { filterSalesOrderMessages, parseSalesOrderMessage } = require('../../lib/parseSalesOrderMessage');
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
