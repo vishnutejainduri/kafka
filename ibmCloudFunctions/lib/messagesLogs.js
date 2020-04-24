@@ -88,6 +88,21 @@ async function getValuesCollection({
     );
 }
 
+
+// Although ObjectId can be used to find the insertion date of a document,
+// it is somewhat convoluted, so we save recordTime and index it instead.
+// Reference: https://stackoverflow.com/a/8753670/12727551
+
+// function objectIdWithTimestamp(timestamp) {
+//     if (typeof(timestamp) == 'string') {
+//         timestamp = new Date(timestamp);
+//     }
+//     const hexSeconds = Math.floor(timestamp/1000).toString(16);
+//     const constructedObjectId = ObjectId(hexSeconds + "0000000000000000");
+//     return constructedObjectId
+// }
+// db.getCollection('messagesByActivationIds').find({ _id: { $lt: objectIdWithTimestamp('2020/04/24') } })
+
 async function storeBatch(params) {
     try {
         const collection = await getMessagesCollection(params);
@@ -104,7 +119,8 @@ async function storeBatch(params) {
                 transactionId,
                 messages,
                 resolved: false,
-                recordTime: (new Date()).getTime()
+                recordTime: (new Date()).getTime(),
+                isIam: Boolean(params.cloudFunctionsIsIam)
             });
         return result;
     } catch (error) {
@@ -150,11 +166,18 @@ async function getStoreRetryMessages(params) {
     }
 }
 
-async function findBatches(params, limit = 50) {
+async function findUnresolvedBatches(params, limit = 50) {
     const collection = await getMessagesCollection(params);
     let result = [];
+    // maximum runtime of a cloud function is 10 minutes,
+    // so after 15 minutes activation info should definitely be available unless somethings wrong on IBM side
+    const query = { recordTime: { $lt: (new Date()).getTime() - 15 * 60 * 1000 } };
+    if (params.cloudFunctionsIsIam) {
+        // this check is needed because we are temporarily using the same messages database for both cloudfoundry and IAM namespaces
+        query.isIam = true
+    }
     await collection
-        .find({}, { projection: { activationId: 1, failureIndexes: 1 } })
+        .find(query, { projection: { activationId: 1, failureIndexes: 1 } })
         .limit(limit)
         .forEach(document => {
             result.push(document);
@@ -292,7 +315,7 @@ module.exports = {
     getMessagesCollection,
     storeBatch,
     updateBatchWithFailureIndexes,
-    findBatches,
+    findUnresolvedBatches,
     findTimedoutBatchesActivationIds,
     getFindMessages,
     getDeleteBatch,
