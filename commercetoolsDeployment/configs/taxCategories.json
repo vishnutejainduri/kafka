@@ -1,0 +1,96 @@
+{
+    "name": "Jesta Tax Descriptions",
+    "description": "Jesta Tax Descriptions",
+    "rates": [
+        {
+            "name": "GST CANADA",
+            "amount": 0.05,
+            "includedInPrice": false,
+            "country": "CA",
+            "id": "Gv4jFCS2",
+            "subRates": []
+        },
+        {
+            "name": "PST-BC",
+            "amount": 0.07,
+            "includedInPrice": false,
+            "country": "CA",
+            "state": "British Columbia",
+            "id": "Cnig71B_",
+            "subRates": []
+        },
+        {
+            "name": "PST-SK",
+            "amount": 0.06,
+            "includedInPrice": false,
+            "country": "CA",
+            "state": "Saskatchewan",
+            "id": "h5ehGk0M",
+            "subRates": []
+        },
+        {
+            "name": "PST-MB",
+            "amount": 0.07,
+            "includedInPrice": false,
+            "country": "CA",
+            "state": "Manitoba",
+            "id": "EQC2mljI",
+            "subRates": []
+        },
+        {
+            "name": "HST-ON",
+            "amount": 0.13,
+            "includedInPrice": false,
+            "country": "CA",
+            "state": "Ontario",
+            "id": "oQI0iDoY",
+            "subRates": []
+        },
+        {
+            "name": "QST-QC",
+            "amount": 0.09975,
+            "includedInPrice": false,
+            "country": "CA",
+            "state": "Quebec",
+            "id": "iNASe6iS",
+            "subRates": []
+        },
+        {
+            "name": "HST-NB",
+            "amount": 0.15,
+            "includedInPrice": false,
+            "country": "CA",
+            "state": "New Brunswick",
+            "id": "F-rnlFx2",
+            "subRates": []
+        },
+        {
+            "name": "HST-NFL",
+            "amount": 0.15,
+            "includedInPrice": false,
+            "country": "CA",
+            "state": "Newfoundland",
+            "id": "LytcA4wK",
+            "subRates": []
+        },
+        {
+            "name": "HST-NS",
+            "amount": 0.15,
+            "includedInPrice": false,
+            "country": "CA",
+            "state": "Nova Scotia",
+            "id": "k7hpoyS_",
+            "subRates": []
+        },
+        {
+            "name": "HST-PEI",
+            "amount": 0.15,
+            "includedInPrice": false,
+            "country": "CA",
+            "state": "Prince Edward Island",
+            "id": "YqazImNv",
+            "subRates": []
+        }
+    ],
+    "key": "jesta-tax-descriptions"
+}
