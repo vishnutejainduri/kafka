@@ -10,9 +10,14 @@ const {
 } = require('../../lib/messagesLogs');
 const { groupMessagesByNextAction } = require('./utils');
 
+let iamAccessToken = {};
+
 global.main = async function(params) {
-    async function fetchIamToken () {
-        return rp({
+    if (
+        params.cloudFunctionsIam
+        && (!iamAccessToken.access_token || iamAccessToken.expiration < (new Date().getTime() - 10 * 60 * 1000))
+    ) {
+        iamAccessToken = (await rp({
             uri: params.identityTokenRestEndpoint,
             method: 'POST',
             form: {
@@ -20,19 +25,18 @@ global.main = async function(params) {
                 'apikey': `${params.cloudFunctionsApiKey}`
             },
             json: true
-        });
+        }))
     }
-
     async function fetchActivationInfo(activationId) {
         const uri = encodeURI(`${params.cloudFunctionsRestEndpoint}/namespaces/${params.cloudFunctionsIam ? params.cloudFunctionsNamespaceGuid : params.cloudFunctionsNamespace}/activations/${activationId}`);
         const auth = params.cloudFunctionsIam
-        ? {
-            bearer: await fetchIamToken()
-        }
-        : {
-            user: params.cloudFunctionsRestUsername,
-            pass: params.cloudFunctionsRestPassword,
-        };
+            ? {
+                bearer: iamAccessToken.access_token
+            }
+            : {
+                user: params.cloudFunctionsRestUsername,
+                pass: params.cloudFunctionsRestPassword,
+            };
         return rp({
             uri,
             method: 'GET',
