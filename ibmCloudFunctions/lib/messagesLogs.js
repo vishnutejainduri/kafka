@@ -88,6 +88,21 @@ async function getValuesCollection({
     );
 }
 
+
+// Although ObjectId can be used to find the insertion date of a document,
+// it is somewhat convoluted, so we save recordTime and index it instead.
+// Reference: https://stackoverflow.com/a/8753670/12727551
+
+// function objectIdWithTimestamp(timestamp) {
+//     if (typeof(timestamp) == 'string') {
+//         timestamp = new Date(timestamp);
+//     }
+//     const hexSeconds = Math.floor(timestamp/1000).toString(16);
+//     const constructedObjectId = ObjectId(hexSeconds + "0000000000000000");
+//     return constructedObjectId
+// }
+// db.getCollection('messagesByActivationIds').find({ _id: { $lt: objectIdWithTimestamp('2020/04/24') } })
+
 async function storeBatch(params) {
     try {
         const collection = await getMessagesCollection(params);
