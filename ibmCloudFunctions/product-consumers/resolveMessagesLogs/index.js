@@ -1,8 +1,10 @@
 const rp = require('request-promise');
 
 const { addErrorHandling, log } = require('../utils');
+const createError = require('../../lib/createError');
+
 const {
-    findBatches,
+    findUnresolvedBatches,
     getDeleteBatch,
     getFindMessages,
     getStoreDlqMessages,
@@ -10,15 +12,41 @@ const {
 } = require('../../lib/messagesLogs');
 const { groupMessagesByNextAction } = require('./utils');
 
+let iamAccessToken = {};
+
 global.main = async function(params) {
+    if (
+        params.cloudFunctionsIsIam
+        // to be on the safe side, if less than 10 minutes is left till expiration of the token, we get a new one
+        && (!iamAccessToken.access_token || (iamAccessToken.expiration * 1000 - new Date().getTime()) < 10 * 60 * 1000)
+    ) {
+        // https://cloud.ibm.com/docs/iam?topic=iam-iamtoken_from_apikey#parameters
+        iamAccessToken = (await rp({
+            uri: params.identityTokenRestEndpoint,
+            method: 'POST',
+            form: {
+                grant_type: 'urn:ibm:params:oauth:grant-type:apikey',
+                // https://cloud.ibm.com/docs/iam?topic=iam-serviceidapikeys#create_service_key
+                apikey: params.cloudFunctionsApiKey
+            },
+            json: true
+        }))
+    }
     async function fetchActivationInfo(activationId) {
-        return rp({
-            uri: encodeURI(`${params.cloudFunctionsRestEndpoint}/namespaces/${params.cloudFunctionsNamespace}/activations/${activationId}`),
-            method: 'GET',
-            auth: {
+        const uri = encodeURI(`${params.cloudFunctionsRestEndpoint}/namespaces/${params.cloudFunctionsIsIam ? params.cloudFunctionsNamespaceGuid : params.cloudFunctionsNamespace}/activations/${activationId}`);
+        // https://cloud.ibm.com/apidocs/functions#authentication
+        const auth = params.cloudFunctionsIsIam
+            ? {
+                bearer: iamAccessToken.access_token
+            }
+            : {
                 user: params.cloudFunctionsRestUsername,
                 pass: params.cloudFunctionsRestPassword,
-            },
+            };
+        return rp({
+            uri,
+            method: 'GET',
+            auth,
             json: true
         });
     }
@@ -49,7 +77,7 @@ global.main = async function(params) {
             messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end, params.maxRetries);
             if (messagesByNextAction.dlq.length) {
                 const storeDlqMessages = await getStoreDlqMessages(params);
-                log.error(`DLQing messages: ${messagesByNextAction.dlq.length} messages DLQed with activation info: ${activationInfo}`)
+                log.warn(`DLQing messages: ${messagesByNextAction.dlq.length} messages DLQed with activation info: ${activationInfo}`)
                 storeMessagesByNextActionResult.dlq = await storeDlqMessages(messagesByNextAction.dlq, { activationInfo });
             }
             if (messagesByNextAction.retry.length) {
@@ -73,11 +101,13 @@ global.main = async function(params) {
     }
 
     try {
-        const unresolvedBatches = await findBatches(params);
+        const unresolvedBatches = await findUnresolvedBatches(params);
         const resolveBatchesResult = await Promise.all(
             unresolvedBatches.map(addErrorHandling(resolveBatchWithActivationInfo))
         );
-
+        if (resolveBatchesResult.find(result => result instanceof Error)) {
+            log.error(createError.resolveMessageLogs.partialFailure())
+        }
         return {
             unresolvedBatches,
             resolveBatchesResult: resolveBatchesResult

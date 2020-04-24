@@ -535,5 +535,12 @@ module.exports = {
                 }
             )
         }
+    },
+    resolveMessageLogs: {
+        partialFailure: () => new CustomError(
+            null,
+            'partial-failure-resolveMessagesLogs',
+            'Failure to completely resolveMessagesLogs.'
+        ) 
     }
 }
