@@ -1,9 +1,9 @@
-const { orderAttributeNames } = require('../constantsCt');
+const { orderAttributeNames } = require('./constantsCt');
 
 const getExistingCtOrder = async (orderNumber, { client, requestBuilder }) => {
   const method = 'GET';
 
-  const uri = requestBuilder.orders.where(`orderNumber = "${orderNumber}"`).build();
+  const uri = requestBuilder.orders.where(`orderNumber = "${orderNumber}"`).expand('lineItems[*].custom.fields.barcodeData[*]').build();
 
   try {
     const response = await client.execute({ method, uri });
