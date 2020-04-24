@@ -20,7 +20,7 @@ packages:
       cloudFunctionsRestEndpoint: $CLOUD_FUNCTIONS_REST_ENDPOINT
       cloudFunctionsRestUsername: $CLOUD_FUNCTIONS_REST_USERNAME
       cloudFunctionsRestPassword: $CLOUD_FUNCTIONS_REST_PASSWORD
-      cloudFunctionsIam: $CLOUD_FUNCTIONS_IAM
+      cloudFunctionsIsIam: $CLOUD_FUNCTIONS_IS_IAM
       cloudFunctionsApiKey: $CLOUD_FUNCTIONS_API_KEY
       identityTokenRestEndpoint: $IDENTITY_TOKEN_REST_ENDPOINT
       cloudFunctionsNamespaceGuid: $CLOUD_FUNCTIONS_NAMESPACE_GUID
