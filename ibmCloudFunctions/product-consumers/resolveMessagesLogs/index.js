@@ -18,7 +18,7 @@ global.main = async function(params) {
     if (
         params.cloudFunctionsIam
         // to be on the safe side, if less than 10 minutes is left till expiration of the token, we get a new one
-        && (!iamAccessToken.access_token || (iamAccessToken.expiration - new Date().getTime()) < 10 * 60 * 1000)
+        && (!iamAccessToken.access_token || (iamAccessToken.expiration * 1000 - new Date().getTime()) < 10 * 60 * 1000)
     ) {
         iamAccessToken = (await rp({
             uri: params.identityTokenRestEndpoint,
