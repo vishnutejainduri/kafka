@@ -20,11 +20,13 @@ global.main = async function(params) {
         // to be on the safe side, if less than 10 minutes is left till expiration of the token, we get a new one
         && (!iamAccessToken.access_token || (iamAccessToken.expiration * 1000 - new Date().getTime()) < 10 * 60 * 1000)
     ) {
+        // https://cloud.ibm.com/docs/iam?topic=iam-iamtoken_from_apikey#parameters
         iamAccessToken = (await rp({
             uri: params.identityTokenRestEndpoint,
             method: 'POST',
             form: {
                 'grant_type': 'urn:ibm:params:oauth:grant-type:apikey',
+                // https://cloud.ibm.com/docs/iam?topic=iam-serviceidapikeys#create_service_key
                 'apikey': `${params.cloudFunctionsApiKey}`
             },
             json: true
@@ -32,6 +34,7 @@ global.main = async function(params) {
     }
     async function fetchActivationInfo(activationId) {
         const uri = encodeURI(`${params.cloudFunctionsRestEndpoint}/namespaces/${params.cloudFunctionsIam ? params.cloudFunctionsNamespaceGuid : params.cloudFunctionsNamespace}/activations/${activationId}`);
+        // https://cloud.ibm.com/apidocs/functions#authentication
         const auth = params.cloudFunctionsIam
             ? {
                 bearer: iamAccessToken.access_token
