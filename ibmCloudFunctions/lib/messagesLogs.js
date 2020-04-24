@@ -105,7 +105,7 @@ async function storeBatch(params) {
                 messages,
                 resolved: false,
                 recordTime: (new Date()).getTime(),
-                iam: params.cloudFunctionsIam
+                iam: Boolean(params.cloudFunctionsIam)
             });
         return result;
     } catch (error) {
@@ -156,9 +156,13 @@ async function findUnresolvedBatches(params, limit = 50) {
     let result = [];
     // maximum runtime of a cloud function is 10 minutes,
     // so after 15 minutes activation info should definitely be available unless somethings wrong on IBM side
-    const cutoff = (new Date()).getTime() - 15 * 60 * 1000;
+    const query = { recordTime: { $lt: (new Date()).getTime() - 15 * 60 * 1000 } };
+    if (params.cloudFunctionsIam) {
+        // this check is needed because we are temporarily using the same messages database for both cloudfoundry and IAM namespaces
+        query.iam = true
+    }
     await collection
-        .find({ recordTime: { $lt: cutoff } }, { projection: { activationId: 1, failureIndexes: 1 } })
+        .find(query, { projection: { activationId: 1, failureIndexes: 1 } })
         .limit(limit)
         .forEach(document => {
             result.push(document);
