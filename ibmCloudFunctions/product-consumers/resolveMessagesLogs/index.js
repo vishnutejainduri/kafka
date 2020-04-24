@@ -11,14 +11,32 @@ const {
 const { groupMessagesByNextAction } = require('./utils');
 
 global.main = async function(params) {
-    async function fetchActivationInfo(activationId) {
+    async function fetchIamToken () {
         return rp({
-            uri: encodeURI(`${params.cloudFunctionsRestEndpoint}/namespaces/${params.cloudFunctionsNamespace}/activations/${activationId}`),
-            method: 'GET',
-            auth: {
-                user: params.cloudFunctionsRestUsername,
-                pass: params.cloudFunctionsRestPassword,
+            uri: params.identityTokenRestEndpoint,
+            method: 'POST',
+            form: {
+                'grant_type': 'urn:ibm:params:oauth:grant-type:apikey',
+                'apikey': `${params.cloudFunctionsApiKey}`
             },
+            json: true
+        });
+    }
+
+    async function fetchActivationInfo(activationId) {
+        const uri = encodeURI(`${params.cloudFunctionsRestEndpoint}/namespaces/${params.cloudFunctionsIam ? params.cloudFunctionsNamespaceGuid : params.cloudFunctionsNamespace}/activations/${activationId}`);
+        const auth = params.cloudFunctionsIam
+        ? {
+            bearer: await fetchIamToken()
+        }
+        : {
+            user: params.cloudFunctionsRestUsername,
+            pass: params.cloudFunctionsRestPassword,
+        };
+        return rp({
+            uri,
+            method: 'GET',
+            auth,
             json: true
         });
     }

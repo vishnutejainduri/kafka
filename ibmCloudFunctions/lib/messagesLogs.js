@@ -104,7 +104,8 @@ async function storeBatch(params) {
                 transactionId,
                 messages,
                 resolved: false,
-                recordTime: (new Date()).getTime()
+                recordTime: (new Date()).getTime(),
+                iam: params.cloudFunctionsIam
             });
         return result;
     } catch (error) {
