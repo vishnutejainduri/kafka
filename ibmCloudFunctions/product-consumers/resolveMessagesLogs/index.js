@@ -1,6 +1,8 @@
 const rp = require('request-promise');
 
 const { addErrorHandling, log } = require('../utils');
+const createError = require('../../lib/createError');
+
 const {
     findUnresolvedBatches,
     getDeleteBatch,
@@ -71,7 +73,7 @@ global.main = async function(params) {
             messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end, params.maxRetries);
             if (messagesByNextAction.dlq.length) {
                 const storeDlqMessages = await getStoreDlqMessages(params);
-                log.error(`DLQing messages: ${messagesByNextAction.dlq.length} messages DLQed with activation info: ${activationInfo}`)
+                log.warn(`DLQing messages: ${messagesByNextAction.dlq.length} messages DLQed with activation info: ${activationInfo}`)
                 storeMessagesByNextActionResult.dlq = await storeDlqMessages(messagesByNextAction.dlq, { activationInfo });
             }
             if (messagesByNextAction.retry.length) {
@@ -99,7 +101,9 @@ global.main = async function(params) {
         const resolveBatchesResult = await Promise.all(
             unresolvedBatches.map(addErrorHandling(resolveBatchWithActivationInfo))
         );
-
+        if (resolveBatchesResult.find(result => result instanceof Error)) {
+            log.error(createError.resolveMessageLogs.partialFailure())
+        }
         return {
             unresolvedBatches,
             resolveBatchesResult: resolveBatchesResult
