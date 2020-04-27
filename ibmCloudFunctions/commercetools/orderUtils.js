@@ -1,4 +1,53 @@
-const { orderAttributeNames } = require('./constantsCt');
+const { orderAttributeNames, orderDetailAttributeNames } = require('./constantsCt');
+const { groupByAttribute } = require('../lib/utils');
+
+const groupByOrderNumber = groupByAttribute('orderNumber');
+const groupByBarcode = groupByAttribute('barcode');
+
+const removeDuplicateOrderDetails = orderDetails => {
+  const orderDetailsGroupedByBarcode = groupByBarcode(orderDetails);
+
+  return orderDetailsGroupedByBarcode.reduce((filteredOrderDetails, orderDetailBatch) => {
+    const mostUpToDateOrderDetail = getMostUpToDateOrderDetail(orderDetailBatch);
+    return [...filteredOrderDetails, mostUpToDateOrderDetail];    
+  }, []);
+};
+
+const getMostUpToDateOrderDetail = orderDetails => {
+  const orderDetailsSortedByDate = orderDetails.sort((orderDetail1, orderDetail2) => (
+    orderDetail2[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE] - orderDetail1[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE]
+  ));
+
+  return orderDetailsSortedByDate[0];
+};
+
+const getOutOfDateOrderDetails = (existingCtOrderDetails, orderDetails) => (
+  existingCtOrderDetails.filter(ctOrderDetail => {
+    const correspondingJestaOrderDetail = orderDetails.find(orderDetail => orderDetail.barcode === ctOrderDetail.custom.fields.barcodeData.find(barcodeObj => barcodeObj.obj.value.barcode === orderDetail.barcode).obj.value.barcode);
+    if (!correspondingJestaOrderDetail) return false;
+    return existingCtOrderDetailIsNewer(ctOrderDetail, correspondingJestaOrderDetail);
+  }).map(orderDetail => orderDetail.barcode)
+);
+
+const existingCtOrderDetailIsNewer = (existingCtOrderDetail, givenOrderDetail) => {
+  const orderDetailLastModifiedDate = existingCtOrderDetail.custom.fields.orderDetailLastModifiedDate
+  if (!orderDetailLastModifiedDate) return false;
+
+  const existingCtOrderDetailDate = new Date(orderDetailLastModifiedDate);
+
+  return existingCtOrderDetailDate.getTime() >= givenOrderDetail[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE].getTime();
+};
+
+const getCtOrderDetailFromCtOrder = (barcode, ctOrder) => {
+  const orderDetails = ctOrder.lineItems;
+  return orderDetails.find(lineItem => lineItem.custom.fields.barcodeData.filter(barcodeObj => barcodeObj.obj.value.barcode === barcode).length > 0);
+};
+
+const getCtOrderDetailsFromCtOrder = (orderDetails, ctOrder) => (
+  orderDetails.map(
+    orderDetail => getCtOrderDetailFromCtOrder(orderDetail.barcode, ctOrder)
+  ).filter(Boolean)
+);
 
 const getExistingCtOrder = async (orderNumber, { client, requestBuilder }) => {
   const method = 'GET';
@@ -86,5 +135,10 @@ const updateOrderStatus = async (ctHelpers, order) => {
 };
 
 module.exports = {
-  updateOrderStatus
+  updateOrderStatus,
+  groupByOrderNumber,
+  getExistingCtOrder,
+  getCtOrderDetailsFromCtOrder,
+  getOutOfDateOrderDetails,
+  removeDuplicateOrderDetails
 };

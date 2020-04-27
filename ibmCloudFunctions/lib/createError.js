@@ -158,6 +158,13 @@ module.exports = {
             `Failure in run of consume sales order message CT; params: ${params}.`
         )
     },
+    consumeSalesOrderDetailsMessageCT: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-sales-order-details-message-ct',
+            `Failure in run of consume sales order details message CT; params: ${params}.`
+        )
+    },
     consumeFacetMessageCT: {
         failed: (originalError, params) => new CustomError(
             originalError,

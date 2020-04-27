@@ -1,17 +1,15 @@
-const { filterSkuMessage } = require('../../lib/parseSkuMessage');
-const parseSkuMessageCt = require('../../lib/parseSkuMessageCt');
+const { filterSalesOrderDetailsMessages, parseSalesOrderDetailsMessage } = require('../../lib/parseSalesOrderDetailsMessage');
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
 const getCtHelpers = require('../../lib/commercetoolsSdk');
 const {
-  groupByStyleId,
-  getExistingCtStyle,
-  createAndPublishStyle,
-  getCtSkusFromCtStyle,
-  getOutOfDateSkuIds,
-  removeDuplicateSkus,
-  createOrUpdateSkus
-} = require('./utils');
+  groupByOrderNumber,
+  getExistingCtOrder,
+  getCtOrderDetailsFromCtOrder,
+  getOutOfDateOrderDetails,
+  removeDuplicateOrderDetails,
+  /*createOrUpdateSkus*/
+} = require('../orderUtils');
 const {
   addErrorHandling,
   addLoggingToMain,
@@ -21,28 +19,26 @@ const {
   validateParams
 } = require('../../product-consumers/utils');
 
-// Takes an array of SKUs, all of which have the same style ID. Since they all
-// have the same style ID, they can all be updated with a single call to CT.
-// This is why we batch them.
-const syncSkuBatchToCt = async (ctHelpers, productTypeId, skus) => {
-  if (skus.length === 0) return null;
-  const styleId = skus[0].styleId;
-  let existingCtStyle = await getExistingCtStyle(styleId, ctHelpers);
-  if (!existingCtStyle) {
-    // create dummy style where none exists
-    existingCtStyle = (await createAndPublishStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
+const syncSalesOrderDetailBatchToCt = async (ctHelpers, salesOrderDetails) => {
+  if (salesOrderDetails.length === 0) return null;
+  const orderNumber = salesOrderDetails[0].orderNumber;
+  let existingCtOrder = await getExistingCtOrder(orderNumber, ctHelpers);
+  if (!existingCtOrder) {
+    throw 'Order number does not exist';
   }
 
-  const existingCtSkus = getCtSkusFromCtStyle(skus, existingCtStyle);
-  const outOfDateSkuIds = getOutOfDateSkuIds(existingCtSkus, skus);
-  const skusToCreateOrUpdate = removeDuplicateSkus(skus.filter(sku => (!outOfDateSkuIds.includes(sku.id))));
+  const existingCtOrderDetails = getCtOrderDetailsFromCtOrder(salesOrderDetails, existingCtOrder);
+  const outOfDateOrderDetails = getOutOfDateOrderDetails(existingCtOrderDetails, salesOrderDetails);
+  console.log('outOfDateOrderDetails', outOfDateOrderDetails);
+  const orderDetailsToUpdate = removeDuplicateOrderDetails(salesOrderDetails.filter(orderDetail => (!outOfDateOrderDetails.includes(orderDetail.barcode))));
+  console.log('orderDetailsToUpdate', orderDetailsToUpdate);
 
-  return createOrUpdateSkus(
+  /*return createOrUpdateSkus(
     skusToCreateOrUpdate,
     existingCtSkus,
     existingCtStyle,
     ctHelpers
-  );
+  );*/
 };
 
 // Holds two CT helpers, including the CT client. It's declared outside of
@@ -50,31 +46,28 @@ const syncSkuBatchToCt = async (ctHelpers, productTypeId, skus) => {
 let ctHelpers;
 
 const main = params => {
-  log(createLog.params('consumeSkuMessageCT', params));
+  log(createLog.params('consumeSalesOrderDetailsMessageCT', params));
   validateParams(params);
-  const handleErrors = err => { throw createError.consumeSkuMessageCt.failed(err, params) };
-  const { productTypeId } = params;
+  const handleErrors = err => { throw createError.consumeSalesOrderDetailsMessageCT.failed(err, params) };
 
   if (!ctHelpers) {
     ctHelpers = getCtHelpers(params);
   }
-  
-  const skusToCreateOrUpdate = (
+ 
+  const salesOrderDetailsToUpdate = (
     params.messages
-      .filter(addErrorHandling(filterSkuMessage))
-      .map(addErrorHandling(parseSkuMessageCt))
+      .filter(addErrorHandling(filterSalesOrderDetailsMessages))
+      .map(addErrorHandling(parseSalesOrderDetailsMessage))
   );
 
-  // We group SKUs by style ID to avoid concurrency problems when trying to
-  // add or update SKUs that belong to the same style at the same time
-  const skusGroupedByStyleId = groupByStyleId(skusToCreateOrUpdate);
+  const salesOrderDetailsGroupedByOrderNumber = groupByOrderNumber(salesOrderDetailsToUpdate);
 
-  const skuBatchPromises = (
-    skusGroupedByStyleId
-      .map(addErrorHandling(syncSkuBatchToCt.bind(null, ctHelpers, productTypeId)))
+  const salesOrderDetailsBatchPromises = (
+    salesOrderDetailsGroupedByOrderNumber
+      .map(addErrorHandling(syncSalesOrderDetailBatchToCt.bind(null, ctHelpers)))
   );
   
-  return Promise.all(skuBatchPromises)
+  return Promise.all(salesOrderDetailsBatchPromises)
     .then(passDownAnyMessageErrors)
     .catch(handleErrors);
 };

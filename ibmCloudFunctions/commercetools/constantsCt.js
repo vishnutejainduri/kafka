@@ -44,6 +44,11 @@ const orderAttributeNames = {
   ORDER_LAST_MODIFIED_DATE: 'orderLastModifiedDate',
 };
 
+
+const orderDetailAttributeNames = {
+  ORDER_DETAIL_LAST_MODIFIED_DATE: 'orderDetailLastModifiedDate',
+};
+
 const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
 const KEY_VALUE_DOCUMENT = 'key-value-document'; // reference-type of custom objects in CT
 const isStaged = false;
@@ -63,6 +68,7 @@ module.exports = {
   styleAttributeNames,
   skuAttributeNames,
   orderAttributeNames,
+  orderDetailAttributeNames,
   currencyCodes,
   languageKeys,
   isStaged
