@@ -30,7 +30,10 @@ const syncSalesOrderDetailBatchToCt = async (ctHelpers, salesOrderDetails) => {
   const existingCtOrderDetails = getCtOrderDetailsFromCtOrder(salesOrderDetails, existingCtOrder);
   const outOfDateOrderDetails = getOutOfDateOrderDetails(existingCtOrderDetails, salesOrderDetails);
   console.log('outOfDateOrderDetails', outOfDateOrderDetails);
-  const orderDetailsToUpdate = removeDuplicateOrderDetails(salesOrderDetails.filter(orderDetail => (!outOfDateOrderDetails.includes(orderDetail.barcode))));
+  let outOfDateOrderDetailBarcodes = [];
+  outOfDateOrderDetails.forEach(barcodes => outOfDateOrderDetailBarcodes = outOfDateOrderDetailBarcodes.concat(barcodes));
+  console.log('outOfDateOrderDetailBarcodes', outOfDateOrderDetailBarcodes);
+  const orderDetailsToUpdate = removeDuplicateOrderDetails(salesOrderDetails.filter(orderDetail => (!outOfDateOrderDetailBarcodes.includes(orderDetail.barcode))));
   console.log('orderDetailsToUpdate', orderDetailsToUpdate);
 
   return updateOrderDetailBatchStatus(

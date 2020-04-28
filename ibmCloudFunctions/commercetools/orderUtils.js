@@ -26,7 +26,7 @@ const getOutOfDateOrderDetails = (existingCtOrderDetails, orderDetails) => (
     const correspondingJestaOrderDetail = orderDetails.find(orderDetail => orderDetail.barcode === ctOrderDetail.custom.fields.barcodeData.find(barcodeObj => barcodeObj.obj.value.barcode === orderDetail.barcode).obj.value.barcode);
     if (!correspondingJestaOrderDetail) return false;
     return existingCtOrderDetailIsNewer(ctOrderDetail, correspondingJestaOrderDetail);
-  }).map(orderDetail => orderDetail.barcode)
+  }).map(ctOrderDetail => ctOrderDetail.custom.fields.barcodeData.map(barcodeObj => barcodeObj.obj.value.barcode))
 );
 
 const existingCtOrderDetailIsNewer = (existingCtOrderDetail, givenOrderDetail) => {
