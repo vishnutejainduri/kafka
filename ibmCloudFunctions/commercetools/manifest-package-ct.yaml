@@ -15,6 +15,7 @@ packages:
       cloudFunctionsRestEndpoint: $CLOUD_FUNCTIONS_REST_ENDPOINT
       cloudFunctionsRestUsername: $CLOUD_FUNCTIONS_REST_USERNAME
       cloudFunctionsRestPassword: $CLOUD_FUNCTIONS_REST_PASSWORD
+      cloudFunctionsIsIam: $CLOUD_FUNCTIONS_IS_IAM
       ctpProjectKey: $CTP_PROJECT_KEY
       ctpClientId: $CTP_CLIENT_ID
       ctpClientSecret: $CTP_CLIENT_SECRET
