@@ -1,0 +1,24 @@
+{
+    "key": "orderCustomFields",
+    "name": {
+        "fr-CA": "",
+        "en-CA": "Order Custom Fields"
+    },
+    "resourceTypeIds": [
+        "order"
+    ],
+    "fieldDefinitions": [
+        {
+            "name": "orderLastModifiedDate",
+            "label": {
+                "fr-CA": "",
+                "en-CA": "Order Last Modified Date"
+            },
+            "required": false,
+            "type": {
+                "name": "DateTime"
+            },
+            "inputHint": "SingleLine"
+        }
+    ]
+}
