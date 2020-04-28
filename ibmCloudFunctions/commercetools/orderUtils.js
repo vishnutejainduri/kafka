@@ -134,11 +134,80 @@ const updateOrderStatus = async (ctHelpers, order) => {
   return updateOrder({ order, existingCtOrder, ctHelpers });
 };
 
+const getActionsFromOrderDetail = (orderDetail, existingOrderDetail = null) => {
+  const customAttributesToUpdate = Object.values(orderDetailAttributeNames);
+
+  let customTypeUpdateAction = null;
+  if (!existingOrderDetail.custom) {
+    customTypeUpdateAction = { 
+        action: 'setLineItemCustomType',
+        type: {
+          key: 'customLineItemFields' 
+        },
+        lineItemId: existingOrderDetail.id,
+        fields: {}
+    }
+    customAttributesToUpdate.forEach(attribute => {
+      customTypeUpdateAction.fields[attribute] = orderDetail[attribute];
+    })
+  } 
+
+  const customAttributeUpdateActions = existingOrderDetail.custom
+    ? customAttributesToUpdate.map(attribute => ({
+      action: 'setLineItemCustomField',
+      lineItemId: existingOrderDetail.id,
+      name: attribute,
+      value: orderDetail[attribute]
+    }))
+    : []
+
+  /*const statusUpdateAction = order.orderStatus
+    ? { action: 'transitionState', state: { key: order.orderStatus }, force: true }
+    : null;*/
+  
+  const allUpdateActions = [...customAttributeUpdateActions, customTypeUpdateAction].filter(Boolean);
+
+  return allUpdateActions;
+};
+
+const getActionsFromOrderDetails = (orderDetails, existingCtOrderDetails, ctOrder) => (
+  orderDetails.reduce((previousActions, orderDetail) => {
+    const matchingCtOrderDetail = existingCtOrderDetails.find(ctOrderDetail => ctOrderDetail.custom.fields.barcodeData.find(barcodeObj => barcodeObj.obj.value.barcode === orderDetail.barcode).obj.value.barcode == orderDetail.barcode);
+    const attributeUpdateActions = getActionsFromOrderDetail(orderDetail, matchingCtOrderDetail);
+
+    if (matchingCtOrderDetail) return [...previousActions, ...attributeUpdateActions];
+
+    return [...previousActions];
+  }, [])
+);
+
+const formatOrderDetailBatchRequestBody = (orderDetailsToCreateOrUpdate, ctOrder, existingCtOrderDetails) => {
+  const actions = getActionsFromOrderDetails(orderDetailsToCreateOrUpdate, existingCtOrderDetails, ctOrder);
+
+  console.log('actions', actions);
+
+  return JSON.stringify({
+    version: ctOrder.version,
+    actions
+  });
+};
+
+const updateOrderDetailBatchStatus = (orderDetailsToUpdate, existingCtOrderDetails, existingCtOrder, { client, requestBuilder }) => {
+  if (orderDetailsToUpdate.length === 0) return null;
+
+  const method = 'POST';
+  const uri = requestBuilder.orders.byId(existingCtOrder.id).build();
+  const body = formatOrderDetailBatchRequestBody(orderDetailsToUpdate, existingCtOrder, existingCtOrderDetails);
+
+  return client.execute({ method, uri, body });
+};
+
 module.exports = {
   updateOrderStatus,
   groupByOrderNumber,
   getExistingCtOrder,
   getCtOrderDetailsFromCtOrder,
   getOutOfDateOrderDetails,
-  removeDuplicateOrderDetails
+  removeDuplicateOrderDetails,
+  updateOrderDetailBatchStatus
 };

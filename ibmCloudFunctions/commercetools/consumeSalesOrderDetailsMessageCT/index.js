@@ -8,7 +8,7 @@ const {
   getCtOrderDetailsFromCtOrder,
   getOutOfDateOrderDetails,
   removeDuplicateOrderDetails,
-  /*createOrUpdateSkus*/
+  updateOrderDetailBatchStatus
 } = require('../orderUtils');
 const {
   addErrorHandling,
@@ -33,12 +33,12 @@ const syncSalesOrderDetailBatchToCt = async (ctHelpers, salesOrderDetails) => {
   const orderDetailsToUpdate = removeDuplicateOrderDetails(salesOrderDetails.filter(orderDetail => (!outOfDateOrderDetails.includes(orderDetail.barcode))));
   console.log('orderDetailsToUpdate', orderDetailsToUpdate);
 
-  /*return createOrUpdateSkus(
-    skusToCreateOrUpdate,
-    existingCtSkus,
-    existingCtStyle,
+  return updateOrderDetailBatchStatus(
+    orderDetailsToUpdate,
+    existingCtOrderDetails,
+    existingCtOrder,
     ctHelpers
-  );*/
+  );
 };
 
 // Holds two CT helpers, including the CT client. It's declared outside of
