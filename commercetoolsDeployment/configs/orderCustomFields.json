@@ -1,0 +1,36 @@
+{
+    "id": "8b193ec4-35fb-4c6f-909d-52fb50746b71",
+    "version": 1,
+    "createdAt": "2020-04-23T21:53:20.437Z",
+    "lastModifiedAt": "2020-04-23T21:53:20.437Z",
+    "lastModifiedBy": {
+        "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+        "isPlatformClient": false
+    },
+    "createdBy": {
+        "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+        "isPlatformClient": false
+    },
+    "key": "orderCustomFields",
+    "name": {
+        "fr-CA": "",
+        "en-CA": "Order Custom Fields"
+    },
+    "resourceTypeIds": [
+        "order"
+    ],
+    "fieldDefinitions": [
+        {
+            "name": "orderLastModifiedDate",
+            "label": {
+                "fr-CA": "",
+                "en-CA": "Order Last Modified Date"
+            },
+            "required": false,
+            "type": {
+                "name": "DateTime"
+            },
+            "inputHint": "SingleLine"
+        }
+    ]
+}
