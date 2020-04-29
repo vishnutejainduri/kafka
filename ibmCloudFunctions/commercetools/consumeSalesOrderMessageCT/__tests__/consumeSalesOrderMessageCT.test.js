@@ -55,7 +55,7 @@ describe('parseSalesOrderMessageCt', () => {
 });
 
 describe('updateOrderStatus', () => {
-  it('correct message; date in the future', async () => {
+  it('date in the future; should produce update message for CT', async () => {
      const result =  
         validParams.messages
         .filter(addErrorHandling(filterSalesOrderMessages))
@@ -63,4 +63,16 @@ describe('updateOrderStatus', () => {
     const response = await updateOrderStatus(mockedCtHelpers, result[0]);
     expect(response).toBeTruthy();
   });
+});
+
+// empty tests documenting possible flows/cases
+describe('testStubs; documenting test cases', () => {
+  it('if can\'t find orderNumber fail the code, to generate notification in platform', () => {});
+  it('if lastmodifieddate is in the past do nothing', () => {});
+  it('if lastmodifieddate is in the future perform a corresponding status update in CT', () => {});
+  it('if inbound status is CANCELED update CT order status to Canceled', () => {});
+  it('if inbound status is OPEN update CT order status to In Process', () => {});
+  it('if inbound status is HOLD update CT order status to In Process', () => {});
+  it('if inbound status is SHIPPED update CT order status to Shipped', () => {});
+  it('if inbound status is unmappable to a CT status, fail the code, to generate notification in platform', () => {});
 });
