@@ -13,7 +13,6 @@ function parseSalesOrderDetailsMessage(msg) {
         orderNumber: msg.value.SALES_ORDER_ID,
         orderStatus: msg.value.STATUS,
         barcode: msg.value.BAR_CODE_ID,
-        quantity: msg.value.QTY_ORDERED,
         orderDetailLastModifiedDate: new Date(msg.value.MODIFIED_DATE)
     };
 }

@@ -24,17 +24,14 @@ const syncSalesOrderDetailBatchToCt = async (ctHelpers, salesOrderDetails) => {
   const orderNumber = salesOrderDetails[0].orderNumber;
   let existingCtOrder = await getExistingCtOrder(orderNumber, ctHelpers);
   if (!existingCtOrder) {
-    throw 'Order number does not exist';
+    throw new Error('Order number does not exist');
   }
 
   const existingCtOrderDetails = getCtOrderDetailsFromCtOrder(salesOrderDetails, existingCtOrder);
   const outOfDateOrderDetails = getOutOfDateOrderDetails(existingCtOrderDetails, salesOrderDetails);
-  console.log('outOfDateOrderDetails', outOfDateOrderDetails);
   let outOfDateOrderDetailBarcodes = [];
   outOfDateOrderDetails.forEach(barcodes => outOfDateOrderDetailBarcodes = outOfDateOrderDetailBarcodes.concat(barcodes));
-  console.log('outOfDateOrderDetailBarcodes', outOfDateOrderDetailBarcodes);
   const orderDetailsToUpdate = removeDuplicateOrderDetails(salesOrderDetails.filter(orderDetail => (!outOfDateOrderDetailBarcodes.includes(orderDetail.barcode))));
-  console.log('orderDetailsToUpdate', orderDetailsToUpdate);
 
   return updateOrderDetailBatchStatus(
     orderDetailsToUpdate,

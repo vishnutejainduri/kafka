@@ -159,11 +159,18 @@ const getActionsFromOrderDetail = (orderDetail, existingOrderDetail = null) => {
     }))
     : []
 
-  /*const statusUpdateAction = order.orderStatus
-    ? { action: 'transitionState', state: { key: order.orderStatus }, force: true }
-    : null;*/
+  const statusUpdateAction = orderDetail.orderStatus
+    ? { 
+        action: 'transitionLineItemState',
+        lineItemId: existingOrderDetail.id,
+        quantity: existingOrderDetail.quantity,
+        fromState: existingOrderDetail.state[0].state,
+        toState: { key: orderStates[orderDetail.orderStatus] },
+        force: true 
+      }
+    : null;
   
-  const allUpdateActions = [...customAttributeUpdateActions, customTypeUpdateAction].filter(Boolean);
+  const allUpdateActions = [...customAttributeUpdateActions, customTypeUpdateAction, statusUpdateAction].filter(Boolean);
 
   return allUpdateActions;
 };
@@ -181,8 +188,6 @@ const getActionsFromOrderDetails = (orderDetails, existingCtOrderDetails) => (
 
 const formatOrderDetailBatchRequestBody = (orderDetailsToCreateOrUpdate, ctOrder, existingCtOrderDetails) => {
   const actions = getActionsFromOrderDetails(orderDetailsToCreateOrUpdate, existingCtOrderDetails);
-
-  console.log('actions', actions);
 
   return JSON.stringify({
     version: ctOrder.version,
