@@ -123,7 +123,7 @@ const updateOrderStatus = async (ctHelpers, order) => {
   const existingCtOrder = await getExistingCtOrder(order.orderNumber, ctHelpers);
 
   if (!existingCtOrder) {
-    throw 'Order number does not exist';
+    throw new Error('Order number does not exist');
   }
   if (existingCtOrderIsNewer(existingCtOrder, order)) {
     return null;
