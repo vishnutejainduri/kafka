@@ -1,4 +1,4 @@
-const { orderAttributeNames } = require('./constantsCt');
+const { orderAttributeNames, orderStates } = require('./constantsCt');
 
 const getExistingCtOrder = async (orderNumber, { client, requestBuilder }) => {
   const method = 'GET';
@@ -40,7 +40,7 @@ const getActionsFromOrder = (order, existingCtOrder) => {
     : []
 
   const statusUpdateAction = order.orderStatus
-    ? { action: 'transitionState', state: { key: order.orderStatus }, force: true }
+    ? { action: 'transitionState', state: { key: orderStates[order.orderStatus] }, force: true }
     : null;
   
   const allUpdateActions = [...customAttributeUpdateActions, customTypeUpdateAction, statusUpdateAction].filter(Boolean);
@@ -63,7 +63,6 @@ const updateOrder = async ({ order, existingCtOrder, ctHelpers }) => {
 };
 
 const existingCtOrderIsNewer = (existingCtOrder, givenOrder) => {
-  console.log('existingCtOrder', existingCtOrder);
   const existingCtOrderCustomAttributes = existingCtOrder.custom;
   if (!existingCtOrderCustomAttributes) return false;
 
