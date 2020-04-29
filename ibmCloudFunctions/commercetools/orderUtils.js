@@ -56,7 +56,6 @@ const updateOrder = async ({ order, existingCtOrder, ctHelpers }) => {
   const method = 'POST';
   const uri = requestBuilder.orders.byId(existingCtOrder.id).build();
   const actions = getActionsFromOrder(order, existingCtOrder);
-  console.log('actions', actions);
   const body = JSON.stringify({ version: existingCtOrder.version, actions });
 
   return client.execute({ method, uri, body });
