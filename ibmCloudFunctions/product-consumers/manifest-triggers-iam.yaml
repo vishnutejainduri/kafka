@@ -34,16 +34,6 @@
         inputs:
           isJSONData: true
           topic: stores-connect-jdbc
-      storefulfill-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: stores-fulfill-connect-jdbc
-      dep27fulfill-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: stores-dep27fulfill-connect-jdbc
       media-containers-trigger:
         feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
