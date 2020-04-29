@@ -1,8 +1,16 @@
-const { orderAttributeNames, orderDetailAttributeNames } = require('./constantsCt');
+const { orderAttributeNames, orderDetailAttributeNames, orderStates } = require('./constantsCt');
 const { groupByAttribute } = require('../lib/utils');
 
 const groupByOrderNumber = groupByAttribute('orderNumber');
 const groupByBarcode = groupByAttribute('barcode');
+
+const getMostUpToDateOrderDetail = orderDetails => {
+  const orderDetailsSortedByDate = orderDetails.sort((orderDetail1, orderDetail2) => (
+    orderDetail2[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE] - orderDetail1[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE]
+  ));
+
+  return orderDetailsSortedByDate[0];
+};
 
 const removeDuplicateOrderDetails = orderDetails => {
   const orderDetailsGroupedByBarcode = groupByBarcode(orderDetails);
@@ -13,12 +21,13 @@ const removeDuplicateOrderDetails = orderDetails => {
   }, []);
 };
 
-const getMostUpToDateOrderDetail = orderDetails => {
-  const orderDetailsSortedByDate = orderDetails.sort((orderDetail1, orderDetail2) => (
-    orderDetail2[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE] - orderDetail1[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE]
-  ));
+const existingCtOrderDetailIsNewer = (existingCtOrderDetail, givenOrderDetail) => {
+  const orderDetailLastModifiedDate = existingCtOrderDetail.custom.fields.orderDetailLastModifiedDate
+  if (!orderDetailLastModifiedDate) return false;
 
-  return orderDetailsSortedByDate[0];
+  const existingCtOrderDetailDate = new Date(orderDetailLastModifiedDate);
+
+  return existingCtOrderDetailDate.getTime() >= givenOrderDetail[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE].getTime();
 };
 
 const getOutOfDateOrderDetails = (existingCtOrderDetails, orderDetails) => (
@@ -28,15 +37,6 @@ const getOutOfDateOrderDetails = (existingCtOrderDetails, orderDetails) => (
     return existingCtOrderDetailIsNewer(ctOrderDetail, correspondingJestaOrderDetail);
   }).map(ctOrderDetail => ctOrderDetail.custom.fields.barcodeData.map(barcodeObj => barcodeObj.obj.value.barcode))
 );
-
-const existingCtOrderDetailIsNewer = (existingCtOrderDetail, givenOrderDetail) => {
-  const orderDetailLastModifiedDate = existingCtOrderDetail.custom.fields.orderDetailLastModifiedDate
-  if (!orderDetailLastModifiedDate) return false;
-
-  const existingCtOrderDetailDate = new Date(orderDetailLastModifiedDate);
-
-  return existingCtOrderDetailDate.getTime() >= givenOrderDetail[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE].getTime();
-};
 
 const getCtOrderDetailFromCtOrder = (barcode, ctOrder) => {
   const orderDetails = ctOrder.lineItems;
@@ -89,7 +89,7 @@ const getActionsFromOrder = (order, existingCtOrder) => {
     : []
 
   const statusUpdateAction = order.orderStatus
-    ? { action: 'transitionState', state: { key: order.orderStatus }, force: true }
+    ? { action: 'transitionState', state: { key: orderStates[order.orderStatus] }, force: true }
     : null;
   
   const allUpdateActions = [...customAttributeUpdateActions, customTypeUpdateAction, statusUpdateAction].filter(Boolean);
@@ -105,14 +105,12 @@ const updateOrder = async ({ order, existingCtOrder, ctHelpers }) => {
   const method = 'POST';
   const uri = requestBuilder.orders.byId(existingCtOrder.id).build();
   const actions = getActionsFromOrder(order, existingCtOrder);
-  console.log('actions', actions);
   const body = JSON.stringify({ version: existingCtOrder.version, actions });
 
   return client.execute({ method, uri, body });
 };
 
 const existingCtOrderIsNewer = (existingCtOrder, givenOrder) => {
-  console.log('existingCtOrder', existingCtOrder);
   const existingCtOrderCustomAttributes = existingCtOrder.custom;
   if (!existingCtOrderCustomAttributes) return false;
 
@@ -170,7 +168,7 @@ const getActionsFromOrderDetail = (orderDetail, existingOrderDetail = null) => {
   return allUpdateActions;
 };
 
-const getActionsFromOrderDetails = (orderDetails, existingCtOrderDetails, ctOrder) => (
+const getActionsFromOrderDetails = (orderDetails, existingCtOrderDetails) => (
   orderDetails.reduce((previousActions, orderDetail) => {
     const matchingCtOrderDetail = existingCtOrderDetails.find(ctOrderDetail => ctOrderDetail.custom.fields.barcodeData.find(barcodeObj => barcodeObj.obj.value.barcode === orderDetail.barcode).obj.value.barcode == orderDetail.barcode);
     const attributeUpdateActions = getActionsFromOrderDetail(orderDetail, matchingCtOrderDetail);
@@ -182,7 +180,7 @@ const getActionsFromOrderDetails = (orderDetails, existingCtOrderDetails, ctOrde
 );
 
 const formatOrderDetailBatchRequestBody = (orderDetailsToCreateOrUpdate, ctOrder, existingCtOrderDetails) => {
-  const actions = getActionsFromOrderDetails(orderDetailsToCreateOrUpdate, existingCtOrderDetails, ctOrder);
+  const actions = getActionsFromOrderDetails(orderDetailsToCreateOrUpdate, existingCtOrderDetails);
 
   console.log('actions', actions);
 

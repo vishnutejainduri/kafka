@@ -17,3 +17,6 @@
       facets-rule-ct:
         action: consume-facets-message-with-retry-ct
         trigger: facets-ct-trigger
+      sales-order-rule-ct:
+        action: consume-sales-order-message-with-retry-ct
+        trigger: sales-order-ct-trigger

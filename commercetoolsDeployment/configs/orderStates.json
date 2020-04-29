@@ -1,0 +1,192 @@
+{
+    "limit": 20,
+    "offset": 0,
+    "count": 8,
+    "total": 8,
+    "results": [
+        {
+            "id": "c00c984a-4c17-44be-a8e4-c9d5b1769d57",
+            "version": 1,
+            "createdAt": "2020-04-29T16:21:42.731Z",
+            "lastModifiedAt": "2020-04-29T16:21:42.731Z",
+            "lastModifiedBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "createdBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "key": "returnedLineItemStatus",
+            "type": "LineItemState",
+            "roles": [],
+            "name": {
+                "fr-CA": "Revenu",
+                "en-CA": "Returned"
+            },
+            "builtIn": false,
+            "initial": true
+        },
+        {
+            "id": "bb680f40-6afd-4f15-b2a4-023dc8a03cc4",
+            "version": 1,
+            "createdAt": "2020-04-29T16:22:12.475Z",
+            "lastModifiedAt": "2020-04-29T16:22:12.475Z",
+            "lastModifiedBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "createdBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "key": "canceledLineItemStatus",
+            "type": "LineItemState",
+            "roles": [],
+            "name": {
+                "fr-CA": "Annulé",
+                "en-CA": "Canceled"
+            },
+            "builtIn": false,
+            "initial": true
+        },
+        {
+            "id": "41beb447-14c9-4f1d-99af-281e6b38315b",
+            "version": 1,
+            "createdAt": "2020-04-29T16:22:37.148Z",
+            "lastModifiedAt": "2020-04-29T16:22:37.148Z",
+            "lastModifiedBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "createdBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "key": "inProcessLineItemStatus",
+            "type": "LineItemState",
+            "roles": [],
+            "name": {
+                "fr-CA": "En cours",
+                "en-CA": "In Process"
+            },
+            "builtIn": false,
+            "initial": true
+        },
+        {
+            "id": "dde0ca31-8f58-46f8-a0f2-d5ad9c5d5b9c",
+            "version": 1,
+            "createdAt": "2020-04-29T16:23:02.534Z",
+            "lastModifiedAt": "2020-04-29T16:23:02.534Z",
+            "lastModifiedBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "createdBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "key": "shippedLineItemStatus",
+            "type": "LineItemState",
+            "roles": [],
+            "name": {
+                "fr-CA": "Expédié",
+                "en-CA": "Shipped"
+            },
+            "builtIn": false,
+            "initial": true
+        },
+        {
+            "id": "207a16ee-a405-4347-b2fd-37fcc589b250",
+            "version": 1,
+            "createdAt": "2020-04-29T16:23:20.106Z",
+            "lastModifiedAt": "2020-04-29T16:23:20.106Z",
+            "lastModifiedBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "createdBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "key": "shippedOrderStatus",
+            "type": "OrderState",
+            "roles": [],
+            "name": {
+                "fr-CA": "Expédié",
+                "en-CA": "Shipped"
+            },
+            "builtIn": false,
+            "initial": true
+        },
+        {
+            "id": "215fcc7b-7fa6-4472-b794-324353a09aa7",
+            "version": 1,
+            "createdAt": "2020-04-29T16:23:42.947Z",
+            "lastModifiedAt": "2020-04-29T16:23:42.947Z",
+            "lastModifiedBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "createdBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "key": "returnedOrderStatus",
+            "type": "OrderState",
+            "roles": [],
+            "name": {
+                "fr-CA": "Revenu",
+                "en-CA": "Returned"
+            },
+            "builtIn": false,
+            "initial": true
+        },
+        {
+            "id": "e8f801a4-8c7e-4075-b865-778b46a23136",
+            "version": 1,
+            "createdAt": "2020-04-29T16:24:04.088Z",
+            "lastModifiedAt": "2020-04-29T16:24:04.088Z",
+            "lastModifiedBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "createdBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "key": "inProcessOrderStatus",
+            "type": "OrderState",
+            "roles": [],
+            "name": {
+                "fr-CA": "En cours",
+                "en-CA": "In Process"
+            },
+            "builtIn": false,
+            "initial": true
+        },
+        {
+            "id": "a5b4470b-6518-4a10-88c7-3773b4c07971",
+            "version": 1,
+            "createdAt": "2020-04-29T16:24:27.859Z",
+            "lastModifiedAt": "2020-04-29T16:24:27.859Z",
+            "lastModifiedBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "createdBy": {
+                "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
+                "isPlatformClient": false
+            },
+            "key": "canceledOrderStatus",
+            "type": "OrderState",
+            "roles": [],
+            "name": {
+                "fr-CA": "Annulé",
+                "en-CA": "Canceled"
+            },
+            "builtIn": false,
+            "initial": true
+        }
+    ]
+}

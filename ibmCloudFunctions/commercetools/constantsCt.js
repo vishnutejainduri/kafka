@@ -62,6 +62,13 @@ const languageKeys = {
   FRENCH: 'fr-CA'
 };
 
+const orderStates = {
+  CANCELED: 'canceledOrderStatus',
+  OPEN: 'inProcessOrderStatus',
+  HOLD: 'inProcessOrderStatus',
+  SHIPPED: 'shippedOrderStatus'
+};
+
 module.exports = {
   BARCODE_NAMESPACE,
   KEY_VALUE_DOCUMENT,
@@ -71,5 +78,6 @@ module.exports = {
   orderDetailAttributeNames,
   currencyCodes,
   languageKeys,
+  orderStates,
   isStaged
 };
