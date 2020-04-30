@@ -1,8 +1,11 @@
 const consumeSalesOrderDetailsMessageCT = require('..');
-/*const { filterSalesOrderDetailsMessages, parseSalesOrderDetailsMessage } = require('../../../lib/parseSalesOrderDetailsMessage');
+const { filterSalesOrderDetailsMessages, parseSalesOrderDetailsMessage } = require('../../../lib/parseSalesOrderDetailsMessage');
 const {
-  getActionsFromOrderDetail,
+  addErrorHandling,
+} = require('../../../product-consumers/utils');
+const {
   getActionsFromOrderDetails,
+  /*getActionsFromOrderDetail,
   formatOrderDetailBatchRequestBody,
   existingCtOrderDetailIsNewer,
   getCtOrderDetailFromCtOrder,
@@ -10,8 +13,9 @@ const {
   getOutOfDateOrderDetails,
   getMostUpToDateOrderDetail,
   removeDuplicateOrderDetails,
-  groupByOrderNumber
-} = require('../../orderUtils');*/
+  groupByOrderNumber*/
+} = require('../../orderUtils');
+const { createClient } = require('@commercetools/sdk-client');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -41,6 +45,8 @@ const validParams = {
   ctpScopes: 'manage_cart_discounts:harryrosen-dev manage_order_edits:harryrosen-dev manage_orders:harryrosen-dev manage_my_orders:harryrosen-dev'
 };
 
+const mockOrder = createClient().execute().body.results[0];
+
 describe('consumeSalesOrderDetailsMessageCT', () => {
   it('throws an error if given params are invalid', () => {
     const invalidParams = {};
@@ -53,43 +59,42 @@ describe('consumeSalesOrderDetailsMessageCT', () => {
   });
 });
 
-/*describe('getActionsFromOrderDetails', () => {
-  const orderDetail = { id: 'orderDetail-01', styleId: '1', colorId: 'c1', sizeId: 's1'};
+describe('getActionsFromOrderDetails', () => {
+   const orderDetails =  
+      validParams.messages
+      .filter(addErrorHandling(filterSalesOrderDetailsMessages))
+      .map(addErrorHandling(parseSalesOrderDetailsMessage))
 
   it('returns an array', () => {
-    expect(Array.isArray(getActionsFromOrderDetails(orderDetail))).toBe(true);
+    expect(Array.isArray(getActionsFromOrderDetails(orderDetails, mockOrder.lineItems))).toBe(true);
   });
 
   it('returns the correct CT update actions', () => {
     const expectedActions = [
       {
-        action: 'setAttribute',
-        orderDetail: 'orderDetail-01',
-        name: 'colorId',
-        value: 'c1'
+        action: 'setLineItemCustomField',
+        lineItemId: 'id',
+        name: 'orderDetailLastModifiedDate',
+        value: new Date(1000000000000)
       },
       {
-        action: 'setAttribute',
-        orderDetail: 'orderDetail-01',
-        name: 'sizeId',
-        value: 's1'
+        action: 'transitionLineItemState',
+        lineItemId: 'id',
+        quantity: 1,
+        fromState: { id: 'stateId' }, 
+        toState: { key: undefined },
+        force: true
       },
     ];
-    const actualActions = getActionsFromOrderDetails(orderDetail);
+    const actualActions = getActionsFromOrderDetails(orderDetails, mockOrder.lineItems);
 
     expect(actualActions.length).toBe(expectedActions.length);
     expect(actualActions[0]).toMatchObject(expectedActions[0]);
     expect(actualActions[1]).toMatchObject(expectedActions[1]);
   });
-
-  it('ignores attributes that are not defined on SKUs in CT', () => {
-    const orderDetailWithInvalidAttribute = { 'foo': 'bar' };
-    const actualActions = getActionsFromOrderDetails(orderDetailWithInvalidAttribute);
-    expect(actualActions.length).toBe(0);
-  });
 });
 
-describe('formatOrderDetailsRequestBody', () => {
+/*describe('formatOrderDetailsRequestBody', () => {
   const orderDetail = { id: 'orderDetail-01', styleId: '1', colorId: 'c1', sizeId: 's1' };
   const style = {
     version: 1,
