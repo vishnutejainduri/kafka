@@ -1,4 +1,10 @@
 const mockRequestBuilder = {
+  orders: {
+    where: () => mockRequestBuilder.orders,
+    expand: () => mockRequestBuilder.orders,
+    byId: () => mockRequestBuilder.orders,
+    build: () => mockRequestBuilder.orders
+  },
   products: {
     byKey: () => mockRequestBuilder.products,
     build: () => mockRequestBuilder.products

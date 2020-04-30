@@ -4,7 +4,13 @@ const mockSku = {
   prices: []
 };
 
-const ctProduct = {
+const mockOrder = {
+  id: '1',
+  orderNumber: '67897',
+  version: 1
+};
+
+const ctMockResponse = {
   version: 1,
   masterData: {
     current: {
@@ -40,11 +46,13 @@ const ctProduct = {
     type: {
       name: 'text'
     }
-  }]
+  }],
+  // mock for any where requests for orders
+  results: [mockOrder],
 };
 
 const mockClient = {
-  execute: () => ({ body: { ...ctProduct, value: { lastModifiedDate: '1970-01-01T00:00:00.050Z' } }})
+  execute: () => ({ body: { ...ctMockResponse, value: { lastModifiedDate: '1970-01-01T00:00:00.050Z' } }})
 };
 
 const sdkClient = {

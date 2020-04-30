@@ -89,3 +89,18 @@
         limits:
           memorySize: 512
           timeout: 600000
+      consume-sales-order-message-ct:
+        location: ./commercetools/consumeSalesOrderMessageCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+        inputs:
+          topicName: sales-orders-connect-jdbc
+      consume-sales-order-message-with-retry-ct:
+        location: ./commercetools/consumeSalesOrderMessageWithRetryCT/dist/bundle.js
+        conductor: true
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
