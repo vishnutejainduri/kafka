@@ -1,0 +1,18 @@
+{
+  "name": "sales-order-details-jdbc-source-recovery",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "schema.pattern": "E_SALES_ORDER_DETAILS",
+    "timestamp.column.name": "MODIFIED_DATE",
+    "table.poll.interval.ms": 3600000,
+    "mode": "timestamp",
+    "query": "SELECT SALES_ORDER_ID, STATUS, BAR_CODE_ID, MODIFIED_DATE FROM EDOM.E_SALES_ORDER_DETAILS WHERE MODIFIED_DATE >= sysdate - interval '300' minute",
+    "topic.prefix": "sales-order-details-connect-jdbc",
+    "validate.non.null": "false",
+    "numeric.mapping": "best_fit",
+    "poll.interval.ms": 60000, 
+    "offset.flush.timeout.ms": 60000
+  }
+}
