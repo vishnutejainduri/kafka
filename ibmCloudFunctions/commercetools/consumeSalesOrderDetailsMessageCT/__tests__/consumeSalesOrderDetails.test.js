@@ -5,15 +5,14 @@ const {
 } = require('../../../product-consumers/utils');
 const {
   getActionsFromOrderDetails,
-  /*getActionsFromOrderDetail,
   formatOrderDetailBatchRequestBody,
   existingCtOrderDetailIsNewer,
   getCtOrderDetailFromCtOrder,
   getCtOrderDetailsFromCtOrder,
+  groupByOrderNumber,
   getOutOfDateOrderDetails,
-  getMostUpToDateOrderDetail,
-  removeDuplicateOrderDetails,
-  groupByOrderNumber*/
+  /*getMostUpToDateOrderDetail,
+  removeDuplicateOrderDetails,*/
 } = require('../../orderUtils');
 const { createClient } = require('@commercetools/sdk-client');
 
@@ -46,6 +45,10 @@ const validParams = {
 };
 
 const mockOrder = createClient().execute().body.results[0];
+const orderDetails =  
+  validParams.messages
+  .filter(addErrorHandling(filterSalesOrderDetailsMessages))
+  .map(addErrorHandling(parseSalesOrderDetailsMessage))
 
 describe('consumeSalesOrderDetailsMessageCT', () => {
   it('throws an error if given params are invalid', () => {
@@ -60,11 +63,6 @@ describe('consumeSalesOrderDetailsMessageCT', () => {
 });
 
 describe('getActionsFromOrderDetails', () => {
-   const orderDetails =  
-      validParams.messages
-      .filter(addErrorHandling(filterSalesOrderDetailsMessages))
-      .map(addErrorHandling(parseSalesOrderDetailsMessage))
-
   it('returns an array', () => {
     expect(Array.isArray(getActionsFromOrderDetails(orderDetails, mockOrder.lineItems))).toBe(true);
   });
@@ -94,277 +92,132 @@ describe('getActionsFromOrderDetails', () => {
   });
 });
 
-/*describe('formatOrderDetailsRequestBody', () => {
-  const orderDetail = { id: 'orderDetail-01', styleId: '1', colorId: 'c1', sizeId: 's1' };
-  const style = {
-    version: 1,
-    masterData: {
-      current: {
-        variants: [],
-        masterVariant: {
-          attributes: [{ name: 'season', value: 'Winter 2020' }]
-        }
-      }
-    },
-    hasStagedChanges: false
-  };
-
-  const existingOrderDetails = { orderDetail: 'orderDetail-01', attributes: [] };
-
+describe('formatOrderDetailBatchRequestBody', () => {
   it('returns a string', () => {
-    expect(typeof formatOrderDetailsRequestBody(orderDetail, style, true) === 'string').toBe(true);
+    expect(typeof formatOrderDetailBatchRequestBody(orderDetails, mockOrder, mockOrder.lineItems) === 'string').toBe(true);
   });
 
-  it('returns the correct body to create a new SKU', () => {
-    const expectedBody = '{"version":1,"actions":[{"action":"addVariant","orderDetail":"orderDetail-01","attributes":[{"name":"season","value":"Winter 2020"}],"staged":false},{"action":"setAttribute","orderDetail":"orderDetail-01","name":"colorId","value":"c1","staged":false},{"action":"setAttribute","orderDetail":"orderDetail-01","name":"sizeId","value":"s1","staged":false}]}';
-    const actualBody = formatOrderDetailsRequestBody(orderDetail, style, null);
+  it('returns the correct body to update a line item status', () => {
+    const expectedBody = '{"version":1,"actions":[{"action":"setLineItemCustomField","lineItemId":"id","name":"orderDetailLastModifiedDate","value":"2001-09-09T01:46:40.000Z"},{"action":"transitionLineItemState","lineItemId":"id","quantity":1,"fromState":{"id":"stateId"},"toState":{},"force":true}]}';
+    const actualBody = formatOrderDetailBatchRequestBody(orderDetails, mockOrder, mockOrder.lineItems);
     expect(actualBody).toBe(expectedBody);
   });
-
-  it('returns the correct body to update an existing a SKU', () => {
-    const expectedBody = '{"version":1,"actions":[{"action":"setAttribute","orderDetail":"orderDetail-01","name":"colorId","value":"c1","staged":false},{"action":"setAttribute","orderDetail":"orderDetail-01","name":"sizeId","value":"s1","staged":false}]}';
-    const actualBody = formatOrderDetailsRequestBody(orderDetail, style, existingOrderDetails);
-    expect(actualBody).toBe(expectedBody);
-  });
-
-  // TODO: Add more test cases to be sure that nullish values are handled
-  // correctly. See comments to`isExistingAttributeOrNonNullish` and
-  // `hasNonNullishValue` for an explanation of what we need to look out for.
 });
 
-describe('existingCtOrderDetailsIsNewer', () => {
-  const olderCtOrderDetails = { orderDetail: 'orderDetail-01', attributes: [{ name: 'orderDetailLastModifiedInternal', value: new Date(0) }] };
-  const newerCtOrderDetails = { orderDetail: 'orderDetail-01',  attributes: [{ name: 'orderDetailLastModifiedInternal', value: new Date(100) }] };
-  const jestaOrderDetails = { id: 'orderDetail-01', styleId: '1', orderDetailLastModifiedInternal: new Date(50) };
-
-  it('returns `true` if CT SKU is newer than JESTA SKU', () => {
-    expect(existingCtOrderDetailsIsNewer(newerCtOrderDetails, jestaOrderDetails)).toBe(true);
+describe('existingCtOrderDetailIsNewer', () => {
+  it('returns `false` if CT line item is newer than JESTA line item', () => {
+    expect(existingCtOrderDetailIsNewer(mockOrder.lineItems[0], orderDetails[0])).toBe(false);
   });
 
-  it('returns `false` if CT SKU is older than JESTA SKU', () => {
-    expect(existingCtOrderDetailsIsNewer(olderCtOrderDetails, jestaOrderDetails)).toBe(false);
+  it('returns `true` if CT line item is newer than JESTA line item', () => {
+    const oldOrderDetail = JSON.parse(JSON.stringify(orderDetails[0]));
+    oldOrderDetail.orderDetailLastModifiedDate = new Date(0);
+    expect(existingCtOrderDetailIsNewer(mockOrder.lineItems[0], oldOrderDetail)).toBe(true);
   });
 
-  it('returns `false` if given CT SKU lacks a last modified date', () => {
-    const ctOrderDetailsWithMissingDate = { orderDetail: 'orderDetail-01', attributes: [] };
-    expect(existingCtOrderDetailsIsNewer(ctOrderDetailsWithMissingDate, jestaOrderDetails)).toBe(false);
+  it('returns `false` if given CT line item lacks a last modified date', () => {
+    const mockOrderDetailMissingDate = JSON.parse(JSON.stringify(mockOrder.lineItems[0]));
+    delete mockOrderDetailMissingDate.custom.fields.orderDetailLastModifiedDate
+    expect(existingCtOrderDetailIsNewer(mockOrderDetailMissingDate, orderDetails[0])).toBe(false);
   });
 
-  it('throws an error if given JESTA SKU lacks a last modified date', () => {
-    const jestaOrderDetailsWithMissingDate = { id: 'orderDetail-01', styleId: '1' };
-    expect(() => existingCtOrderDetailsIsNewer(olderCtOrderDetails, jestaOrderDetailsWithMissingDate)).toThrow('JESTA SKU lacks last modified date');
+  it('throws an error if given JESTA line item lacks a last modified date', () => {
+    const orderDetailMissingDate = JSON.parse(JSON.stringify(orderDetails[0]))
+    delete orderDetailMissingDate.orderDetailLastModifiedDate
+    expect(() => existingCtOrderDetailIsNewer(mockOrder.lineItems[0], orderDetailMissingDate)).toThrow("Cannot read property 'getTime' of undefined");
   });
 });
 
-describe('getCtOrderDetailsFromCtStyle', () => {
-  const ctStyle = {
-    masterData: {
-      current: {
-        variants: [{ orderDetail: 'orderDetail-1' }],
-        masterVariant: {
-          attributes: []
-        }
-      },
-      hasStagedChanges: false
-    }
-  };
-
-  const ctStyleWithStagedChanges = {
-    masterData: {
-      staged: {
-        variants: [{ orderDetail: 'orderDetail-2' }],
-        masterVariant: {
-          attributes: []
-        }
-      },
-      hasStagedChanges: true
-    }
-  };
-
-  it('returns the matching current SKU if one exists', () => {
-    expect(getCtOrderDetailsFromCtStyle('orderDetail-1', ctStyle)).toMatchObject({ orderDetail: 'orderDetail-1' });
+describe('getCtOrderDetailFromCtOrder', () => {
+  it('returns the matching line item if one exists', () => {
+    expect(getCtOrderDetailFromCtOrder(orderDetails[0].barcode, mockOrder)).toMatchObject(mockOrder.lineItems[0]);
   });
 
-  it('returns the matching staged SKU if one exists', () => {
-    expect(getCtOrderDetailsFromCtStyle('orderDetail-2', ctStyleWithStagedChanges)).toMatchObject({ orderDetail: 'orderDetail-2' });
-  });
-
-  it('returns `undefined` if no matching SKU exists', () => {
-    expect(getCtOrderDetailsFromCtStyle('orderDetail-3', ctStyle, true)).toBeUndefined();
-    expect(getCtOrderDetailsFromCtStyle('orderDetail-3', ctStyleWithStagedChanges)).toBeUndefined();
+  it('returns `undefined` if no matching line item exists', () => {
+    expect(getCtOrderDetailFromCtOrder('some-barcode-not-found', mockOrder)).toBeUndefined();
   });
 });
 
-describe('parseStyleMessageCt', () => {
-  const rawMessage = validParams.messages[0];
-  const parsedMessage = parseOrderDetailsMessageCt(rawMessage);
+describe('groupByOrderNumber', () => {
+  const orderDetail1 = orderDetails[0];
+  const orderDetail2 = JSON.parse(JSON.stringify(orderDetail1));
+  orderDetail2.barcode = 'barcode2';
+  const orderDetail3 = JSON.parse(JSON.stringify(orderDetail1));
+  orderDetail3.barcode = 'barcode3';
+  orderDetail3.orderNumber = 6555;
 
-  it('handles dates correctly', () => {
-    expect(parsedMessage.orderDetailLastModifiedInternal instanceof Date).toBe(true);
-    expect(parsedMessage.orderDetailLastModifiedInternal.toString()).toBe(new Date(1000000000).toString());
-  });
-
-  it('handles sizes correctly', () => {
-    const englishSize = 'size'
-    const messageThatLacksASize = { value: { SIZE: null } };
-
-    expect(parsedMessage.size['en-CA']).toBe(englishSize);
-    expect(parseOrderDetailsMessageCt(messageThatLacksASize).size['en-CA']).toBe('');
-  });
-
-  it('handles sizeIds correctly', () => {
-    const messageWithANumberForSizeId = { value: { SIZEID: 1 } };
-    expect(parseOrderDetailsMessageCt(messageWithANumberForSizeId).sizeId).toBe('1');
-  });
-
-  it('includes all relevant attributes', () => {
-    const expectedMessage = {
-      id: 'orderDetailId',
-      styleId:'styleId',
-      colorId: 'colorId',
-      sizeId: 'sizeId',
-      size: { 'en-CA': 'size' },
-      dimensionId: 'dimension',
-    };
-
-    expect(parsedMessage).toMatchObject(expectedMessage);
-  });
-});
-
-describe('getCtOrderDetailsAttributeValue', () => {
-  const ctOrderDetails = { orderDetail: 'orderDetail-01', attributes: [{ name: 'foo', value: 1 }, { name: 'bar', value: 2 }] };
-
-  it('returns the correct value of an existing attribute', () => {
-    expect(getCtOrderDetailsAttributeValue(ctOrderDetails, 'foo')).toBe(1);
-    expect(getCtOrderDetailsAttributeValue(ctOrderDetails, 'bar')).toBe(2);
-  });
-
-  it('it returns `undefined` when the given attribute does not exist', () => {
-    expect(getCtOrderDetailsAttributeValue(ctOrderDetails, 'baz')).toBeUndefined();
-  });
-});
-
-describe('getCreationAction', () => {
-  const orderDetail = { id: 'orderDetail-01', styleId: '1', colorId: 'c1', sizeId: 's1' };
-
-  const ctStyleWithNoStagedChanges = {
-    masterData: {
-      current: {
-        masterVariant: {
-          attributes: [{ name: 'brand', value: 'foo' }]
-        }
-      },
-      hasStagedChanges: false
-    }
-  };
-
-  const ctStyleWithStagedChanges = {
-    masterData: {
-      staged: {
-        masterVariant: {
-          attributes: [{ name: 'brand', value: 'foo' }]
-        }
-      },
-      hasStagedChanges: true
-    }
-  };
-
-  const expected = {
-    action: 'addVariant',
-    orderDetail: 'orderDetail-01',
-    attributes: [{ name: 'brand', value: 'foo' }],
-  };
-
-  it('returns the correct object when given the style has no staged changes', () => {
-    expect(getCreationAction(orderDetail, ctStyleWithNoStagedChanges)).toMatchObject(expected);
-  });
-
-  it('returns the correct object when given style has staged changes', () => {
-    expect(getCreationAction(orderDetail, ctStyleWithStagedChanges)).toMatchObject(expected);
-  });
-});
-
-describe('groupByStyleId', () => {
-  const orderDetail1 =  { id: 'orderDetail-1', styleId: 'style-1'};
-  const orderDetail2 =  { id: 'orderDetail-2', styleId: 'style-1'};
-  const orderDetail3 =  { id: 'orderDetail-3', styleId: 'style-2'};
-
-  it('returns correctly grouped SKUs when some have matching style IDs', () => {
-    const orderDetailsSomeWithMatchingStyleIds = [orderDetail1, orderDetail2, orderDetail3];
+  it('returns correctly grouped line items when some have matching order numbers', () => {
+    const orderDetailsSomeWithMatchingOrderNumbers = [orderDetail1, orderDetail2, orderDetail3];
     const expected = [[orderDetail1, orderDetail2], [orderDetail3]];
-    expect(groupByStyleId(orderDetailsSomeWithMatchingStyleIds)).toEqual(expected);
+    expect(groupByOrderNumber(orderDetailsSomeWithMatchingOrderNumbers)).toEqual(expected);
   });
 
-  it('returns correctly grouped SKUs when none have matching style IDs', () => {
-    const orderDetailsAllWithDifferentStyleIds = [orderDetail1, orderDetail3];
+  it('returns correctly grouped line items when none have matching order numbers', () => {
+    const orderDetailsAllWithDifferentOrderNumbers = [orderDetail1, orderDetail3];
     const expected = [[orderDetail1], [orderDetail3]];
-    expect(groupByStyleId(orderDetailsAllWithDifferentStyleIds)).toEqual(expected);
+    expect(groupByOrderNumber(orderDetailsAllWithDifferentOrderNumbers)).toEqual(expected);
   });
 
-  it('returns correctly grouped SKU when given a single SKU', () => {
+  it('returns correctly grouped line items when given a single line item', () => {
     const singleOrderDetails = [orderDetail1];
     const expected = [[orderDetail1]];
-    expect(groupByStyleId(singleOrderDetails)).toEqual(expected);
+    expect(groupByOrderNumber(singleOrderDetails)).toEqual(expected);
   });
 
   it('returns an empty array if given an empty array', () => {
-    expect(groupByStyleId([])).toEqual([]);
+    expect(groupByOrderNumber([])).toEqual([]);
   });
 });
 
-describe('getCtOrderDetailssFromCtStyle', () => {
-  const ctStyle = {
-    masterData: {
-      current: {
-        variants: [{ orderDetail: 'orderDetail-1' }, { orderDetail: 'orderDetail-2'}, { orderDetail: 'orderDetail-3' }],
-        masterVariant: {
-          attributes: []
-        }
-      },
-      hasStagedChanges: false
-    }
-  };
-
-  it('returns an empty array if no matching SKUs exist on the style', () => {
-    const orderDetails = [{ id: 'orderDetail-4'}, { id: 'orderDetail-5' }];
-    expect(getCtOrderDetailssFromCtStyle(orderDetails, ctStyle)).toEqual([]);
+describe('getCtOrderDetailsFromCtOrder', () => {
+  it('returns an empty array if no matching line items exist on the order', () => {
+    const orderDetailsNotInOrder = JSON.parse(JSON.stringify(orderDetails));
+    orderDetailsNotInOrder[0].barcode = 'barcode-not-in-order';
+    expect(getCtOrderDetailsFromCtOrder(orderDetailsNotInOrder, mockOrder)).toEqual([]);
   });
 
-  it('returns an array of matching SKUs when some exist', () => {
-    const orderDetails = [{ id: 'orderDetail-1'}, { id: 'orderDetail-2' }];
-    expect(getCtOrderDetailssFromCtStyle(orderDetails, ctStyle)).toEqual([{ orderDetail: 'orderDetail-1' }, { orderDetail: 'orderDetail-2'}]);
+  it('returns an array of matching line items when some exist on the order', () => {
+    expect(getCtOrderDetailsFromCtOrder(orderDetails, mockOrder)).toEqual(mockOrder.lineItems);
   });
 });
 
-describe('getOutOfDateOrderDetailsIds', () => {
-  const ctOrderDetailsAttributes = [{ name: 'orderDetailLastModifiedInternal', value: new Date(50) }];
+describe('getOutOfDateOrderDetails', () => {
+  const mockOrderMultiLine = JSON.parse(JSON.stringify(mockOrder));
+  mockOrderMultiLine.lineItems.push(JSON.parse(JSON.stringify(mockOrderMultiLine.lineItems[0])));
+  mockOrderMultiLine.lineItems[1].custom.fields.barcodeData[0].obj.value.barcode = 'barcode2';
+  mockOrderMultiLine.lineItems.push(JSON.parse(JSON.stringify(mockOrderMultiLine.lineItems[0])));
+  mockOrderMultiLine.lineItems[2].custom.fields.barcodeData[0].obj.value.barcode = 'barcode3';
 
-  const ctOrderDetailss = [
-    { orderDetail: 'orderDetail-1', orderDetailLastModifiedInternal: new Date(50), attributes: ctOrderDetailsAttributes },
-    { orderDetail: 'orderDetail-2', orderDetailLastModifiedInternal: new Date(50), attributes: ctOrderDetailsAttributes },
-    { orderDetail: 'orderDetail-3', orderDetailLastModifiedInternal: new Date(50), attributes: ctOrderDetailsAttributes }
-  ];
+  const outOfDateOrderDetails1 = JSON.parse(JSON.stringify(orderDetails[0]));
+  outOfDateOrderDetails1.orderDetailLastModifiedDate = new Date(0);
+  const outOfDateOrderDetails2 = JSON.parse(JSON.stringify(orderDetails[0]));
+  outOfDateOrderDetails2.orderDetailLastModifiedDate = new Date(0);
+  outOfDateOrderDetails2.barcode = 'barcode2';
+  const outOfDateOrderDetails3 = JSON.parse(JSON.stringify(orderDetails[0]));
+  outOfDateOrderDetails3.orderDetailLastModifiedDate = new Date(0);
+  outOfDateOrderDetails3.barcode = 'barcode3';
 
-  const outOfDateOrderDetails1 = { id: 'orderDetail-1', orderDetailLastModifiedInternal: new Date(0) };
-  const outOfDateOrderDetails2 = { id: 'orderDetail-2', orderDetailLastModifiedInternal: new Date(0) };
-  const outOfDateOrderDetails3 = { id: 'orderDetail-3', orderDetailLastModifiedInternal: new Date(0) };
+  const upToDateOrderDetails1 = JSON.parse(JSON.stringify(orderDetails));
+  upToDateOrderDetails1.orderDetailLastModifiedDate = new Date(upToDateOrderDetails1.orderDetailLastModifiedDate);
+  const upToDateOrderDetails2 = JSON.parse(JSON.stringify(orderDetails[0]));
+  upToDateOrderDetails2.orderDetailLastModifiedDate = new Date(upToDateOrderDetails2.orderDetailLastModifiedDate);
+  upToDateOrderDetails2.barcode = 'barcode2';
+  const upToDateOrderDetails3 = JSON.parse(JSON.stringify(orderDetails[0]));
+  upToDateOrderDetails3.orderDetailLastModifiedDate = new Date(upToDateOrderDetails3.orderDetailLastModifiedDate);
+  upToDateOrderDetails3.barcode = 'barcode3';
 
-  const upToDateOrderDetails1 = { id: 'orderDetail-1', orderDetailLastModifiedInternal: new Date(100) };
-  const upToDateOrderDetails2 = { id: 'orderDetail-2', orderDetailLastModifiedInternal: new Date(100) };
-  const upToDateOrderDetails3 = { id: 'orderDetail-3', orderDetailLastModifiedInternal: new Date(100) };
-
-  it('returns an array with the out of date SKU IDs', () => {
-    expect(getOutOfDateOrderDetailsIds(ctOrderDetailss, [outOfDateOrderDetails1, upToDateOrderDetails2, outOfDateOrderDetails3])).toEqual(['orderDetail-1', 'orderDetail-3']);
-    expect(getOutOfDateOrderDetailsIds(ctOrderDetailss, [outOfDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3])).toEqual(['orderDetail-1', 'orderDetail-2']);
-    expect(getOutOfDateOrderDetailsIds(ctOrderDetailss, [upToDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3])).toEqual(['orderDetail-2']);
+  it('returns an array with the out of date line items', () => {
+    expect(getOutOfDateOrderDetails(mockOrderMultiLine.lineItems, [outOfDateOrderDetails1, upToDateOrderDetails2, outOfDateOrderDetails3])).toEqual([['barcode'], ['barcode3']]);
+    expect(getOutOfDateOrderDetails(mockOrderMultiLine.lineItems, [outOfDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3])).toEqual([['barcode'], ['barcode2']]);
+    expect(getOutOfDateOrderDetails(mockOrderMultiLine.lineItems, [upToDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3])).toEqual([['barcode2']]);
   });
 
-  it('returns an empty array when there are no out of date SKUs', () => {
-    expect(getOutOfDateOrderDetailsIds(ctOrderDetailss, [upToDateOrderDetails1, upToDateOrderDetails2])).toEqual([]);
+  it('returns an empty array when there are no out of date line items', () => {
+    expect(getOutOfDateOrderDetails(mockOrderMultiLine.lineItems, [['barcode'], ['barcode2'], ['barcode3']])).toEqual([]);
   });
 });
 
-describe('getActionsFromOrderDetailss', () => {
+/*describe('getActionsFromOrderDetailss', () => {
   const ctStyle = {
     masterData: {
       current: {

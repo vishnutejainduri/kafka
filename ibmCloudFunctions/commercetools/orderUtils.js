@@ -32,7 +32,7 @@ const existingCtOrderDetailIsNewer = (existingCtOrderDetail, givenOrderDetail) =
 
 const getOutOfDateOrderDetails = (existingCtOrderDetails, orderDetails) => (
   existingCtOrderDetails.filter(ctOrderDetail => {
-    const correspondingJestaOrderDetail = orderDetails.find(orderDetail => orderDetail.barcode === ctOrderDetail.custom.fields.barcodeData.find(barcodeObj => barcodeObj.obj.value.barcode === orderDetail.barcode).obj.value.barcode);
+    const correspondingJestaOrderDetail = orderDetails.find(orderDetail => ctOrderDetail.custom.fields.barcodeData.find(barcodeObj => barcodeObj.obj.value.barcode === orderDetail.barcode));
     if (!correspondingJestaOrderDetail) return false;
     return existingCtOrderDetailIsNewer(ctOrderDetail, correspondingJestaOrderDetail);
   }).map(ctOrderDetail => ctOrderDetail.custom.fields.barcodeData.map(barcodeObj => barcodeObj.obj.value.barcode))
@@ -177,7 +177,7 @@ const getActionsFromOrderDetail = (orderDetail, existingOrderDetail = null) => {
 
 const getActionsFromOrderDetails = (orderDetails, existingCtOrderDetails) => (
   orderDetails.reduce((previousActions, orderDetail) => {
-    const matchingCtOrderDetail = existingCtOrderDetails.find(ctOrderDetail => ctOrderDetail.custom.fields.barcodeData.find(barcodeObj => barcodeObj.obj.value.barcode === orderDetail.barcode).obj.value.barcode == orderDetail.barcode);
+    const matchingCtOrderDetail = existingCtOrderDetails.find(ctOrderDetail => ctOrderDetail.custom.fields.barcodeData.find(barcodeObj => barcodeObj.obj.value.barcode === orderDetail.barcode));
     const attributeUpdateActions = getActionsFromOrderDetail(orderDetail, matchingCtOrderDetail);
 
     if (matchingCtOrderDetail) return [...previousActions, ...attributeUpdateActions];

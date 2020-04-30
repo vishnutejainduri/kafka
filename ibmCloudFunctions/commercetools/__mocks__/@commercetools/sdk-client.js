@@ -18,6 +18,7 @@ const mockOrder = {
     }],
     custom: {
       fields: {
+        orderDetailLastModifiedDate: '1995-12-28T15:23:49.002Z',
         barcodeData: [{
           obj: {
             value: {
