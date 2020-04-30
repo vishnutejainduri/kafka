@@ -7,7 +7,7 @@
     "schema.pattern": "E_SALES_ORDER_DETAILS",
     "timestamp.column.name": "MODIFIED_DATE",
     "table.poll.interval.ms": 3600000,
-    "mode": "timestamp",
+    "mode": "bulk",
     "query": "SELECT SALES_ORDER_ID, STATUS, BAR_CODE_ID, MODIFIED_DATE FROM EDOM.E_SALES_ORDER_DETAILS WHERE MODIFIED_DATE >= sysdate - interval '300' minute",
     "topic.prefix": "sales-order-details-connect-jdbc",
     "validate.non.null": "false",
