@@ -7,7 +7,27 @@ const mockSku = {
 const mockOrder = {
   id: '1',
   orderNumber: '67897',
-  version: 1
+  version: 1,
+  lineItems: [{
+    id: 'id',
+    quantity: 1,
+    state: [{
+      state: {
+        id: 'stateId'
+      }
+    }],
+    custom: {
+      fields: {
+        barcodeData: [{
+          obj: {
+            value: {
+              barcode: 'barcode'
+            }
+          }
+        }]
+      }
+    }
+  }]
 };
 
 const ctMockResponse = {

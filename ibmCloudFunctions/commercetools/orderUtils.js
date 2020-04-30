@@ -210,7 +210,13 @@ module.exports = {
   groupByOrderNumber,
   getExistingCtOrder,
   getCtOrderDetailsFromCtOrder,
+  getCtOrderDetailFromCtOrder,
   getOutOfDateOrderDetails,
   removeDuplicateOrderDetails,
-  updateOrderDetailBatchStatus
+  updateOrderDetailBatchStatus,
+  getActionsFromOrderDetail,
+  getActionsFromOrderDetails,
+  formatOrderDetailBatchRequestBody,
+  existingCtOrderDetailIsNewer,
+  getMostUpToDateOrderDetail,
 };

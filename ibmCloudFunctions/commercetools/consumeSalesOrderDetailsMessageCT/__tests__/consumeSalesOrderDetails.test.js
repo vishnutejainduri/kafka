@@ -1,48 +1,59 @@
-const parseOrderDetailsMessageCt = require('../../../lib/parseOrderDetailsMessageCt');
+const consumeSalesOrderDetailsMessageCT = require('..');
+/*const { filterSalesOrderDetailsMessages, parseSalesOrderDetailsMessage } = require('../../../lib/parseSalesOrderDetailsMessage');
 const {
+  getActionsFromOrderDetail,
   getActionsFromOrderDetails,
-  getActionsFromOrderDetailss,
-  formatOrderDetailsRequestBody,
-  formatOrderDetailsBatchRequestBody,
-  existingCtOrderDetailsIsNewer,
-  getCtOrderDetailsFromCtStyle,
-  getCtOrderDetailssFromCtStyle,
-  getCtOrderDetailsAttributeValue,
-  getCreationAction,
-  getOutOfDateOrderDetailsIds,
-  getMostUpToDateOrderDetails,
-  removeDuplicateOrderDetailss,
-  groupByStyleId
-} = require('../utils');
+  formatOrderDetailBatchRequestBody,
+  existingCtOrderDetailIsNewer,
+  getCtOrderDetailFromCtOrder,
+  getCtOrderDetailsFromCtOrder,
+  getOutOfDateOrderDetails,
+  getMostUpToDateOrderDetail,
+  removeDuplicateOrderDetails,
+  groupByOrderNumber
+} = require('../../orderUtils');*/
+
+jest.mock('@commercetools/sdk-client');
+jest.mock('@commercetools/api-request-builder');
+jest.mock('@commercetools/sdk-middleware-auth');
+jest.mock('@commercetools/sdk-middleware-http');
+jest.mock('node-fetch');
 
 const validParams = {
-  topicName: 'orderDetails-connect-jdbc',
+  topicName: 'sales-order-details-connect-jdbc',
   messages: [{
-      topic: 'orderDetails-connect-jdbc',
+      topic: 'sales-order-details-connect-jdbc',
       value: {
-        ID:'orderDetailId',
-        STYLEID:'styleId',
-        COLORID:'colorId',
-        SIZEID: 'sizeId',
-        SIZE: 'size',
-        DIMENSION: 'dimension',
-        LASTMODIFIEDDATE:1000000000,
-        FKORGANIZATIONNO: '1'
+        SALES_ORDER_ID: 67897,
+        STATUS: 'status',
+        BAR_CODE_ID: 'barcode',
+        MODIFIED_DATE: 1000000000000
       }
   }],
   mongoUri: 'mongo-uri',
   dbName: 'db-name',
   mongoCertificateBase64: 'mong-certificate',
-  collectionName: 'orderDetails',
   ctpProjectKey: 'key',
   ctpClientId: 'id',
   ctpClientSecret: 'secret',
   ctpAuthUrl: 'authUrl',
   ctpApiUrl: 'apiUrl',
-  ctpScopes: 'manage_products:harryrosen-dev'
+  ctpScopes: 'manage_cart_discounts:harryrosen-dev manage_order_edits:harryrosen-dev manage_orders:harryrosen-dev manage_my_orders:harryrosen-dev'
 };
 
-describe('getActionsFromOrderDetails', () => {
+describe('consumeSalesOrderDetailsMessageCT', () => {
+  it('throws an error if given params are invalid', () => {
+    const invalidParams = {};
+    return expect(consumeSalesOrderDetailsMessageCT(invalidParams)).rejects.toThrow();
+  });
+
+  it('returns `undefined` if given valid params', async () => {
+    const response = await consumeSalesOrderDetailsMessageCT(validParams);
+    expect(response).toBeUndefined();
+  });
+});
+
+/*describe('getActionsFromOrderDetails', () => {
   const orderDetail = { id: 'orderDetail-01', styleId: '1', colorId: 'c1', sizeId: 's1'};
 
   it('returns an array', () => {
@@ -453,4 +464,4 @@ describe('removeDuplicateOrderDetailss', () => {
     expect(removeDuplicateOrderDetailss(orderDetailsWithDuplicates)).toEqual([orderDetail1Duplicate2, orderDetail2, orderDetail3]);
   });
 });
-
+*/
