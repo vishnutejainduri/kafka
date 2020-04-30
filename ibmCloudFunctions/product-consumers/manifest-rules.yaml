@@ -20,12 +20,6 @@
       stores-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-stores-message-with-retry
         trigger: stores-trigger
-      storefulfill-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-storesfulfill-message-with-retry
-        trigger: storefulfill-trigger
-      dep27fulfill-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-dep27fulfill-message-with-retry
-        trigger: dep27fulfill-trigger
       media-containers-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-media-containers-message-with-retry
         trigger: media-containers-trigger
