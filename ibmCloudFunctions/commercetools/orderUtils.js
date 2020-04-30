@@ -132,11 +132,11 @@ const updateOrderStatus = async (ctHelpers, order) => {
   return updateOrder({ order, existingCtOrder, ctHelpers });
 };
 
-const getActionsFromOrderDetail = (orderDetail, existingOrderDetail = null) => {
+const getActionsFromOrderDetail = (orderDetail, existingOrderDetail) => {
   const customAttributesToUpdate = Object.values(orderDetailAttributeNames);
 
   let customTypeUpdateAction = null;
-  if (!existingOrderDetail.custom) {
+  if (existingOrderDetail && !existingOrderDetail.custom) {
     customTypeUpdateAction = { 
         action: 'setLineItemCustomType',
         type: {
@@ -150,7 +150,7 @@ const getActionsFromOrderDetail = (orderDetail, existingOrderDetail = null) => {
     })
   } 
 
-  const customAttributeUpdateActions = existingOrderDetail.custom
+  const customAttributeUpdateActions = existingOrderDetail && existingOrderDetail.custom
     ? customAttributesToUpdate.map(attribute => ({
       action: 'setLineItemCustomField',
       lineItemId: existingOrderDetail.id,
@@ -159,7 +159,7 @@ const getActionsFromOrderDetail = (orderDetail, existingOrderDetail = null) => {
     }))
     : []
 
-  const statusUpdateAction = orderDetail.orderStatus
+  const statusUpdateAction = orderDetail.orderStatus && existingOrderDetail
     ? { 
         action: 'transitionLineItemState',
         lineItemId: existingOrderDetail.id,

@@ -4,6 +4,7 @@ const {
   addErrorHandling,
 } = require('../../../product-consumers/utils');
 const {
+  getActionsFromOrderDetail,
   getActionsFromOrderDetails,
   formatOrderDetailBatchRequestBody,
   existingCtOrderDetailIsNewer,
@@ -11,8 +12,8 @@ const {
   getCtOrderDetailsFromCtOrder,
   groupByOrderNumber,
   getOutOfDateOrderDetails,
-  /*getMostUpToDateOrderDetail,
-  removeDuplicateOrderDetails,*/
+  getMostUpToDateOrderDetail,
+  removeDuplicateOrderDetails
 } = require('../../orderUtils');
 const { createClient } = require('@commercetools/sdk-client');
 
@@ -62,9 +63,9 @@ describe('consumeSalesOrderDetailsMessageCT', () => {
   });
 });
 
-describe('getActionsFromOrderDetails', () => {
+describe('getActionsFromOrderDetail', () => {
   it('returns an array', () => {
-    expect(Array.isArray(getActionsFromOrderDetails(orderDetails, mockOrder.lineItems))).toBe(true);
+    expect(Array.isArray(getActionsFromOrderDetail(orderDetails[0], mockOrder.lineItems[0]))).toBe(true);
   });
 
   it('returns the correct CT update actions', () => {
@@ -84,7 +85,7 @@ describe('getActionsFromOrderDetails', () => {
         force: true
       },
     ];
-    const actualActions = getActionsFromOrderDetails(orderDetails, mockOrder.lineItems);
+    const actualActions = getActionsFromOrderDetail(orderDetails[0], mockOrder.lineItems[0]);
 
     expect(actualActions.length).toBe(expectedActions.length);
     expect(actualActions[0]).toMatchObject(expectedActions[0]);
@@ -217,109 +218,88 @@ describe('getOutOfDateOrderDetails', () => {
   });
 });
 
-/*describe('getActionsFromOrderDetailss', () => {
-  const ctStyle = {
-    masterData: {
-      current: {
-        variants: [{ orderDetail: 'orderDetail-1' }, { orderDetail: 'orderDetail-2'}, { orderDetail: 'orderDetail-3' }],
-        masterVariant: {
-          attributes: [
-            {name: 'season', value: 'Winter'}
-          ]
-        }
-      },
-      hasStagedChanges: false
-    },
-    version: 1
-  };
+describe('getActionsFromOrderDetailss', () => {
+  const mockOrderMultiLine = JSON.parse(JSON.stringify(mockOrder));
+  mockOrderMultiLine.lineItems.push(JSON.parse(JSON.stringify(mockOrderMultiLine.lineItems[0])));
+  mockOrderMultiLine.lineItems[1].custom.fields.barcodeData[0].obj.value.barcode = 'barcode2';
+  mockOrderMultiLine.lineItems.push(JSON.parse(JSON.stringify(mockOrderMultiLine.lineItems[0])));
+  mockOrderMultiLine.lineItems[2].custom.fields.barcodeData[0].obj.value.barcode = 'barcode3';
 
-  const orderDetail1 = { id: 'orderDetail-1', orderDetailLastModifiedInternal: new Date(100), colorId: 'R' };
-  const orderDetail2 = { id: 'orderDetail-2', orderDetailLastModifiedInternal: new Date(100), colorId: 'G' };
-  const orderDetail3 = { id: 'orderDetail-3', orderDetailLastModifiedInternal: new Date(100), colorId: 'B' };
-  const orderDetail4 = { id: 'orderDetail-4', orderDetailLastModifiedInternal: new Date(100), colorId: 'A' };
+  const orderDetail1 = JSON.parse(JSON.stringify(orderDetails[0]));
+  const orderDetail2 = JSON.parse(JSON.stringify(orderDetails[0]));
+  orderDetail2.orderStatus = 'CANCELED';
+  orderDetail2.barcode = 'barcode2';
+  const orderDetail3 = JSON.parse(JSON.stringify(orderDetails[0]));
+  orderDetail3.orderStatus = 'OPEN';
+  orderDetail3.barcode = 'barcode3';
+  const orderDetail4 = JSON.parse(JSON.stringify(orderDetails[0]));
+  orderDetail4.orderstatus = 'SHIPPED';
+  orderDetail4.barcode = 'barcode4';
 
-  it('returns the right actions when given only existing SKUs', () => {
-    const orderDetails = [orderDetail1, orderDetail2, orderDetail3];
-    const existingCtOrderDetailss = [{ orderDetail: 'orderDetail-1' }, { orderDetail: 'orderDetail-2'}, { orderDetail: 'orderDetail-3' }];
-    const expected = [{"action": "setAttribute", "name": "orderDetailLastModifiedInternal", "orderDetail": "orderDetail-1", "value": new Date("1970-01-01T00:00:00.100Z"), "staged": false}, {"action": "setAttribute", "name": "colorId", "orderDetail": "orderDetail-1", "value": "R", "staged": false}, {"action": "setAttribute", "name": "orderDetailLastModifiedInternal", "orderDetail": "orderDetail-2", "value": new Date("1970-01-01T00:00:00.100Z"), "staged": false}, {"action": "setAttribute", "name": "colorId", "orderDetail": "orderDetail-2", "value": "G", "staged": false}, {"action": "setAttribute", "name": "orderDetailLastModifiedInternal", "orderDetail": "orderDetail-3", "value": new Date("1970-01-01T00:00:00.100Z"), "staged": false}, {"action": "setAttribute", "name": "colorId", "orderDetail": "orderDetail-3", "value": "B", "staged": false}];
-    expect(getActionsFromOrderDetailss(orderDetails, existingCtOrderDetailss, ctStyle)).toEqual(expected);
+  it('returns the right actions when given a batch of different line items all in the order', () => {
+    const orderDetailsTest = [orderDetail1, orderDetail2, orderDetail3];
+    const expected = [{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": "canceledOrderStatus"}}, {"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": "inProcessOrderStatus"}}];
+    console.log(getActionsFromOrderDetails(orderDetailsTest, mockOrderMultiLine.lineItems));
+    expect(getActionsFromOrderDetails(orderDetailsTest, mockOrderMultiLine.lineItems)).toEqual(expected);
   });
 
-  it('returns the right actions when given both existing and new SKUs', () => {
-    const orderDetails = [orderDetail1, orderDetail2, orderDetail3, orderDetail4];
-    const existingCtOrderDetailss = [{ orderDetail: 'orderDetail-1' }, { orderDetail: 'orderDetail-2'}, { orderDetail: 'orderDetail-3' }];
-    const expected = [{"action": "setAttribute", "name": "orderDetailLastModifiedInternal", "orderDetail": "orderDetail-1", "value": new Date("1970-01-01T00:00:00.100Z"), "staged": false}, {"action": "setAttribute", "name": "colorId", "orderDetail": "orderDetail-1", "value": "R", "staged": false}, {"action": "setAttribute", "name": "orderDetailLastModifiedInternal", "orderDetail": "orderDetail-2", "value": new Date("1970-01-01T00:00:00.100Z"), "staged": false}, {"action": "setAttribute", "name": "colorId", "orderDetail": "orderDetail-2", "value": "G", "staged": false}, {"action": "setAttribute", "name": "orderDetailLastModifiedInternal", "orderDetail": "orderDetail-3", "value": new Date("1970-01-01T00:00:00.100Z"), "staged": false}, {"action": "setAttribute", "name": "colorId", "orderDetail": "orderDetail-3", "value": "B", "staged": false}, {"action": "addVariant", "attributes": [{"name": "season", "value": "Winter"}], "staged": false, "orderDetail": "orderDetail-4"}, {"action": "setAttribute", "name": "orderDetailLastModifiedInternal", "orderDetail": "orderDetail-4", "value": new Date("1970-01-01T00:00:00.100Z"), "staged": false}, {"action": "setAttribute", "name": "colorId", "orderDetail": "orderDetail-4", "value": "A", "staged": false}];
-    expect(getActionsFromOrderDetailss(orderDetails, existingCtOrderDetailss, ctStyle)).toEqual(expected);
+  it('returns the right actions when given both existing and line items not existing on the order', () => {
+    const orderDetailsTest = [orderDetail1, orderDetail2, orderDetail3, orderDetail4];
+    const expected = [{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": "canceledOrderStatus"}}, {"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": "inProcessOrderStatus"}}];
+    expect(getActionsFromOrderDetails(orderDetailsTest, mockOrderMultiLine.lineItems)).toEqual(expected);
   });
 
-  it('returns an empty array when given an empty array of SKUs', () => {
-    const existingCtOrderDetailss = [{ orderDetail: 'orderDetail-1' }, { orderDetail: 'orderDetail-2'}, { orderDetail: 'orderDetail-3' }];
-    expect(getActionsFromOrderDetailss([], [], ctStyle)).toEqual([]);
-    expect(getActionsFromOrderDetailss([], existingCtOrderDetailss, ctStyle)).toEqual([]);
-  });
-});
-
-describe('formatOrderDetailsBatchRequestBody', () => {
-  const ctStyle = {
-    masterData: {
-      current: {
-        variants: [{ orderDetail: 'orderDetail-1' }, { orderDetail: 'orderDetail-2'}, { orderDetail: 'orderDetail-3' }],
-        masterVariant: {
-          attributes: [
-            {name: 'season', value: 'Winter'}
-          ]
-        }
-      },
-      hasStagedChanges: false
-    },
-    version: 1
-  };
-
-  const orderDetail1 = { id: 'orderDetail-1', orderDetailLastModifiedInternal: new Date(100), colorId: 'R' };
-  const orderDetail2 = { id: 'orderDetail-2', orderDetailLastModifiedInternal: new Date(100), colorId: 'G' };
-  const orderDetail3 = { id: 'orderDetail-3', orderDetailLastModifiedInternal: new Date(100), colorId: 'B' };
-  const orderDetail4 = { id: 'orderDetail-4', orderDetailLastModifiedInternal: new Date(100), colorId: 'A' };
-
-  const orderDetails = [orderDetail1, orderDetail2, orderDetail3, orderDetail4];
-  const existingCtOrderDetailss = [{ orderDetail: 'orderDetail-1' }, { orderDetail: 'orderDetail-2'}, { orderDetail: 'orderDetail-3' }];
-
-  it('returns the correct request body', () => {
-    const correctBody = "{\"version\":1,\"actions\":[{\"action\":\"setAttribute\",\"orderDetail\":\"orderDetail-1\",\"name\":\"orderDetailLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\",\"staged\":false},{\"action\":\"setAttribute\",\"orderDetail\":\"orderDetail-1\",\"name\":\"colorId\",\"value\":\"R\",\"staged\":false},{\"action\":\"setAttribute\",\"orderDetail\":\"orderDetail-2\",\"name\":\"orderDetailLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\",\"staged\":false},{\"action\":\"setAttribute\",\"orderDetail\":\"orderDetail-2\",\"name\":\"colorId\",\"value\":\"G\",\"staged\":false},{\"action\":\"setAttribute\",\"orderDetail\":\"orderDetail-3\",\"name\":\"orderDetailLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\",\"staged\":false},{\"action\":\"setAttribute\",\"orderDetail\":\"orderDetail-3\",\"name\":\"colorId\",\"value\":\"B\",\"staged\":false},{\"action\":\"addVariant\",\"orderDetail\":\"orderDetail-4\",\"attributes\":[{\"name\":\"season\",\"value\":\"Winter\"}],\"staged\":false},{\"action\":\"setAttribute\",\"orderDetail\":\"orderDetail-4\",\"name\":\"orderDetailLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\",\"staged\":false},{\"action\":\"setAttribute\",\"orderDetail\":\"orderDetail-4\",\"name\":\"colorId\",\"value\":\"A\",\"staged\":false}]}";
-    expect(formatOrderDetailsBatchRequestBody(orderDetails, ctStyle, existingCtOrderDetailss)).toEqual(correctBody);
+  it('returns an empty array when given an empty array of line items', () => {
+    expect(getActionsFromOrderDetails([], [])).toEqual([]);
+    expect(getActionsFromOrderDetails([], mockOrderMultiLine.lineItems)).toEqual([]);
   });
 });
 
 describe('getMostUpToDateOrderDetails', () => {
-  it('returns the most up to date SKU when given an array of SKUs', () => {
-    const oldOrderDetails = { id: '1', orderDetailLastModifiedInternal: new Date(0) };
-    const newestOrderDetails = { id: '1', orderDetailLastModifiedInternal: new Date(100) };
-    const olderOrderDetails = { id: '1', orderDetailLastModifiedInternal: new Date(0)};
-    const orderDetails = [oldOrderDetails, newestOrderDetails, olderOrderDetails];
+  it('returns the most up to date line item when given an array of line items', () => {
+    const oldOrderDetail = JSON.parse(JSON.stringify(orderDetails[0]));
+    oldOrderDetail.orderDetailLastModifiedDate = new Date(10);
 
-    expect(getMostUpToDateOrderDetails(orderDetails)).toEqual(newestOrderDetails);
-    expect(getMostUpToDateOrderDetails([oldOrderDetails])).toEqual(oldOrderDetails);
+    const oldestOrderDetail = JSON.parse(JSON.stringify(orderDetails[0]));
+    oldestOrderDetail.orderDetailLastModifiedDate = new Date(0);
+
+    const newestOrderDetail = JSON.parse(JSON.stringify(orderDetails[0]));
+    newestOrderDetail.orderDetailLastModifiedDate = new Date(newestOrderDetail.orderDetailLastModifiedDate);
+
+    const orderDetailsTest = [oldOrderDetail, newestOrderDetail, oldestOrderDetail];
+
+    expect(getMostUpToDateOrderDetail(orderDetailsTest)).toEqual(newestOrderDetail);
+    expect(getMostUpToDateOrderDetail([oldOrderDetail])).toEqual(oldOrderDetail);
   });
 
   it('returns `undefined` when given an empty array', () => {
-    expect(getMostUpToDateOrderDetails([])).toBeUndefined();
+    expect(getMostUpToDateOrderDetail([])).toBeUndefined();
   });
 });
 
-describe('removeDuplicateOrderDetailss', () => {
-  const orderDetail1 = { id: '1', orderDetailLastModifiedInternal: new Date(0), colorId: 'R' };
-  const orderDetail1Duplicate1 = { id: '1', orderDetailLastModifiedInternal: new Date(50), colorId: 'G' };
-  const orderDetail1Duplicate2 = { id: '1', orderDetailLastModifiedInternal: new Date(100), colorId: 'B' };
-  const orderDetail2 = { id: '2', orderDetailLastModifiedInternal: new Date(0) };
-  const orderDetail3 = { id: '3', orderDetailLastModifiedInternal: new Date(0) };
+describe('removeDuplicateOrderDetails', () => {
+  const orderDetail1 = JSON.parse(JSON.stringify(orderDetails[0]));
+  orderDetail1.orderDetailLastModifiedDate = new Date(0);
+  const orderDetail1Duplicate1 = JSON.parse(JSON.stringify(orderDetails[0]));
+  orderDetail1Duplicate1.orderDetailLastModifiedDate = new Date(50);
+  const orderDetail1Duplicate2 = JSON.parse(JSON.stringify(orderDetails[0]));
+  orderDetail1Duplicate2.orderDetailLastModifiedDate = new Date(100);
 
-  it('returns an array matching the given array when there are no duplicate SKUs', () => {
+  const orderDetail2 = JSON.parse(JSON.stringify(orderDetails[0]));
+  orderDetail2.orderDetailLastModifiedDate = new Date(0);
+  orderDetail2.barcode = 'barcode2';
+
+  const orderDetail3 = JSON.parse(JSON.stringify(orderDetails[0]));
+  orderDetail3.orderDetailLastModifiedDate = new Date(0);
+  orderDetail3.barcode = 'barcode3';
+
+  it('returns an array matching the given array when there are no duplicate line items', () => {
     const orderDetailsWithNoDuplicates = [orderDetail1, orderDetail2, orderDetail3];
-    expect(removeDuplicateOrderDetailss(orderDetailsWithNoDuplicates)).toEqual(orderDetailsWithNoDuplicates);
+    expect(removeDuplicateOrderDetails(orderDetailsWithNoDuplicates)).toEqual(orderDetailsWithNoDuplicates);
   });
 
-  it('returns an array with oldest duplicate SKUs removed when given an array that contains duplicate SKUs', () => {
+  it('returns an array with oldest duplicate line items removed when given an array that contains duplicate line items', () => {
     const orderDetailsWithDuplicates = [orderDetail1, orderDetail1Duplicate1, orderDetail1Duplicate2, orderDetail2, orderDetail3];
-    expect(removeDuplicateOrderDetailss(orderDetailsWithDuplicates)).toEqual([orderDetail1Duplicate2, orderDetail2, orderDetail3]);
+    expect(removeDuplicateOrderDetails(orderDetailsWithDuplicates)).toEqual([orderDetail1Duplicate2, orderDetail2, orderDetail3]);
   });
 });
-*/
