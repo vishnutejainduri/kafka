@@ -1,24 +1,39 @@
 {
-    "key": "orderCustomFields",
-    "name": {
-        "fr-CA": "",
-        "en-CA": "Order Custom Fields"
+  "key": "orderCustomFields",
+  "name": {
+    "en-CA": "Order Custom Fields",
+    "fr-CA": ""
+  },
+  "resourceTypeIds": [ "order" ],
+  "fieldDefinitions": [{
+    "type": {
+      "name": "DateTime"
     },
-    "resourceTypeIds": [
-        "order"
-    ],
-    "fieldDefinitions": [
-        {
-            "name": "orderLastModifiedDate",
-            "label": {
-                "fr-CA": "",
-                "en-CA": "Order Last Modified Date"
-            },
-            "required": false,
-            "type": {
-                "name": "DateTime"
-            },
-            "inputHint": "SingleLine"
-        }
-    ]
+    "name": "orderLastModifiedDate",
+    "label":{
+      "en-CA": "Order Last Modified Date",
+      "fr-CA": ""
+    },
+    "required": false
+  },{
+    "type": {
+      "name": "Boolean"
+    },
+    "name": "sentToOMS",
+    "label":{
+      "en-CA": "Sent to OMS",
+      "fr-CA": ""
+    },
+    "required": false
+  },{
+    "type": {
+      "name": "Boolean"
+    },
+    "name": "isStorePickup",
+    "label":{
+      "en-CA": "Is Store Pickup",
+      "fr-CA": ""
+    },
+    "required": false
+  }]
 }
