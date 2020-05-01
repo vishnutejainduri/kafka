@@ -1,36 +1,39 @@
 {
-    "id": "8b193ec4-35fb-4c6f-909d-52fb50746b71",
-    "version": 1,
-    "createdAt": "2020-04-23T21:53:20.437Z",
-    "lastModifiedAt": "2020-04-23T21:53:20.437Z",
-    "lastModifiedBy": {
-        "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
-        "isPlatformClient": false
+  "key": "orderCustomFields",
+  "name": {
+    "en-CA": "Order Custom Fields",
+    "fr-CA": ""
+  },
+  "resourceTypeIds": [ "order" ],
+  "fieldDefinitions": [{
+    "type": {
+      "name": "DateTime"
     },
-    "createdBy": {
-        "clientId": "Qj2NyrWdIX1y5pFKeySN3q5x",
-        "isPlatformClient": false
+    "name": "orderLastModifiedDate",
+    "label":{
+      "en-CA": "Order Last Modified Date",
+      "fr-CA": ""
     },
-    "key": "orderCustomFields",
-    "name": {
-        "fr-CA": "",
-        "en-CA": "Order Custom Fields"
+    "required": false
+  },{
+    "type": {
+      "name": "Boolean"
     },
-    "resourceTypeIds": [
-        "order"
-    ],
-    "fieldDefinitions": [
-        {
-            "name": "orderLastModifiedDate",
-            "label": {
-                "fr-CA": "",
-                "en-CA": "Order Last Modified Date"
-            },
-            "required": false,
-            "type": {
-                "name": "DateTime"
-            },
-            "inputHint": "SingleLine"
-        }
-    ]
+    "name": "sentToOMS",
+    "label":{
+      "en-CA": "Sent to OMS",
+      "fr-CA": ""
+    },
+    "required": false
+  },{
+    "type": {
+      "name": "Boolean"
+    },
+    "name": "isStorePickup",
+    "label":{
+      "en-CA": "Is Store Pickup",
+      "fr-CA": ""
+    },
+    "required": false
+  }]
 }
