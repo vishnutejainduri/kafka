@@ -272,7 +272,7 @@ describe('getMostUpToDateOrderDetails', () => {
   });
 
   it('returns `undefined` when given an empty array', () => {
-    expect(getMostUpToDateOrderDetail([])).toBeUndefined();
+    expect(getMostUpToDateOrderDetail([])).toBeNull();
   });
 });
 
