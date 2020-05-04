@@ -1,6 +1,7 @@
 require('dotenv').config();
 const fs = require('fs');
 
+const getInfo = require('./scripts/getInfo');
 const getConnectorNames = require('./scripts/getConnectorNames');
 const deleteConnectors = require('./scripts/deleteConnectors');
 const createConnectors = require('./scripts/createConnectors');
@@ -23,6 +24,9 @@ async function debug({
   totalDebugs
 }) {
     switch (command) {
+        case 'getInfo': {
+          return await getInfo(env);
+        }
         case 'getAll': {
             const connectorNames = await getConnectorNames(env);
             const previousHistory = debugHistory.getAll || [];
