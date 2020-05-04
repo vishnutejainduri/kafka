@@ -48,6 +48,34 @@ async function debug({
             }));
             return connectorNames;
         }
+        case 'deleteSome': {
+          // TODO add a confirmation with y/N step
+          const connectorNames = options[0] && options[0].split(',');
+          const deletedConnectors = await deleteConnectors(env, connectorNames);
+          const previousHistory = debugHistory.deleteSome || [];
+          const data = deletedConnectors.map((result, index) => ({
+              name: connectorNames[index],
+              success: result instanceof Error ? false : true,
+              error: result instanceof Error ? result.message : null
+          }));
+          const log = {
+              number: totalDebugs,
+              date: new Date().valueOf(),
+              env,
+              data
+          };
+          previousHistory.push(log);
+          writeLog(JSON.stringify({
+            ...debugLog,
+            deleteSome: log
+          }));
+          writeHistory(JSON.stringify({
+              ...debugHistory,
+              totalDebugs,
+              deleteSome: previousHistory
+          }));
+          return deletedConnectors;
+        }
         case 'deleteAll': {
             // TODO add a confirmation with y/N step
             const connectorInstancesPassedAsArgument = options[0] && options[0].split(',');
