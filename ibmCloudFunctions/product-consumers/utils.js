@@ -102,12 +102,14 @@ const passDownAnyMessageErrors = messages => {
 };
 
 /**
- * Adds logging to the `main` function of a CF. Takes the main function and the `messagesLogs` logger, defined in `/lib/messagesLog.js`.
+ * Stores the messages of the params passed to the `main` function of a CF in a database,
+ * so that we can retry the failed messaegs later.
  * @param main {function}
  * @param logger {{ storeBatch: function, updateBatchWithFailureIndexes: function }}
  */
 const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
     Promise.all([
+        // Promise.all will prematurely return if any of the promises is rejected, but we want storeBatch to finish even if  main function fails 
         main(params).catch(error => error instanceof Error ? error : new Error(error)),
         logger.storeBatch(params)
     ]).then(async ([result]) => {
