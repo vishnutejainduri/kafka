@@ -6,7 +6,7 @@ const {
   groupByOrderNumber,
   getExistingCtOrder,
   getCtOrderDetailsFromCtOrder,
-  getOutOfDateOrderDetails,
+  getOutOfDateOrderDetailIds,
   removeDuplicateOrderDetails,
   updateOrderDetailBatchStatus
 } = require('../orderUtils');
@@ -28,9 +28,8 @@ const syncSalesOrderDetailBatchToCt = async (ctHelpers, salesOrderDetails) => {
   }
 
   const existingCtOrderDetails = getCtOrderDetailsFromCtOrder(salesOrderDetails, existingCtOrder);
-  const outOfDateOrderDetails = getOutOfDateOrderDetails(existingCtOrderDetails, salesOrderDetails);
-  const outOfDateOrderDetailBarcodes = outOfDateOrderDetails.reduce((totalBarcodes, barcodes) => ([...totalBarcodes, ...barcodes]), [] );
-  const orderDetailsToUpdate = removeDuplicateOrderDetails(salesOrderDetails.filter(orderDetail => (!outOfDateOrderDetailBarcodes.includes(orderDetail.barcode))));
+  const outOfDateOrderDetailIds = getOutOfDateOrderDetailIds(existingCtOrderDetails, salesOrderDetails);
+  const orderDetailsToUpdate = removeDuplicateOrderDetails(salesOrderDetails.filter(orderDetail => (!outOfDateOrderDetailIds.includes(orderDetail.id))));
 
   return updateOrderDetailBatchStatus(
     orderDetailsToUpdate,

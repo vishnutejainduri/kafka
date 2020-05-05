@@ -11,7 +11,7 @@ const {
   getCtOrderDetailFromCtOrder,
   getCtOrderDetailsFromCtOrder,
   groupByOrderNumber,
-  getOutOfDateOrderDetails,
+  getOutOfDateOrderDetailIds,
   getMostUpToDateOrderDetail,
   removeDuplicateOrderDetails
 } = require('../../orderUtils');
@@ -30,7 +30,7 @@ const validParams = {
       value: {
         SALES_ORDER_ID: 67897,
         STATUS: 'status',
-        BAR_CODE_ID: 'barcode',
+        EXT_REF_ID: 'id',
         MODIFIED_DATE: 1000000000000
       }
   }],
@@ -131,20 +131,20 @@ describe('existingCtOrderDetailIsNewer', () => {
 
 describe('getCtOrderDetailFromCtOrder', () => {
   it('returns the matching line item if one exists', () => {
-    expect(getCtOrderDetailFromCtOrder(orderDetails[0].barcode, mockOrder)).toMatchObject(mockOrder.lineItems[0]);
+    expect(getCtOrderDetailFromCtOrder(orderDetails[0].id, mockOrder)).toMatchObject(mockOrder.lineItems[0]);
   });
 
   it('returns `undefined` if no matching line item exists', () => {
-    expect(getCtOrderDetailFromCtOrder('some-barcode-not-found', mockOrder)).toBeUndefined();
+    expect(getCtOrderDetailFromCtOrder('some-line-id-not-found', mockOrder)).toBeUndefined();
   });
 });
 
 describe('groupByOrderNumber', () => {
   const orderDetail1 = orderDetails[0];
   const orderDetail2 = JSON.parse(JSON.stringify(orderDetail1));
-  orderDetail2.barcode = 'barcode2';
+  orderDetail2.id = 'id2';
   const orderDetail3 = JSON.parse(JSON.stringify(orderDetail1));
-  orderDetail3.barcode = 'barcode3';
+  orderDetail3.id = 'id3';
   orderDetail3.orderNumber = 6555;
 
   it('returns correctly grouped line items when some have matching order numbers', () => {
@@ -173,7 +173,7 @@ describe('groupByOrderNumber', () => {
 describe('getCtOrderDetailsFromCtOrder', () => {
   it('returns an empty array if no matching line items exist on the order', () => {
     const orderDetailsNotInOrder = JSON.parse(JSON.stringify(orderDetails));
-    orderDetailsNotInOrder[0].barcode = 'barcode-not-in-order';
+    orderDetailsNotInOrder[0].id = 'id-not-in-order';
     expect(getCtOrderDetailsFromCtOrder(orderDetailsNotInOrder, mockOrder)).toEqual([]);
   });
 
@@ -182,69 +182,69 @@ describe('getCtOrderDetailsFromCtOrder', () => {
   });
 });
 
-describe('getOutOfDateOrderDetails', () => {
+describe('getOutOfDateOrderDetailIds', () => {
   const mockOrderMultiLine = JSON.parse(JSON.stringify(mockOrder));
   mockOrderMultiLine.lineItems.push(JSON.parse(JSON.stringify(mockOrderMultiLine.lineItems[0])));
-  mockOrderMultiLine.lineItems[1].custom.fields.barcodeData[0].obj.value.barcode = 'barcode2';
+  mockOrderMultiLine.lineItems[1].id = 'id2';
   mockOrderMultiLine.lineItems.push(JSON.parse(JSON.stringify(mockOrderMultiLine.lineItems[0])));
-  mockOrderMultiLine.lineItems[2].custom.fields.barcodeData[0].obj.value.barcode = 'barcode3';
+  mockOrderMultiLine.lineItems[2].id = 'id3';
 
   const outOfDateOrderDetails1 = JSON.parse(JSON.stringify(orderDetails[0]));
   outOfDateOrderDetails1.orderDetailLastModifiedDate = new Date(0);
   const outOfDateOrderDetails2 = JSON.parse(JSON.stringify(orderDetails[0]));
   outOfDateOrderDetails2.orderDetailLastModifiedDate = new Date(0);
-  outOfDateOrderDetails2.barcode = 'barcode2';
+  outOfDateOrderDetails2.id = 'id2';
   const outOfDateOrderDetails3 = JSON.parse(JSON.stringify(orderDetails[0]));
   outOfDateOrderDetails3.orderDetailLastModifiedDate = new Date(0);
-  outOfDateOrderDetails3.barcode = 'barcode3';
+  outOfDateOrderDetails3.id = 'id3';
 
   const upToDateOrderDetails1 = JSON.parse(JSON.stringify(orderDetails));
   upToDateOrderDetails1.orderDetailLastModifiedDate = new Date(upToDateOrderDetails1.orderDetailLastModifiedDate);
   const upToDateOrderDetails2 = JSON.parse(JSON.stringify(orderDetails[0]));
   upToDateOrderDetails2.orderDetailLastModifiedDate = new Date(upToDateOrderDetails2.orderDetailLastModifiedDate);
-  upToDateOrderDetails2.barcode = 'barcode2';
+  upToDateOrderDetails2.id = 'id2';
   const upToDateOrderDetails3 = JSON.parse(JSON.stringify(orderDetails[0]));
   upToDateOrderDetails3.orderDetailLastModifiedDate = new Date(upToDateOrderDetails3.orderDetailLastModifiedDate);
-  upToDateOrderDetails3.barcode = 'barcode3';
+  upToDateOrderDetails3.id = 'id3';
 
   it('returns an array with the out of date line items', () => {
-    expect(getOutOfDateOrderDetails(mockOrderMultiLine.lineItems, [outOfDateOrderDetails1, upToDateOrderDetails2, outOfDateOrderDetails3])).toEqual([['barcode'], ['barcode3']]);
-    expect(getOutOfDateOrderDetails(mockOrderMultiLine.lineItems, [outOfDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3])).toEqual([['barcode'], ['barcode2']]);
-    expect(getOutOfDateOrderDetails(mockOrderMultiLine.lineItems, [upToDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3])).toEqual([['barcode2']]);
+    expect(getOutOfDateOrderDetailIds(mockOrderMultiLine.lineItems, [outOfDateOrderDetails1, upToDateOrderDetails2, outOfDateOrderDetails3])).toEqual(['id', 'id3']);
+    expect(getOutOfDateOrderDetailIds(mockOrderMultiLine.lineItems, [outOfDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3])).toEqual(['id', 'id2']);
+    expect(getOutOfDateOrderDetailIds(mockOrderMultiLine.lineItems, [upToDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3])).toEqual(['id2']);
   });
 
   it('returns an empty array when there are no out of date line items', () => {
-    expect(getOutOfDateOrderDetails(mockOrderMultiLine.lineItems, [['barcode'], ['barcode2'], ['barcode3']])).toEqual([]);
+    expect(getOutOfDateOrderDetailIds(mockOrderMultiLine.lineItems, ['id', 'id2', 'id3'])).toEqual([]);
   });
 });
 
 describe('getActionsFromOrderDetailss', () => {
   const mockOrderMultiLine = JSON.parse(JSON.stringify(mockOrder));
   mockOrderMultiLine.lineItems.push(JSON.parse(JSON.stringify(mockOrderMultiLine.lineItems[0])));
-  mockOrderMultiLine.lineItems[1].custom.fields.barcodeData[0].obj.value.barcode = 'barcode2';
+  mockOrderMultiLine.lineItems[1].id = 'id2';
   mockOrderMultiLine.lineItems.push(JSON.parse(JSON.stringify(mockOrderMultiLine.lineItems[0])));
-  mockOrderMultiLine.lineItems[2].custom.fields.barcodeData[0].obj.value.barcode = 'barcode3';
+  mockOrderMultiLine.lineItems[2].id = 'id3';
 
   const orderDetail1 = JSON.parse(JSON.stringify(orderDetails[0]));
   const orderDetail2 = JSON.parse(JSON.stringify(orderDetails[0]));
   orderDetail2.orderStatus = 'CANCELED';
-  orderDetail2.barcode = 'barcode2';
+  orderDetail2.id = 'id2';
   const orderDetail3 = JSON.parse(JSON.stringify(orderDetails[0]));
   orderDetail3.orderStatus = 'OPEN';
-  orderDetail3.barcode = 'barcode3';
+  orderDetail3.id = 'id3';
   const orderDetail4 = JSON.parse(JSON.stringify(orderDetails[0]));
   orderDetail4.orderstatus = 'SHIPPED';
-  orderDetail4.barcode = 'barcode4';
+  orderDetail4.id = 'id4';
 
   it('returns the right actions when given a batch of different line items all in the order', () => {
     const orderDetailsTest = [orderDetail1, orderDetail2, orderDetail3];
-    const expected = [{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": "canceledOrderStatus"}}, {"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": "inProcessOrderStatus"}}];
+    const expected = [{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id2", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id2", "quantity": 1, "toState": {"key": "canceledOrderStatus"}}, {"action": "setLineItemCustomField", "lineItemId": "id3", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id3", "quantity": 1, "toState": {"key": "inProcessOrderStatus"}}];
     expect(getActionsFromOrderDetails(orderDetailsTest, mockOrderMultiLine.lineItems)).toEqual(expected);
   });
 
   it('returns the right actions when given both existing and line items not existing on the order', () => {
     const orderDetailsTest = [orderDetail1, orderDetail2, orderDetail3, orderDetail4];
-    const expected = [{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": "canceledOrderStatus"}}, {"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": "inProcessOrderStatus"}}];
+    const expected = [{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id2", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id2", "quantity": 1, "toState": {"key": "canceledOrderStatus"}}, {"action": "setLineItemCustomField", "lineItemId": "id3", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id3", "quantity": 1, "toState": {"key": "inProcessOrderStatus"}}];
     expect(getActionsFromOrderDetails(orderDetailsTest, mockOrderMultiLine.lineItems)).toEqual(expected);
   });
 
@@ -286,11 +286,11 @@ describe('removeDuplicateOrderDetails', () => {
 
   const orderDetail2 = JSON.parse(JSON.stringify(orderDetails[0]));
   orderDetail2.orderDetailLastModifiedDate = new Date(0);
-  orderDetail2.barcode = 'barcode2';
+  orderDetail2.id = 'id2';
 
   const orderDetail3 = JSON.parse(JSON.stringify(orderDetails[0]));
   orderDetail3.orderDetailLastModifiedDate = new Date(0);
-  orderDetail3.barcode = 'barcode3';
+  orderDetail3.id = 'id3';
 
   it('returns an array matching the given array when there are no duplicate line items', () => {
     const orderDetailsWithNoDuplicates = [orderDetail1, orderDetail2, orderDetail3];

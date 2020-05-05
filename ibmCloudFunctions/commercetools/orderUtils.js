@@ -2,12 +2,11 @@ const { orderAttributeNames, orderDetailAttributeNames, orderStates } = require(
 const { groupByAttribute, getMostUpToDateObject } = require('../lib/utils');
 
 const groupByOrderNumber = groupByAttribute('orderNumber');
-const groupByBarcode = groupByAttribute('barcode');
+const groupByLineId = groupByAttribute('id');
 const getMostUpToDateOrderDetail = getMostUpToDateObject(orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE);
-const getMatchingLineByBarcode = (ctOrderDetail, orderDetail) => ctOrderDetail.custom.fields.barcodeData.find(barcodeObj => barcodeObj.obj.value.barcode === orderDetail.barcode)
 
 const removeDuplicateOrderDetails = orderDetails => {
-  const orderDetailsGroupedByBarcode = groupByBarcode(orderDetails);
+  const orderDetailsGroupedByBarcode = groupByLineId(orderDetails);
 
   return orderDetailsGroupedByBarcode.reduce((filteredOrderDetails, orderDetailBatch) => {
     const mostUpToDateOrderDetail = getMostUpToDateOrderDetail(orderDetailBatch);
@@ -24,29 +23,29 @@ const existingCtOrderDetailIsNewer = (existingCtOrderDetail, givenOrderDetail) =
   return existingCtOrderDetailDate.getTime() >= givenOrderDetail[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE].getTime();
 };
 
-const getOutOfDateOrderDetails = (existingCtOrderDetails, orderDetails) => (
+const getOutOfDateOrderDetailIds = (existingCtOrderDetails, orderDetails) => (
   existingCtOrderDetails.filter(ctOrderDetail => {
-    const correspondingJestaOrderDetail = orderDetails.find(orderDetail => getMatchingLineByBarcode(ctOrderDetail, orderDetail));
+    const correspondingJestaOrderDetail = orderDetails.find(orderDetail => orderDetail.id === ctOrderDetail.id);
     if (!correspondingJestaOrderDetail) return false;
     return existingCtOrderDetailIsNewer(ctOrderDetail, correspondingJestaOrderDetail);
-  }).map(ctOrderDetail => ctOrderDetail.custom.fields.barcodeData.map(barcodeObj => barcodeObj.obj.value.barcode))
+  }).map(ctOrderDetail => ctOrderDetail.id)
 );
 
-const getCtOrderDetailFromCtOrder = (barcode, ctOrder) => {
+const getCtOrderDetailFromCtOrder = (lineId, ctOrder) => {
   const orderDetails = ctOrder.lineItems;
-  return orderDetails.find(lineItem => lineItem.custom.fields.barcodeData.filter(barcodeObj => barcodeObj.obj.value.barcode === barcode).length > 0);
+  return orderDetails.find(lineItem => lineItem.id === lineId);
 };
 
 const getCtOrderDetailsFromCtOrder = (orderDetails, ctOrder) => (
   orderDetails.map(
-    orderDetail => getCtOrderDetailFromCtOrder(orderDetail.barcode, ctOrder)
+    orderDetail => getCtOrderDetailFromCtOrder(orderDetail.id, ctOrder)
   ).filter(Boolean)
 );
 
 const getExistingCtOrder = async (orderNumber, { client, requestBuilder }) => {
   const method = 'GET';
 
-  const uri = requestBuilder.orders.where(`orderNumber = "${orderNumber}"`).expand('lineItems[*].custom.fields.barcodeData[*]').build();
+  const uri = requestBuilder.orders.where(`orderNumber = "${orderNumber}"`).build();
 
   try {
     const response = await client.execute({ method, uri });
@@ -171,7 +170,7 @@ const getActionsFromOrderDetail = (orderDetail, existingOrderDetail) => {
 
 const getActionsFromOrderDetails = (orderDetails, existingCtOrderDetails) => (
   orderDetails.reduce((previousActions, orderDetail) => {
-    const matchingCtOrderDetail = existingCtOrderDetails.find(ctOrderDetail => getMatchingLineByBarcode(ctOrderDetail, orderDetail));
+    const matchingCtOrderDetail = existingCtOrderDetails.find(ctOrderDetail => ctOrderDetail.id === orderDetail.id);
     const attributeUpdateActions = getActionsFromOrderDetail(orderDetail, matchingCtOrderDetail);
 
     if (matchingCtOrderDetail) return [...previousActions, ...attributeUpdateActions];
@@ -205,7 +204,7 @@ module.exports = {
   getExistingCtOrder,
   getCtOrderDetailsFromCtOrder,
   getCtOrderDetailFromCtOrder,
-  getOutOfDateOrderDetails,
+  getOutOfDateOrderDetailIds,
   removeDuplicateOrderDetails,
   updateOrderDetailBatchStatus,
   getActionsFromOrderDetail,

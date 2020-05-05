@@ -10,9 +10,9 @@ function filterSalesOrderDetailsMessages(msg) {
 
 function parseSalesOrderDetailsMessage(msg) {
     return {
+        id: msg.value.EXT_REF_ID,
         orderNumber: msg.value.SALES_ORDER_ID,
         orderStatus: msg.value.STATUS,
-        barcode: msg.value.BAR_CODE_ID,
         orderDetailLastModifiedDate: new Date(msg.value.MODIFIED_DATE)
     };
 }
