@@ -1,6 +1,22 @@
 const getCollection = require('./getCollection');
-const { log, createLog } = require('../product-consumers/utils');
 const createError = require('../lib/createError');
+
+const MESSAGES_LOG_ERROR = 'MESSAGES LOG ERROR.';
+
+const log = new Proxy({
+    failedToStoreBatch (error) {
+        console.error(`${MESSAGES_LOG_ERROR} Failed to store batch of messages: ${error}`);
+    },
+    failedToUpdateBatchWithFailureIndexes (error) {
+        console.error(`${MESSAGES_LOG_ERROR} Failed to update batch of messages with failure indexes: ${error}`)
+    }
+}, {
+    get (loggers, logger) {
+        return process.env.NODE_ENV === "test"
+            ? () => {}
+            : loggers[logger]
+    }
+})
 
 // TODO create proper indexes on mongo
 async function getMessagesCollection({
@@ -124,7 +140,7 @@ async function storeBatch(params) {
             });
         return result;
     } catch (error) {
-        log(createLog.messagesLog.failedToStoreBatch(error));
+        log.failedToStoreBatch(error);
         return error;
     }
 }
@@ -145,7 +161,7 @@ async function updateBatchWithFailureIndexes(params, failureIndexes) {
             });
         return result;
     } catch (error) {
-        log(createLog.messagesLog.failedToUpdateBatchWithFailureIndexes(error));
+        log.failedToUpdateBatchWithFailureIndexes(error);
         return error;
     }
 }
@@ -280,7 +296,7 @@ async function storeInvalidMessages(params, invalidMessages) {
             });
         return result;
     } catch (error) {
-        log(createLog.messagesLog.failedToStoreBatch(error));
+        log.failedToStoreBatch(error);
         return error;
     }
 }

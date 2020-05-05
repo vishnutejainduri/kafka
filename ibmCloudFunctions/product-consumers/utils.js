@@ -58,9 +58,7 @@ const MESSAGES_LOG_ERROR = 'MESSAGES LOG ERROR.';
 
 const createLog = {
     messagesLog: {
-        failedToStoreBatch: (error) => `${MESSAGES_LOG_ERROR} Failed to store batch of messages: ${error}`,
-        failedToResolveBatch: (error) => `${MESSAGES_LOG_ERROR} Failed to resolve batch of messages: ${error}`,
-        failedToUpdateBatchWithFailureIndexes: (error) => `${MESSAGES_LOG_ERROR} Failed to update batch of messages with failure indexes: ${error}`
+        failedToResolveBatch: (error) => `${MESSAGES_LOG_ERROR} Failed to resolve batch of messages: ${error}`
     },
     params: (cfName, params) => {
         const { messages, ...paramsExcludingMessages } = params;
