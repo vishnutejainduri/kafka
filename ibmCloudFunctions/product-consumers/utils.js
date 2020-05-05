@@ -1,3 +1,5 @@
+const messagesLogs = require('../lib/messagesLogs');
+ 
 // NOTE: addErrorHandling should be used for all of the chained methods on array e.g. map, filter, etc.
 // and you cannot wrap some methods with addErrorHandling while skipping others,
 // because if one method returns an Error instance, the rest of the methods will simply bypass that Error
@@ -103,11 +105,16 @@ const passDownAnyMessageErrors = messages => {
 
 // Adds logging to the `main` function of a CF. Takes the main function and
 // the `messagesLogs` logger, defined in `/lib/messagesLog.js`.
-const addLoggingToMain = (main, logger) => (async params => (
+const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
     Promise.all([
         main(params),
         logger.storeBatch(params)
-    ]).then(([result]) => result)
+    ]).then(async ([result]) => {
+        if (result.failureIndexes && result.failureIndexes.length > 0) {
+          await logger.updateBatchWithFailureIndexes(params, result.failureIndexes);
+        }
+        return result;
+    })
   )
 );
 

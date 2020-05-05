@@ -1,8 +1,7 @@
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
-const { addErrorHandling, log, createLog } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain } = require('../utils');
 const createError = require('../../lib/createError');
 const getCollection = require('../../lib/getCollection');
-const messagesLogs = require('../../lib/messagesLogs');
 
 const main = async function (params) {
     log(createLog.params('consumeCatalogMessage', params));
@@ -89,11 +88,6 @@ const main = async function (params) {
     });
 }
 
-global.main = async function (params) {
-  return Promise.all([
-      main(params),
-      messagesLogs.storeBatch(params)
-  ]).then(([result]) => result);
-}
+global.main = addLoggingToMain(main);
 
 module.exports = global.main;
