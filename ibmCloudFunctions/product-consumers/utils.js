@@ -108,7 +108,7 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
         main(params),
         logger.storeBatch(params)
     ]).then(async ([result]) => {
-        if (result.failureIndexes && result.failureIndexes.length > 0) {
+        if (result && result.failureIndexes && result.failureIndexes.length > 0) {
           await logger.updateBatchWithFailureIndexes(params, result.failureIndexes);
         }
         return result;
