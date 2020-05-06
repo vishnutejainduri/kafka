@@ -1,9 +1,51 @@
-const { orderAttributeNames, orderStates } = require('./constantsCt');
+const { orderAttributeNames, orderDetailAttributeNames, orderStates } = require('./constantsCt');
+const { groupByAttribute, getMostUpToDateObject } = require('../lib/utils');
+
+const groupByOrderNumber = groupByAttribute('orderNumber');
+const groupByLineId = groupByAttribute('id');
+const getMostUpToDateOrderDetail = getMostUpToDateObject(orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE);
+
+const removeDuplicateOrderDetails = orderDetails => {
+  const orderDetailsGroupedByBarcode = groupByLineId(orderDetails);
+
+  return orderDetailsGroupedByBarcode.reduce((filteredOrderDetails, orderDetailBatch) => {
+    const mostUpToDateOrderDetail = getMostUpToDateOrderDetail(orderDetailBatch);
+    return [...filteredOrderDetails, mostUpToDateOrderDetail];    
+  }, []);
+};
+
+const existingCtOrderDetailIsNewer = (existingCtOrderDetail, givenOrderDetail) => {
+  const orderDetailLastModifiedDate = existingCtOrderDetail.custom.fields.orderDetailLastModifiedDate
+  if (!orderDetailLastModifiedDate) return false;
+
+  const existingCtOrderDetailDate = new Date(orderDetailLastModifiedDate);
+
+  return existingCtOrderDetailDate.getTime() >= givenOrderDetail[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE].getTime();
+};
+
+const getOutOfDateOrderDetailIds = (existingCtOrderDetails, orderDetails) => (
+  existingCtOrderDetails.filter(ctOrderDetail => {
+    const correspondingJestaOrderDetail = orderDetails.find(orderDetail => orderDetail.id === ctOrderDetail.id);
+    if (!correspondingJestaOrderDetail) return false;
+    return existingCtOrderDetailIsNewer(ctOrderDetail, correspondingJestaOrderDetail);
+  }).map(ctOrderDetail => ctOrderDetail.id)
+);
+
+const getCtOrderDetailFromCtOrder = (lineId, ctOrder) => {
+  const orderDetails = ctOrder.lineItems;
+  return orderDetails.find(lineItem => lineItem.id === lineId);
+};
+
+const getCtOrderDetailsFromCtOrder = (orderDetails, ctOrder) => (
+  orderDetails.map(
+    orderDetail => getCtOrderDetailFromCtOrder(orderDetail.id, ctOrder)
+  ).filter(Boolean)
+);
 
 const getExistingCtOrder = async (orderNumber, { client, requestBuilder }) => {
   const method = 'GET';
 
-  const uri = requestBuilder.orders.where(`orderNumber = "${orderNumber}"`).expand('lineItems[*].custom.fields.barcodeData[*]').build();
+  const uri = requestBuilder.orders.where(`orderNumber = "${orderNumber}"`).build();
 
   try {
     const response = await client.execute({ method, uri });
@@ -83,6 +125,91 @@ const updateOrderStatus = async (ctHelpers, order) => {
   return updateOrder({ order, existingCtOrder, ctHelpers });
 };
 
+const getActionsFromOrderDetail = (orderDetail, existingOrderDetail) => {
+  const customAttributesToUpdate = Object.values(orderDetailAttributeNames);
+
+  let customTypeUpdateAction = null;
+  if (existingOrderDetail && !existingOrderDetail.custom) {
+    customTypeUpdateAction = { 
+        action: 'setLineItemCustomType',
+        type: {
+          key: 'customLineItemFields' 
+        },
+        lineItemId: existingOrderDetail.id,
+        fields: {}
+    }
+    customAttributesToUpdate.forEach(attribute => {
+      customTypeUpdateAction.fields[attribute] = orderDetail[attribute];
+    })
+  } 
+
+  const customAttributeUpdateActions = existingOrderDetail && existingOrderDetail.custom
+    ? customAttributesToUpdate.map(attribute => ({
+      action: 'setLineItemCustomField',
+      lineItemId: existingOrderDetail.id,
+      name: attribute,
+      value: orderDetail[attribute]
+    }))
+    : []
+
+  const statusUpdateAction = orderDetail.orderStatus && existingOrderDetail
+    ? { 
+        action: 'transitionLineItemState',
+        lineItemId: existingOrderDetail.id,
+        quantity: existingOrderDetail.quantity,
+        fromState: existingOrderDetail.state[0].state,
+        toState: { key: orderStates[orderDetail.orderStatus] },
+        force: true 
+      }
+    : null;
+  
+  const allUpdateActions = [...customAttributeUpdateActions, customTypeUpdateAction, statusUpdateAction].filter(Boolean);
+
+  return allUpdateActions;
+};
+
+const getActionsFromOrderDetails = (orderDetails, existingCtOrderDetails) => (
+  orderDetails.reduce((previousActions, orderDetail) => {
+    const matchingCtOrderDetail = existingCtOrderDetails.find(ctOrderDetail => ctOrderDetail.id === orderDetail.id);
+    const attributeUpdateActions = getActionsFromOrderDetail(orderDetail, matchingCtOrderDetail);
+
+    if (matchingCtOrderDetail) return [...previousActions, ...attributeUpdateActions];
+
+    return [...previousActions];
+  }, [])
+);
+
+const formatOrderDetailBatchRequestBody = (orderDetailsToCreateOrUpdate, ctOrder, existingCtOrderDetails) => {
+  const actions = getActionsFromOrderDetails(orderDetailsToCreateOrUpdate, existingCtOrderDetails);
+
+  return JSON.stringify({
+    version: ctOrder.version,
+    actions
+  });
+};
+
+const updateOrderDetailBatchStatus = (orderDetailsToUpdate, existingCtOrderDetails, existingCtOrder, { client, requestBuilder }) => {
+  if (orderDetailsToUpdate.length === 0) return null;
+
+  const method = 'POST';
+  const uri = requestBuilder.orders.byId(existingCtOrder.id).build();
+  const body = formatOrderDetailBatchRequestBody(orderDetailsToUpdate, existingCtOrder, existingCtOrderDetails);
+
+  return client.execute({ method, uri, body });
+};
+
 module.exports = {
-  updateOrderStatus
+  updateOrderStatus,
+  groupByOrderNumber,
+  getExistingCtOrder,
+  getCtOrderDetailsFromCtOrder,
+  getCtOrderDetailFromCtOrder,
+  getOutOfDateOrderDetailIds,
+  removeDuplicateOrderDetails,
+  updateOrderDetailBatchStatus,
+  getActionsFromOrderDetail,
+  getActionsFromOrderDetails,
+  formatOrderDetailBatchRequestBody,
+  existingCtOrderDetailIsNewer,
+  getMostUpToDateOrderDetail,
 };
