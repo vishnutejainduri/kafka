@@ -32,7 +32,6 @@ global.main = async function (params) {
     return Promise.all(stylesToRecalcAts
         .map(addErrorHandling(async (styleToRecalcAts) => {
           const skuAtsOperations = await calculateAts(styleToRecalcAts, styles, skus, stores, inventory);
-          if (skuAtsOperations === null) return null;
           const operationResults = await Promise.all(skuAtsOperations)
                               .catch(originalError => {
                                   throw createError.bulkCalculateAvailableToSell.failedAllAtsUpdates(originalError, stylesToRecalcAts);

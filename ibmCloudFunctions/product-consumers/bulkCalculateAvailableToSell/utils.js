@@ -56,7 +56,7 @@ module.exports = {
           })
           if (!styleData) {
             log(`Could not find style data for _id: ${styleToRecalcAts._id}`);
-            return null;
+            return [ {} ]; //create an empty operation for the Promise.all, we still want to process the queue even if we run nothing on mongo
           }
 
           const skuRecords = await skus.find({ styleId: styleToRecalcAts._id }).toArray()
