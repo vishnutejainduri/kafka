@@ -1,3 +1,5 @@
+const messagesLogs = require('../lib/messagesLogs');
+ 
 // NOTE: addErrorHandling should be used for all of the chained methods on array e.g. map, filter, etc.
 // and you cannot wrap some methods with addErrorHandling while skipping others,
 // because if one method returns an Error instance, the rest of the methods will simply bypass that Error
@@ -56,9 +58,7 @@ const MESSAGES_LOG_ERROR = 'MESSAGES LOG ERROR.';
 
 const createLog = {
     messagesLog: {
-        failedToStoreBatch: (error) => `${MESSAGES_LOG_ERROR} Failed to store batch of messages: ${error}`,
-        failedToResolveBatch: (error) => `${MESSAGES_LOG_ERROR} Failed to resolve batch of messages: ${error}`,
-        failedToUpdateBatchWithFailureIndexes: (error) => `${MESSAGES_LOG_ERROR} Failed to update batch of messages with failure indexes: ${error}`
+        failedToResolveBatch: (error) => `${MESSAGES_LOG_ERROR} Failed to resolve batch of messages: ${error}`
     },
     params: (cfName, params) => {
         const { messages, ...paramsExcludingMessages } = params;
@@ -101,13 +101,24 @@ const passDownAnyMessageErrors = messages => {
     }
 };
 
-// Adds logging to the `main` function of a CF. Takes the main function and
-// the `messagesLogs` logger, defined in `/lib/messagesLog.js`.
-const addLoggingToMain = (main, logger) => (async params => (
+/**
+ * Stores the messages of the params passed to the `main` function of a CF in a database,
+ * so that we can retry the failed messaegs later.
+ * @param main {function}
+ * @param logger {{ storeBatch: function, updateBatchWithFailureIndexes: function }}
+ */
+const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
     Promise.all([
-        main(params),
+        // Promise.all will prematurely return if any of the promises is rejected, but we want storeBatch to finish even if  main function fails 
+        main(params).catch(error => error instanceof Error ? error : new Error(error)),
         logger.storeBatch(params)
-    ]).then(([result]) => result)
+    ]).then(async ([result]) => {
+        if (result && result.failureIndexes && result.failureIndexes.length > 0) {
+            await logger.updateBatchWithFailureIndexes(params, result.failureIndexes);
+        }
+        if (result instanceof Error) throw result;
+        return result;
+    })
   )
 );
 

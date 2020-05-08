@@ -1,7 +1,6 @@
 const { filterBarcodeMessage, parseBarcodeMessage } = require('../../lib/parseBarcodeMessage');
-const { createLog, addErrorHandling, log } = require('../utils');
+const { createLog, addErrorHandling, log, addLoggingToMain } = require('../utils');
 const getCollection = require('../../lib/getCollection');
-const messagesLogs = require('../../lib/messagesLogs');
 const createError = require('../../lib/createError');
 
 const main = async function (params) {
@@ -55,11 +54,6 @@ const main = async function (params) {
     });
 }
 
-global.main = async function (params) {
-  return Promise.all([
-      main(params),
-      messagesLogs.storeBatch(params)
-  ]).then(([result]) => result);
-}
+global.main = addLoggingToMain(main);
 
 module.exports = global.main;

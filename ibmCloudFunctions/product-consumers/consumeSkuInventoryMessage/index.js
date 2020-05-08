@@ -1,9 +1,7 @@
 const getCollection = require('../../lib/getCollection');
-const messagesLogs = require('../../lib/messagesLogs');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 const createError = require('../../lib/createError');
-
-const { createLog, addErrorHandling, log } = require('../utils');
+const { createLog, addErrorHandling, log, addLoggingToMain } = require('../utils');
 
 const main = async function (params) {
     log(createLog.params('consumeSkuInventoryMessage', params));
@@ -76,16 +74,6 @@ const main = async function (params) {
     });
 };
 
-global.main = async function (params) {
-  return Promise.all([
-      main(params),
-      messagesLogs.storeBatch(params)
-  ]).then(async ([result]) => {
-      if (result.failureIndexes.length > 0) {
-        await messagesLogs.updateBatchWithFailureIndexes(params, result.failureIndexes);
-      }
-      return result;
-  });
-}
+global.main = addLoggingToMain(main)
 
 module.exports = global.main;

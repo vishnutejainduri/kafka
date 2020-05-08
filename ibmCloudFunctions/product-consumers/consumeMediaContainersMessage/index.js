@@ -1,7 +1,7 @@
 const { filterMediaContainerMessage, parseMediaContainerMessage } = require('../../lib/parseMediaContainerMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const messagesLogs = require('../../lib/messagesLogs');
+const { addLoggingToMain } = require('../utils');
 
 const main = async function (params) {
     console.log(JSON.stringify({
@@ -57,11 +57,6 @@ const main = async function (params) {
     });
 }
 
-global.main = async function (params) {
-  return Promise.all([
-      main(params),
-      messagesLogs.storeBatch(params)
-  ]).then(([result]) => result);
-}
+global.main = addLoggingToMain(main);
 
 module.exports = global.main;

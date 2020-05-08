@@ -1,8 +1,7 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { addErrorHandling, log, createLog } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain } = require('../utils');
 const { handleSkuAtsUpdate } = require('./utils');
-const messagesLogs = require('../../lib/messagesLogs');
 
 const main = async function (params) {
     log(createLog.params('calculateAvailableToSell', params));
@@ -90,16 +89,6 @@ const main = async function (params) {
     });
 };
 
-global.main = async function (params) {
-    return Promise.all([
-        main(params),
-        messagesLogs.storeBatch(params)
-    ]).then(async ([result]) => {
-        if (result.failureIndexes && result.failureIndexes.length > 0) {
-          await messagesLogs.updateBatchWithFailureIndexes(params, result.failureIndexes);
-        }
-        return result;
-    });
-}
+global.main = addLoggingToMain(main)
 
 module.exports = global.main;

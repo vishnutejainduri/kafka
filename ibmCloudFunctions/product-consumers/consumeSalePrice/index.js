@@ -8,8 +8,7 @@ const {
     generateUpdateFromParsedMessage
 } = require('../../lib/parsePriceMessage');
 const createError = require('../../lib/createError');
-const { log, createLog, addErrorHandling } = require('../utils');
-const messagesLogs = require('../../lib/messagesLogs');
+const { log, createLog, addErrorHandling, addLoggingToMain } = require('../utils');
 
 const main = async function (params) {
     log(createLog.params("consumeSalePrice", params));
@@ -71,12 +70,7 @@ const main = async function (params) {
     }));
 };
 
-global.main = async function (params) {
-  return Promise.all([
-      main(params),
-      messagesLogs.storeBatch(params)
-  ]).then(([result]) => result);
-}
+global.main = addLoggingToMain(main);
 
 
 module.exports = global.main;

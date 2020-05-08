@@ -1,8 +1,7 @@
 const createError = require('../../lib/createError');
-const { log, createLog, addErrorHandling } = require('../utils');
+const { log, createLog, addErrorHandling, addLoggingToMain } = require('../utils');
 const { parseFacetMessage } = require('../../lib/parseFacetMessage');
 const getCollection = require('../../lib/getCollection');
-const messagesLogs = require('../../lib/messagesLogs');
 
 const parseFacetMessageWithErrorHandling = addErrorHandling(
     parseFacetMessage,
@@ -56,11 +55,6 @@ const main = async function (params) {
     });
 }
 
-global.main = async function (params) {
-  return Promise.all([
-      main(params),
-      messagesLogs.storeBatch(params)
-  ]).then(([result]) => result);
-}
+global.main = addLoggingToMain(main);
 
 module.exports = global.main;

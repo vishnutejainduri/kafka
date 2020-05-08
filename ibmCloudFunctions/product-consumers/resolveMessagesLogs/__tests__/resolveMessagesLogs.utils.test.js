@@ -1,5 +1,12 @@
 const { groupMessagesByNextAction, INTERVAL_GROWTH_RATE, MAX_RETRIES  } = require('../utils');
 
+function validateNextRetry(nextRetry, activationEndTime = 0, retries = 0) {
+    expect(
+        nextRetry > activationEndTime + INTERVAL_GROWTH_RATE * Math.pow(3, retries)
+        && nextRetry < activationEndTime + INTERVAL_GROWTH_RATE * Math.pow(3, retries) * 2
+    ).toEqual(true);
+}
+
 describe('groupMessagesByNextAction', function() {
     const activationEndTime  = 0;
 
@@ -8,13 +15,11 @@ describe('groupMessagesByNextAction', function() {
         it('updates a value with no metadata', function() {
             const value = {};
             const valueWithMetadata = getValueWithUpdatedMetadata(value, activationEndTime);
-            expect(valueWithMetadata).toEqual({
-                metadata: {
-                    lastRetry: 0,
-                    nextRetry: INTERVAL_GROWTH_RATE,
-                    retries: 0
-                }
+            expect(valueWithMetadata.metadata).toMatchObject({
+                lastRetry: 0,
+                retries: 0
             });
+            validateNextRetry(valueWithMetadata.metadata.nextRetry);
         });
         it('preserves metadata fields on a value', function() {
             const value = {
@@ -23,14 +28,12 @@ describe('groupMessagesByNextAction', function() {
                 }
             };
             const valueWithMetadata = getValueWithUpdatedMetadata(value, activationEndTime);
-            expect(valueWithMetadata).toEqual({
-                metadata: {
-                    lastRetry: 0,
-                    nextRetry: INTERVAL_GROWTH_RATE,
-                    retries: 0,
-                    someField: 'someField'
-                }
+            expect(valueWithMetadata.metadata).toMatchObject({
+                lastRetry: 0,
+                retries: 0,
+                someField: 'someField'
             });
+            validateNextRetry(valueWithMetadata.metadata.nextRetry);
         });
         it('Sets next retry fields on a value based on retries', function() {
             const value = {
@@ -39,14 +42,12 @@ describe('groupMessagesByNextAction', function() {
                 }
             };
             const activationEndTime = 1000;
-            const valueWithMetadata = getValueWithUpdatedMetadata(value, activationEndTime);
-            expect(valueWithMetadata).toEqual({
-                metadata: {
-                    lastRetry: activationEndTime,
-                    nextRetry: activationEndTime + Math.pow(2, 1) * INTERVAL_GROWTH_RATE, // activationEndTime + INTERVAL_GROWTH_RATE
-                    retries: 1
-                }
+            const valueWithMetadata = getValueWithUpdatedMetadata(value,activationEndTime);
+            expect(valueWithMetadata.metadata).toMatchObject({
+                lastRetry: activationEndTime,
+                retries: 1
             });
+            validateNextRetry(valueWithMetadata.metadata.nextRetry,activationEndTime,1);
         });
     });
 
@@ -91,18 +92,19 @@ describe('groupMessagesByNextAction', function() {
                 }
             }
         };
-        expect(groupMessagesByNextAction([retryMessage], activationEndTime)).toEqual({
+        const groupedMessages = groupMessagesByNextAction([retryMessage],activationEndTime);
+        expect(groupedMessages).toMatchObject({
             retry: [{
                 id: 'retryValue',
                 value: {
                     metadata: {
                         lastRetry: 0,
-                        retries: retries,
-                        nextRetry: Math.pow(2, retries) * INTERVAL_GROWTH_RATE
+                        retries: retries
                     }
                 }
             }],
             dlq: []
-        })
+        });
+        validateNextRetry(groupedMessages.retry[0].value.metadata.nextRetry,0,retries);
     });
 });
