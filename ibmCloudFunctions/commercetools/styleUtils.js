@@ -1,4 +1,4 @@
-const { styleAttributeNames, currencyCodes, languageKeys, isStaged } = require('./constantsCt');
+const { styleAttributeNames, currencyCodes, languageKeys, isStaged, TAX_CATEGORY } = require('./constantsCt');
 
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
 const DPM_ROOT_CATEGORY = 'DPM ROOT CATEGORY';
@@ -251,6 +251,9 @@ const createStyle = async (style, productType, categories, { client, requestBuil
     productType: {
       typeId: 'product-type',
       id: productType.id
+    },
+    taxCategory: {
+      key: TAX_CATEGORY
     },
     // Since CT attributes apply only at the product variant level, we can't
     // store attribute values at the level of products. So to store the

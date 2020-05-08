@@ -53,6 +53,7 @@ const orderDetailAttributeNames = {
 
 const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
 const KEY_VALUE_DOCUMENT = 'key-value-document'; // reference-type of custom objects in CT
+const TAX_CATEGORY = 'jesta-tax-descriptions';
 const isStaged = false;
 
 const currencyCodes = {
@@ -81,5 +82,6 @@ module.exports = {
   currencyCodes,
   languageKeys,
   orderStates,
-  isStaged
+  isStaged,
+  TAX_CATEGORY
 };
