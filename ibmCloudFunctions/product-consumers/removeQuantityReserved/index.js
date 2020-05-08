@@ -15,7 +15,10 @@ global.main = async function (params) {
 
     let skusToCheck;
     try {
-        skusToCheck = await skus.find().limit(40).toArray();
+        const waitPeriod = 1200000; //20 minutes in milliseconds
+        const cutOffTime = (new Date()).getTime() - waitPeriod;
+        console.log('cutOffTime', cutOffTime);
+        skusToCheck = await skus.find({ quantitiesReserved: { $elemMatch: { lastModified: { $lte: cutOffTime } } } }).limit(40).toArray();
     } catch (originalError) {
         throw createError.removeQuantityReserved.failedToGetSkusToCheck(originalError);
     }
