@@ -102,6 +102,22 @@ const passDownAnyMessageErrors = messages => {
 };
 
 /**
+ * Catches the error returned from the main function and returns it as an instance of Error instead of throwing it
+ * @param {function} main
+ * @return {object|Error}
+ */
+function addErrorHandlingToMain (main) {
+    return async function mainWithErrorHandling (params) {
+        try {
+            const result = await main(params);
+            return result
+        } catch (error) {
+            return error instanceof Error ? error : new Error(error);
+        }
+    }
+}
+
+/**
  * Stores the messages of the params passed to the `main` function of a CF in a database,
  * so that we can retry the failed messaegs later.
  * @param main {function}
@@ -110,7 +126,7 @@ const passDownAnyMessageErrors = messages => {
 const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
     Promise.all([
         // Promise.all will prematurely return if any of the promises is rejected, but we want storeBatch to finish even if  main function fails 
-        main(params).catch(error => error instanceof Error ? error : new Error(error)),
+        addErrorHandlingToMain(main)(params),
         logger.storeBatch(params)
     ]).then(async ([result]) => {
         if (result && result.failureIndexes && result.failureIndexes.length > 0) {
