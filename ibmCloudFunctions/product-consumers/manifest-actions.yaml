@@ -330,6 +330,8 @@
           timeout: 600000
       remove-quantity-reserved:
         location: ./product-consumers/removeQuantityReserved/dist/bundle.js
+        inputs:
+          collectionName: $SKUS_COLLECTION_NAME
         limits:
           memorySize: 2048
           timeout: 600000
