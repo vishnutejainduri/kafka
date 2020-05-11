@@ -328,6 +328,11 @@
         limits:
           memorySize: 2048
           timeout: 600000
+      remove-quantity-reserved:
+        location: ./product-consumers/removeQuantityReserved/dist/bundle.js
+        limits:
+          memorySize: 2048
+          timeout: 600000
     sequences:
       update-pricing-sequence:
         actions: update-algolia-price,consume-sale-price
