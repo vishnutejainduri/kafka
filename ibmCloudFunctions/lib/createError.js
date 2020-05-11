@@ -152,9 +152,9 @@ module.exports = {
         )
     },
     removeQuantityReserved: {
-        failedToGetSkusToCheck: (originalError, params) => new CustomError(
+        failedToRemoveSomeReserves: (originalError, params) => new CustomError(
             originalError,
-            'failed-remove-quantity-reserved-get-skus',
+            'failed-to-remove-some-reserves',
             `Failure in run of remove quantity reserved; params: ${params}.`
         )
     },
