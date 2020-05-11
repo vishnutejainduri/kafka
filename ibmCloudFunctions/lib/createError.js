@@ -151,6 +151,13 @@ module.exports = {
             `Failure in run of consume catalog message CT; params: ${params}.`
         )
     },
+    removeQuantityReserved: {
+        failedToRemoveSomeReserves: (originalError, params) => new CustomError(
+            originalError,
+            'failed-to-remove-some-reserves',
+            `Failure in run of remove quantity reserved; params: ${params}.`
+        )
+    },
     consumeSalesOrderMessageCT: {
         failed: (originalError, params) => new CustomError(
             originalError,

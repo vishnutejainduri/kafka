@@ -39,6 +39,7 @@ const getCollection = (collectionName) => {
             }; 
         case 'skus':
             return {
+                update: async () => ({ }),
                 updateOne: async ({ _id }) => ({ _id }),
                 findOne: async () => ({ _id: 'success' }),
                 find: () => ({
