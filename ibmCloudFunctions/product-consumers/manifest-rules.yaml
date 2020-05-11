@@ -62,3 +62,6 @@
       cleanup-messages-logs-rule:
         action: /${ORG}_${SPACE}/product-consumers/cleanup-messages-logs
         trigger: every-midnight
+      remove-quantity-reserved-rule:
+        action: /${ORG}_${SPACE}/product-consumers/remove-quantity-reserved
+        trigger: every-minute

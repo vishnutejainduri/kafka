@@ -62,3 +62,6 @@
       cleanup-messages-logs-rule:
         action: cleanup-messages-logs
         trigger: every-midnight
+      remove-quantity-reserved-rule:
+        action: remove-quantity-reserved
+        trigger: every-minute
