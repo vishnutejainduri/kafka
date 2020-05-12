@@ -38,7 +38,7 @@ global.main = async function (params) {
     const styleFacets = await algoliaFacetBulkImportQueue.aggregate([
         { $group: {
             _id: "$styleId",
-            facets: { $push: { name: "$facetName", value: "$facetValue" } }
+            facets: { $push: { name: "$facetName", value: "$facetValue", type: "$typeId" } }
         }},
         { $limit: 750 }
     ],
@@ -49,17 +49,28 @@ global.main = async function (params) {
         return;
     }
 
-    const algoliaUpdates = styleFacets.map((styleFacetData) => {
-        const styleData = {
-            objectID: styleFacetData._id
-        };
-        styleFacetData.facets.forEach((facetData) => {
-            styleData[facetData.name] = facetData.value;
-        });
-        return styleData;
-    });
+    let algoliaUpdatesWithoutOutlet = await Promise.all(styleFacets.map((styleFacetData) => styles.findOne({ _id: styleFacetData._id })
+        .then((styleData) => {
+            if (styleData && !styleData.isOutlet) {
+              const algoliaUpdate = {
+                  objectID: styleFacetData._id
+              };
+              styleFacetData.facets.forEach((facetData) => {
+                  if (facetData.type === 'DPM01') {
+                    algoliaUpdate[facetData.name] = styleData[facetData.name] ? styleData[facetData.name].push(facetData.value) : [facetData.value]
+                  } else {
+                    algoliaUpdate[facetData.name] = facetData.value;
+                  }
+              });
+              return algoliaUpdate;
+            } else {
+              return null;
+            }
+        })
+    ));
+    algoliaUpdatesWithoutOutlet = algoliaUpdatesWithoutOutlet.filter((algoliaUpdate) => algoliaUpdate);
 
-    const styleUpdates = algoliaUpdates.map((algoliaUpdate) => {
+    const styleUpdates = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => {
         const styleUpdate = Object.assign({}, algoliaUpdate);
         styleUpdate._id = algoliaUpdate.objectID;
         delete styleUpdate.objectID;
@@ -73,16 +84,8 @@ global.main = async function (params) {
         };
     });
 
-    const styleIds = algoliaUpdates.map((algoliaUpdate) => algoliaUpdate.objectID);
+    const styleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
 
-    let algoliaUpdatesWithoutOutlet = await Promise.all(algoliaUpdates.map((algoliaUpdate) => styles.findOne({ _id: algoliaUpdate.objectID })
-        .then((styleData) => {
-            return !styleData || styleData.isOutlet
-                ? null
-                : algoliaUpdate
-        })
-    ));
-    algoliaUpdatesWithoutOutlet = algoliaUpdatesWithoutOutlet.filter((algoliaUpdate) => algoliaUpdate);
 
     return index.partialUpdateObjects(algoliaUpdatesWithoutOutlet, true)
         .then(() => styles.bulkWrite(styleUpdates, { ordered : false })
