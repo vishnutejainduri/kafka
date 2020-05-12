@@ -20,6 +20,7 @@ function parseFacetMessage(msg) {
     const facetName = facetMap[msg.value.CATEGORY] || facetTypeMap[msg.value.CHARACTERISTIC_TYPE_ID] || camelCase(msg.value.CATEGORY);
     return {
         styleId: msg.value.STYLEID,
+        typeId: msg.value.CHARACTERISTIC_TYPE_ID,
         facetName,
         facetValue: {
             en: msg.value.DESC_ENG,

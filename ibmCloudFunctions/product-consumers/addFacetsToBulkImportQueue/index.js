@@ -9,7 +9,7 @@ const parseFacetMessageWithErrorHandling = addErrorHandling(
 );
 
 const updateAlgoliaFacetQueue = algoliaFacetQueue => (facetData) => {
-    return algoliaFacetQueue.updateOne({ 'facetValue.en': facetData.facetValue.en, 'facetValue.fr': facetData.facetValue.fr, facetName: facetData.facetName }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: facetData }, { upsert: true })
+    return algoliaFacetQueue.updateOne({ 'facetValue.en': facetData.facetValue.en, 'facetValue.fr': facetData.facetValue.fr, facetName: facetData.facetName, styleId: facetData.styleId }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: facetData }, { upsert: true })
         .catch((err) => {
             console.error('Problem with facet ' + facetData.styleId + facetData.facetName);
             console.error(err);
