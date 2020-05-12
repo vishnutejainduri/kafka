@@ -57,7 +57,7 @@ global.main = async function (params) {
               };
               styleFacetData.facets.forEach((facetData) => {
                   if (facetData.type === 'DPM01') {
-                    algoliaUpdate[facetData.name] = styleData[facetData.name] ? styleData[facetData.name].push(facetData.value) : [facetData.value]
+                    algoliaUpdate[facetData.name] = styleData[facetData.name] ? styleData[facetData.name].concat([facetData.value]) : [facetData.value]
                   } else {
                     algoliaUpdate[facetData.name] = facetData.value;
                   }
