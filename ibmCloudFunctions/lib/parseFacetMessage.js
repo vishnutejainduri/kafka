@@ -11,12 +11,14 @@ const facetMap = {
     "Cuff": "cuff",
 };
 
+const facetTypeMap = {
+  "DPM01": "microsite"
+};
+
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.
 function parseFacetMessage(msg) {
-    const facetName = facetMap[msg.value.CATEGORY] || camelCase(msg.value.CATEGORY);
+    const facetName = facetMap[msg.value.CATEGORY] || facetTypeMap[msg.value.CHARACTERISTIC_TYPE_ID] || camelCase(msg.value.CATEGORY);
     return {
-        _id: msg.value.STYLEID + facetName,
-        id: msg.value.STYLEID + facetName,
         styleId: msg.value.STYLEID,
         facetName,
         facetValue: {
