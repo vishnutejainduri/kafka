@@ -1,6 +1,5 @@
 const { getExistingCtStyle, getCtStyleAttribute, updateStyle, getProductType } = require('../styleUtils');
-const { styleAttributeNames } = require('../constantsCt');
-const { generateUpdateFromParsedMessage } = require('../../lib/parsePriceMessage');
+const { styleAttributeNames, isStaged, currencyCodes } = require('../constantsCt');
 
 const convertToCents = (amount) => Math.round(amount * 100)
 
@@ -13,7 +12,7 @@ const getAllVariantPrices = (existingCtStyle) => {
     : existingCtStyle.masterData.current.masterVariant
   const relevantPriceObjMaster = {
     variantId: priceObjMaster.id,
-    price: priceObjMaster.prices[0]
+    prices: priceObjMaster.prices
   };
   variantPrices.push(relevantPriceObjMaster);
 
@@ -24,7 +23,7 @@ const getAllVariantPrices = (existingCtStyle) => {
   ctStyleVariants.forEach((variant) => {
     const relevantPriceObj = {
       variantId: variant.id,
-      price: variant.prices[0]
+      prices: variant.prices
     };
     variantPrices.push(relevantPriceObj);
   });
@@ -32,7 +31,7 @@ const getAllVariantPrices = (existingCtStyle) => {
   return variantPrices;
 };
 
-const generateUpdateFromParsedMessages = (priceUpdate, priceData, styleData, variantPrices) => {
+/*const generateUpdateFromParsedMessages = (priceUpdate, priceData, styleData, variantPrices) => {
     variantPrices = variantPrices.map ((variantPrice) => {
       priceData.currentPrice = variantPrice.price ? variantPrice.price.value.centAmount : null
       const updatedPrice = generateUpdateFromParsedMessage (priceUpdate, priceData, styleData);
@@ -92,12 +91,56 @@ const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
 
 
     return updatedPrices;
+};*/
+
+const getActionsForSalePrice = (updatedPrice, productType, existingCtStyle) => {
+  const allVariantPrices = getAllVariantPrices(existingCtStyle);
+  const priceUpdateActions = allVariantPrices.map((variantPrice) => {
+    const priceUpdate = {
+      price: {
+        value: {
+          currencyCode: currencyCodes.CAD,
+          centAmount: convertToCents(updatedPrice.newRetailPrice) 
+        }
+      },
+      staged: isStaged
+    };
+    switch(updatedPrice.activityType) {
+      case "A":
+        priceUpdate.action = 'addPrice';
+        priceUpdate.variantId = variantPrice.variantId;
+        break;
+      case "C":
+        priceUpdate.action = 'changePrice';
+        priceUpdate.priceId = variantPrice.price.id;
+        break;
+      case "D":
+        break;
+      default:
+    } 
+  });
+
+  const allUpdateActions = [...priceUpdateActions].filter(Boolean);
+
+  return allUpdateActions;
 };
 
-const updateStylePrice = async (ctHelpers, productTypeId, updatedPrice) => {
-    const productType = await getProductType(productTypeId, ctHelpers);
+const updateStyleSalePrice = async (ctHelpers, productTypeId, updatedPrice) => {
+    const { client, requestBuilder } = ctHelpers;
 
-    return updateStyle({ style: updatedPrice, existingCtStyle: updatedPrice, productType, ctHelpers });
+    const productType = await getProductType(productTypeId, ctHelpers);
+    const existingCtStyle = await getExistingCtStyle(updatedPrice.styleId, ctHelpers);
+
+    if (!existingCtStyle) {
+      throw new ('Style does not exist');
+    }
+
+    const method = 'POST';
+    const uri = requestBuilder.products.byKey(updatedPrice.styleId).build();
+    const actions = getActionsForSalePrice(updatedPrice, productType, existingCtStyle);
+    const body = JSON.stringify({ version: existingCtStyle.version, actions });
+
+    return client.execute({ method, uri, body });
 };
 
 module.exports = {
