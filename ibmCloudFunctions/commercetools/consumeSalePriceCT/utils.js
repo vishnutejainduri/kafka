@@ -31,71 +31,24 @@ const getAllVariantPrices = (existingCtStyle) => {
   return variantPrices;
 };
 
-/*const generateUpdateFromParsedMessages = (priceUpdate, priceData, styleData, variantPrices) => {
-    variantPrices = variantPrices.map ((variantPrice) => {
-      priceData.currentPrice = variantPrice.price ? variantPrice.price.value.centAmount : null
-      const updatedPrice = generateUpdateFromParsedMessage (priceUpdate, priceData, styleData);
-      const priceHasNotChanged = (updatedPrice.onlineSalePrice === priceData.onlineSalePrice
-                                  && updatedPrice.currentPrice === priceData.currentPrice)
+const existingCtPriceIsNewer = (existingCtPrice, givenPrice) => {
+  const existingCtOrderCustomAttributes = existingCtOrder.custom;
+  if (!existingCtOrderCustomAttributes) return false;
 
-      if (priceHasNotChanged) return null;
-    
-      variantPrice.updatedPrice = updatedPrice;  
+  const existingCtOrderDate = new Date(existingCtOrderCustomAttributes.fields.orderLastModifiedDate);
 
-      return variantPrice;
-    }).filter(variantPrice => variantPrice)
-
-    return { variantPrices };
+  return existingCtOrderDate.getTime() >= givenOrder[orderAttributeNames.ORDER_LAST_MODIFIED_DATE].getTime();
 };
 
-const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
-    const existingCtStyle = await getExistingCtStyle(priceUpdate.styleId, ctHelpers);
-
-    if (!existingCtStyle) {
-      // the given style isn't currently stored in CT; can't update price right now
-      return null;
-    }
-
-    const variantPrices = getAllVariantPrices(existingCtStyle);
-
-    const onlineSalePriceCurrent = getCtStyleAttribute(existingCtStyle, styleAttributeNames.ONLINE_SALE_PRICE);
-    const priceData = {
-      onlineSalePrice: onlineSalePriceCurrent ? onlineSalePriceCurrent.centAmount : null,
-    };
-    const originalPriceCurrent = getCtStyleAttribute(existingCtStyle, styleAttributeNames.ORIGINAL_PRICE);
-    const styleData = {
-      originalPrice: originalPriceCurrent ? originalPriceCurrent.centAmount : null
-    };
-
-    priceUpdate.newRetailPrice = priceUpdate.newRetailPrice
-                                  ? convertToCents(priceUpdate.newRetailPrice)
-                                  : null
-    priceUpdate.originalPrice = styleData.originalPrice
-                                  ? convertToCents(styleData.originalPrice)
-                                  : null
-
-    const updatedPrices = generateUpdateFromParsedMessages (priceUpdate, priceData, styleData, variantPrices)
-
-    if (updatedPrices.variantPrices.length === 0) {
-        return null;
-    }
-
-    updatedPrices.version = existingCtStyle.version;
-    updatedPrices.id = priceUpdate.styleId;
-
-    //the following three values come from index 0, they should be identical at all times at anywhere in the index
-    //since all variants should have the same pricing
-    updatedPrices.onlineSalePrice =  updatedPrices.variantPrices[0].updatedPrice.onlineSalePrice;
-    updatedPrices.isOnlineSale =  updatedPrices.variantPrices[0].updatedPrice.isOnlineSale;
-    updatedPrices.onlineDiscount =  updatedPrices.variantPrices[0].updatedPrice.onlineDiscount;
-
-
-    return updatedPrices;
-};*/
+const getExistingCtPrice = (variantPrice, givenPrice) => {
+  const existingCtPrice = variantPrice.prices.find((price) => price.custom && price.custom.fields.priceChangeId === givenPrice.priceChangeId);
+  return existingCtPrice;
+};
 
 const getActionsForSalePrice = (updatedPrice, productType, existingCtStyle) => {
   const allVariantPrices = getAllVariantPrices(existingCtStyle);
   const priceUpdateActions = allVariantPrices.map((variantPrice) => {
+    const existingCtPrice = getExistingCtPrice(variantPrice, updatedPrice);
     const priceUpdate = {
       price: {
         value: {
@@ -105,19 +58,10 @@ const getActionsForSalePrice = (updatedPrice, productType, existingCtStyle) => {
       },
       staged: isStaged
     };
-    switch(updatedPrice.activityType) {
-      case "A":
-        priceUpdate.action = 'addPrice';
-        priceUpdate.variantId = variantPrice.variantId;
-        break;
-      case "C":
-        priceUpdate.action = 'changePrice';
-        priceUpdate.priceId = variantPrice.price.id;
-        break;
-      case "D":
-        break;
-      default:
-    } 
+    if (updatedPrice.activityType === 'A' || updatedPrice.activityType === 'C') {
+    } else if (updatedPrice.activityType === 'D') {
+      
+    }
   });
 
   const allUpdateActions = [...priceUpdateActions].filter(Boolean);

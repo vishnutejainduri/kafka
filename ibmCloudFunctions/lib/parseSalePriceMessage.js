@@ -3,6 +3,8 @@ const createError = require('./createError');
 
 const TOPIC_NAME = 'sale-prices-connect-jdbc';
 
+const ACTIVITY_TYPES = ['A', 'C', 'D'];
+
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
     STYLE_ID: 'styleId',
@@ -19,7 +21,7 @@ function filterPriceMessages(msg) {
         throw new Error('Can only parse Sale Price update messages');
     }
 
-    return true;
+    return ACTIVITY_TYPES.includes(msg.value.ACTIVITY_TYPE);
 }
 
 // Parse a message from the MERCH.IRO_POS_PRICES table and return a new object with filtered and re-mapped attributes.
