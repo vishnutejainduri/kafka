@@ -12,7 +12,7 @@ In this directory you'll find:
 - `logging` - resources and instructions for setting up logging with LogDNA
 
 When starting with a new cluster, you must:
-1. set up VPN connectivity with the resources in the `ibmCloudK8sVPN` folder (Note: optional at the moment, since we have a public IP for JESTA)
+1. set up VPN connectivity with the resources in the `ibmCloudK8sVPN` folder (Note: You'll need to contact HR and provide them with the IPs of the cluster to whitelist them)
 2. set up Ingress with the resources in the `ibmCloudK8sIngress` folder.
 3. deploy the connectors with the instructions below.
 
@@ -81,64 +81,19 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_SSL_PROTOCOL=TLSv1.2  \
   --from-literal=CONNECT_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
   --from-literal=CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS  \
-  --from-literal=CONNECT_REQUEST_TIMEOUT_MS=900000 \
   --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="user" password="py_8snyJNHisgbKpvebwD4aSrMO3VzqG_Lz6zR8eDkwo";'  \
   --from-literal=CONNECT_PRODUCER_SECURITY_PROTOCOL=SASL_SSL  \
   --from-literal=CONNECT_PRODUCER_SASL_MECHANISM=PLAIN  \
   --from-literal=CONNECT_PRODUCER_SSL_PROTOCOL=TLSv1.2  \
   --from-literal=CONNECT_PRODUCER_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
   --from-literal=CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS \
-  --from-literal=CONNECT_PRODUCER_BUFFER_MEMORY=4000000 \
-  --from-literal=CONNECT_PRODUCER_REQUEST_TIMEOUT_MS=900000 \
-  --from-literal=CONNECT_BUFFER_MEMORY=4000000 \
-  --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=1
-```
-
-## dev
-```bash
-kubectl create secret generic eventstreams-kafka-connect \
-  --from-literal=CONNECT_BOOTSTRAP_SERVERS="kafka03-prod02.messagehub.services.us-south.bluemix.net:9093,kafka04-prod02.messagehub.services.us-south.bluemix.net:9093,kafka05-prod02.messagehub.services.us-south.bluemix.net:9093,kafka01-prod02.messagehub.services.us-south.bluemix.net:9093,kafka02-prod02.messagehub.services.us-south.bluemix.net:9093"   \
-  --from-literal=CONNECT_REST_PORT=28083   \
-  --from-literal=CONNECT_GROUP_ID="platform"   \
-  --from-literal=CONNECT_CONFIG_STORAGE_TOPIC="platform-connect-config"   \
-  --from-literal=CONNECT_OFFSET_STORAGE_TOPIC="platform-connect-offsets"   \
-  --from-literal=CONNECT_STATUS_STORAGE_TOPIC="platform-connect-status"   \
-  --from-literal=CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=3   \
-  --from-literal=CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=3   \
-  --from-literal=CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=3   \
-  --from-literal=CONNECT_KEY_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
-  --from-literal=CONNECT_VALUE_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
-  --from-literal=CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE=false  \
-  --from-literal=CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE=false  \
-  --from-literal=CONNECT_INTERNAL_KEY_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
-  --from-literal=CONNECT_INTERNAL_VALUE_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
-  --from-literal=CONNECT_LOG4J_ROOT_LOGLEVEL=INFO   \
-  --from-literal=CONNECT_KAFKA_LOG4J_ROOT_LOGLEVEL=INFO \
-  --from-literal=CONNECT_CONNECT_LOG4J_ROOT_LOGLEVEL=INFO   \
-  --from-literal=CONNECT_PLUGIN_PATH=/usr/share/java,/etc/kafka-connect/jars \
-  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="sJ0KNFZTXobqHDs1" password="IwLvLbUnr8FP44m9RMfcvVP4LwbT3XZm";'  \
-  --from-literal=CONNECT_SECURITY_PROTOCOL=SASL_SSL  \
-  --from-literal=CONNECT_SASL_MECHANISM=PLAIN  \
-  --from-literal=CONNECT_SSL_PROTOCOL=TLSv1.2  \
-  --from-literal=CONNECT_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
-  --from-literal=CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS  \
-  --from-literal=CONNECT_REQUEST_TIMEOUT_MS=900000 \
-  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="sJ0KNFZTXobqHDs1" password="IwLvLbUnr8FP44m9RMfcvVP4LwbT3XZm";'  \
-  --from-literal=CONNECT_PRODUCER_SECURITY_PROTOCOL=SASL_SSL  \
-  --from-literal=CONNECT_PRODUCER_SASL_MECHANISM=PLAIN  \
-  --from-literal=CONNECT_PRODUCER_SSL_PROTOCOL=TLSv1.2  \
-  --from-literal=CONNECT_PRODUCER_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
-  --from-literal=CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS \
-  --from-literal=CONNECT_PRODUCER_BUFFER_MEMORY=4000000 \
-  --from-literal=CONNECT_PRODUCER_REQUEST_TIMEOUT_MS=900000 \
-  --from-literal=CONNECT_BUFFER_MEMORY=4000000 \
   --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=1
 ```
 
 ## staging
 ```bash
-kubectl create secret generic eventstreams-kafka-connect \
-  --from-literal=CONNECT_BOOTSTRAP_SERVERS="kafka01-prod02.messagehub.services.us-south.bluemix.net:9093,kafka04-prod02.messagehub.services.us-south.bluemix.net:9093,kafka03-prod02.messagehub.services.us-south.bluemix.net:9093,kafka05-prod02.messagehub.services.us-south.bluemix.net:9093,kafka02-prod02.messagehub.services.us-south.bluemix.net:9093"   \
+kubectl create secret generic eventstreams-kafka-connect-standard \
+  --from-literal=CONNECT_BOOTSTRAP_SERVERS="broker-1-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-5-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-4-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-3-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-0-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-2-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093"   \
   --from-literal=CONNECT_REST_PORT=28083   \
   --from-literal=CONNECT_GROUP_ID="platform"   \
   --from-literal=CONNECT_CONFIG_STORAGE_TOPIC="platform-connect-config"   \
@@ -157,22 +112,60 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_KAFKA_LOG4J_ROOT_LOGLEVEL=INFO \
   --from-literal=CONNECT_CONNECT_LOG4J_ROOT_LOGLEVEL=INFO   \
   --from-literal=CONNECT_PLUGIN_PATH=/usr/share/java,/etc/kafka-connect/jars \
-  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="IjgbHlmYOUFuxiOp" password="A2BYpLuR4jQkh7KIyGY3jNE7Kt01Llbd";'  \
+  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="t3YcCPZXXn4eUEIvVxFnHtlLZSQ63vFsZVL-PZLHxYnz";'  \
   --from-literal=CONNECT_SECURITY_PROTOCOL=SASL_SSL  \
   --from-literal=CONNECT_SASL_MECHANISM=PLAIN  \
   --from-literal=CONNECT_SSL_PROTOCOL=TLSv1.2  \
   --from-literal=CONNECT_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
   --from-literal=CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS  \
-  --from-literal=CONNECT_REQUEST_TIMEOUT_MS=900000 \
-  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="IjgbHlmYOUFuxiOp" password="A2BYpLuR4jQkh7KIyGY3jNE7Kt01Llbd";'  \
+  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="t3YcCPZXXn4eUEIvVxFnHtlLZSQ63vFsZVL-PZLHxYnz";'  \
   --from-literal=CONNECT_PRODUCER_SECURITY_PROTOCOL=SASL_SSL  \
   --from-literal=CONNECT_PRODUCER_SASL_MECHANISM=PLAIN  \
   --from-literal=CONNECT_PRODUCER_SSL_PROTOCOL=TLSv1.2  \
   --from-literal=CONNECT_PRODUCER_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
   --from-literal=CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS \
-  --from-literal=CONNECT_PRODUCER_BUFFER_MEMORY=4000000 \
-  --from-literal=CONNECT_PRODUCER_REQUEST_TIMEOUT_MS=900000 \
-  --from-literal=CONNECT_BUFFER_MEMORY=4000000 \
+  --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=1
+```
+
+## production
+```bash
+kubectl create secret generic eventstreams-kafka-connect-standard \
+  --from-literal=CONNECT_BOOTSTRAP_SERVERS="broker-5-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093",
+    "broker-4-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093",
+    "broker-3-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093",
+    "broker-1-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093",
+    "broker-0-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093",
+    "broker-2-gpn77dfqwbstgywk.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093"   \
+  --from-literal=CONNECT_REST_PORT=28083   \
+  --from-literal=CONNECT_GROUP_ID="platform"   \
+  --from-literal=CONNECT_CONFIG_STORAGE_TOPIC="platform-connect-config"   \
+  --from-literal=CONNECT_OFFSET_STORAGE_TOPIC="platform-connect-offsets"   \
+  --from-literal=CONNECT_STATUS_STORAGE_TOPIC="platform-connect-status"   \
+  --from-literal=CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=3   \
+  --from-literal=CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=3   \
+  --from-literal=CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=3   \
+  --from-literal=CONNECT_KEY_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
+  --from-literal=CONNECT_VALUE_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
+  --from-literal=CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE=false  \
+  --from-literal=CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE=false  \
+  --from-literal=CONNECT_INTERNAL_KEY_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
+  --from-literal=CONNECT_INTERNAL_VALUE_CONVERTER="org.apache.kafka.connect.json.JsonConverter"   \
+  --from-literal=CONNECT_LOG4J_ROOT_LOGLEVEL=INFO   \
+  --from-literal=CONNECT_KAFKA_LOG4J_ROOT_LOGLEVEL=INFO \
+  --from-literal=CONNECT_CONNECT_LOG4J_ROOT_LOGLEVEL=INFO   \
+  --from-literal=CONNECT_PLUGIN_PATH=/usr/share/java,/etc/kafka-connect/jars \
+  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="C5QCCPl5XV9dZTpFRVvwHWZDiPM-_cNG3PGS-5Gl9QQ9";'  \
+  --from-literal=CONNECT_SECURITY_PROTOCOL=SASL_SSL  \
+  --from-literal=CONNECT_SASL_MECHANISM=PLAIN  \
+  --from-literal=CONNECT_SSL_PROTOCOL=TLSv1.2  \
+  --from-literal=CONNECT_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
+  --from-literal=CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS  \
+  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="C5QCCPl5XV9dZTpFRVvwHWZDiPM-_cNG3PGS-5Gl9QQ9";'  \
+  --from-literal=CONNECT_PRODUCER_SECURITY_PROTOCOL=SASL_SSL  \
+  --from-literal=CONNECT_PRODUCER_SASL_MECHANISM=PLAIN  \
+  --from-literal=CONNECT_PRODUCER_SSL_PROTOCOL=TLSv1.2  \
+  --from-literal=CONNECT_PRODUCER_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
+  --from-literal=CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS \
   --from-literal=CONNECT_OFFSET_STORAGE_PARTITIONS=1
 ```
 
@@ -181,7 +174,7 @@ kubectl apply -f ./kafka-connect-service.yaml
 
 # Deploying Kafka Connect
 Create the image (see /kafka-connect-image) and deploy a workload with it
-kubectl apply -f /kafka-connect-deployment.yaml
+kubectl apply -f ./kafka-connect-deployment.yaml
 
 *Note* Remember to specify Kafka Connect image tag in 'kafka-connect-deployment.yaml'
 
@@ -201,3 +194,9 @@ example calls:
 
 VERY IMPORTANT - Delete the NodePort ingress when setup is complete!
 *Note* There is no need to deploy NodePort if you have successfully setup Ingress; NodePort is only for testing purposes.
+
+# Troubleshooting
+- If Kafka Connect cannot create the initial topics by itself, they can be manually created:
+  - $: ibmcloud es topic-create --name platform-connect-offsets -p 25 --config cleanup.policy="compact,delete" --config retention.ms=-1
+  - $: ibmcloud es topic-create --name platform-connect-status -p 5 --config cleanup.policy="compact,delete" --config retention.ms=-1
+  - $: ibmcloud es topic-create --name platform-connect-config --config cleanup.policy="compact,delete" --config retention.ms=-1 

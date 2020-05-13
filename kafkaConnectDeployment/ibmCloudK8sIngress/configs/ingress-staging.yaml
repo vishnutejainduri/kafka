@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kafka-ingress-standard
+  annotations:
+    ingress.bluemix.net/appid-auth: "bindSecret=binding-platformdevservicesappid namespace=default requestType=api serviceName=kafka-connect-standard"
+spec:
+  tls:
+  - hosts:
+    # 'dev' is the old name; we use this cluster for staging
+    - myplanet-cluster-dev.tor01.containers.appdomain.cloud
+    # 'dev' is the old name; we use this cluster for staging
+    secretName: myplanet-cluster-dev
+  rules:
+  # 'dev' is the old name; we use this cluster for staging
+  - host: myplanet-cluster-dev.tor01.containers.appdomain.cloud
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: kafka-connect-standard
+          servicePort: 80
