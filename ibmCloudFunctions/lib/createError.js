@@ -551,10 +551,35 @@ module.exports = {
         }
     },
     resolveMessageLogs: {
-        partialFailure: () => new CustomError(
+        batchFailure: (originalError, debugInfo) => new CustomError(
+            originalError,
+            'partial-failure-failed-batch.',
+            `Failure to resolve batch with activation ID ${debugInfo.activationID}.`,
+            debugInfo
+        ),
+        partialFailure: (_, debugInfo) => new CustomError(
             null,
-            'partial-failure-resolveMessagesLogs',
-            'Failure to completely resolveMessagesLogs.'
-        ) 
+            'partial-failure.',
+            'Failure to completely resolve all the batches.',
+            debugInfo
+        ),
+        failedToDlq: (originalError, debugInfo) => new CustomError(
+            originalError,
+            'partial-failure-failed-to-dlq',
+            `Failure to DLQ messages for batch with activation ID ${debugInfo.activationID}.`,
+            debugInfo
+        ),
+        failedToRetry: (originalError, debugInfo) => new CustomError(
+            originalError,
+            'partial-failure-failed-to-retry',
+            `Failure to retry messages for batch with activation ID ${debugInfo.activationID}.`,
+            debugInfo
+        ),
+        failedToFetchMessages: (originalError, debugInfo) => new CustomError(
+            originalError,
+            'partial-failure-failed-to-fetch-batch-messages',
+            `Failure to fetch batch messages for batch with activation ID ${debugInfo.activationID}.`,
+            debugInfo
+        ),
     }
 }

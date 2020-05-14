@@ -58,6 +58,10 @@
         feed: /whisk.system/alarms/alarm
         inputs:
           cron: "*/1 * * * *"
+      every-ten-minutes:
+        feed: /whisk.system/alarms/alarm
+        inputs:
+          cron: "*/10 * * * *"
       every-midnight:
         feed: /whisk.system/alarms/alarm
         inputs:

@@ -53,10 +53,11 @@ global.main = async function(params) {
 
     async function resolveBatchWithActivationInfo({ activationId, failureIndexes }) {
         const activationInfo = await fetchActivationInfo(activationId);
-        if (!activationInfo) {
-            return null;
+        if (!activationInfo || activationInfo.error) {
+            const originalError = !activationInfo ? new Error(`Could not find activation info for actvation ID ${activationId}`) : activationInfo.error
+            const error = createError.resolveMessageLogs.batchFailure(originalError,{ activationId, failureIndexes })
+            throw error
         }
-        if (activationInfo.error) throw new Error(activationInfo.error);
         // if an activation has failed or has partial failures, the messages in the batch should be either DLQed or retried
         let messagesByNextAction = {
             dlq: [],
@@ -69,62 +70,89 @@ global.main = async function(params) {
         const hasFailed = !activationInfo.response.success;
         const hasFailedMessages = failureIndexes && failureIndexes.length > 0;
         if (hasFailed || hasFailedMessages) {
+            const debugInfo = { activationId, failureIndexes };
             const findMessages = await getFindMessages(params);
-            const allMessages = await findMessages(activationId) || [];
+            const allMessages = await findMessages(activationId).catch(originalError => {
+                const error = createError.resolveMessageLogs.failedToFetchMessages(originalError, debugInfo)
+                log.error(error)
+                throw error
+            });
             const messages = hasFailed
                 ? allMessages
                 : allMessages.filter((_, index) => failureIndexes.includes(index));
             messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end, params.maxRetries);
             if (messagesByNextAction.dlq.length) {
                 const storeDlqMessages = await getStoreDlqMessages(params);
-                log.warn(`DLQing messages: ${messagesByNextAction.dlq.length} messages DLQed with activation info: ${activationInfo}`)
-                storeMessagesByNextActionResult.dlq = await storeDlqMessages(messagesByNextAction.dlq, { activationInfo });
+                log(`DLQing messages: initiating ${messagesByNextAction.dlq.length} messages to be DLQed for activation ID: ${activationId}.`)
+                storeMessagesByNextActionResult.dlq = await storeDlqMessages(messagesByNextAction.dlq, { activationInfo }).catch(originalError => {
+                    const error = createError.resolveMessageLogs.failedToDlq(originalError, debugInfo)
+                    log.error(error)
+                    throw error
+                })
+                log(`DLQing messages: successfully DLQed ${messagesByNextAction.dlq.length} messages for activation ID: ${activationId}.`)
             }
             if (messagesByNextAction.retry.length) {
                 const storeRetryMessages = await getStoreRetryMessages(params);
-                log.warn(`Retrying messages: ${messagesByNextAction.retry.length} messages queued for retry with activation info: ${activationInfo}`)
-                storeMessagesByNextActionResult.retry = await storeRetryMessages(messagesByNextAction.retry, { activationInfo });
+                log(`Retrying messages: initiating ${messagesByNextAction.retry.length} messages to be queued for retried for activation ID: ${activationId}.`)
+                storeMessagesByNextActionResult.retry = await storeRetryMessages(messagesByNextAction.retry, { activationInfo }).catch(originalError => {
+                    const error = createError.resolveMessageLogs.failedToRetry(originalError, debugInfo)
+                    log.error(error)
+                    throw error
+                })
+                log(`Retrying messages: successfully queued ${messagesByNextAction.retry.length} messages to be retried activation ID: ${activationId}.`)
             }
         }
         // if a batch was successful or if we successfuly DLQed or requeued its messages for retry,
         // we delete the activation record
         const deleteBatch = await getDeleteBatch(params);
-        const deleteBatchResult = await deleteBatch(activationId);
-
+        await deleteBatch(activationId);
+        log(`Successfully resolved messages for activation ID: ${activationId}.`)
         return {
-            activationId,
-            activationInfo,
-            messagesByNextAction,
-            storeMessagesByNextActionResult,
-            deleteBatchResult
+            dlqed: messagesByNextAction.dlq.length,
+            retried: messagesByNextAction.retry.length,
+            activationId
         };
     }
 
     try {
-        const unresolvedBatches = await findUnresolvedBatches(params);
-        const resolveBatchesResult = await Promise.all(
-            unresolvedBatches.map(addErrorHandling(resolveBatchWithActivationInfo))
-        );
-        if (resolveBatchesResult.find(result => result instanceof Error)) {
-            log.error(createError.resolveMessageLogs.partialFailure())
+        const batches = await findUnresolvedBatches(params);
+        const resolveBatchesResult = []
+        for (const batch of batches) {
+            const result = await addErrorHandling(resolveBatchWithActivationInfo)(batch)
+            resolveBatchesResult.push(result)
         }
+
+        const failedToResolve = resolveBatchesResult.reduce((resolutionFailures, result, index) => {
+            if (result instanceof Error) {
+                log.error(`Failed to resolve batch with activationId ${batches[index].activationId}`)
+                log.error(result)
+                return resolutionFailures + 1
+            } else {
+                return resolutionFailures
+            }
+        }, 0)
+        const counts = {
+            successfullyResolved:  resolveBatchesResult.length - failedToResolve,
+            failedToResolve
+        }
+        if (failedToResolve > 0) {
+            log.error(createError.resolveMessageLogs.partialFailure(null, counts))
+        }
+
         return {
-            unresolvedBatches,
+            counts,
             resolveBatchesResult: resolveBatchesResult
-                .filter(result => result !== null)
-                .map(result => result instanceof Error
+                .map((result, index) => result instanceof Error
                     ? {
-                        error: true,
+                        resolved: false,
                         errorMessage: result.message,
-                        activationId: result.activationId
+                        batch: batches[index]
                     }
                     : {
-                        success: true,
-                        activationId: result.activationId,
-                        messagesByNextAction: {
-                            retried: result.messagesByNextAction.retry.length,
-                            dlqed: result.messagesByNextAction.dlq.length
-                        }
+                        resolved: true,
+                        batch: batches[index],
+                        dlqed: result.dlqed,
+                        retried: result.retried
                     }
                 )
         };
