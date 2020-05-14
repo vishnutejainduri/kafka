@@ -55,10 +55,10 @@
         trigger: every-minute
       resolve-messages-logs-rule:
         action: /${ORG}_${SPACE}/product-consumers/resolve-messages-logs
-        trigger: every-minute
+        trigger: every-ten-minutes
       handle-messages-logs-rule:
         action: /${ORG}_${SPACE}/product-consumers/handle-messages-logs
-        trigger: every-minute
+        trigger: every-ten-minutes
       cleanup-messages-logs-rule:
         action: /${ORG}_${SPACE}/product-consumers/cleanup-messages-logs
         trigger: every-midnight
