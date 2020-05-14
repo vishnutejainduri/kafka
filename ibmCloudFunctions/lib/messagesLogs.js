@@ -182,7 +182,7 @@ async function getStoreRetryMessages(params) {
     }
 }
 
-async function findUnresolvedBatches(params, limit = 50) {
+async function findUnresolvedBatches(params, limit = 500) {
     const collection = await getMessagesCollection(params);
     let result = [];
     // maximum runtime of a cloud function is 10 minutes,
@@ -193,6 +193,8 @@ async function findUnresolvedBatches(params, limit = 50) {
         isIam: Boolean(params.cloudFunctionsIsIam)
     };
     await collection
+        // We are not fetching the messages here because we typically expect the batch to be successfully processed,
+        // in which case we don't need the messages and just delete the batch record
         .find(query, { projection: { activationId: 1, failureIndexes: 1 } })
         .limit(limit)
         .forEach(document => {
@@ -220,8 +222,10 @@ async function findTimedoutBatchesActivationIds(params, limit = 100) {
 async function getFindMessages(params) {
     const collection = await getMessagesCollection(params);
     return async function (activationId) {
-        const { messages } = await collection.findOne({ activationId }, { projection: { messages: 1 } });
-        return messages;
+        const record = await collection.findOne({ activationId });
+        // It is possible for the record not to exist because multiple resolveMessagesLogs can run in parallel
+        // and two of them end up in a race condition trying to process the same activation ID
+        return record ? record.messages : [];
     };
 }
 

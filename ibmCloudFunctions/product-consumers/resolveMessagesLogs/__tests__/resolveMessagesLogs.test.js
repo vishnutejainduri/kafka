@@ -60,8 +60,11 @@ describe('resolveMessagesLogs', function() {
         expect(await resolveMessagesLogs({
             collectionName: 'empty'
         })).toEqual({
-            resolveBatchesResult: [],
-            unresolvedBatches: []
+            counts: {
+                failedToResolve: 0,
+                successfullyResolved: 0
+            },
+            resolveBatchesResult: []
         });
     });
 
@@ -77,15 +80,16 @@ describe('resolveMessagesLogs', function() {
         mockModules({ mockBatch, mockActivationInfo });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                failedToResolve: 0,
+                successfullyResolved: 1
+            },
             resolveBatchesResult: [{
-                activationId: mockBatch.activationId,
-                success: true,
-                messagesByNextAction: {
-                    retried: 0,
-                    dlqed: 0
-                }
-            }],
-            unresolvedBatches: [mockBatch]
+                batch: mockBatch,
+                resolved: true,
+                dlqed: 0,
+                retried: 0
+            }]
         });
     });
 
@@ -111,16 +115,15 @@ describe('resolveMessagesLogs', function() {
         mockModules({ mockBatch, mockActivationInfo, mockMessage });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                successfullyResolved: 1,
+                failedToResolve: 0
+            },
             resolveBatchesResult: [{
-                activationId: mockBatch.activationId,
-                success: true,
-                messagesByNextAction: {
-                    retried: 1,
-                    dlqed: 0
-                }
-            }],
-            unresolvedBatches: [{
-                ...mockBatch
+                batch: mockBatch,
+                resolved: true,
+                retried: 1,
+                dlqed: 0
             }]
         });
     });
@@ -152,16 +155,15 @@ describe('resolveMessagesLogs', function() {
         mockModules({ mockBatch, mockActivationInfo, mockMessage });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                successfullyResolved: 1,
+                failedToResolve: 0
+            },
             resolveBatchesResult: [{
-                activationId: mockBatch.activationId,
-                success: true,
-                messagesByNextAction: {
-                    retried: 0,
-                    dlqed: 1
-                }
-            }],
-            unresolvedBatches: [{
-                ...mockBatch
+                batch: mockBatch,
+                resolved: true,
+                retried: 0,
+                dlqed: 1
             }]
         });
     });
@@ -195,16 +197,15 @@ describe('resolveMessagesLogs', function() {
         mockModules({ mockBatch, mockActivationInfo, mockMessage });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                successfullyResolved: 1,
+                failedToResolve: 0
+            },
             resolveBatchesResult: [{
-                activationId: mockBatch.activationId,
-                success: true,
-                messagesByNextAction: {
-                    retried: 1,
-                    dlqed: 0
-                }
-            }],
-            unresolvedBatches: [{
-                ...mockBatch
+                batch: mockBatch,
+                retried: 1,
+                dlqed: 0,
+                resolved: true
             }]
         });
     });
@@ -238,16 +239,15 @@ describe('resolveMessagesLogs', function() {
         mockModules({ mockBatch, mockActivationInfo, mockMessage });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                failedToResolve: 0,
+                successfullyResolved: 1
+            },
             resolveBatchesResult: [{
-                activationId: mockBatch.activationId,
-                success: true,
-                messagesByNextAction: {
-                    retried: 0,
-                    dlqed: 1
-                }
-            }],
-            unresolvedBatches: [{
-                ...mockBatch
+                resolved: true,
+                dlqed: 1,
+                retried: 0,
+                batch: mockBatch
             }]
         });
     });

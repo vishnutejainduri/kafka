@@ -141,7 +141,6 @@ global.main = async function(params) {
 
         return {
             counts,
-            batches,
             resolveBatchesResult: resolveBatchesResult
                 .map((result, index) => result instanceof Error
                     ? {
