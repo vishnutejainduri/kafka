@@ -1,5 +1,5 @@
-const { getExistingCtStyle, getCtStyleAttribute, updateStyle, getProductType } = require('../styleUtils');
-const { styleAttributeNames, isStaged, currencyCodes } = require('../constantsCt');
+const { getExistingCtStyle, getProductType } = require('../styleUtils');
+const { priceAttributeNames, isStaged, currencyCodes } = require('../constantsCt');
 
 const convertToCents = (amount) => Math.round(amount * 100)
 
@@ -32,23 +32,59 @@ const getAllVariantPrices = (existingCtStyle) => {
 };
 
 const existingCtPriceIsNewer = (existingCtPrice, givenPrice) => {
-  const existingCtOrderCustomAttributes = existingCtOrder.custom;
-  if (!existingCtOrderCustomAttributes) return false;
+  if (!existingCtPrice) return false;
+  const existingCtPriceCustomAttributes = existingCtPrice.custom;
+  if (!existingCtPriceCustomAttributes) return false;
 
-  const existingCtOrderDate = new Date(existingCtOrderCustomAttributes.fields.orderLastModifiedDate);
+  const existingCtPriceDate = new Date(existingCtPriceCustomAttributes.fields[priceAttributeNames.PROCESS_DATE_CREATED]);
 
-  return existingCtOrderDate.getTime() >= givenOrder[orderAttributeNames.ORDER_LAST_MODIFIED_DATE].getTime();
+  return existingCtPriceDate.getTime() >= givenPrice[priceAttributeNames.PROCESS_DATE_CREATED].getTime();
 };
 
 const getExistingCtPrice = (variantPrice, givenPrice) => {
-  const existingCtPrice = variantPrice.prices.find((price) => price.custom && price.custom.fields.priceChangeId === givenPrice.priceChangeId);
+  const existingCtPrice = variantPrice.prices.find((price) => price.custom && price.custom.fields[priceAttributeNames.PRICE_CHANGE_ID] === givenPrice[priceAttributeNames.PRICE_CHANGE_ID]);
   return existingCtPrice;
+};
+
+const getCustomFieldActionsForSalePrice = (existingCtPrice, updatedPrice) => {
+    const customAttributesToUpdate = Object.values(priceAttributeNames);
+
+    let customTypeUpdateAction = null;
+    if (!existingCtPrice.custom) {
+      customTypeUpdateAction = { 
+          action: 'setProductPriceCustomType',
+          type: {
+            key: 'priceCustomFields'
+          },
+          priceId: existingCtPrice.id,
+          fields: {}
+      }
+      customAttributesToUpdate.forEach(attribute => {
+        customTypeUpdateAction.fields[attribute] = updatedPrice[attribute];
+      })
+    } 
+
+    const customAttributeUpdateActions = existingCtPrice.custom
+      ? customAttributesToUpdate.map(attribute => ({
+        action: 'setProductPriceCustomField',
+        priceId: existingCtPrice.id,
+        name: attribute,
+        value: updatedPrice[attribute]
+      }))
+      : []
+
+    return [customTypeUpdateAction, ...customAttributeUpdateActions].filter(Boolean);
 };
 
 const getActionsForSalePrice = (updatedPrice, productType, existingCtStyle) => {
   const allVariantPrices = getAllVariantPrices(existingCtStyle);
   const priceUpdateActions = allVariantPrices.map((variantPrice) => {
+    let customFieldUpdateActions = [];
     const existingCtPrice = getExistingCtPrice(variantPrice, updatedPrice);
+    if (existingCtPriceIsNewer(existingCtPrice, updatedPrice)) {
+      return [];
+    }
+
     const priceUpdate = {
       price: {
         value: {
@@ -59,12 +95,43 @@ const getActionsForSalePrice = (updatedPrice, productType, existingCtStyle) => {
       staged: isStaged
     };
     if (updatedPrice.activityType === 'A' || updatedPrice.activityType === 'C') {
+      if (existingCtPrice) {
+        priceUpdate.action = 'changePrice';
+        priceUpdate.priceId = existingCtPrice.id;
+        priceUpdate.price.validFrom = new Date(updatedPrice.startDate);
+        priceUpdate.price.validUntil = new Date(updatedPrice.endDate);
+        customFieldUpdateActions = getCustomFieldActionsForSalePrice(existingCtPrice, updatedPrice);
+      } else {
+        priceUpdate.action = 'addPrice';
+        priceUpdate.variantId = variantPrice.variantId;
+        priceUpdate.price.validFrom = new Date(updatedPrice.startDate);
+        priceUpdate.price.validUntil = new Date(updatedPrice.endDate);
+        priceUpdate.price.custom = {
+          type: {
+            key: 'priceCustomFields'
+          },
+          fields: {
+            processDateCreated: new Date(updatedPrice.processDateCreated),
+            priceChangeId: updatedPrice.priceChangeId
+          }
+        };
+      }
     } else if (updatedPrice.activityType === 'D') {
-      
+      if (existingCtPrice) {
+        priceUpdate.action = 'removePrice';
+        priceUpdate.priceId = existingCtPrice.id;
+        delete priceUpdate.price;
+      } else {
+        throw new ('Price does not exist');
+      }
+    } else {
+      return [];
     }
+
+    return [priceUpdate, ...customFieldUpdateActions].filter(Boolean);
   });
 
-  const allUpdateActions = [...priceUpdateActions].filter(Boolean);
+  const allUpdateActions = priceUpdateActions.reduce((finalActions, currentActions) => [...finalActions, ...currentActions], []);
 
   return allUpdateActions;
 };
@@ -82,12 +149,12 @@ const updateStyleSalePrice = async (ctHelpers, productTypeId, updatedPrice) => {
     const method = 'POST';
     const uri = requestBuilder.products.byKey(updatedPrice.styleId).build();
     const actions = getActionsForSalePrice(updatedPrice, productType, existingCtStyle);
+    console.log('actions', actions);
     const body = JSON.stringify({ version: existingCtStyle.version, actions });
 
     return client.execute({ method, uri, body });
 };
 
 module.exports = {
-  preparePriceUpdate,
-  updateStylePrice,
+  updateStyleSalePrice
 };

@@ -52,6 +52,11 @@ const orderDetailAttributeNames = {
   ORDER_DETAIL_LAST_MODIFIED_DATE: 'orderDetailLastModifiedDate',
 };
 
+const priceAttributeNames = {
+  PROCESS_DATE_CREATED: 'processDateCreated',
+  PRICE_CHANGE_ID: 'priceChangeId'
+};
+
 const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
 const KEY_VALUE_DOCUMENT = 'key-value-document'; // reference-type of custom objects in CT
 const TAX_CATEGORY = 'jesta-tax-descriptions';
@@ -84,6 +89,7 @@ module.exports = {
   skuAttributeNames,
   orderAttributeNames,
   orderDetailAttributeNames,
+  priceAttributeNames,
   currencyCodes,
   languageKeys,
   orderStates,

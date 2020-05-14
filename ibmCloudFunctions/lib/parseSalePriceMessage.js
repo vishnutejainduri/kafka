@@ -16,7 +16,7 @@ const attributeMap = {
     NEW_RETAIL_PRICE: 'newRetailPrice'
 };
 
-function filterPriceMessages(msg) {
+function filterSalePriceMessages(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Sale Price update messages');
     }
@@ -25,7 +25,7 @@ function filterPriceMessages(msg) {
 }
 
 // Parse a message from the MERCH.IRO_POS_PRICES table and return a new object with filtered and re-mapped attributes.
-function parsePriceMessage(msg) {
+function parseSalePriceMessage(msg) {
     // Re-map attributes
     const priceData = {};
     for (let sourceAttributeName in attributeMap) {
@@ -36,12 +36,19 @@ function parsePriceMessage(msg) {
         throw createError.parsePriceMessage.noStyleId()
     }
 
+    if (!priceData.endDate) {
+      priceData.endDate = new Date('2525-01-01').getTime();
+    }
+
     priceData._id = priceData.styleId;
+    priceData.endDate += 86400000; //milliseconds in 24hours
+    priceData.priceChangeId = priceData.priceChangeId.toString();
+    priceData.processDateCreated = new Date(priceData.processDateCreated);
 
     return priceData;
 }
 
 module.exports = {
-    parsePriceMessage,
-    filterPriceMessages
+    parseSalePriceMessage,
+    filterSalePriceMessages
 };
