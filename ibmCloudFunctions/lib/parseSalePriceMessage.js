@@ -44,6 +44,7 @@ function parseSalePriceMessage(msg) {
     priceData.endDate += 86400000; //milliseconds in 24hours
     priceData.priceChangeId = priceData.priceChangeId.toString();
     priceData.processDateCreated = new Date(priceData.processDateCreated);
+    priceData.isOriginalPrice = false;
 
     return priceData;
 }

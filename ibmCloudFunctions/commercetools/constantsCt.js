@@ -54,7 +54,8 @@ const orderDetailAttributeNames = {
 
 const priceAttributeNames = {
   PROCESS_DATE_CREATED: 'processDateCreated',
-  PRICE_CHANGE_ID: 'priceChangeId'
+  PRICE_CHANGE_ID: 'priceChangeId',
+  IS_ORIGINAL_PRICE: 'isOriginalPrice'
 };
 
 const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
