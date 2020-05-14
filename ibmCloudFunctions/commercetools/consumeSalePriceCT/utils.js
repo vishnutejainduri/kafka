@@ -41,6 +41,11 @@ const existingCtPriceIsNewer = (existingCtPrice, givenPrice) => {
   return existingCtPriceDate.getTime() >= givenPrice[priceAttributeNames.PROCESS_DATE_CREATED].getTime();
 };
 
+const getExistingCtOriginalPrice = (variantPrice) => {
+  const existingCtOriginalPrice = variantPrice.prices.find((price) => price.custom && price.custom.fields[priceAttributeNames.IS_ORIGINAL_PRICE]);
+  return existingCtOriginalPrice;
+};
+
 const getExistingCtPrice = (variantPrice, givenPrice) => {
   const existingCtPrice = variantPrice.prices.find((price) => price.custom && price.custom.fields[priceAttributeNames.PRICE_CHANGE_ID] === givenPrice[priceAttributeNames.PRICE_CHANGE_ID]);
   return existingCtPrice;
@@ -49,8 +54,7 @@ const getExistingCtPrice = (variantPrice, givenPrice) => {
 const getCustomFieldActionForSalePrice = (existingCtPrice, updatedPrice) => {
     const customAttributesToUpdate = Object.values(priceAttributeNames);
 
-    let customTypeUpdateAction = null;
-    customTypeUpdateAction = { 
+    let customTypeUpdateAction = { 
         action: 'setProductPriceCustomType',
         type: {
           key: 'priceCustomFields'
@@ -58,6 +62,7 @@ const getCustomFieldActionForSalePrice = (existingCtPrice, updatedPrice) => {
         priceId: existingCtPrice.id,
         fields: {}
     }
+
     customAttributesToUpdate.forEach(attribute => {
       customTypeUpdateAction.fields[attribute] = updatedPrice[attribute];
     })
@@ -139,12 +144,15 @@ const updateStyleSalePrice = async (ctHelpers, productTypeId, updatedPrice) => {
     const method = 'POST';
     const uri = requestBuilder.products.byKey(updatedPrice.styleId).build();
     const actions = getActionsForSalePrice(updatedPrice, productType, existingCtStyle);
-    console.log('actions', actions);
     const body = JSON.stringify({ version: existingCtStyle.version, actions });
 
     return client.execute({ method, uri, body });
 };
 
 module.exports = {
-  updateStyleSalePrice
+  updateStyleSalePrice,
+  getAllVariantPrices,
+  convertToCents,
+  getExistingCtOriginalPrice,
+  getCustomFieldActionForSalePrice
 };

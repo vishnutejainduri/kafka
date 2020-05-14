@@ -7,6 +7,8 @@ const {
   PRODUCT_SHOULD_BE_PUBLISHED
 } = require('./constantsCt');
 
+const { getAllVariantPrices, getExistingCtOriginalPrice, getCustomFieldActionForSalePrice } = require('./consumeSalePriceCT/utils');
+
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
 const DPM_ROOT_CATEGORY = 'DPM ROOT CATEGORY';
 
@@ -178,35 +180,27 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
       .map(categoryId => ({ action: 'addToCategory', category: { id: categoryId, typeId: 'category' }, staged: isStaged }))
     : [];
 
-  const currentPriceActions = style.variantPrices
-      ? style.variantPrices.map((variantPrice) => {
-        const priceUpdate = {
-          price: {
-            value: {
-              currencyCode: currencyCodes.CAD,
-              centAmount: variantPrice.updatedPrice.currentPrice
-            }
-          },
-          staged: isStaged
-        };
-        if (!variantPrice.price && variantPrice.updatedPrice.currentPrice) {
-          priceUpdate.action = 'addPrice';
-          priceUpdate.variantId = variantPrice.variantId;
-        } else if (variantPrice.price && variantPrice.updatedPrice.currentPrice) {
-          priceUpdate.action = 'changePrice';
-          priceUpdate.priceId = variantPrice.price.id;
-        } else if (variantPrice.price && !variantPrice.updatedPrice.currentPrice) {
-          priceUpdate.action = 'removePrice';
-          priceUpdate.priceId = variantPrice.price.id;
-          delete priceUpdate.price;
-        } else {
-          return null;
+  const allVariantPrices = getAllVariantPrices(existingCtStyle);
+  let priceUpdateActions = allVariantPrices.map((variantPrice) => {
+    const existingCtOriginalPrice = getExistingCtOriginalPrice(variantPrice);
+    if (!existingCtOriginalPrice) return null;
+    const priceUpdate = {
+      action: 'changePrice',
+      priceId: existingCtOriginalPrice.id,
+      price: {
+        value: {
+          currencyCode: currencyCodes.CAD,
+          centAmount: style.originalPrice
         }
-        return priceUpdate;
-    }).filter(priceUpdate => priceUpdate)
-      : [];
+      },
+      staged: isStaged
+    };
+    const customFieldUpdateAction = getCustomFieldActionForSalePrice(existingCtOriginalPrice, { isOriginalPrice: true });
+    return [priceUpdate, customFieldUpdateAction];
+  });
+  priceUpdateActions = priceUpdateActions.reduce((finalActions, currentActions) => [...finalActions, ...currentActions], []);
 
-  const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...currentPriceActions, 
+  const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...priceUpdateActions, 
     ...categoriesAddAction, ...categoriesRemoveAction].filter(Boolean);
 
   return allUpdateActions;
@@ -284,7 +278,15 @@ const createStyle = async (style, productType, categories, { client, requestBuil
         value: {
           currencyCode: currencyCodes.CAD,
           centAmount: style.originalPrice
-        } 
+        },
+        custom: {
+          type: {
+            key: 'priceCustomFields'
+          },
+          fields: {
+            isOriginalPrice: true
+          }
+        }
       }];
   }
   if (categories) {
