@@ -41,7 +41,8 @@ function parseSalePriceMessage(msg) {
     }
 
     priceData._id = priceData.styleId;
-    priceData.endDate += 86400000; //milliseconds in 24hours
+    priceData.endDate += 86400000 + 14400000; //milliseconds in 24hours plus 4 hours to convert to UTC
+    priceData.startDate += 14400000; //milliseconds of 4 hours to convert to UTC
     priceData.priceChangeId = priceData.priceChangeId.toString();
     priceData.processDateCreated = new Date(priceData.processDateCreated);
     priceData.isOriginalPrice = false;
