@@ -183,7 +183,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   const allVariantPrices = getAllVariantPrices(existingCtStyle);
   let priceUpdateActions = allVariantPrices.map((variantPrice) => {
     const existingCtOriginalPrice = getExistingCtOriginalPrice(variantPrice);
-    if (!existingCtOriginalPrice) return null;
+    if (!existingCtOriginalPrice) return [];
     const priceUpdate = {
       action: 'changePrice',
       priceId: existingCtOriginalPrice.id,

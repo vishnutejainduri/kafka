@@ -1,4 +1,4 @@
-const { getExistingCtStyle, getProductType } = require('../styleUtils');
+const { getExistingCtStyle, getProductType, createAndPublishStyle } = require('../styleUtils');
 const { priceAttributeNames, isStaged, currencyCodes } = require('../constantsCt');
 
 const convertToCents = (amount) => Math.round(amount * 100)
@@ -135,10 +135,11 @@ const updateStyleSalePrice = async (ctHelpers, productTypeId, updatedPrice) => {
     const { client, requestBuilder } = ctHelpers;
 
     const productType = await getProductType(productTypeId, ctHelpers);
-    const existingCtStyle = await getExistingCtStyle(updatedPrice.styleId, ctHelpers);
+    let existingCtStyle = await getExistingCtStyle(updatedPrice.styleId, ctHelpers);
 
     if (!existingCtStyle) {
-      throw new ('Style does not exist');
+      // create dummy style where none exists
+      existingCtStyle = (await createAndPublishStyle ({ id: updatedPrice.styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
     }
 
     const method = 'POST';
