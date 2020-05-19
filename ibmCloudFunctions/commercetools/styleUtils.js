@@ -260,6 +260,7 @@ const createStyle = async (style, productType, categories, { client, requestBuil
     // associated with a style that has no SKUs associated with it yet, we need
     // to create a dummy product variant.
     masterVariant: {
+      sku: style.id, // setting a SKU ID on the master variant helps improve performance
       attributes
     },
     // TODO: Figure out what to put for the slug. It's required and must be
