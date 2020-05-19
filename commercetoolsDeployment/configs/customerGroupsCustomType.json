@@ -1,0 +1,34 @@
+{
+  "id": "18d440ef-70ec-4066-b4c7-e5267749f309",
+  "version": 1,
+  "createdAt": "2020-05-05T17:35:27.551Z",
+  "lastModifiedAt": "2020-05-05T17:35:27.551Z",
+  "lastModifiedBy": {
+      "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+      "isPlatformClient": false
+  },
+  "createdBy": {
+      "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+      "isPlatformClient": false
+  },
+  "key": "customCustomerGroupFields",
+  "name": {
+      "en-CA": "customCustomerGroupFields"
+  },
+  "resourceTypeIds": [
+      "customer-group"
+  ],
+  "fieldDefinitions": [
+      {
+          "name": "tierName",
+          "label": {
+              "en-CA": "Tier name"
+          },
+          "required": false,
+          "type": {
+              "name": "LocalizedString"
+          },
+          "inputHint": "SingleLine"
+      }
+  ]
+}
