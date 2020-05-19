@@ -3,6 +3,9 @@ const createError = require('./createError');
 
 const TOPIC_NAME = 'sale-prices-connect-jdbc';
 
+// The three accepted activity types from jesta
+// Both A and C are treated as the same, can be either create or update
+// Type D is always a deletion
 const ACTIVITY_TYPES = ['A', 'C', 'D'];
 
 // Map of source attribute names to mapped name. Non-translatable attribute names
