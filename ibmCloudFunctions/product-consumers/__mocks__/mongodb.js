@@ -98,7 +98,7 @@ const getCollection = (collectionName) => {
         case 'prices':
             return {
                 updateOne: async ({ _id }) => ({ _id }),
-                findOne: async () => ({ _id: 'success', styleId: 'styleId', onlineSalePrice: 'onlineSalePrice', inStoreSalePrice: 'inStoreSalePrice' }),
+                findOne: async () => ({ _id: 'success', styleId: 'styleId', onlineSalePrice: 'onlineSalePrice', inStoreSalePrice: 'inStoreSalePrice', processDateCreated: new Date() }),
             }; 
         default:
             return {
