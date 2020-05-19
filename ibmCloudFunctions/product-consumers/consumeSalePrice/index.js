@@ -3,10 +3,9 @@
  */
 const getCollection = require('../../lib/getCollection');
 const {
-    filterPriceMessages,
-    parsePriceMessage,
-    generateUpdateFromParsedMessage
-} = require('../../lib/parsePriceMessage');
+    filterSalePriceMessages,
+    parseSalePriceMessage,
+} = require('../../lib/parseSalePriceMessage');
 const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling, addLoggingToMain } = require('../utils');
 
@@ -22,40 +21,42 @@ const main = async function (params) {
     }
 
     let prices;
-    let styles;
     try {
-        styles = await getCollection(params);
-        prices = await getCollection(params, params.pricesCollectionName);
+        prices = await getCollection(params);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
 
     return Promise.all(params.messages
-        .filter(addErrorHandling(filterPriceMessages))
-        .map(addErrorHandling(parsePriceMessage))
-        .map(addErrorHandling(async (update) => styles.findOne({ _id: update.styleId })
-                .then(async (styleData) => {
-                  const priceData = await prices.findOne({ _id: update.styleId });
+        .filter(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(parseSalePriceMessage))
+        .map(addErrorHandling(async (update) => {
+                  if (update.activityType === 'A' || update.activityType === 'C') {
+                    const priceData = await prices.findOne({ _id: update._id }, { processDateCreated: 1 });
 
-                  if (!styleData) {
+                    if (priceData && update.processDateCreated.getTime() <= priceData.processDateCreated.getTime()) {
+                       return null;
+                    }
+                    return prices
+                      .updateOne(
+                          { _id: update._id },
+                          { $currentDate: { lastModifiedInternalSalePrice: { $type:"timestamp" } }, $set: update },
+                          { upsert: true }
+                      )
+                      .catch((originalError) => {
+                          throw createError(originalError, update)
+                      });
+                  } else if (update.activityType === 'D') {
+                    return prices
+                      .deleteOne({ _id: update._id, processDateCreated: { $lt: update.processDateCreated } })
+                      .catch((originalError) => {
+                          throw createError(originalError, update)
+                      });
+                  } else {
                     return null;
                   }
 
-                  const updatedPrice = generateUpdateFromParsedMessage (update, priceData, styleData);
-                  updatedPrice._id = styleData._id;
-                  updatedPrice.id = styleData._id;
-
-                  return prices
-                    .updateOne(
-                        { _id: updatedPrice._id },
-                        { $currentDate: { lastModifiedInternalSalePrice: { $type:"timestamp" } }, $set: updatedPrice },
-                        { upsert: true }
-                    )
-                    .catch((originalError) => {
-                        throw createError(originalError,updatedPrice)
-                    });
             })
-        )
     )).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
@@ -71,6 +72,5 @@ const main = async function (params) {
 };
 
 global.main = addLoggingToMain(main);
-
 
 module.exports = global.main;

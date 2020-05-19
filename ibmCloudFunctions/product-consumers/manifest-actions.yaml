@@ -59,7 +59,7 @@
           timeout: 600000
         inputs:
           collectionName: $PRICES_COLLECTION_NAME
-          topicName: prices-connect-jdbc
+          topicName: sale-prices-connect-jdbc
       consume-stores-message:
         location: ./product-consumers/consumeStoresMessage/dist/bundle.js
         runtime: nodejs:10

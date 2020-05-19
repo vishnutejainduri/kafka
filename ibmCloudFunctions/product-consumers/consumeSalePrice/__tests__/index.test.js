@@ -10,6 +10,7 @@ describe("consumeSalePrice", function() {
             collectionName: 'collectionName',
             messages: [{
                 value: {
+                    PRICE_CHANGE_ID: 'PRICE_CHANGE_ID',
                     STYLE_ID: 'STYLE_ID',
                 }
             }]

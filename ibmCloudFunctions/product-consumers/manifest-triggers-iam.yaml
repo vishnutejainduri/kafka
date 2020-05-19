@@ -43,7 +43,7 @@
         feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
-          topic: prices-connect-jdbc
+          topic: sale-prices-connect-jdbc
       sku-inventory-trigger:
         feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
