@@ -5,12 +5,6 @@
       barcode-rule-ct:
         action: consume-barcode-message-with-retry-ct
         trigger: barcode-ct-trigger
-      price-rule-ct:
-        action: consume-sale-price-with-retry-ct
-        trigger: price-ct-trigger
-      sku-rule-ct:
-        action: consume-sku-message-with-retry-ct
-        trigger: sku-ct-trigger
       styles-basic-rule-ct:
         action: consume-styles-basic-message-with-retry-ct
         trigger: styles-basic-ct-trigger
