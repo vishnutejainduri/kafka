@@ -162,7 +162,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   // category actions, remove only those not present in coming request
   const categoriesRemoveAction = categoryIds && existingCategoryIds
     ? existingCategoryIds.filter(categoryId => !categoryIds.includes(categoryId))
-        .map(categoryId => ({ action: 'removeFromCategory', category: { id: categoryId, typeId: 'category', staged: isStaged } }))
+        .map(categoryId => ({ action: 'removeFromCategory', category: { id: categoryId, typeId: 'category'}, staged: isStaged } ))
     : [];
 
   // category actions, add only those not present already in CT
