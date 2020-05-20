@@ -291,17 +291,19 @@ const createStyle = async (style, productType, categories, { client, requestBuil
   return client.execute({ method, uri, body: requestBody });
 };
 
+const publishStyle = async (style, { requestBuilder, client}) => {
+  const method = 'POST';
+  const uri = requestBuilder.products.byKey(style.key).build();
+  const body = JSON.stringify({ version: style.version, actions: [{ action: 'publish', scope: 'All' }] });
+
+  return (await client.execute({ method, uri, body })).body;
+}
+
 // When you create a style in CT, it starts out unpublished. You need to make
 // an additional API call to tell CT to publish it.
 const createAndPublishStyle = async (styleToCreate, productType, categories, ctHelpers) => {
-  const { client, requestBuilder } = ctHelpers;
   const newStyle = (await createStyle(styleToCreate, productType, categories, ctHelpers)).body;
-
-  const method = 'POST';
-  const uri = requestBuilder.products.byKey(newStyle.key).build();
-  const body = JSON.stringify({ version: newStyle.version, actions: [{ action: 'publish', scope: 'All' }] });
-
-  return client.execute({ method, uri, body });
+  return publishStyle(newStyle, ctHelpers)
 };
 
 /**
@@ -347,12 +349,20 @@ const existingCtStyleIsNewer = (existingCtStyle, givenStyle, dateAttribute) => {
 
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     const productType = await getProductType(productTypeId, ctHelpers);
-    const existingCtStyle = await getExistingCtStyle(style.id, ctHelpers);
+    let existingCtStyle = await getExistingCtStyle(style.id, ctHelpers);
 
     if (!existingCtStyle) {
       // the given style isn't currently stored in CT, so we create a new one
       const categories = await getCategories(style, ctHelpers);
       return createAndPublishStyle(style, productType, categories, ctHelpers);
+    }
+
+    if (!existingCtStyle.masterData.published) {
+      // when we create any style we publish it immediately, but it's possible
+      // for CT to respond to the publish request with a 503 error, so we
+      // publish it here in the (rare) event that the original publish attempt
+      // failed
+      existingCtStyle = await publishStyle(existingCtStyle, ctHelpers)
     }
     if (existingCtStyleIsNewer(existingCtStyle, style, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)) {
       // the given style is out of date, so we don't add it to CT
