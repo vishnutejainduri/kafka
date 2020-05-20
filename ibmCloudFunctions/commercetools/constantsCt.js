@@ -72,6 +72,8 @@ const orderStates = {
   SHIPPED: 'shippedOrderStatus'
 };
 
+const PRODUCT_SHOULD_BE_PUBLISHED = true;
+
 module.exports = {
   BARCODE_NAMESPACE,
   KEY_VALUE_DOCUMENT,
@@ -83,5 +85,6 @@ module.exports = {
   languageKeys,
   orderStates,
   isStaged,
-  TAX_CATEGORY
+  TAX_CATEGORY,
+  PRODUCT_SHOULD_BE_PUBLISHED
 };

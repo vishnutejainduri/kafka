@@ -1,4 +1,11 @@
-const { styleAttributeNames, currencyCodes, languageKeys, isStaged, TAX_CATEGORY } = require('./constantsCt');
+const {
+  styleAttributeNames,
+  currencyCodes,
+  languageKeys,
+  isStaged,
+  TAX_CATEGORY,
+  PRODUCT_SHOULD_BE_PUBLISHED
+} = require('./constantsCt');
 
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
 const DPM_ROOT_CATEGORY = 'DPM ROOT CATEGORY';
@@ -357,7 +364,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
       return createAndPublishStyle(style, productType, categories, ctHelpers);
     }
 
-    if (!existingCtStyle.masterData.published) {
+    if (!existingCtStyle.masterData.published && PRODUCT_SHOULD_BE_PUBLISHED) {
       // when we create any style we publish it immediately, but it's possible
       // for CT to respond to the publish request with a 503 error, so we
       // publish it here in the (rare) event that the original publish attempt
