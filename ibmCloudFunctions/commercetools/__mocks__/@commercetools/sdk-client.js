@@ -47,7 +47,8 @@ const ctMockResponse = {
         attributes: [mockSku],
         prices: []
       }
-    }
+    },
+    published: true
   },
   //this is a mock for product type onwards actually
   attributes: [{
