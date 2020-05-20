@@ -370,6 +370,7 @@ module.exports = {
   updateStyle,
   createOrUpdateStyle,
   existingCtStyleIsNewer,
+  getActionsFromStyle,
   getCtStyleAttributeValue,
   getCtStyleAttribute,
   getProductType,

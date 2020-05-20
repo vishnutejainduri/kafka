@@ -12,7 +12,8 @@ const {
   getCategories,
   getUniqueCategoryIdsFromCategories,
   createCategory,
-  categoryNameToKey
+  categoryNameToKey,
+  getActionsFromStyle
 } = require('../../styleUtils');
 const { styleAttributeNames } = require('../../constantsCt');
 
@@ -309,5 +310,22 @@ describe('getUniqueCategoryIdsFromCategories', () => {
   it('returns `null` when given a falsy argument', () => {
     expect(getUniqueCategoryIdsFromCategories(undefined)).toBe(null);
     expect(getUniqueCategoryIdsFromCategories(null)).toBe(null);
+  });
+});
+
+describe('getActionsFromStyle', () => {
+  const mockCtStyleWithoutCategories = {...ctStyleNewer, masterData: { current: { ...ctStyleNewer.current, categories: [] }}};
+  const mockCtStyleWithCategories = {...ctStyleNewer, masterData: { current: { ...ctStyleNewer.current, categories: [{ typeId: 'category', id: 'cat4'}] } } };
+  const mockProductType = { attributes: [] };
+  const mockCategories = [{ id: 'cat1' }, { id: 'cat2' }, { id: 'cat3' }];
+
+  it('returns the correct actions when given a style to which categories should be added', () => {
+    const expected = [{"action": "setAttributeInAllVariants", "name": "brandName", "staged": false, "value": {"en-CA": "brandNameEng", "fr-CA": "brandNameFr"}}, {"action": "setAttributeInAllVariants", "name": "construction", "staged": false, "value": {"en-CA": "detailDescEng", "fr-CA": "detailDescFr"}}, {"action": "setAttributeInAllVariants", "name": "fabricAndMaterials", "staged": false, "value": {"en-CA": "fabricAndMaterialEn", "fr-CA": "fabricAndMaterialFr"}}, {"action": "setAttributeInAllVariants", "name": "styleAndMeasurements", "staged": false, "value": {"en-CA": "sizeDescEng", "fr-CA": "sizeDescFr"}}, {"action": "setAttributeInAllVariants", "name": "careInstructions", "staged": false, "value": {"en-CA": "careInstructionsEn", "fr-CA": "careInstructionsFr"}}, {"action": "setAttributeInAllVariants", "name": "advice", "staged": false, "value": {"en-CA": "adviceEn", "fr-CA": "adviceFr"}}, {"action": "setAttributeInAllVariants", "name": "colour", "staged": false, "value": {"en-CA": "colourDescEng", "fr-CA": "colourDescFr"}}, {"action": "setAttributeInAllVariants", "name": "colourGroup", "staged": false, "value": {"en-CA": "trueColourGroupEn", "fr-CA": "trueColourGroupFr"}}, {"action": "setAttributeInAllVariants", "name": "webStatus", "staged": false, "value": false}, {"action": "setAttributeInAllVariants", "name": "season", "staged": false, "value": "seasonCd"}, {"action": "setAttributeInAllVariants", "name": "originalPrice", "staged": false, "value": 0}, {"action": "setAttributeInAllVariants", "name": "vsn", "staged": false, "value": "vsn"}, {"action": "setAttributeInAllVariants", "name": "relatedProductId", "staged": false, "value": "vsn341brandNameEng"}, {"action": "setAttributeInAllVariants", "name": "styleLastModifiedInternal", "staged": false, "value": new Date("2016-08-05T10:03:59.001Z")}, {"action": "changeName", "name": {"en-CA": "descEng", "fr-CA": "descFr"}, "staged": false}, {"action": "setDescription", "description": {"en-CA": "marketDescEng", "fr-CA": "marketDescFr"}, "staged": false}, {"action": "addToCategory", "category": {"id": "cat1", "typeId": "category"}, "staged": false}, {"action": "addToCategory", "category": {"id": "cat2", "typeId": "category"}, "staged": false}, {"action": "addToCategory", "category": {"id": "cat3", "typeId": "category"}, "staged": false}];
+    expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithoutCategories)).toEqual(expected);
+  });
+
+  it('returns the correct actions when given a style from which categories should be removed', () => {
+    const expected = [{"action": "setAttributeInAllVariants", "name": "brandName", "staged": false, "value": {"en-CA": "brandNameEng", "fr-CA": "brandNameFr"}}, {"action": "setAttributeInAllVariants", "name": "construction", "staged": false, "value": {"en-CA": "detailDescEng", "fr-CA": "detailDescFr"}}, {"action": "setAttributeInAllVariants", "name": "fabricAndMaterials", "staged": false, "value": {"en-CA": "fabricAndMaterialEn", "fr-CA": "fabricAndMaterialFr"}}, {"action": "setAttributeInAllVariants", "name": "styleAndMeasurements", "staged": false, "value": {"en-CA": "sizeDescEng", "fr-CA": "sizeDescFr"}}, {"action": "setAttributeInAllVariants", "name": "careInstructions", "staged": false, "value": {"en-CA": "careInstructionsEn", "fr-CA": "careInstructionsFr"}}, {"action": "setAttributeInAllVariants", "name": "advice", "staged": false, "value": {"en-CA": "adviceEn", "fr-CA": "adviceFr"}}, {"action": "setAttributeInAllVariants", "name": "colour", "staged": false, "value": {"en-CA": "colourDescEng", "fr-CA": "colourDescFr"}}, {"action": "setAttributeInAllVariants", "name": "colourGroup", "staged": false, "value": {"en-CA": "trueColourGroupEn", "fr-CA": "trueColourGroupFr"}}, {"action": "setAttributeInAllVariants", "name": "webStatus", "staged": false, "value": false}, {"action": "setAttributeInAllVariants", "name": "season", "staged": false, "value": "seasonCd"}, {"action": "setAttributeInAllVariants", "name": "originalPrice", "staged": false, "value": 0}, {"action": "setAttributeInAllVariants", "name": "vsn", "staged": false, "value": "vsn"}, {"action": "setAttributeInAllVariants", "name": "relatedProductId", "staged": false, "value": "vsn341brandNameEng"}, {"action": "setAttributeInAllVariants", "name": "styleLastModifiedInternal", "staged": false, "value": new Date("2016-08-05T10:03:59.001Z")}, {"action": "changeName", "name": {"en-CA": "descEng", "fr-CA": "descFr"}, "staged": false}, {"action": "setDescription", "description": {"en-CA": "marketDescEng", "fr-CA": "marketDescFr"}, "staged": false}, {"action": "addToCategory", "category": {"id": "cat1", "typeId": "category"}, "staged": false}, {"action": "addToCategory", "category": {"id": "cat2", "typeId": "category"}, "staged": false}, {"action": "addToCategory", "category": {"id": "cat3", "typeId": "category"}, "staged": false}, {"action": "removeFromCategory", "category": {"id": "cat4", "typeId": "category"}, "staged": false}];
+    expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithCategories)).toEqual(expected);
   });
 });
