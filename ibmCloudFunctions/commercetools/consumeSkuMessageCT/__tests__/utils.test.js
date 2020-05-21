@@ -169,12 +169,7 @@ describe('getCtSkuFromCtStyle', () => {
     expect(getCtSkuFromCtStyle('sku-1', ctStyle)).toMatchObject({ sku: 'sku-1' });
   });
 
-  it('returns the matching staged SKU if one exists', () => {
-    expect(getCtSkuFromCtStyle('sku-2', ctStyleWithStagedChanges)).toMatchObject({ sku: 'sku-2' });
-  });
-
   it('returns `undefined` if no matching SKU exists', () => {
-    expect(getCtSkuFromCtStyle('sku-3', ctStyle, true)).toBeUndefined();
     expect(getCtSkuFromCtStyle('sku-3', ctStyleWithStagedChanges)).toBeUndefined();
   });
 });
