@@ -88,10 +88,15 @@ const formatSkuRequestBody = (sku, style, existingSku = null) => {
 // Note: This ignores the master variant, which is a placeholder that doesn't
 // correspond to an actual SKU
 const getCtSkuFromCtStyle = (skuId, ctStyle) => {
-  // We want the SKU with the most recent changes, which we assume is the
-  // staged one, if there are staged changes
-  const skus = ctStyle.masterData[ctStyle.masterData.hasStagedChanges ? 'staged' : 'current'].variants;
-  return skus.find(variant => variant.sku === skuId); // in CT, the SKU ID is simply called 'sku'
+  // We want the SKU that matches the staged status of the SKU that we will be
+  // adding (i.e., `isStaged`). A mismatch between the status of the SKU that 
+  // we are looking for and the status of the SKU that we will be adding can
+  // cause errors. For example, suppose that we look for and find no matching
+  // staged SKU. There might still be a matching *current* SKU, and if we try
+  // to add the unfound SKU as current we'll get an error.
+  const skuStatus = isStaged ? 'staged' : 'current';
+  const skus = ctStyle.masterData[skuStatus] && ctStyle.masterData[skuStatus].variants;
+  return skus && skus.find(variant => variant.sku === skuId); // in CT, the SKU ID is simply called 'sku'
 };
 
 const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
