@@ -10,7 +10,8 @@ const {
   getCtSkusFromCtStyle,
   getOutOfDateSkuIds,
   removeDuplicateSkus,
-  createOrUpdateSkus
+  createOrUpdateSkus,
+  passDownErrorsAndFailureIndexes
 } = require('./utils');
 const {
   addErrorHandling,
@@ -72,30 +73,9 @@ const main = params => {
     skusGroupedByStyleId
       .map(addErrorHandling(syncSkuBatchToCt.bind(null, ctHelpers, productTypeId)))
   );
-
-  const mapBatchIndexToMessageIndexes = batchIndex => {
-    const skus = skusGroupedByStyleId[batchIndex];
-    return skus.map(sku =>
-        params.messages.findIndex((message => message.value.ID === sku.id))
-    )
-  };
-  
-  const passDownErrorsAndFailureIndexes = results => {
-    const errors = results.filter(result => result instanceof Error);
-    const failureIndexes = results.reduce((indexes, result, batchIndex) => {
-      if (!(result instanceof Error)) return indexes;
-      return [...indexes, ...mapBatchIndexToMessageIndexes(batchIndex)]
-    }, [])
-
-    return {
-        errors,
-        failureIndexes
-    };
-  };
-  
-  
+ 
   return Promise.all(skuBatchPromises)
-    .then(passDownErrorsAndFailureIndexes)
+    .then(passDownErrorsAndFailureIndexes(skusGroupedByStyleId, params.messages))
     .catch(handleErrors)
 };
 
