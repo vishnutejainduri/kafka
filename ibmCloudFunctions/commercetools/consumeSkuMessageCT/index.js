@@ -10,14 +10,14 @@ const {
   getCtSkusFromCtStyle,
   getOutOfDateSkuIds,
   removeDuplicateSkus,
-  createOrUpdateSkus
+  createOrUpdateSkus,
+  passDownErrorsAndFailureIndexes
 } = require('./utils');
 const {
   addErrorHandling,
   addLoggingToMain,
   createLog,
   log,
-  passDownAnyMessageErrors,
   validateParams
 } = require('../../product-consumers/utils');
 
@@ -73,10 +73,10 @@ const main = params => {
     skusGroupedByStyleId
       .map(addErrorHandling(syncSkuBatchToCt.bind(null, ctHelpers, productTypeId)))
   );
-  
+ 
   return Promise.all(skuBatchPromises)
-    .then(passDownAnyMessageErrors)
-    .catch(handleErrors);
+    .then(passDownErrorsAndFailureIndexes(skusGroupedByStyleId, params.messages))
+    .catch(handleErrors)
 };
 
 global.main = addLoggingToMain(main, messagesLogs);
