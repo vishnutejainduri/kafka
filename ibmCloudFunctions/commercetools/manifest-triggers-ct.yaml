@@ -9,6 +9,8 @@
         inputs:
           isJSONData: true
           topic: barcodes-connect-jdbc
+      price-ct-trigger:
+      sku-ct-trigger:
       styles-basic-ct-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
@@ -19,3 +21,5 @@
         inputs:
           isJSONData: true
           topic: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
+      sales-order-ct-trigger:
+      sales-order-details-ct-trigger:
