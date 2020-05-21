@@ -188,10 +188,17 @@ const mapBatchIndexToMessageIndexes = ({ skuBatches, batchIndex, messages }) => 
 
 const passDownErrorsAndFailureIndexes = (skuBatches, messages) => results => {
   const errors = results.filter(result => result instanceof Error);
+  if (errors.length === 0) {
+    return {
+      ok: true,
+      successCount: results.length
+    };
+  }
+
   const failureIndexes = results.reduce((indexes, result, batchIndex) => {
     if (!(result instanceof Error)) return indexes;
     return [...indexes, ...mapBatchIndexToMessageIndexes({ skuBatches, batchIndex, messages })]
-  }, [])
+  }, []);
 
   return {
       errors,

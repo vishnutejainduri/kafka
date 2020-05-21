@@ -12,7 +12,8 @@ const {
   getOutOfDateSkuIds,
   getMostUpToDateSku,
   removeDuplicateSkus,
-  groupByStyleId
+  groupByStyleId,
+  passDownErrorsAndFailureIndexes
 } = require('../utils');
 
 const validParams = {
@@ -449,3 +450,48 @@ describe('removeDuplicateSkus', () => {
   });
 });
 
+describe('passDownErrorsAndFailureIndexes', () => {
+  const skuBatches = [
+    [{ id: 'sku-1', styleId: 'style-1' }, { id: 'sku-2', styleId: 'style-1' }],
+    [{ id: 'sku-3', styleId: 'style-2' }]
+  ];
+
+  const messages = [
+    {
+      value: {
+        ID: 'sku-1',
+        STYLEID: 'style-1'
+      }
+    },
+    {
+      value: {
+        ID: 'sku-3',
+        STYLEID: 'style-2'
+      }
+    },
+    {
+      value: {
+        ID: 'sku-2',
+        STYLEID: 'style-1'
+      }
+    }
+  ];
+
+
+  it('it returns a success count when there were no errors', () => {
+    const onlySuccessfulResults = [{}, {}, {}, {}];
+    const expected = {
+      ok: true,
+      successCount: 4
+    };
+
+    expect(passDownErrorsAndFailureIndexes(skuBatches, messages)(onlySuccessfulResults)).toEqual(expected);
+  })
+
+  it('it returns an array of error indexes indicating which messages failed when there are errors', () => {
+    const resultsIncludingFailures = [new Error(), {}];
+    const expected = [0, 2];
+
+    expect(passDownErrorsAndFailureIndexes(skuBatches, messages)(resultsIncludingFailures).failureIndexes).toEqual(expected);
+  })
+});
