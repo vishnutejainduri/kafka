@@ -19,13 +19,3 @@
         inputs:
           isJSONData: true
           topic: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
-      sales-order-ct-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: sales-orders-connect-jdbc
-      sales-order-details-ct-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: sales-order-details-connect-jdbc
