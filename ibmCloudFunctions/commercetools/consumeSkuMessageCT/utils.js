@@ -224,5 +224,6 @@ module.exports = {
   removeDuplicateSkus,
   createAndPublishStyle,
   createOrUpdateSkus,
-  passDownErrorsAndFailureIndexes
+  passDownErrorsAndFailureIndexes,
+  mapBatchIndexToMessageIndexes
 };
