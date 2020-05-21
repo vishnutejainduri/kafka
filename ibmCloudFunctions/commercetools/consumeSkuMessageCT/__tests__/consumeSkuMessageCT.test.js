@@ -39,9 +39,9 @@ describe('consumeSkuMessageCT', () => {
     return expect(consumeSkuMessageCT(invalidParams)).rejects.toThrow();
   });
 
-  it('returns `undefined` if given valid params', async () => {
+  it('returns an object that has an empty errors array if given valid params', async () => {
     const response = await consumeSkuMessageCT(validParams);
-    expect(response).toBeUndefined();
+    expect(response.errors.length).toBe(0);
   });
 });
 

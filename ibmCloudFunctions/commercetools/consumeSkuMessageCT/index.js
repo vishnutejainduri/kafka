@@ -17,7 +17,6 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownAnyMessageErrors,
   validateParams
 } = require('../../product-consumers/utils');
 
@@ -73,10 +72,31 @@ const main = params => {
     skusGroupedByStyleId
       .map(addErrorHandling(syncSkuBatchToCt.bind(null, ctHelpers, productTypeId)))
   );
+
+  const mapBatchIndexToMessageIndexes = batchIndex => {
+    const skus = skusGroupedByStyleId[batchIndex];
+    return skus.map(sku =>
+        params.messages.findIndex((message => message.value.ID === sku.id))
+    )
+  };
+  
+  const passDownErrorsAndFailureIndexes = results => {
+    const errors = results.filter(result => result instanceof Error);
+    const failureIndexes = results.reduce((indexes, result, batchIndex) => {
+      if (!(result instanceof Error)) return indexes;
+      return [...indexes, ...mapBatchIndexToMessageIndexes(batchIndex)]
+    }, [])
+
+    return {
+        errors,
+        failureIndexes
+    };
+  };
+  
   
   return Promise.all(skuBatchPromises)
-    .then(passDownAnyMessageErrors)
-    .catch(handleErrors);
+    .then(passDownErrorsAndFailureIndexes)
+    .catch(handleErrors)
 };
 
 global.main = addLoggingToMain(main, messagesLogs);
