@@ -1,3 +1,4 @@
+const { MAX_BYTE_RESPONSE } = require('./constants');
 const messagesLogs = require('../lib/messagesLogs');
  
 // NOTE: addErrorHandling should be used for all of the chained methods on array e.g. map, filter, etc.
@@ -127,7 +128,6 @@ const truncateErrorsIfNecessary = result => {
 
     const resultString = JSON.stringify(result);
     const byteCount = Buffer.byteLength(resultString);
-    const MAX_BYTE_RESPONSE = 5242880; // OpenWhisk limitation
     if (byteCount <= MAX_BYTE_RESPONSE) return result;
 
     return truncateErrorsIfNecessary({
