@@ -57,7 +57,9 @@ const priceAttributeNames = {
 const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
 const KEY_VALUE_DOCUMENT = 'key-value-document'; // reference-type of custom objects in CT
 const TAX_CATEGORY = 'jesta-tax-descriptions';
+// Business rules of HarryRosen requires us to have this property set to false
 const isStaged = false;
+const entityStatus = isStaged ? 'staged' : 'current';
 
 const currencyCodes = {
   CAD: 'CAD'
@@ -91,6 +93,7 @@ module.exports = {
   languageKeys,
   orderStates,
   isStaged,
+  entityStatus,
   TAX_CATEGORY,
   PRODUCT_SHOULD_BE_PUBLISHED,
   CT_ACTION_LIMIT

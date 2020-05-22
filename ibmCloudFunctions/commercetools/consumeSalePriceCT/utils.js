@@ -1,15 +1,12 @@
 const { getExistingCtStyle, getProductType, createAndPublishStyle } = require('../styleUtils');
-const { priceAttributeNames, isStaged, currencyCodes } = require('../constantsCt');
+const { priceAttributeNames, isStaged, currencyCodes, entityStatus } = require('../constantsCt');
 
 const convertToCents = (amount) => Math.round(amount * 100)
 
 const getAllVariantPrices = (existingCtStyle) => {
   const variantPrices = [];
 
-  //current/staged price for master variant
-  const priceObjMaster = existingCtStyle.masterData.hasStagedChanges
-    ? existingCtStyle.masterData.staged.masterVariant
-    : existingCtStyle.masterData.current.masterVariant
+  const priceObjMaster = existingCtStyle.masterData[entityStatus].masterVariant
   const relevantPriceObjMaster = {
     variantId: priceObjMaster.id,
     prices: priceObjMaster.prices
@@ -17,9 +14,7 @@ const getAllVariantPrices = (existingCtStyle) => {
   variantPrices.push(relevantPriceObjMaster);
 
   //current/staged price for all variants
-  const ctStyleVariants = existingCtStyle.masterData.hasStagedChanges
-    ? existingCtStyle.masterData.staged.variants
-    : existingCtStyle.masterData.current.variants
+  const ctStyleVariants = existingCtStyle.masterData[entityStatus].variants
   ctStyleVariants.forEach((variant) => {
     const relevantPriceObj = {
       variantId: variant.id,

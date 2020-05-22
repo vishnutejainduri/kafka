@@ -16,6 +16,7 @@ const {
   passDownErrorsAndFailureIndexes,
   mapBatchIndexToMessageIndexes
 } = require('../utils');
+const { isStaged, entityStatus } = require('../../constantsCt');
 
 const validParams = {
   topicName: 'skus-connect-jdbc',
@@ -145,25 +146,13 @@ describe('existingCtSkuIsNewer', () => {
 describe('getCtSkuFromCtStyle', () => {
   const ctStyle = {
     masterData: {
-      current: {
+      [entityStatus]: {
         variants: [{ sku: 'sku-1' }],
         masterVariant: {
           attributes: []
         }
       },
-      hasStagedChanges: false
-    }
-  };
-
-  const ctStyleWithStagedChanges = {
-    masterData: {
-      staged: {
-        variants: [{ sku: 'sku-2' }],
-        masterVariant: {
-          attributes: []
-        }
-      },
-      hasStagedChanges: true
+      hasStagedChanges: isStaged
     }
   };
 
@@ -172,7 +161,7 @@ describe('getCtSkuFromCtStyle', () => {
   });
 
   it('returns `undefined` if no matching SKU exists', () => {
-    expect(getCtSkuFromCtStyle('sku-3', ctStyleWithStagedChanges)).toBeUndefined();
+    expect(getCtSkuFromCtStyle('sku-3', ctStyle)).toBeUndefined();
   });
 });
 
@@ -228,25 +217,14 @@ describe('getCtSkuAttributeValue', () => {
 describe('getCreationAction', () => {
   const sku = { id: 'sku-01', styleId: '1', colorId: 'c1', sizeId: 's1' };
 
-  const ctStyleWithNoStagedChanges = {
+  const ctStyle = {
     masterData: {
-      current: {
+      [entityStatus]: {
         masterVariant: {
           attributes: [{ name: 'brand', value: 'foo' }]
         }
       },
-      hasStagedChanges: false
-    }
-  };
-
-  const ctStyleWithStagedChanges = {
-    masterData: {
-      staged: {
-        masterVariant: {
-          attributes: [{ name: 'brand', value: 'foo' }]
-        }
-      },
-      hasStagedChanges: true
+      hasStagedChanges: isStaged
     }
   };
 
@@ -256,12 +234,8 @@ describe('getCreationAction', () => {
     attributes: [{ name: 'brand', value: 'foo' }],
   };
 
-  it('returns the correct object when given the style has no staged changes', () => {
-    expect(getCreationAction(sku, ctStyleWithNoStagedChanges)).toMatchObject(expected);
-  });
-
-  it('returns the correct object when given style has staged changes', () => {
-    expect(getCreationAction(sku, ctStyleWithStagedChanges)).toMatchObject(expected);
+  it('returns the correct object when given the style with relevant changes', () => {
+    expect(getCreationAction(sku, ctStyle)).toMatchObject(expected);
   });
 });
 

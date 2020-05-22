@@ -15,7 +15,7 @@ const {
   categoryNameToKey,
   getActionsFromStyle
 } = require('../../styleUtils');
-const { styleAttributeNames } = require('../../constantsCt');
+const { styleAttributeNames, isStaged, entityStatus } = require('../../constantsCt');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -85,42 +85,32 @@ const messageWithoutLastModifiedDate = {
 
 const ctStyleNewer = {
   "masterData": {
-      "staged": {
-          "masterVariant": {
-              "attributes": [
-                  {
-                      "name": "styleLastModifiedInternal",
-                      "value": "2020-03-18T16:53:20.823Z"
-                  }
-              ]
+    [entityStatus]: {
+      "masterVariant": {
+        "attributes": [
+          {
+            "name": "styleLastModifiedInternal",
+            "value": "2019-03-18T16:53:20.823Z"
           }
-      },
-      "current": {
-        "masterVariant": {
-            "attributes": [
-                {
-                    "name": "styleLastModifiedInternal",
-                    "value": "2019-03-18T16:53:20.823Z"
-                }
-            ]
-        }
+        ]
+      }
     }
-    }
+  }
 };
 
 const ctStyleOlder = {
   "masterData": {
-      "staged": {
-          "masterVariant": {
-              "attributes": [
-                  {
-                      "name": "styleLastModifiedInternal",
-                      "value": "2015-03-18T16:53:20.823Z"
-                  }
-              ]
+    [entityStatus]: {
+      "masterVariant": {
+        "attributes": [
+          {
+            "name": "styleLastModifiedInternal",
+            "value": "2015-03-18T16:53:20.823Z"
           }
+        ]
       }
     }
+  }
 };
 
 const styleActions = [
@@ -267,20 +257,14 @@ describe('formatLanguageKeys', () => {
 });
 
 describe('getCtStyleAttributeValue', () => {
-  it('returns the correct staged value for the given style', () => {
+  it('returns the correct value for the given style', () => {
     const actual = getCtStyleAttributeValue(ctStyleNewer, 'styleLastModifiedInternal');
-    const expected = '2020-03-18T16:53:20.823Z';
-    expect(actual).toBe(expected);
-  });
-
-  it('returns the correct current value for the given style', () => {
-    const actual = getCtStyleAttributeValue(ctStyleNewer, 'styleLastModifiedInternal', true);
     const expected = '2019-03-18T16:53:20.823Z';
     expect(actual).toBe(expected);
   });
 
   it('returns `undefined` if the attribute does not exist on the style', () => {
-    expect(getCtStyleAttributeValue(ctStyleNewer, 'attributeThatDoesNotExist', true)).toBeUndefined();
+    expect(getCtStyleAttributeValue(ctStyleNewer, 'attributeThatDoesNotExist')).toBeUndefined();
   });
 });
 
@@ -433,8 +417,30 @@ describe('getUniqueCategoryIdsFromCategories', () => {
 });
 
 describe('getActionsFromStyle', () => {
-  const mockCtStyleWithoutCategories = {...ctStyleNewer, masterData: { current: { ...ctStyleNewer.current, categories: [] }}};
-  const mockCtStyleWithCategories = {...ctStyleNewer, masterData: { current: { ...ctStyleNewer.current, categories: [{ typeId: 'category', id: 'cat4'}] } } };
+  const mockCtStyleWithoutCategories = {
+    ...ctStyleNewer,
+    masterData: {
+      [entityStatus]: {
+        variants: [],
+        ...ctStyleNewer.masterData[entityStatus],
+        categories: []
+      }
+    }
+  };
+  const mockCtStyleWithCategories = {
+    ...ctStyleNewer,
+    masterData: {
+      [entityStatus]: {
+        variants: [],
+        ...ctStyleNewer.masterData[entityStatus],
+        categories: [{
+          typeId: 'category',
+          id: 'cat4'
+        }]
+      }
+    },
+    staged: isStaged
+  };
   const mockProductType = { attributes: [] };
   const mockCategories = [{ id: 'cat1' }, { id: 'cat2' }, { id: 'cat3' }];
 

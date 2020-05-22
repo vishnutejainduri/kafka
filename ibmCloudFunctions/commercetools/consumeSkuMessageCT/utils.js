@@ -1,5 +1,5 @@
 const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
-const { skuAttributeNames, isStaged, CT_ACTION_LIMIT } = require('../constantsCt');
+const { skuAttributeNames, isStaged, entityStatus, CT_ACTION_LIMIT } = require('../constantsCt');
 const { groupByAttribute } = require('../../lib/utils');
 
 const groupByStyleId = groupByAttribute('styleId');
@@ -58,9 +58,7 @@ const getActionsFromSku = (sku, existingSku = null) => {
 // those in the staged version of the variant if there are staged changes.
 const getCreationAction = (sku, style) => {
   const attributes = (
-    style.masterData.hasStagedChanges
-      ? style.masterData.staged.masterVariant.attributes
-      : style.masterData.current.masterVariant.attributes
+    style.masterData[entityStatus].masterVariant.attributes
   );
 
   return {

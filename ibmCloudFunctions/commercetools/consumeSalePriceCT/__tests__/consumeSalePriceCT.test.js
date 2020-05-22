@@ -61,7 +61,149 @@ describe('updateStyleSalePrice', () => {
         .map(addErrorHandling(parseSalePriceMessage))
 
     const response = await updateStyleSalePrice(mockedCtHelpers, validParams.productTypeId, result[0]);
-    const expectedResponse = {"body": {"attributes": [{"name": "isOnlineSale", "type": {"name": "text"}}, {"name": "onlineSalePrice", "type": {"name": "money"}}, {"name": "onlineDiscount", "type": {"name": "text"}}], "masterData": {"current": {"masterVariant": {"attributes": [], "prices": [{"custom": {"fields": {"isOriginalPrice": true}, "type": {"id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24", "typeId": "type"}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}}]}, "variants": [{"attributes": [], "prices": [{"custom": {"fields": {"isOriginalPrice": true}, "type": {"id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24", "typeId": "type"}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}}], "sku": "1"}]}, "staged": {"masterVariant": {"attributes": [{"attributes": [], "prices": [{"custom": {"fields": {"isOriginalPrice": true}, "type": {typeId: 'type', id: 'af9c14ac-6b56-48d4-b152-2b751d2c9c24'}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}}], "sku": "1"}], "prices": [{"custom": {"fields": {"isOriginalPrice": true}, "type": {"id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24", "typeId": "type"}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}}]}, "variants": []}}, "results": [{"id": "1", "lineItems": [{"custom": {"fields": {"barcodeData": [{"obj": {"value":{"barcode":"barcode"}}}], "orderDetailLastModifiedDate": "1995-12-28T15:23:49.002Z"}}, "id": "id", "quantity": 1, "state": [{"state": {"id": "stateId"}}]}], "orderNumber": "67897", "version": 1}], "value": {"lastModifiedDate": "1970-01-01T00:00:00.050Z"}, "version": 1}};
+    const expectedResponse = {
+      "body": {
+        "attributes": [{
+          "name": "isOnlineSale",
+          "type": {
+            "name": "text"
+          }
+        }, {
+          "name": "onlineSalePrice",
+          "type": {
+            "name": "money"
+          }
+        }, {
+          "name": "onlineDiscount",
+          "type": {
+            "name": "text"
+          }
+        }],
+        "masterData": {
+          published: true,
+          "current": {
+            "masterVariant": {
+              "attributes": [],
+              "prices": [{
+                "custom": {
+                  "fields": {
+                    "isOriginalPrice": true
+                  },
+                  "type": {
+                    "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
+                    "typeId": "type"
+                  }
+                },
+                "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+                "value": {
+                  "centAmount": 20199,
+                  "currencyCode": "CAD",
+                  "fractionDigits": 2,
+                  "type": "centPrecision"
+                }
+              }]
+            },
+            "variants": [{
+              "attributes": [],
+              "prices": [{
+                "custom": {
+                  "fields": {
+                    "isOriginalPrice": true
+                  },
+                  "type": {
+                    "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
+                    "typeId": "type"
+                  }
+                },
+                "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+                "value": {
+                  "centAmount": 20199,
+                  "currencyCode": "CAD",
+                  "fractionDigits": 2,
+                  "type": "centPrecision"
+                }
+              }],
+              "sku": "1"
+            }]
+          },
+          "staged": {
+            "masterVariant": {
+              "attributes": [{
+                "attributes": [],
+                "prices": [{
+                  "custom": {
+                    "fields": {
+                      "isOriginalPrice": true
+                    },
+                    "type": {
+                      typeId: 'type',
+                      id: 'af9c14ac-6b56-48d4-b152-2b751d2c9c24'
+                    }
+                  },
+                  "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+                  "value": {
+                    "centAmount": 20199,
+                    "currencyCode": "CAD",
+                    "fractionDigits": 2,
+                    "type": "centPrecision"
+                  }
+                }],
+                "sku": "1"
+              }],
+              "prices": [{
+                "custom": {
+                  "fields": {
+                    "isOriginalPrice": true
+                  },
+                  "type": {
+                    "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
+                    "typeId": "type"
+                  }
+                },
+                "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+                "value": {
+                  "centAmount": 20199,
+                  "currencyCode": "CAD",
+                  "fractionDigits": 2,
+                  "type": "centPrecision"
+                }
+              }]
+            },
+            "variants": []
+          }
+        },
+        "results": [{
+          "id": "1",
+          "lineItems": [{
+            "custom": {
+              "fields": {
+                "barcodeData": [{
+                  "obj": {
+                    "value": {
+                      "barcode": "barcode"
+                    }
+                  }
+                }],
+                "orderDetailLastModifiedDate": "1995-12-28T15:23:49.002Z"
+              }
+            },
+            "id": "id",
+            "quantity": 1,
+            "state": [{
+              "state": {
+                "id": "stateId"
+              }
+            }]
+          }],
+          "orderNumber": "67897",
+          "version": 1
+        }],
+        "value": {
+          "lastModifiedDate": "1970-01-01T00:00:00.050Z"
+        },
+        "version": 1
+      }
+    };
 
     expect(response).toStrictEqual(expectedResponse);
   });
@@ -74,7 +216,149 @@ describe('updateStyleSalePrice', () => {
         .map(addErrorHandling(parseSalePriceMessage))
 
     const response = await updateStyleSalePrice(mockedCtHelpers, validParams.productTypeId, result[0]);
-    const expectedResponse = {"body": {"attributes": [{"name": "isOnlineSale", "type": {"name": "text"}}, {"name": "onlineSalePrice", "type": {"name": "money"}}, {"name": "onlineDiscount", "type": {"name": "text"}}], "masterData": {"current": {"masterVariant": {"attributes": [], "prices": [{"custom": {"fields": {"isOriginalPrice": true}, "type": {"id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24", "typeId": "type"}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}}]}, "variants": [{"attributes": [], "prices": [{"custom": {"fields": {"isOriginalPrice": true}, "type": {"id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24", "typeId": "type"}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}}], "sku": "1"}]}, "staged": {"masterVariant": {"attributes": [{"attributes": [], "prices": [{"custom": {"fields": {"isOriginalPrice": true}, "type": {typeId: 'type', id: 'af9c14ac-6b56-48d4-b152-2b751d2c9c24'}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}}], "sku": "1"}], "prices": [{"custom": {"fields": {"isOriginalPrice": true}, "type": {"id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24", "typeId": "type"}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}}]}, "variants": []}}, "results": [{"id": "1", "lineItems": [{"custom": {"fields": {"barcodeData": [{"obj": {"value":{"barcode":"barcode"}}}], "orderDetailLastModifiedDate": "1995-12-28T15:23:49.002Z"}}, "id": "id", "quantity": 1, "state": [{"state": {"id": "stateId"}}]}], "orderNumber": "67897", "version": 1}], "value": {"lastModifiedDate": "1970-01-01T00:00:00.050Z"}, "version": 1}};
+    const expectedResponse = {
+      "body": {
+        "attributes": [{
+          "name": "isOnlineSale",
+          "type": {
+            "name": "text"
+          }
+        }, {
+          "name": "onlineSalePrice",
+          "type": {
+            "name": "money"
+          }
+        }, {
+          "name": "onlineDiscount",
+          "type": {
+            "name": "text"
+          }
+        }],
+        "masterData": {
+          published: true,
+          "current": {
+            "masterVariant": {
+              "attributes": [],
+              "prices": [{
+                "custom": {
+                  "fields": {
+                    "isOriginalPrice": true
+                  },
+                  "type": {
+                    "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
+                    "typeId": "type"
+                  }
+                },
+                "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+                "value": {
+                  "centAmount": 20199,
+                  "currencyCode": "CAD",
+                  "fractionDigits": 2,
+                  "type": "centPrecision"
+                }
+              }]
+            },
+            "variants": [{
+              "attributes": [],
+              "prices": [{
+                "custom": {
+                  "fields": {
+                    "isOriginalPrice": true
+                  },
+                  "type": {
+                    "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
+                    "typeId": "type"
+                  }
+                },
+                "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+                "value": {
+                  "centAmount": 20199,
+                  "currencyCode": "CAD",
+                  "fractionDigits": 2,
+                  "type": "centPrecision"
+                }
+              }],
+              "sku": "1"
+            }]
+          },
+          "staged": {
+            "masterVariant": {
+              "attributes": [{
+                "attributes": [],
+                "prices": [{
+                  "custom": {
+                    "fields": {
+                      "isOriginalPrice": true
+                    },
+                    "type": {
+                      typeId: 'type',
+                      id: 'af9c14ac-6b56-48d4-b152-2b751d2c9c24'
+                    }
+                  },
+                  "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+                  "value": {
+                    "centAmount": 20199,
+                    "currencyCode": "CAD",
+                    "fractionDigits": 2,
+                    "type": "centPrecision"
+                  }
+                }],
+                "sku": "1"
+              }],
+              "prices": [{
+                "custom": {
+                  "fields": {
+                    "isOriginalPrice": true
+                  },
+                  "type": {
+                    "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
+                    "typeId": "type"
+                  }
+                },
+                "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+                "value": {
+                  "centAmount": 20199,
+                  "currencyCode": "CAD",
+                  "fractionDigits": 2,
+                  "type": "centPrecision"
+                }
+              }]
+            },
+            "variants": []
+          }
+        },
+        "results": [{
+          "id": "1",
+          "lineItems": [{
+            "custom": {
+              "fields": {
+                "barcodeData": [{
+                  "obj": {
+                    "value": {
+                      "barcode": "barcode"
+                    }
+                  }
+                }],
+                "orderDetailLastModifiedDate": "1995-12-28T15:23:49.002Z"
+              }
+            },
+            "id": "id",
+            "quantity": 1,
+            "state": [{
+              "state": {
+                "id": "stateId"
+              }
+            }]
+          }],
+          "orderNumber": "67897",
+          "version": 1
+        }],
+        "value": {
+          "lastModifiedDate": "1970-01-01T00:00:00.050Z"
+        },
+        "version": 1
+      }
+    };
 
     expect(response).toStrictEqual(expectedResponse);
   });

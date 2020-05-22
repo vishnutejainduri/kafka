@@ -4,7 +4,8 @@ const {
   languageKeys,
   isStaged,
   TAX_CATEGORY,
-  PRODUCT_SHOULD_BE_PUBLISHED
+  PRODUCT_SHOULD_BE_PUBLISHED,
+  entityStatus
 } = require('./constantsCt');
 
 const { getAllVariantPrices, getExistingCtOriginalPrice, getCustomFieldActionForSalePrice } = require('./consumeSalePriceCT/utils');
@@ -160,9 +161,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
     : null;
 
   // handle categories
-  const existingCtStyleData = existingCtStyle.masterData && (existingCtStyle.masterData.hasStagedChanges
-    ? existingCtStyle.masterData.staged
-    : existingCtStyle.masterData.current)
+  const existingCtStyleData = existingCtStyle.masterData && (existingCtStyle.masterData[entityStatus])
   const existingCategoryIds = existingCtStyleData && existingCtStyleData.categories
     ? existingCtStyleData.categories.map(category => category.id)
     : null
@@ -320,12 +319,11 @@ const createAndPublishStyle = async (styleToCreate, productType, categories, ctH
  * from the master variant. Returns `undefined` if the attribute does not exist.
  * @param {Object} ctStyle The product as stored in CT.
  * @param {String} attributeName Name of the attribute whose value should be returned.
- * @param {Boolean} current Indicates whether to return the value from the current product or the staged product.
  */
-const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
+const getCtStyleAttributeValue = (ctStyle, attributeName) => {
   const foundAttribute =  (
     ctStyle
-    .masterData[current ? 'current' : 'staged']
+    .masterData[entityStatus]
     .masterVariant
     .attributes
     .find(attribute => attribute.name === attributeName)
@@ -336,9 +334,7 @@ const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
 };
 
 const getCtStyleAttribute = (ctStyle, attributeName) => {
-  const stagedAttribute = ctStyle.masterData.staged ? getCtStyleAttributeValue(ctStyle, attributeName, false) : null;
-  const currentAttribute = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, attributeName, true) : null;
-  const attribute = stagedAttribute || currentAttribute;
+  const attribute = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, attributeName) : null;
 
   if (!attribute) return null;
   return attribute;
