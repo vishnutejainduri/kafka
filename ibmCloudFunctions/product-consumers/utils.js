@@ -118,6 +118,26 @@ function addErrorHandlingToMain (main) {
 }
 
 /**
+ * Used to ensure that the result returned by the CF does not exceed the
+ * maximum size
+ */
+const truncateErrorsIfNecessary = result => {
+    if (!(result && typeof result === 'object')) return result;
+    if (!result.errors || result.errors.length === 0) return result;
+
+    const resultString = JSON.stringify(result);
+    const byteCount = Buffer.byteLength(resultString);
+    const MAX_BYTE_RESPONSE = 5242880; // OpenWhisk limitation
+    if (byteCount <= MAX_BYTE_RESPONSE) return result;
+
+    return truncateErrorsIfNecessary({
+        ...result,
+        errors: result.errors.slice(0, result.errors.length / 2),
+        errorsAreTruncated: true,
+    });
+};
+
+/**
  * Stores the messages of the params passed to the `main` function of a CF in a database,
  * so that we can retry the failed messaegs later.
  * @param main {function}
@@ -133,7 +153,7 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
             await logger.updateBatchWithFailureIndexes(params, result.failureIndexes);
         }
         if (result instanceof Error) throw result;
-        return result;
+        return truncateErrorsIfNecessary(result);
     })
   )
 );
@@ -177,5 +197,6 @@ module.exports = {
     validateParams,
     addLoggingToMain,
     passDownAnyMessageErrors,
-    addRetries
+    addRetries,
+    truncateErrorsIfNecessary
 }
