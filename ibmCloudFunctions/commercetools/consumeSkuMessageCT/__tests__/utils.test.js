@@ -12,7 +12,7 @@ const {
   getMostUpToDateSku,
   removeDuplicateSkus,
   groupByStyleId,
-  groupBy500,
+  groupByN,
   passDownErrorsAndFailureIndexes,
   mapBatchIndexToMessageIndexes
 } = require('../utils');
@@ -500,7 +500,7 @@ describe('mapBatchIndexToMessageIndexes', () => {
   });
 });
 
-describe('groupBy500', () => {
+describe('groupByN', () => {
   it('returns an array of arrays, each sub-array of which contains 500 items', () => {
     const arrayWith1000Items = new Array(1000).fill(1);
     const expected = [
@@ -508,7 +508,7 @@ describe('groupBy500', () => {
       new Array(500).fill(1)
     ];
 
-    expect(groupBy500(arrayWith1000Items)).toEqual(expected);
+    expect(groupByN(500)(arrayWith1000Items)).toEqual(expected);
   });
 
   it('works when given an array whose length is not divisible by 500', () => {
@@ -518,15 +518,15 @@ describe('groupBy500', () => {
       new Array(250).fill(1)
     ];
 
-    expect(groupBy500(arrayWith750Items)).toEqual(expected);
+    expect(groupByN(500)(arrayWith750Items)).toEqual(expected);
   });
 
   it('returns an empty array when given an empty array', () => {
-    expect(groupBy500([])).toEqual([]);
+    expect(groupByN(500)([])).toEqual([]);
   });
 
   it('returns an array containing its argument when given an array that contains less than 500 items', () => {
     const shortArray = [1, 1, 1];
-    expect(groupBy500(shortArray)).toEqual([shortArray]);
+    expect(groupByN(500)(shortArray)).toEqual([shortArray]);
   });
 });

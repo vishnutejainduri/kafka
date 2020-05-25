@@ -1,5 +1,5 @@
 const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
-const { skuAttributeNames, isStaged } = require('../constantsCt');
+const { skuAttributeNames, isStaged, CT_ACTION_LIMIT } = require('../constantsCt');
 const { groupByAttribute } = require('../../lib/utils');
 
 const groupByStyleId = groupByAttribute('styleId');
@@ -136,10 +136,10 @@ const getActionsFromSkus = (skus, existingCtSkus, ctStyle) => (
   }, [])
 );
 
-const groupBy500 = items => {
+const groupByN = n => items => {
   const groupedItems = [];
-  for (let i = 0; i < items.length; i += 500) {
-    groupedItems.push(items.slice(i, i + 500));
+  for (let i = 0; i < items.length; i += n) {
+    groupedItems.push(items.slice(i, i + n));
   }
   return groupedItems;
 };
@@ -151,11 +151,10 @@ const createOrUpdateSkus = async (skusToCreateOrUpdate, existingCtSkus, ctStyle,
   const styleId = skusToCreateOrUpdate[0].styleId;
   const uri = requestBuilder.products.byKey(styleId).build();
 
-  // CT allows a maximum of 500 actions per request
-  const actionsGroupedBy500 = groupBy500(getActionsFromSkus(skusToCreateOrUpdate, existingCtSkus, ctStyle));
+  const actionsGroupedByActionLimit = groupByN(CT_ACTION_LIMIT)(getActionsFromSkus(skusToCreateOrUpdate, existingCtSkus, ctStyle));
 
   let workingStyle = ctStyle;
-  for (const actions of actionsGroupedBy500) {
+  for (const actions of actionsGroupedByActionLimit) {
     const body = JSON.stringify({ version: workingStyle.version, actions });
     workingStyle = (await client.execute({ method, uri, body })).body
   }
@@ -227,7 +226,7 @@ module.exports = {
   getMostUpToDateSku,
   getExistingCtStyle,
   groupByStyleId,
-  groupBy500,
+  groupByN,
   removeDuplicateSkus,
   createAndPublishStyle,
   createOrUpdateSkus,
