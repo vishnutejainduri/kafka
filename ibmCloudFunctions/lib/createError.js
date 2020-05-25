@@ -8,6 +8,13 @@ function errorToObject(error) {
     };
 }
 
+const getParamsExcludingMessages = params => {
+    if (!params || (!(typeof params === 'object'))) return undefined;
+    // eslint-disable-next-line no-unused-vars
+    const { messages, ...paramsExcludingMessages } = params;
+    return paramsExcludingMessages;
+};
+
 // TODO: constructor should be called at the point of error to better identify the line of error
 // ref: https://stackoverflow.com/a/871646
 // e.g. throw new CustomError(...) instead of throw createError(...)
@@ -71,7 +78,7 @@ module.exports = {
         failed: (originalError, params) => new CustomError(
             originalError,
             'failed-consume-inventory-message',
-            `Failure in run of consume inventory message; params: ${params}.`
+            `Failure in run of consume inventory message; params excluding messages: ${getParamsExcludingMessages(params)}.`
         ),
         failedUpdateInventory: (originalError, inventoryData) => new CustomError(
             originalError,
@@ -119,14 +126,14 @@ module.exports = {
         failed: (originalError, params) => new CustomError(
             originalError,
             'failed-consume-sku-message-ct',
-            `Failure in run of consume sku message; params: ${params}.`
+            `Failure in run of consume sku message; params excluding messages: ${getParamsExcludingMessages(params)}.`
         )
     },
     consumeCatalogMessage: {
         failed: (originalError, params) => new CustomError(
             originalError,
             'failed-consume-catalog-message',
-            `Failure in run of consume catalog message; params: ${params}.`
+            `Failure in run of consume catalog message; params excluding messages: ${getParamsExcludingMessages(params)}.`
         ),
         failedStyleUpdates: (originalError, styleData) => new CustomError(
             originalError,
@@ -148,56 +155,56 @@ module.exports = {
         failed: (originalError, params) => new CustomError(
             originalError,
             'failed-consume-catalog-message-ct',
-            `Failure in run of consume catalog message CT; params: ${params}.`
+            `Failure in run of consume catalog message CT; params excluding messages: ${getParamsExcludingMessages(params)}.`
         )
     },
     removeQuantityReserved: {
         failedToRemoveSomeReserves: (originalError, params) => new CustomError(
             originalError,
             'failed-to-remove-some-reserves',
-            `Failure in run of remove quantity reserved; params: ${params}.`
+            `Failure in run of remove quantity reserved; params excluding messages: ${getParamsExcludingMessages(params)}.`
         )
     },
     consumeSalesOrderMessageCT: {
         failed: (originalError, params) => new CustomError(
             originalError,
             'failed-consume-sales-order-message-ct',
-            `Failure in run of consume sales order message CT; params: ${params}.`
+            `Failure in run of consume sales order message CT; params excluding messages: ${getParamsExcludingMessages(params)}.`
         )
     },
     consumeSalesOrderDetailsMessageCT: {
         failed: (originalError, params) => new CustomError(
             originalError,
             'failed-consume-sales-order-details-message-ct',
-            `Failure in run of consume sales order details message CT; params: ${params}.`
+            `Failure in run of consume sales order details message CT; params excluding messages: ${getParamsExcludingMessages(params)}.`
         )
     },
     consumeFacetMessageCT: {
         failed: (originalError, params) => new CustomError(
             originalError,
             'failed-consume-facet-message-ct',
-            `Failure in run of consume facet message CT; params: ${params}.`
+            `Failure in run of consume facet message CT; params; params excluding messages: ${getParamsExcludingMessages(params)}.`
         )
     },
     consumeBarcodeMessageCT: {
         failed: (originalError, params) => new CustomError(
             originalError,
             'failed-consume-barcode-message-ct',
-            `Failure in run of consume barcode message CT; params: ${params}.`
+            `Failure in run of consume barcode message CT; params excluding messages: ${getParamsExcludingMessages(params)}.`
         )
     },
     consumeSalePriceCT: {
         failed: (originalError, params) => new CustomError(
             originalError,
             'failed-consume-sale-price-ct',
-            `Failure in run of consume sale price CT; params: ${params}.`
+            `Failure in run of consume sale price CT; params excluding messages: ${getParamsExcludingMessages(params)}.`
         ),
     },
     consumeStylesBasicMessageCT: {
         failed: (originalError, params) => new CustomError(
             originalError,
             'failed-consume-styles-basic-message-ct',
-            `Failure in run of consume styles basic message CT; params: ${params}.`
+            `Failure in run of consume styles basic message CT; params excluding messages: ${getParamsExcludingMessages(params)}.`
         ),
     },
     calculateAvailableToSell: {
