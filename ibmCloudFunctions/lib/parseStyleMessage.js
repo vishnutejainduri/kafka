@@ -31,7 +31,8 @@ const attributeMap = {
     'ONLINEFROMDATE': 'onlineFromDate',
     'UNIT_PRICE': 'originalPrice',
     'SUBDEPT': 'departmentId',
-    'VSN': 'vsn'
+    'VSN': 'vsn',
+    'SIZE_CHART': 'sizeChart'
 };
 
 const transforms = {

@@ -500,6 +500,25 @@
             "isSearchable": false,
             "inputHint": "SingleLine",
             "displayGroup": "Other"
+        },
+        {
+            "name": "sizeChart",
+            "label": {
+                "en-CA": "Size Chart",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "ltext"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
         }
     ]
 }
