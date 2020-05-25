@@ -74,6 +74,8 @@ const orderStates = {
 
 const PRODUCT_SHOULD_BE_PUBLISHED = true;
 
+const CT_ACTION_LIMIT = 500;
+
 module.exports = {
   BARCODE_NAMESPACE,
   KEY_VALUE_DOCUMENT,
@@ -86,5 +88,6 @@ module.exports = {
   orderStates,
   isStaged,
   TAX_CATEGORY,
-  PRODUCT_SHOULD_BE_PUBLISHED
+  PRODUCT_SHOULD_BE_PUBLISHED,
+  CT_ACTION_LIMIT
 };

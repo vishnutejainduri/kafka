@@ -3,7 +3,6 @@ const {
   getActionsFromSku,
   getActionsFromSkus,
   formatSkuRequestBody,
-  formatSkuBatchRequestBody,
   existingCtSkuIsNewer,
   getCtSkuFromCtStyle,
   getCtSkusFromCtStyle,
@@ -13,6 +12,7 @@ const {
   getMostUpToDateSku,
   removeDuplicateSkus,
   groupByStyleId,
+  groupByN,
   passDownErrorsAndFailureIndexes,
   mapBatchIndexToMessageIndexes
 } = require('../utils');
@@ -387,36 +387,6 @@ describe('getActionsFromSkus', () => {
   });
 });
 
-describe('formatSkuBatchRequestBody', () => {
-  const ctStyle = {
-    masterData: {
-      current: {
-        variants: [{ sku: 'sku-1' }, { sku: 'sku-2'}, { sku: 'sku-3' }],
-        masterVariant: {
-          attributes: [
-            {name: 'season', value: 'Winter'}
-          ]
-        }
-      },
-      hasStagedChanges: false
-    },
-    version: 1
-  };
-
-  const sku1 = { id: 'sku-1', skuLastModifiedInternal: new Date(100), colorId: 'R' };
-  const sku2 = { id: 'sku-2', skuLastModifiedInternal: new Date(100), colorId: 'G' };
-  const sku3 = { id: 'sku-3', skuLastModifiedInternal: new Date(100), colorId: 'B' };
-  const sku4 = { id: 'sku-4', skuLastModifiedInternal: new Date(100), colorId: 'A' };
-
-  const skus = [sku1, sku2, sku3, sku4];
-  const existingCtSkus = [{ sku: 'sku-1' }, { sku: 'sku-2'}, { sku: 'sku-3' }];
-
-  it('returns the correct request body', () => {
-    const correctBody = "{\"version\":1,\"actions\":[{\"action\":\"setAttribute\",\"sku\":\"sku-1\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\",\"staged\":false},{\"action\":\"setAttribute\",\"sku\":\"sku-1\",\"name\":\"colorId\",\"value\":\"R\",\"staged\":false},{\"action\":\"setAttribute\",\"sku\":\"sku-2\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\",\"staged\":false},{\"action\":\"setAttribute\",\"sku\":\"sku-2\",\"name\":\"colorId\",\"value\":\"G\",\"staged\":false},{\"action\":\"setAttribute\",\"sku\":\"sku-3\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\",\"staged\":false},{\"action\":\"setAttribute\",\"sku\":\"sku-3\",\"name\":\"colorId\",\"value\":\"B\",\"staged\":false},{\"action\":\"addVariant\",\"sku\":\"sku-4\",\"attributes\":[{\"name\":\"season\",\"value\":\"Winter\"}],\"staged\":false},{\"action\":\"setAttribute\",\"sku\":\"sku-4\",\"name\":\"skuLastModifiedInternal\",\"value\":\"1970-01-01T00:00:00.100Z\",\"staged\":false},{\"action\":\"setAttribute\",\"sku\":\"sku-4\",\"name\":\"colorId\",\"value\":\"A\",\"staged\":false}]}";
-    expect(formatSkuBatchRequestBody(skus, ctStyle, existingCtSkus)).toEqual(correctBody);
-  });
-});
-
 describe('getMostUpToDateSku', () => {
   it('returns the most up to date SKU when given an array of SKUs', () => {
     const oldSku = { id: '1', skuLastModifiedInternal: new Date(0) };
@@ -527,5 +497,36 @@ describe('mapBatchIndexToMessageIndexes', () => {
   it('returns the indexes that correspond to the messages in the batch of the given index', () => {
     expect(mapBatchIndexToMessageIndexes({ skuBatches, batchIndex: 0, messages})).toEqual([0, 2]);
     expect(mapBatchIndexToMessageIndexes({ skuBatches, batchIndex: 1, messages})).toEqual([1]);
+  });
+});
+
+describe('groupByN', () => {
+  it('returns an array of arrays, each sub-array of which contains 500 items', () => {
+    const arrayWith1000Items = new Array(1000).fill(1);
+    const expected = [
+      new Array(500).fill(1),
+      new Array(500).fill(1)
+    ];
+
+    expect(groupByN(500)(arrayWith1000Items)).toEqual(expected);
+  });
+
+  it('works when given an array whose length is not divisible by 500', () => {
+    const arrayWith750Items = new Array(750).fill(1);
+    const expected = [
+      new Array(500).fill(1),
+      new Array(250).fill(1)
+    ];
+
+    expect(groupByN(500)(arrayWith750Items)).toEqual(expected);
+  });
+
+  it('returns an empty array when given an empty array', () => {
+    expect(groupByN(500)([])).toEqual([]);
+  });
+
+  it('returns an array containing its argument when given an array that contains less than 500 items', () => {
+    const shortArray = [1, 1, 1];
+    expect(groupByN(500)(shortArray)).toEqual([shortArray]);
   });
 });

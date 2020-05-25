@@ -1,5 +1,5 @@
 const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
-const { skuAttributeNames, isStaged } = require('../constantsCt');
+const { skuAttributeNames, isStaged, CT_ACTION_LIMIT } = require('../constantsCt');
 const { groupByAttribute } = require('../../lib/utils');
 
 const groupByStyleId = groupByAttribute('styleId');
@@ -136,24 +136,30 @@ const getActionsFromSkus = (skus, existingCtSkus, ctStyle) => (
   }, [])
 );
 
-const formatSkuBatchRequestBody = (skusToCreateOrUpdate, ctStyle, existingCtSkus) => {
-  const actions = getActionsFromSkus(skusToCreateOrUpdate, existingCtSkus, ctStyle);
-
-  return JSON.stringify({
-    version: ctStyle.version,
-    actions
-  });
+const groupByN = n => items => {
+  const groupedItems = [];
+  for (let i = 0; i < items.length; i += n) {
+    groupedItems.push(items.slice(i, i + n));
+  }
+  return groupedItems;
 };
 
-const createOrUpdateSkus = (skusToCreateOrUpdate, existingCtSkus, ctStyle, { client, requestBuilder }) => {
+const createOrUpdateSkus = async (skusToCreateOrUpdate, existingCtSkus, ctStyle, { client, requestBuilder }) => {
   if (skusToCreateOrUpdate.length === 0) return null;
 
   const method = 'POST';
   const styleId = skusToCreateOrUpdate[0].styleId;
   const uri = requestBuilder.products.byKey(styleId).build();
-  const body = formatSkuBatchRequestBody(skusToCreateOrUpdate, ctStyle, existingCtSkus);
 
-  return client.execute({ method, uri, body });
+  const actionsGroupedByActionLimit = groupByN(CT_ACTION_LIMIT)(getActionsFromSkus(skusToCreateOrUpdate, existingCtSkus, ctStyle));
+
+  let workingStyle = ctStyle;
+  for (const actions of actionsGroupedByActionLimit) {
+    const body = JSON.stringify({ version: workingStyle.version, actions });
+    workingStyle = (await client.execute({ method, uri, body })).body
+  }
+
+  return workingStyle;
 };
 
 const groupBySkuId = groupByAttribute('id');
@@ -209,7 +215,6 @@ const passDownErrorsAndFailureIndexes = (skuBatches, messages) => results => {
 
 module.exports = {
   formatSkuRequestBody,
-  formatSkuBatchRequestBody,
   getActionsFromSku,
   getActionsFromSkus,
   existingCtSkuIsNewer,
@@ -221,6 +226,7 @@ module.exports = {
   getMostUpToDateSku,
   getExistingCtStyle,
   groupByStyleId,
+  groupByN,
   removeDuplicateSkus,
   createAndPublishStyle,
   createOrUpdateSkus,
