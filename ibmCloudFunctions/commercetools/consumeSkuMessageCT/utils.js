@@ -136,15 +136,6 @@ const getActionsFromSkus = (skus, existingCtSkus, ctStyle) => (
   }, [])
 );
 
-const formatSkuBatchRequestBody = (skusToCreateOrUpdate, ctStyle, existingCtSkus) => {
-  const actions = getActionsFromSkus(skusToCreateOrUpdate, existingCtSkus, ctStyle);
-
-  return JSON.stringify({
-    version: ctStyle.version,
-    actions
-  });
-};
-
 const groupBy500 = items => {
   const groupedItems = [];
   for (let i = 0; i < items.length; i += 500) {
@@ -225,7 +216,6 @@ const passDownErrorsAndFailureIndexes = (skuBatches, messages) => results => {
 
 module.exports = {
   formatSkuRequestBody,
-  formatSkuBatchRequestBody,
   getActionsFromSku,
   getActionsFromSkus,
   existingCtSkuIsNewer,
