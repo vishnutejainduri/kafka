@@ -227,6 +227,7 @@ module.exports = {
   getMostUpToDateSku,
   getExistingCtStyle,
   groupByStyleId,
+  groupBy500,
   removeDuplicateSkus,
   createAndPublishStyle,
   createOrUpdateSkus,
