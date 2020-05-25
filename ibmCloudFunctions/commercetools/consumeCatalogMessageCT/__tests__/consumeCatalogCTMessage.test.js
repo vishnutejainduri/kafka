@@ -63,7 +63,7 @@ const validParams = {
           WEBSTATUS: 'webStatus',
           SEASON_CD: 'seasonCd',
           COLORID: 'colorId',
-          UNIT_PRICE: 0.0,
+          UNIT_PRICE: 1.0,
           VSN: 'vsn',
           SUBCLASS: 341,
           UPD_TIMESTAMP: 1000000000000,
@@ -87,6 +87,30 @@ const ctStyleNewer = {
   "masterData": {
     [entityStatus]: {
       "masterVariant": {
+        "prices": [{
+          id: 'originalPrice',
+          custom: {
+            fields: {
+              isOriginalPrice: true
+            }
+          }
+        }],
+        "attributes": [
+          {
+            "name": "styleLastModifiedInternal",
+            "value": "2019-03-18T16:53:20.823Z"
+          }
+        ]
+      }
+    }
+  }
+};
+
+const ctStyleNewerWithEmptyPrices = {
+  "masterData": {
+    [entityStatus]: {
+      "masterVariant": {
+        "prices": [],
         "attributes": [
           {
             "name": "styleLastModifiedInternal",
@@ -176,12 +200,6 @@ const styleActions = [
   },
   {
     action: 'setAttributeInAllVariants',
-    name: 'originalPrice',
-    staged: false,
-    value: 0,
-  },
-  {
-    action: 'setAttributeInAllVariants',
     name: 'vsn',
     staged: false,
     value: 'vsn',
@@ -213,6 +231,25 @@ const styleActions = [
     action: 'setDescription',
     description: { 'en-CA': 'marketDescEng', 'fr-CA': 'marketDescFr' },
     staged: false,
+  },
+  {
+    action: 'changePrice',
+    priceId: ctStyleNewer.masterData[entityStatus].masterVariant.prices[0].id,
+    staged: false,
+    price: {
+      value: {
+        centAmount: validParams.messages[0].value.UNIT_PRICE * 100,
+        currencyCode: 'CAD'
+      },
+      custom: {
+        type: {
+          key: 'priceCustomFields'
+        },
+        fields: {
+          isOriginalPrice: true
+        }
+      }
+    }
   },
   {
     action: 'addToCategory',
@@ -441,6 +478,16 @@ describe('getActionsFromStyle', () => {
     },
     staged: isStaged
   };
+  const mockCtStyleWithoutOriginalPrice = {
+    ...ctStyleNewerWithEmptyPrices,
+    masterData: {
+      [entityStatus]: {
+        variants: [],
+        ...ctStyleNewerWithEmptyPrices.masterData[entityStatus],
+        categories: []
+      }
+    }
+  };
   const mockProductType = { attributes: [] };
   const mockCategories = [{ id: 'cat1' }, { id: 'cat2' }, { id: 'cat3' }];
 
@@ -458,5 +505,30 @@ describe('getActionsFromStyle', () => {
     ];
 
     expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithCategories)).toEqual(expected);
+  });
+
+  it('includes the correct actions when given a style that initially didnt have its original price set', () => {
+    const expected = [
+      {
+        action: 'setPrice',
+        price: {
+          value: {
+            centAmount: validParams.messages[0].value.UNIT_PRICE * 100,
+            currencyCode: 'CAD'
+          },
+          custom: {
+            type: {
+              key: 'priceCustomFields'
+            },
+            fields: {
+              isOriginalPrice: true
+            }
+          }
+        },
+        staged: isStaged
+      }
+    ];
+    
+    expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithoutOriginalPrice)).toEqual(expect.arrayContaining(expected));
   });
 });

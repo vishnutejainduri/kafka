@@ -8,7 +8,7 @@ const {
   entityStatus
 } = require('./constantsCt');
 
-const { getAllVariantPrices, getExistingCtOriginalPrice, getCustomFieldActionForSalePrice } = require('./consumeSalePriceCT/utils');
+const { getAllVariantPrices, getExistingCtOriginalPrice } = require('./consumeSalePriceCT/utils');
 
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
 const DPM_ROOT_CATEGORY = 'DPM ROOT CATEGORY';
@@ -75,6 +75,23 @@ const getCategories = async (style, ctHelpers) => {
 
   return categories.slice(1, categories.length).filter(Boolean);
 };
+
+function createOriginalPriceUpdate (originalPrice) {
+  return {
+    value: {
+      currencyCode: currencyCodes.CAD,
+      centAmount: originalPrice
+    },
+    custom: {
+      type: {
+        key: 'priceCustomFields'
+      },
+      fields: {
+        isOriginalPrice: true
+      }
+    }
+  }
+}
 
 const getProductType = async (productTypeId, { client, requestBuilder }) => {
   const method = 'GET';
@@ -182,20 +199,19 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   const allVariantPrices = getAllVariantPrices(existingCtStyle);
   let priceUpdateActions = allVariantPrices.map((variantPrice) => {
     const existingCtOriginalPrice = getExistingCtOriginalPrice(variantPrice);
-    if (!existingCtOriginalPrice) return [];
-    const priceUpdate = {
-      action: 'changePrice',
-      priceId: existingCtOriginalPrice.id,
-      price: {
-        value: {
-          currencyCode: currencyCodes.CAD,
-          centAmount: style.originalPrice
+    const priceUpdate = existingCtOriginalPrice
+        ? {
+          action: 'changePrice',
+          priceId: existingCtOriginalPrice.id,
+          price: createOriginalPriceUpdate(style.originalPrice),
+          staged: isStaged
         }
-      },
-      staged: isStaged
-    };
-    const customFieldUpdateAction = getCustomFieldActionForSalePrice(existingCtOriginalPrice, { isOriginalPrice: true });
-    return [priceUpdate, customFieldUpdateAction];
+        : {
+          action: 'setPrice',
+          price: createOriginalPriceUpdate(style.originalPrice),
+          staged: isStaged
+        }
+      return [priceUpdate];
   });
   priceUpdateActions = priceUpdateActions.reduce((finalActions, currentActions) => [...finalActions, ...currentActions], []);
 
@@ -273,20 +289,7 @@ const createStyle = async (style, productType, categories, { client, requestBuil
   };
 
   if (style.originalPrice) {
-    body.masterVariant.prices = [{
-        value: {
-          currencyCode: currencyCodes.CAD,
-          centAmount: style.originalPrice
-        },
-        custom: {
-          type: {
-            key: 'priceCustomFields'
-          },
-          fields: {
-            isOriginalPrice: true
-          }
-        }
-      }];
+    body.masterVariant.prices = [createOriginalPriceUpdate(style.originalPrice)];
   }
   if (categories) {
     body.categories = categories.map(category => ({
