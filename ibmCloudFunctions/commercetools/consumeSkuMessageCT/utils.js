@@ -145,15 +145,31 @@ const formatSkuBatchRequestBody = (skusToCreateOrUpdate, ctStyle, existingCtSkus
   });
 };
 
-const createOrUpdateSkus = (skusToCreateOrUpdate, existingCtSkus, ctStyle, { client, requestBuilder }) => {
+const groupBy500 = items => {
+  const groupedItems = [];
+  for (let i = 0; i < items.length; i += 500) {
+    groupedItems.push(items.slice(i, i + 500));
+  }
+  return groupedItems;
+};
+
+const createOrUpdateSkus = async (skusToCreateOrUpdate, existingCtSkus, ctStyle, { client, requestBuilder }) => {
   if (skusToCreateOrUpdate.length === 0) return null;
 
   const method = 'POST';
   const styleId = skusToCreateOrUpdate[0].styleId;
   const uri = requestBuilder.products.byKey(styleId).build();
-  const body = formatSkuBatchRequestBody(skusToCreateOrUpdate, ctStyle, existingCtSkus);
 
-  return client.execute({ method, uri, body });
+  // CT allows a maximum of 500 actions per request
+  const actionsGroupedBy500 = groupBy500(getActionsFromSkus(skusToCreateOrUpdate, existingCtSkus, ctStyle));
+
+  let workingStyle = ctStyle;
+  for (const actions of actionsGroupedBy500) {
+    const body = JSON.stringify({ version: workingStyle.version, actions });
+    workingStyle = (await client.execute({ method, uri, body })).body
+  }
+
+  return workingStyle;
 };
 
 const groupBySkuId = groupByAttribute('id');
