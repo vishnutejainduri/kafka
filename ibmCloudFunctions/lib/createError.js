@@ -8,8 +8,12 @@ function errorToObject(error) {
     };
 }
 
-// eslint-disable-next-line no-unused-vars
-const getParamsExcludingMessages = ({ messages, ...paramsExcludingMessages }) => paramsExcludingMessages;
+const getParamsExcludingMessages = params => {
+    if (!params || (!(typeof params === 'object'))) return undefined;
+    // eslint-disable-next-line no-unused-vars
+    const { messages, ...paramsExcludingMessages } = params;
+    return paramsExcludingMessages;
+};
 
 // TODO: constructor should be called at the point of error to better identify the line of error
 // ref: https://stackoverflow.com/a/871646
@@ -74,7 +78,7 @@ module.exports = {
         failed: (originalError, params) => new CustomError(
             originalError,
             'failed-consume-inventory-message',
-            `Failure in run of consume inventory message; params: ${getParamsExcludingMessages(params)}.`
+            `Failure in run of consume inventory message; params excluding messages: ${getParamsExcludingMessages(params)}.`
         ),
         failedUpdateInventory: (originalError, inventoryData) => new CustomError(
             originalError,
