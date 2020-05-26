@@ -15,9 +15,9 @@ const translatableAttributeMap = {
     'ADVICE': 'advice',
     'COLOUR_DESC': 'colour',
     'TRUE_COLOURGROUP': 'colourGroup',
-    'CATAGORY': 'level1Category',
-    'CATAGORY_LEVEL_1A': 'level2Category',
-    'CATAGORY_LEVEL_2A': 'level3Category'
+    'CATEGORY': 'level1Category',
+    'CATEGORY_LEVEL_1A': 'level2Category',
+    'CATEGORY_LEVEL_2A': 'level3Category'
 };
 
 // Map of source attribute names to mapped name. Non-translatable attribute names
