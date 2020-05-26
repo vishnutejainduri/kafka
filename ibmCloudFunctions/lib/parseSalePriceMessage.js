@@ -43,9 +43,12 @@ function parseSalePriceMessage(msg) {
       priceData.endDate = new Date('2525-01-01').getTime();
     }
 
-    priceData._id = priceData.styleId;
     priceData.endDate += 86400000 + 14400000; //milliseconds in 24hours plus 4 hours to convert to UTC
+    priceData.endDate = new Date(priceData.endDate)
     priceData.startDate += 14400000; //milliseconds of 4 hours to convert to UTC
+    priceData.startDate = new Date(priceData.startDate)
+
+    priceData._id = priceData.styleId;
     priceData.priceChangeId = priceData.priceChangeId.toString();
     priceData.processDateCreated = new Date(priceData.processDateCreated);
     priceData.isOriginalPrice = false;

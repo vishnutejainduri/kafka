@@ -1,6 +1,8 @@
-const getCtHelpers = require('../../../lib/commercetoolsSdk');
+const { createClient } = require('@commercetools/sdk-client');
+
 const consumeSalePriceCT = require('..');
-const { updateStyleSalePrice, getAllVariantPrices, getExistingCtOriginalPrice, getCustomFieldActionForSalePrice } = require('../utils');
+const getCtHelpers = require('../../../lib/commercetoolsSdk');
+const { updateStyleSalePrice, getAllVariantPrices, getExistingCtOriginalPrice, getActionsForVariantPrice } = require('../utils');
 const {
     filterSalePriceMessages,
     parseSalePriceMessage
@@ -8,7 +10,7 @@ const {
 const {
   addErrorHandling,
 } = require('../../../product-consumers/utils');
-const { createClient } = require('@commercetools/sdk-client');
+const { priceAttributeNames, isStaged } = require('../../constantsCt');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -100,23 +102,116 @@ describe('getExistingCtOriginalPrice', () => {
   });
 });
 
-describe('getCustomFieldActionForSalePrice', () => {
-  it('get custom field updates for a price record', async () => {
-     const result =  
-        validParams.messages
-        .filter(addErrorHandling(filterSalePriceMessages))
-        .map(addErrorHandling(parseSalePriceMessage))
+describe('getActionsForVariantPrice', () => {
+  const variantPrice = {
+    variantId: 'some-variant-id',
+    prices: [{
+      id: 'some-price-id',
+      custom: {
+        fields: {
+          [priceAttributeNames.PRICE_CHANGE_ID]: 'existing-price-change-id',
+        }
+      }
+    }]
+  };
 
-    const response = await getCustomFieldActionForSalePrice(mockProduct.masterData.current.masterVariant.prices[0], result[0]);
-    const expectedResponse = {"action": "setProductPriceCustomType", "fields": {"isOriginalPrice": false, "priceChangeId": "priceChangeId", "processDateCreated": new Date("2001-09-09T01:46:40.000Z")}, "priceId": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "type": {"key": "priceCustomFields"}};
+  const baseParsedPriceMessage = {
+    variantId: variantPrice.variantId,
+    newRetailPrice: 10,
+    processDateCreated: new Date('2020-01-01'),
+    startDate: new Date('2020-01-01'),
+    endDate: new Date('2020-02-02'),
+    isOriginalPrice: false
+  };
 
-    expect(response).toStrictEqual(expectedResponse);
+  const baseExpectedAction = {
+    price: {
+      value: { currencyCode: 'CAD', centAmount: baseParsedPriceMessage.newRetailPrice * 100 },
+      validFrom: baseParsedPriceMessage.startDate,
+      validUntil: baseParsedPriceMessage.endDate,
+      custom: {
+        type: { key: 'priceCustomFields' },
+        fields: {
+          processDateCreated: baseParsedPriceMessage.processDateCreated,
+          isOriginalPrice: false
+        }
+      }
+    },
+    staged: isStaged,
+    action: 'addPrice'
+  };
+
+  describe('there is no existing price', () => {
+    it('returns an "add price" action for activity types approve "A" and create "C"', () => {
+      const activityTypes = ['A', 'C'];
+      activityTypes.forEach(activityType => {
+        const parsedPriceMessage = {
+          ...baseParsedPriceMessage,
+          activityType,
+          priceChangeId: 'different-from' + variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
+        }
+        const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
+
+        baseExpectedAction.price.custom.fields[priceAttributeNames.PRICE_CHANGE_ID] = parsedPriceMessage.priceChangeId
+        const expectedActions = [{
+          ...baseExpectedAction,
+          action: 'addPrice',
+          variantId: variantPrice.variantId
+        }]
+        expect(actions).toEqual(expectedActions);
+      });
+    });
+  });
+
+  describe('there is an existing price', () => {
+    describe('and it is outdated i.e. older than the incoming price message', () => {
+      it('returns a "change price" action for activity types approve "A" and create "C"', () => {
+        const activityTypes = ['A', 'C'];
+        activityTypes.forEach(activityType => {
+          const parsedPriceMessage = {
+            ...baseParsedPriceMessage,
+            activityType,
+            priceChangeId: variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
+          }
+          const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
+  
+          baseExpectedAction.price.custom.fields[priceAttributeNames.PRICE_CHANGE_ID] = parsedPriceMessage.priceChangeId
+          const expectedActions = [{
+            ...baseExpectedAction,
+            action: 'changePrice',
+            priceId: variantPrice.prices[0].id
+          }]
+          expect(actions).toEqual(expectedActions);
+        });
+      });
+    });
+
+    describe('and it is up to date i.e. newer than the incoming price message', () => {
+      it('returns no actions', () => {
+        const priceChangeId = 'price-change-id';
+        const variantPrice = {
+          prices: [{
+            custom: {
+              fields: {
+                [priceAttributeNames.PRICE_CHANGE_ID]: priceChangeId,
+                [priceAttributeNames.PROCESS_DATE_CREATED]: '2020-01-02'
+              }
+            }
+          }]
+        };
+        const parsedPriceMessage = {
+          priceChangeId: priceChangeId,
+          processDateCreated: new Date('2020-01-01')
+        };
+        const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
+        expect(actions).toEqual([])
+      });
+    });
   });
 });
 
 describe('testStubs; documenting test cases', () => {
   it('if can\'t find the style make a dummy style', () => {});
-  it('if processDateCreated is in the past do nothing', () => {});
   it('if processDateCreated is in the future perform a corresponding price update/add/delete in CT', () => {});
   it('if inbound price message has activity type A or C and priceChangeId does not exist, create the price for all variants', () => {});
   it('if inbound price message has activity type A or C and priceChangeId does exist, update the price with the same priceChangeId for all variants', () => {});
