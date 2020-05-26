@@ -1,4 +1,4 @@
-const { getExistingCtStyle, getProductType, createAndPublishStyle } = require('../styleUtils');
+const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
 const { priceAttributeNames, isStaged, currencyCodes, entityStatus } = require('../constantsCt');
 
 const convertToCents = (amount) => Math.round(amount * 100)
@@ -65,7 +65,7 @@ const getCustomFieldActionForSalePrice = (existingCtPrice, updatedPrice) => {
     return customTypeUpdateAction;
 };
 
-const getActionsForSalePrice = (updatedPrice, productType, existingCtStyle) => {
+const getActionsForSalePrice = (updatedPrice, existingCtStyle) => {
   const allVariantPrices = getAllVariantPrices(existingCtStyle);
   const priceUpdateActions = allVariantPrices.map((variantPrice) => {
     let customFieldUpdateAction = null;
@@ -129,7 +129,6 @@ const getActionsForSalePrice = (updatedPrice, productType, existingCtStyle) => {
 const updateStyleSalePrice = async (ctHelpers, productTypeId, updatedPrice) => {
     const { client, requestBuilder } = ctHelpers;
 
-    const productType = await getProductType(productTypeId, ctHelpers);
     let existingCtStyle = await getExistingCtStyle(updatedPrice.styleId, ctHelpers);
 
     if (!existingCtStyle) {
@@ -139,7 +138,7 @@ const updateStyleSalePrice = async (ctHelpers, productTypeId, updatedPrice) => {
 
     const method = 'POST';
     const uri = requestBuilder.products.byKey(updatedPrice.styleId).build();
-    const actions = getActionsForSalePrice(updatedPrice, productType, existingCtStyle);
+    const actions = getActionsForSalePrice(updatedPrice, existingCtStyle);
     const body = JSON.stringify({ version: existingCtStyle.version, actions });
 
     return client.execute({ method, uri, body });
