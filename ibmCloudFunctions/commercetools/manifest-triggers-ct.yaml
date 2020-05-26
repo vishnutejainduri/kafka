@@ -1,9 +1,4 @@
     triggers:
-      catalog-ct-trigger:
-        feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: styles-connect-jdbc-CATALOG
       barcode-ct-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
