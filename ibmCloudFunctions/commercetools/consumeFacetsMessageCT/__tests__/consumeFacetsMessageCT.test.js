@@ -48,7 +48,7 @@ describe('consumeFacetsMessageCT', () => {
     return expect(consumeFacetsMessageCT(invalidParams)).rejects.toThrow();
   });
 
-  it('returns `undefined` if given valid params', async () => {
+  it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeFacetsMessageCT(validParams);
     expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
   });

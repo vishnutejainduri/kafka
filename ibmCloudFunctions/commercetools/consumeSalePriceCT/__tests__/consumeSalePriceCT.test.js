@@ -53,7 +53,7 @@ describe('consumeSalePriceCT', () => {
     return expect(consumeSalePriceCT({})).rejects.toThrow();
   });
 
-  it('correct params, valid message', async () => {
+  it('returns expected success result for correct params and a valid message', async () => {
     const response = await consumeSalePriceCT(validParams);
     return expect(response).toEqual({
       successCount: 1,
@@ -62,7 +62,7 @@ describe('consumeSalePriceCT', () => {
     });
   });
 
-  it('correct params, invalid message', async () => {
+  it('returns mixed error/success result for correct params and valid message and an invalid message', async () => {
     const invalidMessage = { id: 'invalid_message', value: 'some-value' }; 
     const response = await consumeSalePriceCT({
       ...validParams,

@@ -31,7 +31,7 @@ describe('consumeBarcodeMessageCT', () => {
     return expect(consumeBarcodeMessageCT(invalidParams)).rejects.toThrow();
   });
 
-  it('returns `undefined` if given valid params', async () => {
+  it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeBarcodeMessageCT(validParams);
     expect(response).toEqual({ ok: true, successCount: 1 });
   });

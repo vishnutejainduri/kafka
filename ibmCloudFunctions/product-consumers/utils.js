@@ -115,23 +115,25 @@ const mapBatchIndexToMessageIndexes = ({ batches, batchIndex, messages }) => {
 };
 
 const passDownBatchedErrorsAndFailureIndexes = (batches, messages) => results => {
-    const errors = results.filter(result => result instanceof Error);
+    const batchesFailureIndexes = []
+    const errors = results.filter((result,index) => {
+        if (result instanceof Error) {
+            batchesFailureIndexes.push(mapBatchIndexToMessageIndexes({ batches, batchIndex: index, messages }))
+            return true
+        }
+    });
+
     if (errors.length === 0) {
       return {
         ok: true,
         successCount: results.length
       };
     }
-  
-    const failureIndexes = results.reduce((indexes, result, batchIndex) => {
-      if (!(result instanceof Error)) return indexes;
-      return [...indexes, ...mapBatchIndexToMessageIndexes({ batches, batchIndex, messages })]
-    }, []);
-  
+
     return {
         successCount: results.length - errors.length,
-        failureIndexes,
-        errors: errors.map((error, index) => ({ error, failureIndex: failureIndexes[index]}))
+        failureIndexes: batchesFailureIndexes.reduce((failureIndexes, batchFailureIndex) => [...batchFailureIndex, ...failureIndexes], []),
+        errors: errors.map((error, index) => ({ error, failureIndex: batchesFailureIndexes[index]}))
     };
   };
   
