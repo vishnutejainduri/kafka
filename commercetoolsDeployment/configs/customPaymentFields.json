@@ -1,0 +1,55 @@
+{
+  "key": "customPaymentFields",
+  "name": {
+      "en-CA": "Custom payment fields"
+  },
+  "resourceTypeIds": [
+      "payment"
+  ],
+  "fieldDefinitions": [
+      {
+          "name": "cardReferenceNumber",
+          "label": {
+              "en-CA": "Card reference number"
+          },
+          "required": false,
+          "type": {
+              "name": "String"
+          },
+          "inputHint": "SingleLine"
+      },
+      {
+          "name": "cardExpiryDate",
+          "label": {
+              "en-CA": "Card expiry date (MMYY)"
+          },
+          "required": false,
+          "type": {
+              "name": "String"
+          },
+          "inputHint": "SingleLine"
+      },
+      {
+          "name": "cardNumber",
+          "label": {
+              "en-CA": "Card number (last four digits only)"
+          },
+          "required": false,
+          "type": {
+              "name": "String"
+          },
+          "inputHint": "SingleLine"
+      },
+      {
+          "name": "authorizationNumber",
+          "label": {
+              "en-CA": "Authorization number"
+          },
+          "required": false,
+          "type": {
+              "name": "String"
+          },
+          "inputHint": "SingleLine"
+      }
+  ]
+}
