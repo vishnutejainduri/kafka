@@ -427,7 +427,7 @@ describe('consumeCatalogueMessageCT', () => {
 
   it('returns `undefined` if given valid params', async () => {
     const response = await consumeCatalogueMessageCT(validParams);
-    expect(response).toBeUndefined();
+    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
   });
 });
 

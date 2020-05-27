@@ -91,15 +91,20 @@ const validateParams = params => {
 // Based on the error handling code in `/product-consumers/consumeCatalogMessage/index.js`.
 // Example usage is in `/product-consumers/consumeCatalogMessageCT/index.js`.
 const passDownAnyMessageErrors = messages => {
-    const errors = messages.filter(result => result instanceof Error);
-    const successes = messages.filter(result => !(result instanceof Error));
+    let failureIndexes = []
+    const errors = messages.filter((result, index) => {
+        if (result instanceof Error) {
+            failureIndexes.push(index)
+            return true
+        }
+    });
 
-    if (errors.length > 0) {
-        const err = new Error(`${errors.length} of ${errors.length} updates failed. See 'failedUpdatesErrors'.`);
-        err.failedUpdatesErrors = errors;
-        err.successfulUpdatesResults = successes;
-        throw err;
-    }
+    return {
+        successCount: messages.length - errors.length,
+        failureIndexes,
+        errors: errors.map((error, index) => ({ error, failureIndex: failureIndexes[index]}))
+    };
+
 };
 
 /**

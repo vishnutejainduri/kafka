@@ -33,6 +33,6 @@ describe('consumeBarcodeMessageCT', () => {
 
   it('returns `undefined` if given valid params', async () => {
     const response = await consumeBarcodeMessageCT(validParams);
-    expect(response).toBeUndefined();
+    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
   });
 });

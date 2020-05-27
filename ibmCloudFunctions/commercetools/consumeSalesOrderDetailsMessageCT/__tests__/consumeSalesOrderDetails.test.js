@@ -59,7 +59,7 @@ describe('consumeSalesOrderDetailsMessageCT', () => {
 
   it('returns `undefined` if given valid params', async () => {
     const response = await consumeSalesOrderDetailsMessageCT(validParams);
-    expect(response).toBeUndefined();
+    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
   });
 });
 

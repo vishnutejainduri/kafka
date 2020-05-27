@@ -205,8 +205,9 @@ const passDownErrorsAndFailureIndexes = (skuBatches, messages) => results => {
   }, []);
 
   return {
-      errors,
-      failureIndexes
+      successCount: results.length - errors.length,
+      failureIndexes,
+      errors: errors.map((error, index) => ({ error, failureIndex: failureIndexes[index]}))
   };
 };
 

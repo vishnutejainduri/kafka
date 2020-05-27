@@ -7,6 +7,8 @@ const {
     filterSalePriceMessages,
     parseSalePriceMessage
 } = require('../../../lib/parseSalePriceMessage');
+const createError = require('../../../lib/createError');
+
 const {
   addErrorHandling,
 } = require('../../../product-consumers/utils');
@@ -18,6 +20,19 @@ jest.mock('@commercetools/sdk-middleware-auth');
 jest.mock('@commercetools/sdk-middleware-http');
 jest.mock('node-fetch');
 
+const validMessage = {
+  topic: 'sale-prices-connect-jdbc',
+  value: {
+    STYLE_ID: 'styleId',
+    PRICE_CHANGE_ID: 'priceChangeId',
+    START_DATE: 1000000000000,
+    END_DATE: 1000000000000,
+    ACTIVITY_TYPE: 'A',
+    PROCESS_DATE_CREATED: 1000000000000,
+    NEW_RETAIL_PRICE: 'newRetailPrice'
+  }
+};
+
 const validParams = {
   topicName: 'sale-prices-connect-jdbc',
   ctpProjectKey: 'key',
@@ -27,18 +42,7 @@ const validParams = {
   ctpApiUrl: 'apiUrl',
   ctpScopes: 'manage_products:harryrosen-dev',
   productTypeId: 'product-type-reference-id',
-  messages: [{
-      topic: 'sale-prices-connect-jdbc',
-      value: {
-        STYLE_ID: 'styleId',
-        PRICE_CHANGE_ID: 'priceChangeId',
-        START_DATE: 1000000000000,
-        END_DATE: 1000000000000,
-        ACTIVITY_TYPE: 'A',
-        PROCESS_DATE_CREATED: 1000000000000,
-        NEW_RETAIL_PRICE: 'newRetailPrice'
-      }
-  }]
+  messages: [validMessage]
 };
 
 const mockProduct = createClient().execute().body;
@@ -49,9 +53,34 @@ describe('consumeSalePriceCT', () => {
     return expect(consumeSalePriceCT({})).rejects.toThrow();
   });
 
-  it('correct params', async () => {
+  it('correct params, valid message', async () => {
     const response = await consumeSalePriceCT(validParams);
-    return expect(response).toBe(undefined);
+    return expect(response).toEqual({
+      successCount: 1,
+      failureIndexes: [],
+      errors: []
+    });
+  });
+
+  it('correct params, invalid message', async () => {
+    const invalidMessage = { id: 'invalid_message', value: 'some-value' }; 
+    const response = await consumeSalePriceCT({
+      ...validParams,
+      messages:[
+        validMessage,
+        invalidMessage
+      ]
+    });
+    console.log(response.errors[0])
+    const error = createError.parsePriceMessage.noStyleId()
+    return expect(response).toEqual({
+      successCount: 1,
+      failureIndexes: [1],
+      errors: [{
+        failureIndex: 1,
+        error
+      }]
+    });
   });
 });
 
