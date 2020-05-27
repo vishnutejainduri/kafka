@@ -22,7 +22,8 @@ const styleAttributeNames = {
   RELATED_PRODUCT_ID: 'relatedProductId',
   PROMOTIONAL_STICKER: 'promotionalSticker',
   COLOUR: 'colour',
-  COLOUR_GROUP: 'colourGroup'
+  COLOUR_GROUP: 'colourGroup',
+  SIZE_CHART: 'sizeChart'
 };
 
 /**
