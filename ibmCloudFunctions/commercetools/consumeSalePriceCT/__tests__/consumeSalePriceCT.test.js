@@ -2,7 +2,7 @@ const { createClient } = require('@commercetools/sdk-client');
 
 const consumeSalePriceCT = require('..');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
-const { updateStyleSalePrice, getAllVariantPrices, getExistingCtOriginalPrice, getActionsForVariantPrice } = require('../utils');
+const { updateStyleSalePrice, getAllVariantPrices, getExistingCtOriginalPrice, getActionsForVariantPrice, getActionsForSalePrice } = require('../utils');
 const {
     filterSalePriceMessages,
     parseSalePriceMessage
@@ -102,7 +102,7 @@ describe('getExistingCtOriginalPrice', () => {
   });
 });
 
-describe('getActionsForVariantPrice', () => {
+describe('action generation', () => {
   const variantPrice = {
     variantId: 'some-variant-id',
     prices: [{
@@ -123,129 +123,143 @@ describe('getActionsForVariantPrice', () => {
     endDate: new Date('2020-02-02'),
     isOriginalPrice: false
   };
-
-  const baseExpectedAction = {
-    price: {
-      value: { currencyCode: 'CAD', centAmount: baseParsedPriceMessage.newRetailPrice * 100 },
-      validFrom: baseParsedPriceMessage.startDate,
-      validUntil: baseParsedPriceMessage.endDate,
-      custom: {
-        type: { key: 'priceCustomFields' },
-        fields: {
-          processDateCreated: baseParsedPriceMessage.processDateCreated,
-          isOriginalPrice: false
+  
+  describe('getActionsForVariantPrice', () => {
+    const baseExpectedAction = {
+      price: {
+        value: { currencyCode: 'CAD', centAmount: baseParsedPriceMessage.newRetailPrice * 100 },
+        validFrom: baseParsedPriceMessage.startDate,
+        validUntil: baseParsedPriceMessage.endDate,
+        custom: {
+          type: { key: 'priceCustomFields' },
+          fields: {
+            processDateCreated: baseParsedPriceMessage.processDateCreated,
+            isOriginalPrice: false
+          }
         }
-      }
-    },
-    staged: isStaged,
-    action: 'addPrice'
-  };
-
-  describe('No update is required i.e. there is an existing data and it is newer than the incoming price message', () => {
-    it('returns no actions', () => {
-      const priceChangeId = 'price-change-id';
-      const variantPrice = {
-        prices: [{
-          custom: {
-            fields: {
-              [priceAttributeNames.PRICE_CHANGE_ID]: priceChangeId,
-              [priceAttributeNames.PROCESS_DATE_CREATED]: '2020-01-02'
+      },
+      staged: isStaged,
+      action: 'addPrice'
+    };
+  
+    describe('No update is required i.e. there is an existing data and it is newer than the incoming price message', () => {
+      it('returns no actions', () => {
+        const priceChangeId = 'price-change-id';
+        const variantPrice = {
+          prices: [{
+            custom: {
+              fields: {
+                [priceAttributeNames.PRICE_CHANGE_ID]: priceChangeId,
+                [priceAttributeNames.PROCESS_DATE_CREATED]: '2020-01-02'
+              }
             }
-          }
-        }]
-      };
-      const parsedPriceMessage = {
-        priceChangeId: priceChangeId,
-        processDateCreated: new Date('2020-01-01')
-      };
-      const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
-      expect(actions).toEqual([])
-    });
-  });
-
-  describe('An update is requird i.e. there is no existing data or it is older than the incoming price message', () => {
-    describe('The activity type is not recognized', () => {
-      it('throws an error', () => {
-        const parsedPriceMessage = {
-          ...baseParsedPriceMessage,
-          activityType: 'DoesNotExist'
-        }
-        expect(() => getActionsForVariantPrice(parsedPriceMessage, variantPrice)).toThrow(new Error (`Activity type ${parsedPriceMessage.activityType} is not recognized!`));
-      })
-    })
-    describe('There is no existing price', () => {
-      it('returns an "add price" action for activity types approve "A" and create "C"', () => {
-        const activityTypes = ['A', 'C'];
-        activityTypes.forEach(activityType => {
-          const parsedPriceMessage = {
-            ...baseParsedPriceMessage,
-            activityType,
-            priceChangeId: 'different-from' + variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
-          }
-          const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
-  
-          baseExpectedAction.price.custom.fields[priceAttributeNames.PRICE_CHANGE_ID] = parsedPriceMessage.priceChangeId
-          const expectedActions = [{
-            ...baseExpectedAction,
-            action: 'addPrice',
-            variantId: variantPrice.variantId
           }]
-          expect(actions).toEqual(expectedActions);
-        });
-      });
-  
-      it('throws an error for activity type delete "D"', () => {
+        };
         const parsedPriceMessage = {
-          ...baseParsedPriceMessage,
-          activityType: 'D',
-          priceChangeId: 'different-from' + variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
-        }
-        expect(() => getActionsForVariantPrice(parsedPriceMessage, variantPrice)).toThrow(new Error ('Price does not exist'));
+          priceChangeId: priceChangeId,
+          processDateCreated: new Date('2020-01-01')
+        };
+        const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
+        expect(actions).toEqual([])
       });
     });
   
-    describe('There is an existing price', () => {
-      describe('and it is outdated i.e. older than the incoming price message', () => {
-        it('returns a "change price" action for activity types approve "A" and create "C"', () => {
+    describe('An update is requird i.e. there is no existing data or it is older than the incoming price message', () => {  
+      describe('There is no existing price', () => {
+        it('returns an "add price" action for activity types approve "A" and create "C"', () => {
           const activityTypes = ['A', 'C'];
           activityTypes.forEach(activityType => {
             const parsedPriceMessage = {
               ...baseParsedPriceMessage,
               activityType,
-              priceChangeId: variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
-            }
+              priceChangeId: 'different-from' + variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
+            };
             const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
     
             baseExpectedAction.price.custom.fields[priceAttributeNames.PRICE_CHANGE_ID] = parsedPriceMessage.priceChangeId
             const expectedActions = [{
               ...baseExpectedAction,
-              action: 'changePrice',
-              priceId: variantPrice.prices[0].id
-            }]
+              action: 'addPrice',
+              variantId: variantPrice.variantId
+            }];
             expect(actions).toEqual(expectedActions);
           });
         });
-  
-        it('returns a "delete" action for activity types delete "D"', () => {
+    
+        it('throws an error for activity type delete "D"', () => {
           const parsedPriceMessage = {
             ...baseParsedPriceMessage,
             activityType: 'D',
-            priceChangeId: variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
+            priceChangeId: 'different-from' + variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
           }
-          const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
-          const expectedActions = [{
-            action: 'removePrice',
-            priceId: variantPrice.prices[0].id
-          }]
-          expect(actions).toEqual(expectedActions);
+          expect(() => getActionsForVariantPrice(parsedPriceMessage, variantPrice)).toThrow(new Error ('Price does not exist'));
+        });
+
+        describe('The activity type is not recognized', () => {
+          it('throws an error', () => {
+            const parsedPriceMessage = {
+              ...baseParsedPriceMessage,
+              activityType: 'DoesNotExist'
+            };
+            expect(() => getActionsForVariantPrice(parsedPriceMessage, variantPrice)).toThrow(new Error (`Activity type ${parsedPriceMessage.activityType} is not recognized!`));
+          });
+        });
+      });
+    
+      describe('There is an existing price', () => {
+        describe('and it is outdated i.e. older than the incoming price message', () => {
+          it('returns a "change price" action for activity types approve "A" and create "C"', () => {
+            const activityTypes = ['A', 'C'];
+            activityTypes.forEach(activityType => {
+              const parsedPriceMessage = {
+                ...baseParsedPriceMessage,
+                activityType,
+                priceChangeId: variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
+              }
+              const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
+      
+              baseExpectedAction.price.custom.fields[priceAttributeNames.PRICE_CHANGE_ID] = parsedPriceMessage.priceChangeId
+              const expectedActions = [{
+                ...baseExpectedAction,
+                action: 'changePrice',
+                priceId: variantPrice.prices[0].id
+              }]
+              expect(actions).toEqual(expectedActions);
+            });
+          });
+    
+          it('returns a "delete" action for activity types delete "D"', () => {
+            const parsedPriceMessage = {
+              ...baseParsedPriceMessage,
+              activityType: 'D',
+              priceChangeId: variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
+            };
+            const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
+            const expectedActions = [{
+              action: 'removePrice',
+              priceId: variantPrice.prices[0].id
+            }];
+            expect(actions).toEqual(expectedActions);
+          });
         });
       });
     });
-  })
+  });
+  
+  describe('getActionsForSalePrice', () => {
+    it('flatmaps the nested arrays of actions into one flat array of actions', () => {
+      const parsedPriceMessage = {
+        ...baseParsedPriceMessage,
+        activityType: 'A',
+        priceChangeId: 'different-from' + variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
+      }; 
+      const allActions = getActionsForSalePrice(parsedPriceMessage,[variantPrice, variantPrice]);
+      expect(allActions.length).toEqual(2);
+    });
+  });
 });
 
 describe('testStubs; documenting test cases', () => {
   it('if can\'t find the style make a dummy style', () => {});
-  it('price changes are applied for all variants for a style', () => {});
   it('if only a number of the messages fail, the whole function succeeds and it returns the failureIndexes', () => {});
 });

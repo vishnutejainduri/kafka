@@ -136,6 +136,7 @@ module.exports = {
   getAllVariantPrices,
   convertToCents,
   getExistingCtOriginalPrice,
-  // exported for tests
-  getActionsForVariantPrice
+  // internal functions exported for tests follows:
+  getActionsForVariantPrice,
+  getActionsForSalePrice
 };
