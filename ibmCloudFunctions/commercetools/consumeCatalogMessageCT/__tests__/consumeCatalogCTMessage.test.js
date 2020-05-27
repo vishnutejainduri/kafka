@@ -57,9 +57,12 @@ const validParams = {
           ADVICE_FR: 'adviceFr',
           COLOUR_DESC_ENG: 'colourDescEng',
           COLOUR_DESC_FR: 'colourDescFr',
-          CATAGORY: 'catagory',
-          CATAGORY_LEVEL_1A: 'catagoryLevel1A',
-          CATAGORY_LEVEL_2A: 'catagoryLevel2A',
+          CATEGORY_EN: 'category_en',
+          CATEGORY_FR: 'category_fr',
+          CATEGORY_LEVEL_1A_EN: 'categoryLevel1A_en',
+          CATEGORY_LEVEL_1A_FR: 'categoryLevel1A_fr',
+          CATEGORY_LEVEL_2A_EN: 'categoryLevel2A_en',
+          CATEGORY_LEVEL_2A_FR: 'categoryLevel2A_fr',
           WEBSTATUS: 'webStatus',
           SEASON_CD: 'seasonCd',
           COLORID: 'colorId',
@@ -355,15 +358,15 @@ describe('updateStyle', () => {
 });
 
 describe('getCategory', () => {
-  it('correct message; return mock data', async () => {
-    const categoryName = validParams.messages[0].value.CATAGORY;
+  it('should return the CT category given a valid message', async () => {
+    const categoryName = validParams.messages[0].value.CATEGORY_EN;
     return expect(await getCategory(categoryName, mockedCtHelpers)).toBeInstanceOf(Object);
   });
 });
 
 describe('getCategories', () => {
   it('correct message; return mock data', async () => {
-     const result =  
+     const result =
         validParams.messages
         .filter(addErrorHandling(filterStyleMessages))
         .map(addErrorHandling(parseStyleMessageCt))
@@ -374,7 +377,7 @@ describe('getCategories', () => {
 
 describe('createCategory', () => {
   it('correct message; return mock data', async () => {
-     const result =  
+     const result =
         validParams.messages
         .filter(addErrorHandling(filterStyleMessages))
         .map(addErrorHandling(parseStyleMessageCt))

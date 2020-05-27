@@ -21,19 +21,12 @@ const testData = {
         "BUYERS_COMMENTS": null,
         "CAREINSTRUCTIONS_EN": null,
         "CAREINSTRUCTIONS_FR": null,
-        "CATAGORY": null,
-        "CATAGORY_LEVEL_1A": "CASUAL WEAR",
-        "CATAGORY_LEVEL_1B": null,
-        "CATAGORY_LEVEL_1C": null,
-        "CATAGORY_LEVEL_2A": "Sweaters & Knits",
-        "CATAGORY_LEVEL_2B": null,
-        "CATAGORY_LEVEL_2C": null,
-        "CATAGORY_LEVEL_3A": null,
-        "CATAGORY_LEVEL_3B": null,
-        "CATAGORY_LEVEL_3C": null,
-        "CATAGORY_LEVEL_4A": null,
-        "CATAGORY_LEVEL_4B": null,
-        "CATAGORY_LEVEL_4C": null,
+        'CATEGORY_EN': 'category_en',
+        'CATEGORY_FR': 'category_fr',
+        'CATEGORY_LEVEL_1A_EN': 'categoryLevel1A_en',
+        'CATEGORY_LEVEL_1A_FR': 'categoryLevel1A_fr',
+        'CATEGORY_LEVEL_2A_EN': 'categoryLevel2A_en',
+        'CATEGORY_LEVEL_2A_FR': 'categoryLevel2A_fr',
         "CAT_SEQUENCE": "AA==",
         "CLASS": "5341",
         "COLORID": null,
@@ -150,6 +143,9 @@ describe('parseStyleMessage', () => {
     it('should transform translatable fields that are populated', () => {
        const actual = parseStyleMessage(testData);
        expect(actual.brandName).toEqual({ en: 'Thom Browne', fr: 'Thom Brownefr' });
+       expect(actual.level1Category).toEqual({ en: 'category_en', fr: 'category_fr' });
+       expect(actual.level2Category).toEqual({ en: 'categoryLevel1A_en', fr: 'categoryLevel1A_fr' });
+       expect(actual.level3Category).toEqual({ en: 'categoryLevel2A_en', fr: 'categoryLevel2A_fr' });
     });
 
     it('should generate `{en: null, fr: null}` for translatable fields that are not populated', () => {
@@ -207,9 +203,12 @@ describe('consumeCatalogMessage', () => {
                     ADVICE_FR: 'adviceFr',
                     COLOUR_DESC_ENG: 'colourDescEng',
                     COLOUR_DESC_FR: 'colourDescFr',
-                    CATAGORY: 'catagory',
-                    CATAGORY_LEVEL_1A: 'catagoryLevel1A',
-                    CATAGORY_LEVEL_2A: 'catagoryLevel2A',
+                    CATEGORY_EN: 'category_en',
+                    CATEGORY_FR: 'category_fr',
+                    CATEGORY_LEVEL_1A_EN: 'categoryLevel1A_en',
+                    CATEGORY_LEVEL_1A_FR: 'categoryLevel1A_fr',
+                    CATEGORY_LEVEL_2A_EN: 'categoryLevel2A_en',
+                    CATEGORY_LEVEL_2A_FR: 'categoryLevel2A_fr',
                     WEBSTATUS: 'webStatus',
                     SEASON_CD: 'seasonCd',
                     COLORID: 'colorId',
