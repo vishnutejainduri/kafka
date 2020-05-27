@@ -71,7 +71,6 @@ describe('consumeSalePriceCT', () => {
         invalidMessage
       ]
     });
-    console.log(response.errors[0])
     const error = createError.parsePriceMessage.noStyleId()
     return expect(response).toEqual({
       successCount: 1,

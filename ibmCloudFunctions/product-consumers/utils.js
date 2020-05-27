@@ -107,6 +107,34 @@ const passDownAnyMessageErrors = messages => {
 
 };
 
+const mapBatchIndexToMessageIndexes = ({ batches, batchIndex, messages }) => {
+    const items = batches[batchIndex];
+    return items.map(item =>
+        messages.findIndex((message => message.value.ID === item.id))
+    )
+};
+
+const passDownBatchedErrorsAndFailureIndexes = (batches, messages) => results => {
+    const errors = results.filter(result => result instanceof Error);
+    if (errors.length === 0) {
+      return {
+        ok: true,
+        successCount: results.length
+      };
+    }
+  
+    const failureIndexes = results.reduce((indexes, result, batchIndex) => {
+      if (!(result instanceof Error)) return indexes;
+      return [...indexes, ...mapBatchIndexToMessageIndexes({ batches, batchIndex, messages })]
+    }, []);
+  
+    return {
+        successCount: results.length - errors.length,
+        failureIndexes,
+        errors: errors.map((error, index) => ({ error, failureIndex: failureIndexes[index]}))
+    };
+  };
+  
 /**
  * Catches the error returned from the main function and returns it as an instance of Error instead of throwing it
  * @param {function} main
@@ -202,6 +230,8 @@ module.exports = {
     validateParams,
     addLoggingToMain,
     passDownAnyMessageErrors,
+    mapBatchIndexToMessageIndexes,
+    passDownBatchedErrorsAndFailureIndexes,
     addRetries,
     truncateErrorsIfNecessary
 }

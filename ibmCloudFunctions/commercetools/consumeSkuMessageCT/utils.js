@@ -183,35 +183,6 @@ const removeDuplicateSkus = skus => {
   }, []);
 };
 
-const mapBatchIndexToMessageIndexes = ({ skuBatches, batchIndex, messages }) => {
-  const skus = skuBatches[batchIndex];
-  return skus.map(sku =>
-      messages.findIndex((message => message.value.ID === sku.id))
-  )
-};
-
-const passDownErrorsAndFailureIndexes = (skuBatches, messages) => results => {
-  const errors = results.filter(result => result instanceof Error);
-  if (errors.length === 0) {
-    return {
-      ok: true,
-      successCount: results.length
-    };
-  }
-
-  const failureIndexes = results.reduce((indexes, result, batchIndex) => {
-    if (!(result instanceof Error)) return indexes;
-    return [...indexes, ...mapBatchIndexToMessageIndexes({ skuBatches, batchIndex, messages })]
-  }, []);
-
-  return {
-      successCount: results.length - errors.length,
-      failureIndexes,
-      errors: errors.map((error, index) => ({ error, failureIndex: failureIndexes[index]}))
-  };
-};
-
-
 module.exports = {
   formatSkuRequestBody,
   getActionsFromSku,
@@ -228,7 +199,5 @@ module.exports = {
   groupByN,
   removeDuplicateSkus,
   createAndPublishStyle,
-  createOrUpdateSkus,
-  passDownErrorsAndFailureIndexes,
-  mapBatchIndexToMessageIndexes
+  createOrUpdateSkus
 };

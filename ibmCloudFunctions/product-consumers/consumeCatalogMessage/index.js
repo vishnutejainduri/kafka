@@ -59,7 +59,9 @@ const main = async function (params) {
                     .catch(originalError => {
                         throw createError.consumeCatalogMessage.failedStyleUpdates(originalError, styleData);
                     })
-            ).then(() => console.log('Updated/inserted document ' + styleData._id))
+            ).then(() => {
+                log('Updated/inserted document ' + styleData._id)
+            })
             .catch((err) => {
                 console.error('Problem with document ' + styleData._id);
                 console.error(err);
