@@ -1,6 +1,7 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
 const { productApiRequest } = require('../../lib/productApi');
+const createError = require('../../lib/createError');
 
 let client = null;
 let index = null;
@@ -18,19 +19,38 @@ const serial = funcs =>
         promise.then(result => func().then(Array.prototype.concat.bind(result))), Promise.resolve([]));
 
 global.main = async function (params) {
+    console.log(JSON.stringify({
+        cfName: 'updateAlgoliaImage',
+        params
+    }));
+
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
         throw new Error('Requires Algolia configuration. See manifest.yml');
     }
 
     if (index === null) {
         client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+        client.setTimeouts({
+            connect: 600000,
+            read: 600000,
+            write: 600000
+        });
         index = client.initIndex(params.algoliaIndexName);
     }
 
-    const algoliaImageProcessingQueue = await getCollection(params);
-    const styles = await getCollection(params, params.stylesCollectionName);
-    const updateAlgoliaImageCount = await getCollection(params, 'updateAlgoliaImageCount');
-    const mediaContainers =  await algoliaImageProcessingQueue.find().limit(40).toArray();
+    let algoliaImageProcessingQueue;
+    let styles;
+    let updateAlgoliaImageCount;
+    let mediaContainers;
+    try {
+        algoliaImageProcessingQueue = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName);
+        updateAlgoliaImageCount = await getCollection(params, 'updateAlgoliaImageCount');
+        mediaContainers =  await algoliaImageProcessingQueue.find().limit(40).toArray();
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
+
     const imagesToBeSynced = [];
     const noImagesAvailable = [];
 
@@ -45,17 +65,24 @@ global.main = async function (params) {
         return productApiRequest(params, `/media/${mediaContainer.code}/main`)
             .then((imageMedia) => {
                 let url = null;
+                let zoomUrl = null;
                 if (imageMedia && imageMedia.data && imageMedia.data.length) {
                     const thumbnail = imageMedia.data[0].images.find((image) => image.qualifier === 'HRSTORE');
+                    const zoom = imageMedia.data[0].images.find((image) => image.qualifier === 'HRZOOM');
                     if (thumbnail) {
                         url = thumbnail.url;
                     }
+                    if (zoom) {
+                        zoomUrl = zoom.url;
+                    }
                 }
 
-                if (url) {
+                if (url || zoomUrl) {
                     imagesToBeSynced.push({
                         mediaContainer,
-                        url
+                        url,
+                        zoomUrl,
+                        hasImage: true
                     });
                 } else {
                     // This mediacontainer has images, but none in our crop OR no URL for some reason
@@ -80,7 +107,9 @@ global.main = async function (params) {
             .map((imageData) => {
                 return {
                     objectID: imageData.mediaContainer.code.match(/\d+/)[0] || imageData.mediaContainer.code,
-                    image: imageData.url
+                    image: imageData.url,
+                    imageZoom: imageData.zoomUrl,
+                    hasImage: imageData.hasImage
                 };
             });
         const mediaContainerIds = imagesToBeSynced.map((imageData) => imageData.mediaContainer._id)
@@ -90,7 +119,7 @@ global.main = async function (params) {
             ? index.partialUpdateObjects(algoliaUpdates, true)
             : Promise.resolve())
             .then(() => algoliaImageProcessingQueue.deleteMany({ _id: { $in: mediaContainerIds } }))
-            .then((result) => updateAlgoliaImageCount.insert({ batchSize: algoliaUpdates.length }))
+            .then(() => updateAlgoliaImageCount.insert({ batchSize: algoliaUpdates.length }))
             .then((result) => console.log('deleted from queue: ' + result.deletedCount))
             .then(() => console.log('Updated images for containers ', mediaContainerIds));
     });

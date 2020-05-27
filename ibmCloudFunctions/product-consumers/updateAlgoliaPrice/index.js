@@ -5,32 +5,18 @@ const algoliasearch = require('algoliasearch');
 const {
     filterPriceMessages,
     parsePriceMessage,
-    IN_STORE_SITE_ID,
-    ONLINE_SITE_ID
+    generateUpdateFromParsedMessage
 } = require('../../lib/parsePriceMessage');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
+const { createLog, addErrorHandling, log } = require('../utils');
 
 let client = null;
 let index = null;
 
-function generateUpdateFromParsedMessage(priceData) {
-    const updateToProcess = {
-        objectID: priceData.styleId
-    };
-    switch (priceData.siteId) {
-        case ONLINE_SITE_ID:
-            updateToProcess.onlineSalePrice = priceData.newRetailPrice;
-            break;
-        case IN_STORE_SITE_ID:
-            updateToProcess.inStoreSalePrice = priceData.newRetailPrice;
-            break;
-        default:
-            break;
-    }
-    return updateToProcess;
-}
-
 global.main = async function (params) {
+    log(createLog.params('updateAlgoliaPrice', params));
+
     if (!params.algoliaIndexName) {
         throw new Error('Requires an Algolia index.');
     }
@@ -48,47 +34,85 @@ global.main = async function (params) {
     }
 
     if (index === null) {
-        client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
-        index = client.initIndex(params.algoliaIndexName);
+        try {
+            client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+            client.setTimeouts({
+                connect: 600000,
+                read: 600000,
+                write: 600000
+            });
+            index = client.initIndex(params.algoliaIndexName);
+        }
+        catch (originalError) {
+            throw createError.failedAlgoliaConnection(originalError);
+        }
     }
 
-    const styles = await getCollection(params);
-    const prices = await getCollection(params, params.pricesCollectionName);
-    const updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount');
-    let updates = params.messages
-        .filter(filterPriceMessages)
-        .map(parsePriceMessage)
-        .map(generateUpdateFromParsedMessage);
-    updates = await Promise.all(updates.map(async (update) => {
-        // Ensure that the price update is for an available style
-        const styleData = await styles.findOne({ _id: update.objectID });
-        const priceData = await prices.findOne({ _id: update.objectID });
-        if (!styleData 
-            || styleData.isOutlet
-            || update.onlineSalePrice === priceData.onlineSalePrice
-            || update.inStoreSalePrice === priceData.inStoreSalePrice) {
-            return null;
-        }
+    let styles;
+    let prices;
+    let updateAlgoliaPriceCount;
+    try {
+        styles = await getCollection(params);
+        prices = await getCollection(params, params.pricesCollectionName);
+        updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount');
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError); 
+    }
 
-        update.currentPrice = update.onlineSalePrice || styleData.originalPrice;
-        const priceString = update.currentPrice ? update.currentPrice.toString() : '';
-        const priceArray = priceString.split('.');
-        update.isSale = priceArray.length > 1 ? priceArray[1] === '99' : false;
-        return update;
-    }));
-    updates = updates.filter((update) => update);
+    let updates = await Promise.all(params.messages
+        .filter(addErrorHandling(filterPriceMessages))
+        .map(addErrorHandling(parsePriceMessage))
+        .map(addErrorHandling(async (update) => {
+            const [styleData, priceData] = await Promise.all([styles.findOne({ _id: update._id }), prices.findOne({ _id: update._id })]);
+            if (!styleData || styleData.isOutlet) {
+                return null;
+            }
+            const algoliaUpdatedPayload = generateUpdateFromParsedMessage (update, priceData, styleData);
+            const priceHasNotChanged = priceData
+                ? (algoliaUpdatedPayload.onlineSalePrice === priceData.onlineSalePrice
+                    && algoliaUpdatedPayload.inStoreSalePrice === priceData.inStoreSalePrice
+                    && algoliaUpdatedPayload.currentPrice === priceData.currentPrice)
+                : (algoliaUpdatedPayload.onlineSalePrice === null
+                    && algoliaUpdatedPayload.inStoreSalePrice === null);
+            if (priceHasNotChanged) {
+                return null;
+            }
+            algoliaUpdatedPayload.objectID = styleData._id;
+
+            return algoliaUpdatedPayload;
+        }))
+    );
+
+    const messageFailures = [];
+    updates = updates.filter((update) => {
+        if (!update) {
+            return false
+        }
+        if ((update instanceof Error)) {
+            messageFailures.push(update);
+            return false;
+        }
+        return true
+    });
 
     if (updates.length > 0) {
-      return index.partialUpdateObjects(updates)
-        .then(() => updateAlgoliaPriceCount.insert({ batchSize: updates.length }))
-        .catch((error) => {
-          console.error('Failed to send prices to Algolia.');
-          console.error(params.messages);
-          throw error;
-      });
-    } else {
-        console.log('No updates to process.');
+        await index.partialUpdateObjects(updates)
+            .then(() => updateAlgoliaPriceCount.insert({ batchSize: updates.length }))
+            .catch((error) => {
+                console.error('Failed to send prices to Algolia.');
+                error.debugInfo = {
+                    messageFailures,
+                    messages: params.messages
+                }
+                return { error };
+        });
     }
+
+    if (messageFailures.length > 0) {
+        throw createError.updateAlgoliaPrice.partialFailure(params.messages, messageFailures);
+    }
+
+    return params;
 };
 
 module.exports = global.main;

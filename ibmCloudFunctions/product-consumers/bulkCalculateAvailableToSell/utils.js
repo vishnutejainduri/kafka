@@ -1,0 +1,83 @@
+const createError = require('../../lib/createError');
+const { addErrorHandling } = require('../utils');
+const { log } = require('../utils');
+
+const calculateSkuAts = async (
+    skuRecord,
+    styleData,
+    stores,
+    inventory
+) => {
+      const skuAts = [];
+      const skuOnlineAts = [];
+
+      const inventoryRecords = await inventory.find({ skuId: skuRecord._id, availableToSell: { $gt: 0 } }).toArray()
+      .catch(originalError => {
+          throw createError.bulkCalculateAvailableToSell.failedGetInventory(originalError, skuRecord);
+      })
+
+      await Promise.all(inventoryRecords.map(addErrorHandling(async (inventoryRecord) => {
+          const storeData = await stores.findOne({ _id: inventoryRecord.storeId.toString().padStart(5, '0') })
+          .catch(originalError => {
+              throw createError.bulkCalculateAvailableToSell.failedGetStore(originalError, inventoryRecord);
+          })
+          if (storeData && inventoryRecord.availableToSell > 0 && storeData.isVisible && !storeData.isOutlet) {
+            skuAts.push({
+              storeId: inventoryRecord.storeId,
+              availableToSell: inventoryRecord.availableToSell
+            })
+            if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27")) {
+              skuOnlineAts.push({
+                storeId: inventoryRecord.storeId,
+                availableToSell: inventoryRecord.availableToSell
+              })
+            }
+          }
+      })));
+
+      return {
+        skuAts,
+        skuOnlineAts
+      };
+}
+
+module.exports = {
+  calculateSkuAts: calculateSkuAts,
+  calculateAts: async (
+    styleToRecalcAts,
+    styles,
+    skus,
+    stores,
+    inventory
+) => {
+          const styleData = await styles.findOne({ _id: styleToRecalcAts._id })
+          .catch(originalError => {
+              throw createError.bulkCalculateAvailableToSell.failedGetStyle(originalError, styleToRecalcAts);
+          })
+          if (!styleData) {
+            log(`Could not find style data for _id: ${styleToRecalcAts._id}`);
+            return [ {} ]; //create an empty operation for the Promise.all, we still want to process the queue even if we run nothing on mongo
+          }
+
+          const skuRecords = await skus.find({ styleId: styleToRecalcAts._id }).toArray()
+          .catch(originalError => {
+              throw createError.bulkCalculateAvailableToSell.failedGetSku(originalError, styleToRecalcAts);
+          })
+          
+          const skuAtsOperations = [];
+          await Promise.all(skuRecords.map(addErrorHandling(async (skuRecord) => {
+              try {
+                const { skuAts, skuOnlineAts } = await calculateSkuAts(skuRecord, styleData, stores, inventory);
+
+                skuAtsOperations.push(skus.updateOne({ _id: skuRecord._id }, { $currentDate: { lastModifiedInternalAts: { $type:"timestamp" } }, $set: { ats: skuAts, onlineAts: skuOnlineAts } }, { upsert: true })
+                .catch(originalError => {
+                    throw createError.bulkCalculateAvailableToSell.failedUpdateSkuAts(originalError, skuRecord);
+                }))
+              } catch(originalError) {
+                  throw createError.bulkCalculateAvailableToSell.failedCalculateSkuAts(originalError, skuRecord);
+              }
+          })))
+
+          return skuAtsOperations;
+  }
+};

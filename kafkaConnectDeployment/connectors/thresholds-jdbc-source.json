@@ -1,0 +1,18 @@
+{
+  "name": "thresholds-jdbc-source",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "schema.pattern": "CUSTOM",
+    "table.poll.interval.ms": 3600000,
+    "mode": "timestamp",
+    "timestamp.column.name": "LAST_MOD_DATE",
+    "query": "SELECT FKSKU AS SKU_ID, CURR_THRESHOLD AS THRESHOLD, LAST_MOD_DATE FROM CUSTOM.THRESHOLDS",
+    "topic.prefix": "thresholds-connect-jdbc",
+    "validate.non.null": "false",
+    "numeric.mapping": "best_fit",
+    "poll.interval.ms": 60000,
+    "offset.flush.timeout.ms": 60000
+  }
+}

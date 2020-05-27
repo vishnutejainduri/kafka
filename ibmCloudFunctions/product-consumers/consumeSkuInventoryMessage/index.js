@@ -1,7 +1,15 @@
 const getCollection = require('../../lib/getCollection');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
+const createError = require('../../lib/createError');
+const { createLog, addErrorHandling, log, addLoggingToMain } = require('../utils');
 
-global.main = async function (params) {
+const main = async function (params) {
+    log(createLog.params('consumeSkuInventoryMessage', params));
+
+    // messages is not used, but paramsExcludingMessages is used
+    // eslint-disable-next-line no-unused-vars
+    const { messages, ...paramsExcludingMessages } = params;
+
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
     }
@@ -10,70 +18,62 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const [inventory, styles, skus] = await Promise.all([
-        getCollection(params),
-        getCollection(params, params.stylesCollectionName),
-        getCollection(params, params.skusCollectionName)
-    ]);
+    let inventory;
+    try {
+        inventory = await getCollection(params);
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
 
     return Promise.all(params.messages
-        .filter(filterSkuInventoryMessage)
-        .map(parseSkuInventoryMessage)
-        .map((inventoryData) => {
-            const updateInventory = inventory.findOne({ _id: inventoryData._id })
-                    .then((existingDocument) => existingDocument
-                        ? inventory.updateOne({ _id: inventoryData._id, lastModifiedDate: { $lt: inventoryData.lastModifiedDate } }, { $set: inventoryData })
-                        : inventory.insertOne(inventoryData)
-                    );
-
-            // sku ids can be null...
-            const skuLookup = inventoryData.skuId
-                ? skus.findOne({ _id: inventoryData.skuId })
-                : null;
-
-            return Promise.all([updateInventory, skuLookup])
-                .then(async ([updateInventoryResult, sku]) => {
-                    // Update style size count if we have a valid SKU
-                    if (sku) {
-                        const styleData = await styles.findOne({_id: sku.styleId})
-
-                        if (styleData) {
-                            const sizes = styleData.sizes || [];
-
-                            const newSizes = inventoryData.quantityOnHandSellable
-                                ? sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`).concat(`${sku.size}-${inventoryData.storeId}`)
-                                : sizes.filter((v) => v !== `${sku.size}` && v !== `${sku.size}-${inventoryData.storeId}`);
-
-                            const updateToProcess = { $set: { sizes: newSizes }, $setOnInsert: { effectiveDate: 0 } };
-
-                            return styles.updateOne({ _id: inventoryData.styleId }, updateToProcess, { upsert: true })
-                                .catch((err) => {
-                                    console.error('Problem with document ' + inventoryData._id);
-                                    console.error(err);
-                                    if (!(err instanceof Error)) {
-                                        const e = new Error();
-                                        e.originalError = err;
-                                        e.attemptedDocument = inventoryData;
-                                        return e;
-                                    }
-
-                                    err.attemptedDocument = inventoryData;
-                                    return err;
-                                });
-                        }
-                    }
-                })
+        .filter(addErrorHandling(filterSkuInventoryMessage))
+        .map(addErrorHandling(parseSkuInventoryMessage))
+        .map(addErrorHandling(async (inventoryData) => {
+            const inventoryLastModifiedDate = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1 } );
+            if (inventoryLastModifiedDate && inventoryData.lastModifiedDate <= inventoryLastModifiedDate.lastModifiedDate) {
+               log("Jesta time: " + inventoryData.lastModifiedDate + "; Mongo time: " + inventoryLastModifiedDate.lastModifiedDate);
+               return null;
             }
+
+            return inventory
+                .updateOne({ _id: inventoryData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: inventoryData }, { upsert: true })
+                .then(() => inventoryData)
+                .catch(originalError => {
+                    throw createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
+                });
+            })
         )
-    ).then((results) => {
-        const errors = results.filter((res) => res instanceof Error);
+    )
+    .then((results) => {
+        const failureIndexes = [];
+        const errors = results.filter((res, index) => {
+            if (res instanceof Error) {
+                failureIndexes.push(index);
+                return true;
+            }
+        });
+        const successes = results.filter((res) => !(res instanceof Error) && res);
+
         if (errors.length > 0) {
-            const e = new Error('Some updates failed. See `results`.');
-            e.results = results;
-            throw e;
+            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
+            e.failedUpdatesErrors = errors;
+            e.successfulUpdatesResults = successes;
+
+            log('Failed to update some inventory records', "ERROR");
+            log(e, "ERROR");
         }
+
+        return {
+            ...paramsExcludingMessages,
+            messages: successes,
+            failureIndexes
+        };
+    })
+    .catch(originalError => {
+        throw createError.consumeInventoryMessage.failed(originalError, params);
     });
-    // TODO error handling - this MUST report errors and which offsets must be retried
 };
+
+global.main = addLoggingToMain(main)
 
 module.exports = global.main;

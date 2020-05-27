@@ -1,7 +1,14 @@
 const { parseMediaMessage } = require('../../lib/parseMediaMessage');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
+const { addLoggingToMain } = require('../utils');
 
-global.main = async function (params) {
+const main = async function (params) {
+    console.log(JSON.stringify({
+        cfName: 'consumeMediasMessage',
+        params
+    }));
+
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
     }
@@ -10,13 +17,19 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const medias = await getCollection(params);
+    let medias;
+    try {
+        medias = await getCollection(params);
+    } catch(originalError) {
+        throw createError.failedDbConnection(originalError);
+    }
+
     return Promise.all(params.messages
         .filter((msg) => msg.topic === params.topicName)
         .map(parseMediaMessage)
         .map(async (mediaData) => {
             await medias.deleteMany({ containerId: mediaData.containerId, qualifier: mediaData.qualifier });
-            return medias.updateOne({ _id: mediaData._id }, { $set: mediaData }, { upsert: true })
+            return medias.updateOne({ _id: mediaData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: mediaData }, { upsert: true })
               .then(() => console.log('Updated/inserted media ' + mediaData._id))
               .catch((err) => {
                   console.error('Problem with media ' + mediaData._id);
@@ -35,11 +48,14 @@ global.main = async function (params) {
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
-            const e = new Error('Some updates failed. See `results`.');
-            e.results = results;
+            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
+            e.failedUpdatesErrors = errors;
+            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
             throw e;
         }
     });
 }
+
+global.main = addLoggingToMain(main);
 
 module.exports = global.main;

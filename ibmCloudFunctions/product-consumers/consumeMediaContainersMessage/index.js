@@ -1,7 +1,14 @@
 const { filterMediaContainerMessage, parseMediaContainerMessage } = require('../../lib/parseMediaContainerMessage');
 const getCollection = require('../../lib/getCollection');
+const createError = require('../../lib/createError');
+const { addLoggingToMain } = require('../utils');
 
-global.main = async function (params) {
+const main = async function (params) {
+    console.log(JSON.stringify({
+        cfName: 'consumeMediaContainersMessage',
+        params
+    }));
+
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
     }
@@ -10,13 +17,19 @@ global.main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    const mediaContainers = await getCollection(params);
+    let mediaContainers;
+    try {
+        mediaContainers = await getCollection(params);
+    } catch (originalError) {
+        throw createError.failedDbConnection(originalError);
+    } 
+
     return Promise.all(params.messages
         .filter(filterMediaContainerMessage)
         .map(parseMediaContainerMessage)
         .map((mediaContainerDatas) => Promise.all(mediaContainerDatas
             // TODO handle updated main image containers by unsetting existing ones
-            .map((mediaContainerData) => mediaContainers.updateOne({ _id: mediaContainerData._id }, { $set: mediaContainerData }, { upsert: true })
+            .map((mediaContainerData) => mediaContainers.updateOne({ _id: mediaContainerData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: mediaContainerData }, { upsert: true })
                 .then(() => console.log('Updated/inserted media container ' + mediaContainerData._id))
                 .catch((err) => {
                     console.error('Problem with media container ' + mediaContainerData._id);
@@ -36,11 +49,14 @@ global.main = async function (params) {
     ).then((results) => {
         const errors = results.filter((res) => res instanceof Error);
         if (errors.length > 0) {
-            const e = new Error('Some updates failed. See `results`.');
-            e.results = results;
+            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
+            e.failedUpdatesErrors = errors;
+            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
             throw e;
         }
     });
 }
+
+global.main = addLoggingToMain(main);
 
 module.exports = global.main;

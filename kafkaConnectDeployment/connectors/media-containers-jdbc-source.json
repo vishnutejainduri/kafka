@@ -12,7 +12,7 @@
     "errors.log.enable": true,
     "numeric.mapping": "best_fit",
     "query": "SELECT p.CODE, p.P_GALLERYIMAGES, CAST(p.P_APPROVALSTATUS AS NUMBER(13)) AS P_APPROVALSTATUS, p.MODIFIEDTS FROM HARP.PRODUCTS p JOIN (SELECT PK, P_VERSION, P_CATALOG FROM HARP.CATALOGVERSIONS) cav ON p.P_CATALOGVERSION = cav.PK AND cav.P_VERSION = 'Online' JOIN (SELECT P_ID, PK FROM HARP.CATALOGS) ca ON cav.P_CATALOG = ca.PK AND ca.P_ID = 'harryrosenProductCatalog'",
-    "poll.interval.ms": 120000,
+    "poll.interval.ms": 86400000,
     "offset.flush.timeout.ms": 120000,
     "request.timeout.ms": 900000,
     "producer.request.timeout.ms": 900000

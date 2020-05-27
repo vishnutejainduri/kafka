@@ -1,0 +1,524 @@
+{
+    "name": "HarryRosenProduct",
+    "description": "Generic product type for all HR products",
+    "classifier": "Complex",
+    "attributes": [
+        {
+            "name": "barcodes",
+            "label": {
+                "en-CA": "Barcodes",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "set",
+                "elementType": {
+                    "name": "reference",
+                    "referenceTypeId": "key-value-document"
+                }
+            },
+            "attributeConstraint": "None",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "season",
+            "label": {
+                "en-CA": "Season",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "text"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "brandName",
+            "label": {
+                "en-CA": "Brand name",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "ltext"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "construction",
+            "label": {
+                "en-CA": "Construction",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "ltext"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "fabricAndMaterials",
+            "label": {
+                "en-CA": "Fabric and materials",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "ltext"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "styleAndMeasurements",
+            "label": {
+                "en-CA": "Style and measurements",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "ltext"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "advice",
+            "label": {
+                "en-CA": "Advice",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "ltext"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "sizeId",
+            "label": {
+                "en-CA": "Size ID",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "text"
+            },
+            "attributeConstraint": "None",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "vsn",
+            "label": {
+                "en-CA": "Vendor stock number (VSN)",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "text"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": true,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "size",
+            "label": {
+                "en-CA": "Size",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "ltext"
+            },
+            "attributeConstraint": "None",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "colorId",
+            "label": {
+                "en-CA": "Color ID",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "text"
+            },
+            "attributeConstraint": "None",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "dimensionId",
+            "label": {
+                "en-CA": "Dimension ID",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "text"
+            },
+            "attributeConstraint": "None",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "careInstructions",
+            "label": {
+                "en-CA": "Care instructions",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "ltext"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "webStatus",
+            "label": {
+                "en-CA": "Web status",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "boolean"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "originalPrice",
+            "label": {
+                "en-CA": "Original Price",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "money"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "onlineSalePrice",
+            "label": {
+                "en-CA": "Online Sale Price",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "money"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "styleLastModifiedInternal",
+            "label": {
+                "en-CA": "Style last modified (internal)",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "Date and time that the style was last modified on JESTA. May differ from when the style was last modified on CT.",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "datetime"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "isOnlineSale",
+            "label": {
+                "en-CA": "Is Online Sale",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "boolean"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "onlineDiscount",
+            "label": {
+                "en-CA": "Online Discount",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "number"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "skuLastModifiedInternal",
+            "label": {
+                "en-CA": "SKU last modified (internal)",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "Date that the SKU was last modified in JESTA. May differ from when it was last modified in CT.",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "datetime"
+            },
+            "attributeConstraint": "None",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "isOutlet",
+            "label": {
+                "en-CA": "Is Outlet",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "boolean"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "styleOutletLastModifiedInternal",
+            "label": {
+                "en-CA": "Style Outlet Status - Last Modified (internal)",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "datetime"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "relatedProductId",
+            "label": {
+                "en-CA": "Related Product ID",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "text"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "promotionalSticker",
+            "label": {
+                "en-CA": "Promotional Sticker",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "ltext"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "colour",
+            "label": {
+                "en-CA": "Colour",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "ltext"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "colourGroup",
+            "label": {
+                "en-CA": "Colour Group",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "ltext"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        },
+        {
+            "name": "sizeChart",
+            "label": {
+                "en-CA": "Size Chart",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "ltext"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
+        }
+    ]
+}

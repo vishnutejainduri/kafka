@@ -4,14 +4,15 @@
     "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": 1,
     "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
-    "schema.pattern": "MERCH",
+    "schema.pattern": "STORELISTING",
+    "timestamp.column.name": "LASTMODIFIEDDATE",
     "table.poll.interval.ms": 3600000,
-    "mode": "bulk",
-    "query": "SELECT BUSINESS_UNIT_ID, SUB_TYPE, SITE_ID, DAYS_OPEN_PER_WEEK, \"NAME\", ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, CITY, STATE_ID, ZIP_CODE, COUNTRY_ID, TELEPHONE, FAX, CAST(LATITUDE AS NUMBER(10,7)) AS LATITUDE, CAST(LONGITUDE AS NUMBER(10,7)) AS LONGITUDE FROM MERCH.SITES",
+    "mode": "timestamp",
+    "query": "SELECT STORE_CD AS SITE_ID, \"NAME\", ADDRESS1, ADDRESS2, CITY, STATE, POSTALZIP, PHONE, CAST(LATITUDE AS NUMBER(10,7)) AS LATITUDE, CAST(LONGITUDE AS NUMBER(10,7)) AS LONGITUDE, FULLFILL AS FULFILL_STATUS, PICKUP AS PICKUP_STATUS, STORELOOKUP AS STORELOOKUP_STATUS, DEPT27FF AS DEP27_FULFILL_STATUS, DAYS_OPEN_PER_WEEK, ZONE_ID, DATE_CLOSED, POS_ENABLED, SUB_TYPE, LASTMODIFIEDDATE FROM ELCAT.STORELISTING",
     "topic.prefix": "stores-connect-jdbc",
     "validate.non.null": "false",
     "numeric.mapping": "best_fit",
-    "poll.interval.ms": 43200000,
+    "poll.interval.ms": 60000, 
     "offset.flush.timeout.ms": 60000
   }
 }

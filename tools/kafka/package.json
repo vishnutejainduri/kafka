@@ -1,0 +1,29 @@
+{
+  "name": "kafka",
+  "version": "1.0.0",
+  "description": "Populate .env with the following variables:",
+  "main": "getConnectors.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "shelljs": "^0.8.3"
+  },
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "eslint": "^6.7.1"
+  },
+  "scripts": {
+    "pretest": "eslint . ",
+    "test": "jest",
+    "connectors:getAll:development": "node debugConnectors getAll development",
+    "connectors:getAll:dev": "node debugConnectors getAll dev",
+    "connectors:deleteAll:development": "node debugConnectors deleteAll development",
+    "connectors:deleteAll:dev": "node debugConnectors deleteAll dev",
+    "connectors:recreateDeleted:development": "node debugConnectors recreateDeleted development",
+    "connectors:recreateDeleted:dev": "node debugConnectors recreateDeleted dev"
+  },
+  "author": "",
+  "license": "ISC"
+}

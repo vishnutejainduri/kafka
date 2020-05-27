@@ -1,8 +1,52 @@
 'use strict';
 
 const MongoClient = require('mongodb').MongoClient;
+const Ajv = require('ajv');
 
-let client = null;
+const createError = require('./createError');
+
+const instances = {
+    DEFAULT: 'DEFAULT',
+    MESSAGES: 'MESSAGES'
+};
+
+const clients = {
+    [instances.DEFAULT]: null,
+    [instances.MESSAGES]: null
+};
+
+const mongoParametersSchema = {
+    "$schema": "http://json-schema.org/draft-07/schema",
+    title: "getcollectionParams",
+    description: "Parameters for obtaining a mongodb connection",
+    type: "object",
+    properties: {
+        mongoUri: {
+            type: "string",
+            minLength: 1
+        },
+        dbName: {
+            type: "string",
+            minLength: 1
+        },
+        collectionName: {
+            type: "string",
+            minLength: 1
+        },
+        mongoCertificateBase64: {
+            type: "string",
+            minLength: 1
+        },
+        instance: {
+            type: "string",
+            enum: ["DEFAULT", "MESSAGES"]
+        }
+    },
+    "required": ["mongoUri", "dbName", "collectionName", "mongoCertificateBase64", "instance"]
+ };
+
+const ajv = new Ajv({ allErrors: true });
+const validateParams = ajv.compile(mongoParametersSchema);
 
 /**
  * Returns a Mongo Collection,
@@ -12,27 +56,43 @@ let client = null;
  * @param {String} params.collectionName Name of the collection to use
  * @returns {MongoCollection}
  */
-async function getCollection(params, collectionName = null) {
-    if (client == null) {
-        if (!params.mongoUri || !params.dbName || !params.collectionName || !params.mongoCertificateBase64) {
-            throw new Error('mongoUri, dbName, and collectionName are required action params. See manifest.yaml.')
+async function getCollection(
+    params,
+    collectionName = null
+) {
+    const instance = params.instance || instances.DEFAULT;
+    // do not use this function in Promise.all: https://stackoverflow.com/q/58919867/12144949
+    if (clients[instance] == null) {
+        validateParams({ ...params, instance })
+        if (validateParams.errors) {
+            throw createError.failedSchemaValidation(
+                validateParams.errors,
+                'getCollection',
+                'MongoUri, mongoCertificateBase64, dbName, and collectionName are required action params. See manifest.yaml.'
+            )
         }
 
         const ca = [Buffer.from(params.mongoCertificateBase64, 'base64')];
+        // timeout settings: https://mongodb.github.io/node-mongodb-native/2.0/reference/faq/
         const options = {
             ssl: true,
             sslValidate: true,
             sslCA: ca,
-            useNewUrlParser: true
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            connectTimeoutMS: 600000,
+            socketTimeoutMS: 600000,
+            serverSelectionTimeoutMS: 600000
         };
 
-        client = await MongoClient.connect(params.mongoUri, options).catch((err) => {
+        clients[instance] = await MongoClient.connect(params.mongoUri, options).catch((err) => {
             throw new Error('Couldn\'t connect to Mongo: ' + err);
         });
     }
 
     const collection = collectionName || params.collectionName;
-    return client.db(params.dbName).collection(collection);
+    return clients[instance].db(params.dbName).collection(collection);
 }
 
+getCollection.instances = instances;
 module.exports = getCollection;

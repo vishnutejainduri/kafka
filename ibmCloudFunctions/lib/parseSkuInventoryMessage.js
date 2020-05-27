@@ -11,6 +11,7 @@ const attributeMap = {
     'QOO': 'quantityOnOrder',
     'QBO': 'quantityBackOrder',
     'QIT': 'quantityInTransit',
+    'QIP': 'quantityInPicking',
     'QOHSELLABLE': 'quantityOnHandSellable',
     'QOHNOTSELLABLE': 'quantityOnHandNotSellable',
     'LASTMODIFIEDDATE': 'lastModifiedDate'
@@ -35,6 +36,10 @@ function parseSkuInventoryMessage(msg) {
     for (let sourceAttributeName in attributeMap) {
         inventoryData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
     }
+
+    inventoryData['availableToSell'] = (inventoryData.quantityOnHandSellable - inventoryData.quantityInPicking) > 0
+      ? (inventoryData.quantityOnHandSellable - inventoryData.quantityInPicking)
+      : 0
 
     // Add _id for mongo
     inventoryData.id = `${inventoryData.styleId}-${inventoryData.skuId}-${inventoryData.storeId}`;

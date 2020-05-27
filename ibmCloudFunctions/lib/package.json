@@ -1,0 +1,23 @@
+{
+    "name": "lib",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "echo \"Error: no build specified\" && exit 1",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@commercetools/api-request-builder": "^5.4.2",
+        "@commercetools/sdk-client": "^2.1.1",
+        "@commercetools/sdk-middleware-auth": "^6.0.5",
+        "@commercetools/sdk-middleware-http": "^6.0.5",
+        "ajv": "^6.10.2",
+        "mongodb": "^3.5.5",
+        "mongodb-client-encryption": "^1.0.0",
+        "node-fetch": "^2.6.0",
+        "saslprep": "^1.0.3"
+    }
+}
