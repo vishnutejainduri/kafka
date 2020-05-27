@@ -161,6 +161,15 @@ describe('getActionsForVariantPrice', () => {
         expect(actions).toEqual(expectedActions);
       });
     });
+
+    it('throws an error for activity type delete "D"', () => {
+      const parsedPriceMessage = {
+        ...baseParsedPriceMessage,
+        activityType: 'D',
+        priceChangeId: 'different-from' + variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
+      }
+      expect(() => getActionsForVariantPrice(parsedPriceMessage, variantPrice)).toThrow(new Error ('Price does not exist'));
+    });
   });
 
   describe('there is an existing price', () => {
@@ -183,6 +192,20 @@ describe('getActionsForVariantPrice', () => {
           }]
           expect(actions).toEqual(expectedActions);
         });
+      });
+
+      it('returns a "delete" action for activity types delete "D"', () => {
+        const parsedPriceMessage = {
+          ...baseParsedPriceMessage,
+          activityType: 'D',
+          priceChangeId: variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
+        }
+        const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
+        const expectedActions = [{
+          action: 'removePrice',
+          priceId: variantPrice.prices[0].id
+        }]
+        expect(actions).toEqual(expectedActions);
       });
     });
 
@@ -212,10 +235,7 @@ describe('getActionsForVariantPrice', () => {
 
 describe('testStubs; documenting test cases', () => {
   it('if can\'t find the style make a dummy style', () => {});
-  it('if processDateCreated is in the future perform a corresponding price update/add/delete in CT', () => {});
   it('if inbound price message has activity type A or C and priceChangeId does not exist, create the price for all variants', () => {});
-  it('if inbound price message has activity type A or C and priceChangeId does exist, update the price with the same priceChangeId for all variants', () => {});
-  it('if inbound price message has activity type D and priceChangeId does exist, delete the price with the same priceChangeId for all variants', () => {});
-  it('if inbound price message has activity type D and priceChangeId does not exist, fail the message to send to retry; means the messages must have come out of order and the next retry should work', () => {});
   it('if inbound price message has activity type of neither A,C, or D then ignore the message as it not valid', () => {});
+  it('if only a number of the messages fail, the whole function succeeds and it returns the failureIndexes', () => {});
 });
