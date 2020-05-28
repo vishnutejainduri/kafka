@@ -21,7 +21,7 @@
           memorySize: 512
           timeout: 600000
         inputs:
-          topicName: prices-connect-jdbc
+          topicName: sale-prices-connect-jdbc
       consume-sale-price-with-retry-ct:
         location: ./commercetools/consumeSalePriceWithRetryCT/dist/bundle.js
         conductor: true
