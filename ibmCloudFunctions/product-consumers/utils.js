@@ -102,7 +102,7 @@ const passDownAnyMessageErrors = messages => {
     return {
         successCount: messages.length - errors.length,
         failureIndexes,
-        errors: errors.map((error, index) => ({ error: error.message, failureIndex: failureIndexes[index]}))
+        errors: errors.map((error, index) => ({ error, failureIndex: failureIndexes[index]}))
     };
 
 };
@@ -130,7 +130,7 @@ const passDownBatchedErrorsAndFailureIndexes = batches => results => {
     return {
         successCount: results.length - errors.length,
         failureIndexes: batchesFailureIndexes.reduce((failureIndexes, batchFailureIndex) => [...batchFailureIndex, ...failureIndexes], []),
-        errors: errors.map((error, index) => ({ error: error.message, failureIndex: batchesFailureIndexes[index]}))
+        errors: errors.map((error, index) => ({ error, failureIndex: batchesFailureIndexes[index]}))
     };
   };
   
