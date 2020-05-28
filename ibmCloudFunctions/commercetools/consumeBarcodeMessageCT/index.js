@@ -62,7 +62,7 @@ const main = params => {
   );
   
   return Promise.all(barcodeBatchPromises)
-    .then(passDownBatchedErrorsAndFailureIndexes(barcodesGroupedByStyleId, params))
+    .then(passDownBatchedErrorsAndFailureIndexes(barcodesGroupedByStyleId))
     .catch(handleErrors);
 };
 

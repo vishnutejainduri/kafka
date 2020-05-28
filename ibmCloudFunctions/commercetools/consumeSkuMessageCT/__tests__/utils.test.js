@@ -244,19 +244,29 @@ describe('groupByStyleId', () => {
 
   it('returns correctly grouped SKUs when some have matching style IDs', () => {
     const skusSomeWithMatchingStyleIds = [sku1, sku2, sku3];
-    const expected = [[sku1, sku2], [sku3]];
+    const groupOne = [sku1, sku2]
+    groupOne.originalIndexes = [0, 1]
+    const groupTwo = [sku3]
+    groupTwo.originalIndexes = [2]
+    const expected = [groupOne, groupTwo];
     expect(groupByStyleId(skusSomeWithMatchingStyleIds)).toEqual(expected);
   });
 
   it('returns correctly grouped SKUs when none have matching style IDs', () => {
     const skusAllWithDifferentStyleIds = [sku1, sku3];
-    const expected = [[sku1], [sku3]];
+    const groupOne = [sku1]
+    groupOne.originalIndexes = [0]
+    const groupTwo = [sku3]
+    groupTwo.originalIndexes = [1]
+    const expected = [groupOne, groupTwo];
     expect(groupByStyleId(skusAllWithDifferentStyleIds)).toEqual(expected);
   });
 
   it('returns correctly grouped SKU when given a single SKU', () => {
     const singleSku = [sku1];
-    const expected = [[sku1]];
+    const groupOne = [sku1]
+    groupOne.originalIndexes = [0]
+    const expected = [groupOne];
     expect(groupByStyleId(singleSku)).toEqual(expected);
   });
 

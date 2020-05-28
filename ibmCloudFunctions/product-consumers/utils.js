@@ -102,23 +102,20 @@ const passDownAnyMessageErrors = messages => {
     return {
         successCount: messages.length - errors.length,
         failureIndexes,
-        errors: errors.map((error, index) => ({ error, failureIndex: failureIndexes[index]}))
+        errors: errors.map((error, index) => ({ error: error.message, failureIndex: failureIndexes[index]}))
     };
 
 };
 
-const mapBatchIndexToMessageIndexes = ({ batches, batchIndex, messages }) => {
-    const items = batches[batchIndex];
-    return items.map(item =>
-        messages.findIndex((message => message.value.ID === item.id))
-    )
-};
 
-const passDownBatchedErrorsAndFailureIndexes = (batches, messages) => results => {
+/**
+ * @param {[][]} batches Each entry in 'batches' is an array of items that has an 'originalIndexes' property. Specifically, each entry will have that property if 'batches' is created by groupByAttribute
+ */
+const passDownBatchedErrorsAndFailureIndexes = batches => results => {
     const batchesFailureIndexes = []
     const errors = results.filter((result,index) => {
         if (result instanceof Error) {
-            batchesFailureIndexes.push(mapBatchIndexToMessageIndexes({ batches, batchIndex: index, messages }))
+            batchesFailureIndexes.push(batches[index].originalIndexes)
             return true
         }
     });
@@ -133,7 +130,7 @@ const passDownBatchedErrorsAndFailureIndexes = (batches, messages) => results =>
     return {
         successCount: results.length - errors.length,
         failureIndexes: batchesFailureIndexes.reduce((failureIndexes, batchFailureIndex) => [...batchFailureIndex, ...failureIndexes], []),
-        errors: errors.map((error, index) => ({ error, failureIndex: batchesFailureIndexes[index]}))
+        errors: errors.map((error, index) => ({ error: error.message, failureIndex: batchesFailureIndexes[index]}))
     };
   };
   
@@ -232,7 +229,6 @@ module.exports = {
     validateParams,
     addLoggingToMain,
     passDownAnyMessageErrors,
-    mapBatchIndexToMessageIndexes,
     passDownBatchedErrorsAndFailureIndexes,
     addRetries,
     truncateErrorsIfNecessary
