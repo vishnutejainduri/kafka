@@ -1,12 +1,8 @@
 'use strict';
 const createError = require('./createError');
+const { priceActivityTypes } = require('../constants');
 
 const TOPIC_NAME = 'sale-prices-connect-jdbc';
-
-// The three accepted activity types from jesta
-// Both A and C are treated as the same, can be either create or update
-// Type D is always a deletion
-const ACTIVITY_TYPES = ['A', 'C', 'D'];
 
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
@@ -23,8 +19,7 @@ function filterSalePriceMessages(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Sale Price update messages');
     }
-
-    return ACTIVITY_TYPES.includes(msg.value.ACTIVITY_TYPE);
+    return Object.values(priceActivityTypes).includes(msg.value.ACTIVITY_TYPE);
 }
 
 // Parse a message from the MERCH.IRO_POS_PRICES table and return a new object with filtered and re-mapped attributes.
@@ -43,6 +38,8 @@ function parseSalePriceMessage(msg) {
       priceData.endDate = new Date('2525-01-01').getTime();
     }
 
+    priceData._id = priceData.styleId + '-' + priceData.priceChangeId;
+    priceData.id = priceData.styleId + '-' + priceData.priceChangeId;
     priceData.endDate += 86400000 + 14400000; //milliseconds in 24hours plus 4 hours to convert to UTC
     priceData.endDate = new Date(priceData.endDate)
     priceData.startDate += 14400000; //milliseconds of 4 hours to convert to UTC

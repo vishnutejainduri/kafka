@@ -1,6 +1,6 @@
 const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
 const { priceAttributeNames, isStaged, currencyCodes, entityStatus } = require('../constantsCt');
-
+const { priceActivityTypes } = require('../../constants');
 const convertToCents = (amount) => Math.round(amount * 100)
 
 const getAllVariantPrices = (existingCtStyle) => {
@@ -64,7 +64,7 @@ const getActionsForVariantPrice = (parsedPriceMessage, variantPrice) => {
   if (existingCtPrice && existingCtPriceIsNewer(existingCtPrice, parsedPriceMessage)) {
     return [];
   }
-  if (parsedPriceMessage.activityType === 'A' || parsedPriceMessage.activityType === 'C') {
+  if (parsedPriceMessage.activityType === priceActivityTypes.APPROVED || parsedPriceMessage.activityType === priceActivityTypes.CREATED) {
     const priceUpdate = {
       price: {
         validFrom: parsedPriceMessage.startDate,
@@ -90,7 +90,7 @@ const getActionsForVariantPrice = (parsedPriceMessage, variantPrice) => {
       priceUpdate.variantId = variantPrice.variantId;
     }
     return [priceUpdate]
-  } else if (parsedPriceMessage.activityType === 'D') {
+  } else if (parsedPriceMessage.activityType === priceActivityTypes.DELETED) {
     if (existingCtPrice) {
       const priceUpdate = {
         action: 'removePrice',
