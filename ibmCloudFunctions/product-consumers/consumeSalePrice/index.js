@@ -50,10 +50,10 @@ const main = async function (params) {
                     return prices
                       .deleteOne({ _id: update._id, processDateCreated: { $lt: update.processDateCreated } })
                       .catch((originalError) => {
-                          throw createError(originalError, update)
+                          throw createError.consumeSalePrice.failedToDelete(originalError, update)
                       });
                   } else {
-                    return null;
+                    throw createError.consumeSalePrice.activityTypeNotRecognized(null, update);
                   }
 
             })
