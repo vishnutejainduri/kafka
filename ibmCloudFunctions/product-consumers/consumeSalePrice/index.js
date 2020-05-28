@@ -8,6 +8,7 @@ const {
 } = require('../../lib/parseSalePriceMessage');
 const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling, addLoggingToMain } = require('../utils');
+const { priceActivityTypes } = require('../../constants');
 
 const main = async function (params) {
     log(createLog.params("consumeSalePrice", params));
@@ -31,7 +32,7 @@ const main = async function (params) {
         .filter(addErrorHandling(filterSalePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage))
         .map(addErrorHandling(async (update) => {
-                  if (update.activityType === 'A' || update.activityType === 'C') {
+                  if (update.activityType === priceActivityTypes.APPROVED || update.activityType === priceActivityTypes.CREATED) {
                     const priceData = await prices.findOne({ _id: update._id }, { processDateCreated: 1 });
 
                     if (priceData && update.processDateCreated.getTime() <= priceData.processDateCreated.getTime()) {
@@ -46,7 +47,7 @@ const main = async function (params) {
                       .catch((originalError) => {
                           throw createError(originalError, update)
                       });
-                  } else if (update.activityType === 'D') {
+                  } else if (update.activityType === priceActivityTypes.DELETED) {
                     return prices
                       .deleteOne({ _id: update._id, processDateCreated: { $lt: update.processDateCreated } })
                       .catch((originalError) => {
