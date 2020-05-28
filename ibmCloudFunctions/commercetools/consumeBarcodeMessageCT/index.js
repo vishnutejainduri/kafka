@@ -15,7 +15,7 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownAnyMessageErrors,
+  passDownBatchedErrorsAndFailureIndexes,
   validateParams
 } = require('../../product-consumers/utils');
 
@@ -62,7 +62,7 @@ const main = params => {
   );
   
   return Promise.all(barcodeBatchPromises)
-    .then(passDownAnyMessageErrors)
+    .then(passDownBatchedErrorsAndFailureIndexes(barcodesGroupedByStyleId))
     .catch(handleErrors);
 };
 

@@ -1,7 +1,26 @@
+const mockPrice = {
+  value: {
+      type: 'centPrecision',
+      currencyCode: 'CAD',
+      centAmount: 20199,
+      fractionDigits: 2
+  },
+  id: '9e194fab-2c79-4bdf-a990-dc344c8c1f63',
+  custom: {
+      type: {
+          typeId: 'type',
+          id: 'af9c14ac-6b56-48d4-b152-2b751d2c9c24'
+      },
+      fields: {
+          isOriginalPrice: true
+      }
+  }
+};
+
 const mockSku = {
   sku: '1',
   attributes: [],
-  prices: []
+  prices: [mockPrice]
 };
 
 const mockOrder = {
@@ -38,14 +57,14 @@ const ctMockResponse = {
       variants: [mockSku],
       masterVariant: {
         attributes: [],
-        prices: []
+        prices: [mockPrice]
       }
     },
     staged: {
       variants: [],
       masterVariant: {
         attributes: [mockSku],
-        prices: []
+        prices: [mockPrice]
       }
     },
     published: true

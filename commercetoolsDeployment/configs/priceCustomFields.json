@@ -1,0 +1,34 @@
+{
+    "key": "priceCustomFields",
+    "name": {
+        "en-CA": "Price Custom Fields",
+        "fr-CA": ""
+    },
+    "resourceTypeIds": [
+        "product-price"
+    ],
+    "fieldDefinitions": [
+        {
+            "type": {
+                "name": "DateTime"
+            },
+            "name": "processDateCreated",
+            "label": {
+                "en-CA": "Process Date Created",
+                "fr-CA": ""
+            },
+            "required": false
+        },
+        {
+            "type": {
+                "name": "String"
+            },
+            "name": "priceChangeId",
+            "label": {
+                "en-CA": "Price Change ID",
+                "fr-CA": ""
+            },
+            "required": false
+        }
+    ]
+}

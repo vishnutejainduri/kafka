@@ -4,8 +4,11 @@ const {
   languageKeys,
   isStaged,
   TAX_CATEGORY,
-  PRODUCT_SHOULD_BE_PUBLISHED
+  PRODUCT_SHOULD_BE_PUBLISHED,
+  entityStatus
 } = require('./constantsCt');
+
+const { getAllVariantPrices, getExistingCtOriginalPrice } = require('./consumeSalePriceCT/utils');
 
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
 const DPM_ROOT_CATEGORY = 'DPM ROOT CATEGORY';
@@ -72,6 +75,23 @@ const getCategories = async (style, ctHelpers) => {
 
   return categories.slice(1, categories.length).filter(Boolean);
 };
+
+function createOriginalPriceUpdate (originalPrice) {
+  return {
+    value: {
+      currencyCode: currencyCodes.CAD,
+      centAmount: originalPrice
+    },
+    custom: {
+      type: {
+        key: 'priceCustomFields'
+      },
+      fields: {
+        isOriginalPrice: true
+      }
+    }
+  }
+}
 
 const getProductType = async (productTypeId, { client, requestBuilder }) => {
   const method = 'GET';
@@ -158,9 +178,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
     : null;
 
   // handle categories
-  const existingCtStyleData = existingCtStyle.masterData && (existingCtStyle.masterData.hasStagedChanges
-    ? existingCtStyle.masterData.staged
-    : existingCtStyle.masterData.current)
+  const existingCtStyleData = existingCtStyle.masterData && (existingCtStyle.masterData[entityStatus])
   const existingCategoryIds = existingCtStyleData && existingCtStyleData.categories
     ? existingCtStyleData.categories.map(category => category.id)
     : null
@@ -178,35 +196,26 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
       .map(categoryId => ({ action: 'addToCategory', category: { id: categoryId, typeId: 'category' }, staged: isStaged }))
     : [];
 
-  const currentPriceActions = style.variantPrices
-      ? style.variantPrices.map((variantPrice) => {
-        const priceUpdate = {
-          price: {
-            value: {
-              currencyCode: currencyCodes.CAD,
-              centAmount: variantPrice.updatedPrice.currentPrice
-            }
-          },
+  const allVariantPrices = getAllVariantPrices(existingCtStyle);
+  let priceUpdateActions = allVariantPrices.map((variantPrice) => {
+    const existingCtOriginalPrice = getExistingCtOriginalPrice(variantPrice);
+    const priceUpdate = existingCtOriginalPrice
+        ? {
+          action: 'changePrice',
+          priceId: existingCtOriginalPrice.id,
+          price: createOriginalPriceUpdate(style.originalPrice),
           staged: isStaged
-        };
-        if (!variantPrice.price && variantPrice.updatedPrice.currentPrice) {
-          priceUpdate.action = 'addPrice';
-          priceUpdate.variantId = variantPrice.variantId;
-        } else if (variantPrice.price && variantPrice.updatedPrice.currentPrice) {
-          priceUpdate.action = 'changePrice';
-          priceUpdate.priceId = variantPrice.price.id;
-        } else if (variantPrice.price && !variantPrice.updatedPrice.currentPrice) {
-          priceUpdate.action = 'removePrice';
-          priceUpdate.priceId = variantPrice.price.id;
-          delete priceUpdate.price;
-        } else {
-          return null;
         }
-        return priceUpdate;
-    }).filter(priceUpdate => priceUpdate)
-      : [];
+        : {
+          action: 'setPrice',
+          price: createOriginalPriceUpdate(style.originalPrice),
+          staged: isStaged
+        }
+      return [priceUpdate];
+  });
+  priceUpdateActions = priceUpdateActions.reduce((finalActions, currentActions) => [...finalActions, ...currentActions], []);
 
-  const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...currentPriceActions, 
+  const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...priceUpdateActions, 
     ...categoriesAddAction, ...categoriesRemoveAction].filter(Boolean);
 
   return allUpdateActions;
@@ -280,12 +289,7 @@ const createStyle = async (style, productType, categories, { client, requestBuil
   };
 
   if (style.originalPrice) {
-    body.masterVariant.prices = [{
-        value: {
-          currencyCode: currencyCodes.CAD,
-          centAmount: style.originalPrice
-        } 
-      }];
+    body.masterVariant.prices = [createOriginalPriceUpdate(style.originalPrice)];
   }
   if (categories) {
     body.categories = categories.map(category => ({
@@ -318,12 +322,11 @@ const createAndPublishStyle = async (styleToCreate, productType, categories, ctH
  * from the master variant. Returns `undefined` if the attribute does not exist.
  * @param {Object} ctStyle The product as stored in CT.
  * @param {String} attributeName Name of the attribute whose value should be returned.
- * @param {Boolean} current Indicates whether to return the value from the current product or the staged product.
  */
-const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
+const getCtStyleAttributeValue = (ctStyle, attributeName) => {
   const foundAttribute =  (
     ctStyle
-    .masterData[current ? 'current' : 'staged']
+    .masterData[entityStatus]
     .masterVariant
     .attributes
     .find(attribute => attribute.name === attributeName)
@@ -334,9 +337,7 @@ const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
 };
 
 const getCtStyleAttribute = (ctStyle, attributeName) => {
-  const stagedAttribute = ctStyle.masterData.staged ? getCtStyleAttributeValue(ctStyle, attributeName, false) : null;
-  const currentAttribute = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, attributeName, true) : null;
-  const attribute = stagedAttribute || currentAttribute;
+  const attribute = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, attributeName) : null;
 
   if (!attribute) return null;
   return attribute;

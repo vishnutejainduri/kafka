@@ -1,9 +1,8 @@
-const { preparePriceUpdate, updateStylePrice } = require('./utils');
+const { updateStyleSalePrice } = require('./utils');
 const {
-    filterPriceMessages,
-    parsePriceMessage,
-    ONLINE_SITE_ID
-} = require('../../lib/parsePriceMessage');
+    filterSalePriceMessages,
+    parseSalePriceMessage
+} = require('../../lib/parseSalePriceMessage');
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
 const getCtHelpers = require('../../lib/commercetoolsSdk');
@@ -32,19 +31,16 @@ const main = async params => {
   
   let pricesToUpdate = (
     await Promise.all(params.messages
-        .filter(addErrorHandling(filterPriceMessages))
-        .map(addErrorHandling(parsePriceMessage))
-        .filter(addErrorHandling(update => update.siteId === ONLINE_SITE_ID))
-        .map(addErrorHandling(async(update) => await preparePriceUpdate(ctHelpers, productTypeId, update)))
+        .filter(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(parseSalePriceMessage))
   ));
-  pricesToUpdate = pricesToUpdate.filter(update => update);
 
-  const updateStylePricesPromises = (
+  const updateStyleSalePricesPromises = (
     pricesToUpdate
-      .map(addErrorHandling(updateStylePrice.bind(null, ctHelpers, productTypeId)))
+      .map(addErrorHandling(updateStyleSalePrice.bind(null, ctHelpers, productTypeId)))
   );
   
-  return Promise.all(updateStylePricesPromises)
+  return Promise.all(updateStyleSalePricesPromises)
     .then(passDownAnyMessageErrors)
     .catch(handleErrors);
 };

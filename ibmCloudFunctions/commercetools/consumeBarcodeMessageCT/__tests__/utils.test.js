@@ -119,11 +119,19 @@ describe('groupBarcodesByStyleId', () => {
   const barcodes = [barcode1, barcode2, barcode3];
 
   it('correctly groups by style ID when given array of barcodes some of which share the same style ID', () => {
-    expect(groupBarcodesByStyleId(barcodes)).toEqual([[barcode1, barcode2], [barcode3]]);
+    const groupOne = [barcode1, barcode2];
+    groupOne.originalIndexes = [0,1]
+    const groupTwo = [barcode3]
+    groupTwo.originalIndexes = [2]
+    expect(groupBarcodesByStyleId(barcodes)).toEqual([groupOne, groupTwo]);
   });
 
   it('correctly groups by style ID when given array of barcodes all of which have different style IDs', () => {
-    expect(groupBarcodesByStyleId([barcode1, barcode3])).toEqual([[barcode1], [barcode3]]);
+    const groupOne = [barcode1];
+    groupOne.originalIndexes = [0]
+    const groupTwo = [barcode3]
+    groupTwo.originalIndexes = [1]
+    expect(groupBarcodesByStyleId([barcode1, barcode3])).toEqual([groupOne, groupTwo]);
   });
 
   it('returns an empty array when given an empty array', () => {

@@ -91,17 +91,49 @@ const validateParams = params => {
 // Based on the error handling code in `/product-consumers/consumeCatalogMessage/index.js`.
 // Example usage is in `/product-consumers/consumeCatalogMessageCT/index.js`.
 const passDownAnyMessageErrors = messages => {
-    const errors = messages.filter(result => result instanceof Error);
-    const successes = messages.filter(result => !(result instanceof Error));
+    let failureIndexes = []
+    const errors = messages.filter((result, index) => {
+        if (result instanceof Error) {
+            failureIndexes.push(index)
+            return true
+        }
+    });
 
-    if (errors.length > 0) {
-        const err = new Error(`${errors.length} of ${errors.length} updates failed. See 'failedUpdatesErrors'.`);
-        err.failedUpdatesErrors = errors;
-        err.successfulUpdatesResults = successes;
-        throw err;
-    }
+    return {
+        successCount: messages.length - errors.length,
+        failureIndexes,
+        errors: errors.map((error, index) => ({ error: error.message, failureIndex: failureIndexes[index]}))
+    };
+
 };
 
+
+/**
+ * @param {[][]} batches Each entry in 'batches' is an array of items that has an 'originalIndexes' property. Specifically, each entry will have that property if 'batches' is created by groupByAttribute
+ */
+const passDownBatchedErrorsAndFailureIndexes = batches => results => {
+    const batchesFailureIndexes = []
+    const errors = results.filter((result,index) => {
+        if (result instanceof Error) {
+            batchesFailureIndexes.push(batches[index].originalIndexes)
+            return true
+        }
+    });
+
+    if (errors.length === 0) {
+      return {
+        ok: true,
+        successCount: results.length
+      };
+    }
+
+    return {
+        successCount: results.length - errors.length,
+        failureIndexes: batchesFailureIndexes.reduce((failureIndexes, batchFailureIndex) => [...batchFailureIndex, ...failureIndexes], []),
+        errors: errors.map((error, index) => ({ error: error.message, failureIndex: batchesFailureIndexes[index]}))
+    };
+  };
+  
 /**
  * Catches the error returned from the main function and returns it as an instance of Error instead of throwing it
  * @param {function} main
@@ -197,6 +229,7 @@ module.exports = {
     validateParams,
     addLoggingToMain,
     passDownAnyMessageErrors,
+    passDownBatchedErrorsAndFailureIndexes,
     addRetries,
     truncateErrorsIfNecessary
 }
