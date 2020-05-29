@@ -5,10 +5,12 @@ const messagesLogs = require('../lib/messagesLogs');
 // and you cannot wrap some methods with addErrorHandling while skipping others,
 // because if one method returns an Error instance, the rest of the methods will simply bypass that Error
 // if wrapped with addErrorHandling, otherwise you might end up with difficult to reason about bugs.
+// Note: if we don't want a message to be processed but it does not warrant an error, we simply can pass null along
 const addErrorHandling = (fn, createError) => {
     if (Promise.resolve(fn) == fn || fn.constructor.name === 'AsyncFunction') {
         return async arg => {
             if (arg instanceof Error) return arg;
+            if (arg === null) return null;
             return fn(arg)
                 .then(response => {
                     if (response && response.error) throw new Error(response.error);
@@ -20,6 +22,7 @@ const addErrorHandling = (fn, createError) => {
 
     return arg => {
         if (arg instanceof Error) return arg;
+        if (arg === null) return null;
         try {
             const result = fn(arg);
             if (result && result.error) throw new Error(result.error);
@@ -98,13 +101,30 @@ const passDownAnyMessageErrors = messages => {
             return true
         }
     });
+    
 
-    return {
-        successCount: messages.length - errors.length,
+    const ignoredIndexes = messages.reduce((ignoredIndexes, result, index) => {
+        if (result === null) {
+            ignoredIndexes.push(index)
+        }
+        return ignoredIndexes
+    }, []);
+    
+    const result = {
+        successCount: messages.length - errors.length - ignoredIndexes.length,
         failureIndexes,
         errors: errors.map((error, index) => ({ error, failureIndex: failureIndexes[index]}))
     };
 
+    if (ignoredIndexes.length) {
+        Object.assign(result, {
+            ignoredIndexes,
+            ignoredCount: ignoredIndexes.length,
+            errorCount: errors.length
+        });
+    }
+
+    return result
 };
 
 

@@ -1,6 +1,6 @@
 'use strict';
 const createError = require('./createError');
-const { priceActivityTypes } = require('../constants');
+const { siteIds } = require('../constants');
 
 const TOPIC_NAME = 'sale-prices-connect-jdbc';
 
@@ -15,11 +15,18 @@ const attributeMap = {
     NEW_RETAIL_PRICE: 'newRetailPrice'
 };
 
-function filterSalePriceMessages(msg) {
+function validateSalePriceMessages(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Sale Price update messages');
     }
-    return Object.values(priceActivityTypes).includes(msg.value.ACTIVITY_TYPE);
+    return msg
+}
+
+function passOnlinePriceMessages(msg) {
+    // we receive messages for multiple side IDs, but only want to process messages for online store i.e. SITE_ID === '00990'
+    return msg.value.SITE_ID !== siteIds.ONLINE
+        ? null
+        : msg
 }
 
 // Parse a message from the MERCH.IRO_POS_PRICES table and return a new object with filtered and re-mapped attributes.
@@ -34,15 +41,17 @@ function parseSalePriceMessage(msg) {
         throw createError.parsePriceMessage.noStyleId()
     }
 
-    if (!priceData.endDate) {
-      priceData.endDate = new Date('2525-01-01').getTime();
-    }
-
     priceData._id = priceData.styleId + '-' + priceData.priceChangeId;
     priceData.id = priceData.styleId + '-' + priceData.priceChangeId;
-    priceData.endDate += 86400000 + 14400000; //milliseconds in 24hours plus 4 hours to convert to UTC
-    priceData.endDate = new Date(priceData.endDate)
-    priceData.startDate += 14400000; //milliseconds of 4 hours to convert to UTC
+
+    if (priceData.endDate) {
+        // Jesta forces a time of 00:00 for all dates
+        // So when HR people set an end date of May 28, Jesta converts it to May 28 at 00:00
+        // Therefore, you loose 24hr for the sale price validity because it's supposed to be May 28 at 23:59 (inclusive range)
+        priceData.endDate += 86400000;
+        priceData.endDate = new Date(priceData.endDate)
+    }
+
     priceData.startDate = new Date(priceData.startDate)
 
     priceData._id = priceData.styleId;
@@ -55,5 +64,6 @@ function parseSalePriceMessage(msg) {
 
 module.exports = {
     parseSalePriceMessage,
-    filterSalePriceMessages
+    validateSalePriceMessages,
+    passOnlinePriceMessages
 };

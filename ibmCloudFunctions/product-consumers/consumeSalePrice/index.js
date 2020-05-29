@@ -3,7 +3,7 @@
  */
 const getCollection = require('../../lib/getCollection');
 const {
-    filterSalePriceMessages,
+    validateSalePriceMessages,
     parseSalePriceMessage,
 } = require('../../lib/parseSalePriceMessage');
 const createError = require('../../lib/createError');
@@ -29,7 +29,7 @@ const main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(validateSalePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage))
         .map(addErrorHandling(async (update) => {
                   if (update.activityType === priceActivityTypes.APPROVED || update.activityType === priceActivityTypes.CREATED) {

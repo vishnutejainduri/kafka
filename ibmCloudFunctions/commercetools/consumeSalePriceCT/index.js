@@ -1,6 +1,7 @@
 const { updateStyleSalePrice } = require('./utils');
 const {
-    filterSalePriceMessages,
+    validateSalePriceMessages,
+    passOnlinePriceMessages,
     parseSalePriceMessage
 } = require('../../lib/parseSalePriceMessage');
 const createError = require('../../lib/createError');
@@ -31,7 +32,8 @@ const main = async params => {
   
   let pricesToUpdate = (
     await Promise.all(params.messages
-        .filter(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(validateSalePriceMessages))
+        .map(addErrorHandling(passOnlinePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage))
   ));
 

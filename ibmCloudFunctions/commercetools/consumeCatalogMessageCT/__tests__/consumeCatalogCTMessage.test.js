@@ -240,6 +240,7 @@ const styleActions = [
     priceId: ctStyleNewer.masterData[entityStatus].masterVariant.prices[0].id,
     staged: false,
     price: {
+      country: 'CA',
       value: {
         centAmount: validParams.messages[0].value.UNIT_PRICE * 100,
         currencyCode: 'CAD'
@@ -515,6 +516,7 @@ describe('getActionsFromStyle', () => {
       {
         action: 'setPrice',
         price: {
+          country: 'CA',
           value: {
             centAmount: validParams.messages[0].value.UNIT_PRICE * 100,
             currencyCode: 'CAD'

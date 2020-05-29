@@ -4,10 +4,10 @@ const consumeSalePriceCT = require('..');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const { updateStyleSalePrice, getAllVariantPrices, getExistingCtOriginalPrice, getActionsForVariantPrice, getActionsForSalePrice } = require('../utils');
 const {
-    filterSalePriceMessages,
+    validateSalePriceMessages,
+    passOnlinePriceMessages,
     parseSalePriceMessage
 } = require('../../../lib/parseSalePriceMessage');
-const createError = require('../../../lib/createError');
 
 const {
   addErrorHandling,
@@ -31,7 +31,8 @@ const validMessage = {
     END_DATE: 1000000000000,
     ACTIVITY_TYPE: priceActivityTypes.APPROVED,
     PROCESS_DATE_CREATED: 1000000000000,
-    NEW_RETAIL_PRICE: 'newRetailPrice'
+    NEW_RETAIL_PRICE: 'newRetailPrice',
+    SITE_ID: '00990'
   }
 };
 
@@ -64,8 +65,32 @@ describe('consumeSalePriceCT', () => {
     });
   });
 
+  it('returns expected ignored result for correct params and a message that should be ignored', async () => {
+    // site ID is not 09900
+    const messageToBeIgnored = {
+      ...validMessage,
+      value: {
+        ...validMessage.value,
+        SITE_ID: '00110'
+      }
+    };
+    const response = await consumeSalePriceCT({
+      ...validParams,
+      messages: [messageToBeIgnored]
+    });
+    return expect(response).toEqual({
+      successCount: 0,
+      errorCount: 0,
+      ignoredCount: 1,
+      ignoredIndexes: [0],
+      failureIndexes: [],
+      errors: []
+    });
+  });
+
   it('returns mixed error/success result for correct params and valid message and an invalid message', async () => {
-    const invalidMessage = { id: 'invalid_message', value: 'some-value' }; 
+    // missing topic
+    const invalidMessage = { id: 'invalid_message' }; 
     const response = await consumeSalePriceCT({
       ...validParams,
       messages:[
@@ -73,7 +98,7 @@ describe('consumeSalePriceCT', () => {
         invalidMessage
       ]
     });
-    const error = createError.parsePriceMessage.noStyleId()
+    const error = new Error('Can only parse Sale Price update messages');
     return expect(response).toEqual({
       successCount: 1,
       failureIndexes: [1],
@@ -89,7 +114,8 @@ describe('updateStyleSalePrice', () => {
   it('runs without throwing an error for approve "A" action', async () => {
      const pricesToUpdate =
         validParams.messages
-        .filter(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(validateSalePriceMessages))
+        .map(addErrorHandling(passOnlinePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage))
 
     await updateStyleSalePrice(mockedCtHelpers, validParams.productTypeId, pricesToUpdate[0]);
@@ -98,7 +124,8 @@ describe('updateStyleSalePrice', () => {
      validParams.messages[0].value.ACTIVITY_TYPE = priceActivityTypes.CREATED;
      const result =  
         validParams.messages
-        .filter(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(validateSalePriceMessages))
+        .map(addErrorHandling(passOnlinePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage))
 
     await updateStyleSalePrice(mockedCtHelpers, validParams.productTypeId, result[0]);
@@ -107,7 +134,8 @@ describe('updateStyleSalePrice', () => {
      validParams.messages[0].value.ACTIVITY_TYPE = priceActivityTypes.DELETED;
      const result =  
         validParams.messages
-        .filter(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(validateSalePriceMessages))
+        .map(addErrorHandling(passOnlinePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage))
 
     return expect(updateStyleSalePrice(mockedCtHelpers, validParams.productTypeId, result[0])).rejects.toThrow('Price does not exist');
@@ -117,7 +145,49 @@ describe('updateStyleSalePrice', () => {
 describe('getAllVariantPrices', () => {
   it('just gets all variant prices from mock', async () => {
     const response = await getAllVariantPrices(mockProduct);
-    const expectedResponse = [{"prices": [{"custom": {"fields": {"isOriginalPrice": true}, "type": {"id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24", "typeId": "type"}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}}], "variantId": undefined}, {"prices": [{"custom": {"fields": {"isOriginalPrice": true}, "type": {"id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24", "typeId": "type"}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}}], "variantId": undefined}];
+    const expectedResponse = [{
+      "prices": [{
+        "country": "CA",
+        "custom": {
+          "fields": {
+            "isOriginalPrice": true
+          },
+          "type": {
+            "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
+            "typeId": "type"
+          }
+        },
+        "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+        "value": {
+          "centAmount": 20199,
+          "currencyCode": "CAD",
+          "fractionDigits": 2,
+          "type": "centPrecision"
+        }
+      }],
+      "variantId": undefined
+    }, {
+      "prices": [{
+        "country": "CA",
+        "custom": {
+          "fields": {
+            "isOriginalPrice": true
+          },
+          "type": {
+            "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
+            "typeId": "type"
+          }
+        },
+        "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+        "value": {
+          "centAmount": 20199,
+          "currencyCode": "CAD",
+          "fractionDigits": 2,
+          "type": "centPrecision"
+        }
+      }],
+      "variantId": undefined
+    }];
 
     expect(response).toStrictEqual(expectedResponse);
   });
@@ -126,7 +196,25 @@ describe('getAllVariantPrices', () => {
 describe('getExistingCtOriginalPrice', () => {
   it('gets existing ct price with isOriginalPrice flag as true', async () => {
     const response = await getExistingCtOriginalPrice(mockProduct.masterData.current.masterVariant);
-    const expectedResponse = {"custom": {"fields": {"isOriginalPrice": true}, "type": {"id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24", "typeId": "type"}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}};
+    const expectedResponse = {
+      "country": "CA",
+      "custom": {
+        "fields": {
+          "isOriginalPrice": true
+        },
+        "type": {
+          "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
+          "typeId": "type"
+        }
+      },
+      "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+      "value": {
+        "centAmount": 20199,
+        "currencyCode": "CAD",
+        "fractionDigits": 2,
+        "type": "centPrecision"
+      }
+    };
 
     expect(response).toStrictEqual(expectedResponse);
   });
@@ -157,6 +245,7 @@ describe('action generation', () => {
   describe('getActionsForVariantPrice', () => {
     const baseExpectedAction = {
       price: {
+        country: 'CA',
         value: { currencyCode: 'CAD', centAmount: baseParsedPriceMessage.newRetailPrice * 100 },
         validFrom: baseParsedPriceMessage.startDate,
         validUntil: baseParsedPriceMessage.endDate,
@@ -267,7 +356,8 @@ describe('action generation', () => {
             const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
             const expectedActions = [{
               action: 'removePrice',
-              priceId: variantPrice.prices[0].id
+              priceId: variantPrice.prices[0].id,
+              staged: isStaged
             }];
             expect(actions).toEqual(expectedActions);
           });

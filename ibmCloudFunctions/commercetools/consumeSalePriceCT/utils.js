@@ -67,6 +67,7 @@ const getActionsForVariantPrice = (parsedPriceMessage, variantPrice) => {
   if (parsedPriceMessage.activityType === priceActivityTypes.APPROVED || parsedPriceMessage.activityType === priceActivityTypes.CREATED) {
     const priceUpdate = {
       price: {
+        country: 'CA',
         validFrom: parsedPriceMessage.startDate,
         validUntil: parsedPriceMessage.endDate,
         value: {
@@ -94,7 +95,8 @@ const getActionsForVariantPrice = (parsedPriceMessage, variantPrice) => {
     if (existingCtPrice) {
       const priceUpdate = {
         action: 'removePrice',
-        priceId: existingCtPrice.id
+        priceId: existingCtPrice.id,
+        staged: isStaged
       }
       return [priceUpdate]
     } else {

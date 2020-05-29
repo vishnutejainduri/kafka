@@ -78,6 +78,7 @@ const getCategories = async (style, ctHelpers) => {
 
 function createOriginalPriceUpdate (originalPrice) {
   return {
+    country: 'CA',
     value: {
       currencyCode: currencyCodes.CAD,
       centAmount: originalPrice
