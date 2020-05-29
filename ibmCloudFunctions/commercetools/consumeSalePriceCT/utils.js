@@ -94,7 +94,8 @@ const getActionsForVariantPrice = (parsedPriceMessage, variantPrice) => {
     if (existingCtPrice) {
       const priceUpdate = {
         action: 'removePrice',
-        priceId: existingCtPrice.id
+        priceId: existingCtPrice.id,
+        staged: isStaged
       }
       return [priceUpdate]
     } else {

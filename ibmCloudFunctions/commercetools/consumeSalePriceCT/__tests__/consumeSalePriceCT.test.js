@@ -295,7 +295,8 @@ describe('action generation', () => {
             const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
             const expectedActions = [{
               action: 'removePrice',
-              priceId: variantPrice.prices[0].id
+              priceId: variantPrice.prices[0].id,
+              staged: isStaged
             }];
             expect(actions).toEqual(expectedActions);
           });
