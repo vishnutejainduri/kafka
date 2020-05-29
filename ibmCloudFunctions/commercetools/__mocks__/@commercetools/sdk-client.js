@@ -1,4 +1,5 @@
 const mockPrice = {
+  country: 'CA',
   value: {
       type: 'centPrecision',
       currencyCode: 'CAD',

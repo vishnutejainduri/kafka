@@ -145,7 +145,49 @@ describe('updateStyleSalePrice', () => {
 describe('getAllVariantPrices', () => {
   it('just gets all variant prices from mock', async () => {
     const response = await getAllVariantPrices(mockProduct);
-    const expectedResponse = [{"prices": [{"custom": {"fields": {"isOriginalPrice": true}, "type": {"id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24", "typeId": "type"}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}}], "variantId": undefined}, {"prices": [{"custom": {"fields": {"isOriginalPrice": true}, "type": {"id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24", "typeId": "type"}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}}], "variantId": undefined}];
+    const expectedResponse = [{
+      "prices": [{
+        "country": "CA",
+        "custom": {
+          "fields": {
+            "isOriginalPrice": true
+          },
+          "type": {
+            "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
+            "typeId": "type"
+          }
+        },
+        "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+        "value": {
+          "centAmount": 20199,
+          "currencyCode": "CAD",
+          "fractionDigits": 2,
+          "type": "centPrecision"
+        }
+      }],
+      "variantId": undefined
+    }, {
+      "prices": [{
+        "country": "CA",
+        "custom": {
+          "fields": {
+            "isOriginalPrice": true
+          },
+          "type": {
+            "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
+            "typeId": "type"
+          }
+        },
+        "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+        "value": {
+          "centAmount": 20199,
+          "currencyCode": "CAD",
+          "fractionDigits": 2,
+          "type": "centPrecision"
+        }
+      }],
+      "variantId": undefined
+    }];
 
     expect(response).toStrictEqual(expectedResponse);
   });
@@ -154,7 +196,25 @@ describe('getAllVariantPrices', () => {
 describe('getExistingCtOriginalPrice', () => {
   it('gets existing ct price with isOriginalPrice flag as true', async () => {
     const response = await getExistingCtOriginalPrice(mockProduct.masterData.current.masterVariant);
-    const expectedResponse = {"custom": {"fields": {"isOriginalPrice": true}, "type": {"id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24", "typeId": "type"}}, "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63", "value": {"centAmount": 20199, "currencyCode": "CAD", "fractionDigits": 2, "type": "centPrecision"}};
+    const expectedResponse = {
+      "country": "CA",
+      "custom": {
+        "fields": {
+          "isOriginalPrice": true
+        },
+        "type": {
+          "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
+          "typeId": "type"
+        }
+      },
+      "id": "9e194fab-2c79-4bdf-a990-dc344c8c1f63",
+      "value": {
+        "centAmount": 20199,
+        "currencyCode": "CAD",
+        "fractionDigits": 2,
+        "type": "centPrecision"
+      }
+    };
 
     expect(response).toStrictEqual(expectedResponse);
   });
@@ -185,6 +245,7 @@ describe('action generation', () => {
   describe('getActionsForVariantPrice', () => {
     const baseExpectedAction = {
       price: {
+        country: 'CA',
         value: { currencyCode: 'CAD', centAmount: baseParsedPriceMessage.newRetailPrice * 100 },
         validFrom: baseParsedPriceMessage.startDate,
         validUntil: baseParsedPriceMessage.endDate,

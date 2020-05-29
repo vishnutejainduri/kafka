@@ -67,6 +67,7 @@ const getActionsForVariantPrice = (parsedPriceMessage, variantPrice) => {
   if (parsedPriceMessage.activityType === priceActivityTypes.APPROVED || parsedPriceMessage.activityType === priceActivityTypes.CREATED) {
     const priceUpdate = {
       price: {
+        country: 'CA',
         validFrom: parsedPriceMessage.startDate,
         validUntil: parsedPriceMessage.endDate,
         value: {
