@@ -41,14 +41,14 @@ function parseSalePriceMessage(msg) {
         throw createError.parsePriceMessage.noStyleId()
     }
 
-    if (!priceData.endDate) {
-      priceData.endDate = new Date('2525-01-01').getTime();
-    }
-
     priceData._id = priceData.styleId + '-' + priceData.priceChangeId;
     priceData.id = priceData.styleId + '-' + priceData.priceChangeId;
-    priceData.endDate += 86400000 + 14400000; //milliseconds in 24hours plus 4 hours to convert to UTC
-    priceData.endDate = new Date(priceData.endDate)
+
+    if (priceData.endDate) {
+        priceData.endDate += 86400000 + 14400000; //milliseconds in 24hours plus 4 hours to convert to UTC
+        priceData.endDate = new Date(priceData.endDate)
+    }
+
     priceData.startDate += 14400000; //milliseconds of 4 hours to convert to UTC
     priceData.startDate = new Date(priceData.startDate)
 
