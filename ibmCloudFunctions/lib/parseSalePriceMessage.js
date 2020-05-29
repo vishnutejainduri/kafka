@@ -45,7 +45,10 @@ function parseSalePriceMessage(msg) {
     priceData.id = priceData.styleId + '-' + priceData.priceChangeId;
 
     if (priceData.endDate) {
-        priceData.endDate += 86400000; //milliseconds in 24hours to convert to UTC
+        // Jesta forces a time of 00:00 for all dates
+        // So when HR people set an end date of May 28, Jesta converts it to May 28 at 00:00
+        // Therefore, you loose 24hr for the sale price validity because it's supposed to be May 28 at 23:59 (inclusive range)
+        priceData.endDate += 86400000;
         priceData.endDate = new Date(priceData.endDate)
     }
 
