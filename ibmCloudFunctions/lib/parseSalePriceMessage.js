@@ -45,11 +45,10 @@ function parseSalePriceMessage(msg) {
     priceData.id = priceData.styleId + '-' + priceData.priceChangeId;
 
     if (priceData.endDate) {
-        priceData.endDate += 86400000 + 14400000; //milliseconds in 24hours plus 4 hours to convert to UTC
+        priceData.endDate += 86400000; //milliseconds in 24hours to convert to UTC
         priceData.endDate = new Date(priceData.endDate)
     }
 
-    priceData.startDate += 14400000; //milliseconds of 4 hours to convert to UTC
     priceData.startDate = new Date(priceData.startDate)
 
     priceData._id = priceData.styleId;
