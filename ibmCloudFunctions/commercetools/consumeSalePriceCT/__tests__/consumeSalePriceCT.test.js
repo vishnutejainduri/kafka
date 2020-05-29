@@ -4,8 +4,8 @@ const consumeSalePriceCT = require('..');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const { updateStyleSalePrice, getAllVariantPrices, getExistingCtOriginalPrice, getActionsForVariantPrice, getActionsForSalePrice } = require('../utils');
 const {
-    filterSalePriceMessages,
-    filterOnlinePrices,
+    validateSalePriceMessages,
+    passOnlinePriceMessages,
     parseSalePriceMessage
 } = require('../../../lib/parseSalePriceMessage');
 
@@ -114,8 +114,8 @@ describe('updateStyleSalePrice', () => {
   it('runs without throwing an error for approve "A" action', async () => {
      const pricesToUpdate =
         validParams.messages
-        .map(addErrorHandling(filterSalePriceMessages))
-        .map(addErrorHandling(filterOnlinePrices))
+        .map(addErrorHandling(validateSalePriceMessages))
+        .map(addErrorHandling(passOnlinePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage))
 
     await updateStyleSalePrice(mockedCtHelpers, validParams.productTypeId, pricesToUpdate[0]);
@@ -124,8 +124,8 @@ describe('updateStyleSalePrice', () => {
      validParams.messages[0].value.ACTIVITY_TYPE = priceActivityTypes.CREATED;
      const result =  
         validParams.messages
-        .map(addErrorHandling(filterSalePriceMessages))
-        .map(addErrorHandling(filterOnlinePrices))
+        .map(addErrorHandling(validateSalePriceMessages))
+        .map(addErrorHandling(passOnlinePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage))
 
     await updateStyleSalePrice(mockedCtHelpers, validParams.productTypeId, result[0]);
@@ -134,8 +134,8 @@ describe('updateStyleSalePrice', () => {
      validParams.messages[0].value.ACTIVITY_TYPE = priceActivityTypes.DELETED;
      const result =  
         validParams.messages
-        .map(addErrorHandling(filterSalePriceMessages))
-        .map(addErrorHandling(filterOnlinePrices))
+        .map(addErrorHandling(validateSalePriceMessages))
+        .map(addErrorHandling(passOnlinePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage))
 
     return expect(updateStyleSalePrice(mockedCtHelpers, validParams.productTypeId, result[0])).rejects.toThrow('Price does not exist');

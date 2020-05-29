@@ -15,14 +15,14 @@ const attributeMap = {
     NEW_RETAIL_PRICE: 'newRetailPrice'
 };
 
-function filterSalePriceMessages(msg) {
+function validateSalePriceMessages(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Sale Price update messages');
     }
     return msg
 }
 
-function filterOnlinePrices(msg) {
+function passOnlinePriceMessages(msg) {
     // we receive messages for multiple side IDs, but only want to process messages for online store i.e. SITE_ID === '00990'
     return msg.value.SITE_ID !== siteIds.ONLINE
         ? null
@@ -62,6 +62,6 @@ function parseSalePriceMessage(msg) {
 
 module.exports = {
     parseSalePriceMessage,
-    filterSalePriceMessages,
-    filterOnlinePrices
+    validateSalePriceMessages,
+    passOnlinePriceMessages
 };
