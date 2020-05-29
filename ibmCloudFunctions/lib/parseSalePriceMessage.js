@@ -1,6 +1,6 @@
 'use strict';
 const createError = require('./createError');
-const { priceActivityTypes } = require('../constants');
+const { siteIds } = require('../constants');
 
 const TOPIC_NAME = 'sale-prices-connect-jdbc';
 
@@ -19,7 +19,14 @@ function filterSalePriceMessages(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Sale Price update messages');
     }
-    return Object.values(priceActivityTypes).includes(msg.value.ACTIVITY_TYPE);
+    return msg
+}
+
+function filterOnlinePrices(msg) {
+    // we receive messages for multiple side IDs, but only want to process messages for online store i.e. SITE_ID === '00990'
+    return msg.value.SITE_ID !== siteIds.ONLINE
+        ? null
+        : msg
 }
 
 // Parse a message from the MERCH.IRO_POS_PRICES table and return a new object with filtered and re-mapped attributes.
@@ -55,5 +62,6 @@ function parseSalePriceMessage(msg) {
 
 module.exports = {
     parseSalePriceMessage,
-    filterSalePriceMessages
+    filterSalePriceMessages,
+    filterOnlinePrices
 };

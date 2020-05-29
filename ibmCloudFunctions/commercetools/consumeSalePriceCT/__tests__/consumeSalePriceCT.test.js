@@ -5,9 +5,9 @@ const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const { updateStyleSalePrice, getAllVariantPrices, getExistingCtOriginalPrice, getActionsForVariantPrice, getActionsForSalePrice } = require('../utils');
 const {
     filterSalePriceMessages,
+    filterOnlinePrices,
     parseSalePriceMessage
 } = require('../../../lib/parseSalePriceMessage');
-const createError = require('../../../lib/createError');
 
 const {
   addErrorHandling,
@@ -31,7 +31,8 @@ const validMessage = {
     END_DATE: 1000000000000,
     ACTIVITY_TYPE: priceActivityTypes.APPROVED,
     PROCESS_DATE_CREATED: 1000000000000,
-    NEW_RETAIL_PRICE: 'newRetailPrice'
+    NEW_RETAIL_PRICE: 'newRetailPrice',
+    SITE_ID: '00990'
   }
 };
 
@@ -64,8 +65,32 @@ describe('consumeSalePriceCT', () => {
     });
   });
 
+  it('returns expected ignored result for correct params and a message that should be ignored', async () => {
+    // site ID is not 09900
+    const messageToBeIgnored = {
+      ...validMessage,
+      value: {
+        ...validMessage.value,
+        SITE_ID: '00110'
+      }
+    };
+    const response = await consumeSalePriceCT({
+      ...validParams,
+      messages: [messageToBeIgnored]
+    });
+    return expect(response).toEqual({
+      successCount: 0,
+      errorCount: 0,
+      ignoredCount: 1,
+      ignoredIndexes: [0],
+      failureIndexes: [],
+      errors: []
+    });
+  });
+
   it('returns mixed error/success result for correct params and valid message and an invalid message', async () => {
-    const invalidMessage = { id: 'invalid_message', value: 'some-value' }; 
+    // missing topic
+    const invalidMessage = { id: 'invalid_message' }; 
     const response = await consumeSalePriceCT({
       ...validParams,
       messages:[
@@ -73,7 +98,7 @@ describe('consumeSalePriceCT', () => {
         invalidMessage
       ]
     });
-    const error = createError.parsePriceMessage.noStyleId()
+    const error = new Error('Can only parse Sale Price update messages');
     return expect(response).toEqual({
       successCount: 1,
       failureIndexes: [1],
@@ -89,7 +114,8 @@ describe('updateStyleSalePrice', () => {
   it('runs without throwing an error for approve "A" action', async () => {
      const pricesToUpdate =
         validParams.messages
-        .filter(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(filterOnlinePrices))
         .map(addErrorHandling(parseSalePriceMessage))
 
     await updateStyleSalePrice(mockedCtHelpers, validParams.productTypeId, pricesToUpdate[0]);
@@ -98,7 +124,8 @@ describe('updateStyleSalePrice', () => {
      validParams.messages[0].value.ACTIVITY_TYPE = priceActivityTypes.CREATED;
      const result =  
         validParams.messages
-        .filter(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(filterOnlinePrices))
         .map(addErrorHandling(parseSalePriceMessage))
 
     await updateStyleSalePrice(mockedCtHelpers, validParams.productTypeId, result[0]);
@@ -107,7 +134,8 @@ describe('updateStyleSalePrice', () => {
      validParams.messages[0].value.ACTIVITY_TYPE = priceActivityTypes.DELETED;
      const result =  
         validParams.messages
-        .filter(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(filterOnlinePrices))
         .map(addErrorHandling(parseSalePriceMessage))
 
     return expect(updateStyleSalePrice(mockedCtHelpers, validParams.productTypeId, result[0])).rejects.toThrow('Price does not exist');

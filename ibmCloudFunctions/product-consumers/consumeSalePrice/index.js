@@ -29,7 +29,7 @@ const main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter(addErrorHandling(filterSalePriceMessages))
+        .map(addErrorHandling(filterSalePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage))
         .map(addErrorHandling(async (update) => {
                   if (update.activityType === priceActivityTypes.APPROVED || update.activityType === priceActivityTypes.CREATED) {
