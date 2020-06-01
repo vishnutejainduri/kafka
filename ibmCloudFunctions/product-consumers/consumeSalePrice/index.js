@@ -7,8 +7,7 @@ const {
     parseSalePriceMessage,
 } = require('../../lib/parseSalePriceMessage');
 const createError = require('../../lib/createError');
-const { log, createLog, addErrorHandling, addLoggingToMain } = require('../utils');
-const { priceActivityTypes } = require('../../constants');
+const { log, createLog, addErrorHandling, addLoggingToMain, passDownAnyMessageErrors } = require('../utils');
 
 const main = async function (params) {
     log(createLog.params("consumeSalePrice", params));
@@ -32,44 +31,26 @@ const main = async function (params) {
         .map(addErrorHandling(validateSalePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage))
         .map(addErrorHandling(async (update) => {
-                  if (update.activityType === priceActivityTypes.APPROVED || update.activityType === priceActivityTypes.CREATED) {
-                    const priceData = await prices.findOne({ _id: update._id }, { processDateCreated: 1 });
-
-                    if (priceData && update.processDateCreated.getTime() <= priceData.processDateCreated.getTime()) {
-                       return null;
-                    }
-                    return prices
-                      .updateOne(
-                          { _id: update._id },
-                          { $currentDate: { lastModifiedInternalSalePrice: { $type:"timestamp" } }, $set: update },
-                          { upsert: true }
-                      )
-                      .catch((originalError) => {
-                          throw createError(originalError, update)
-                      });
-                  } else if (update.activityType === priceActivityTypes.DELETED) {
-                    return prices
-                      .deleteOne({ _id: update._id, processDateCreated: { $lt: update.processDateCreated } })
-                      .catch((originalError) => {
-                          throw createError.consumeSalePrice.failedToDelete(originalError, update)
-                      });
-                  } else {
-                    throw createError.consumeSalePrice.activityTypeNotRecognized(null, update);
-                  }
-
-            })
-    )).then((results) => {
-        const errors = results.filter((res) => res instanceof Error);
-        if (errors.length > 0) {
-            const error = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
-            error.failedUpdatesErrors = errors;
-            error.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            throw error;
-        }
-    })
-    .catch(error => ({
-        error
-    }));
+            // Specifying the exact fields here instead of the whole message,
+            // because in the future parsed message might have a new field that doesn't exist in the previously stored data
+            const priceIdentifier = {
+                priceChangeId: update.priceChangeId,
+                siteId: update.siteId,
+                activityType: update.activityType,
+                processDateCreated: update.processDateCreated,
+                startDate: update.startDate,
+                endDate: update.endDate,
+                newRetailPrice: update.newRetailPrice
+            }
+            // The same price change entry might exist if the same messages is requeued for whatever reason e.g. a resync to add a new field to price data,
+            // in that case we first delete the currently existing entry; will be no op if it doesn't exist
+            await prices.updateOne({ styleId: update.styleId }, { $pull: { priceChanges: priceIdentifier } });
+            await prices.updateOne({ styleId: update.styleId }, { $push: { priceChanges: update } }, { upsert: true });
+        })))
+        .then(passDownAnyMessageErrors)
+        .catch(error => ({
+            error
+        }));
 };
 
 global.main = addLoggingToMain(main);
