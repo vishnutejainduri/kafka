@@ -20,9 +20,9 @@ const main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    let prices;
+    let pricesCollection;
     try {
-        prices = await getCollection(params);
+        pricesCollection = await getCollection(params);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
@@ -31,21 +31,17 @@ const main = async function (params) {
         .map(addErrorHandling(validateSalePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage))
         .map(addErrorHandling(async (update) => {
-            // Specifying the exact fields here instead of the whole message,
-            // because in the future parsed message might have a new field that doesn't exist in the previously stored data
-            const priceIdentifier = {
-                priceChangeId: update.priceChangeId,
-                siteId: update.siteId,
-                activityType: update.activityType,
-                processDateCreated: update.processDateCreated,
-                startDate: update.startDate,
-                endDate: update.endDate,
-                newRetailPrice: update.newRetailPrice
-            }
+            const { styleId, ...priceChangeUpdate } = update
             // The same price change entry might exist if the same messages is requeued for whatever reason e.g. a resync to add a new field to price data,
             // in that case we first delete the currently existing entry; will be no op if it doesn't exist
-            await prices.updateOne({ styleId: update.styleId }, { $pull: { priceChanges: priceIdentifier } });
-            await prices.updateOne({ styleId: update.styleId }, { $push: { priceChanges: update } }, { upsert: true });
+            const findDuplicatePriceChangeQuery = Object.entries(priceChangeUpdate).reduce((query, [key, value]) => {
+                query.$and.push({
+                    $or: [{ [key]: { $exists: false } }, { [key]: value}]
+                })
+                return query
+            }, { $and: [] })
+            await pricesCollection.updateOne({ styleId: styleId }, { $pull: { priceChanges: findDuplicatePriceChangeQuery } });
+            await pricesCollection.updateOne({ styleId: styleId }, { $push: { priceChanges: priceChangeUpdate } }, { upsert: true });
         })))
         .then(passDownAnyMessageErrors)
         .catch(error => ({
