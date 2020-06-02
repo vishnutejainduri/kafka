@@ -25,7 +25,8 @@ function parseFacetMessage(msg) {
         facetValue: {
             en: msg.value.DESC_ENG,
             fr: msg.value.DESC_FR
-        }
+        },
+        isMarkedForDeletion: msg.value.UPD_FLG === 'F'
     };
 }
 
