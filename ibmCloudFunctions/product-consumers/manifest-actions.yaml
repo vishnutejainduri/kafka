@@ -337,6 +337,6 @@
           timeout: 600000
     sequences:
       update-pricing-sequence:
-        actions: update-algolia-price,consume-sale-price
+        actions: consume-sale-price
       update-inventory-sequence:
         actions: consume-sku-inventory-message-with-retry,calculate-available-to-sell-with-retry
