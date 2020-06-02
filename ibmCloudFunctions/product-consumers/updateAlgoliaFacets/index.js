@@ -35,32 +35,41 @@ global.main = async function (params) {
         throw createError.failedDbConnection(originalError);
     }
 
-    const styleFacets = await algoliaFacetBulkImportQueue.aggregate([
+    const facetUpdatesByStyle = await algoliaFacetBulkImportQueue.aggregate([
         { $group: {
             _id: "$styleId",
-            facets: { $push: { name: "$facetName", value: "$facetValue", type: "$typeId" } }
+            facets: { $push: { name: "$facetName", value: "$facetValue", type: "$typeId", isMarkedForDeletion: "$isMarkedForDeletion" } }
         }},
         { $limit: 750 }
     ],
     { allowDiskUse: true }
     ).toArray();
 
-    if (!styleFacets.length) {
+    if (!facetUpdatesByStyle.length) {
         return;
     }
 
-    let algoliaUpdatesWithoutOutlet = await Promise.all(styleFacets.map((styleFacetData) => styles.findOne({ _id: styleFacetData._id })
-        .then((styleData) => {
-            if (styleData && !styleData.isOutlet) {
+    let algoliaUpdatesWithoutOutlet = await Promise.all(facetUpdatesByStyle.map((styleFacetUpdateData) => styles.findOne({ _id: styleFacetUpdateData._id })
+        .then((currentMongoStyleData) => {
+            if (currentMongoStyleData && !currentMongoStyleData.isOutlet) {
               const algoliaUpdate = {
-                  objectID: styleFacetData._id
+                objectID: styleFacetUpdateData._id
               };
-              styleFacetData.facets.forEach((facetData) => {
-                  if (facetData.type === 'DPM01') {
-                    algoliaUpdate[facetData.name] = styleData[facetData.name] ? styleData[facetData.name].concat([facetData.value]) : [facetData.value]
-                  } else {
-                    algoliaUpdate[facetData.name] = facetData.value;
-                  }
+
+              styleFacetUpdateData.facets.forEach((facetData) => {
+                // DPM01 / microsites is an array of values. thus we add and delete values differently for it
+                if (facetData.type === 'DPM01') {
+                  algoliaUpdate[facetData.name] = currentMongoStyleData[facetData.name] || [];
+                  algoliaUpdate[facetData.name] = facetData.isMarkedForDeletion
+                    ? currentMongoStyleData[facetData.name].filter((currentMongoFacet) =>
+                      !(currentMongoFacet.en === facetData.value.en && currentMongoFacet.fr === facetData.value.fr))
+                    : currentMongoStyleData[facetData.name].concat([facetData.value]);
+                  return;
+                }
+
+                algoliaUpdate[facetData.name] = facetData.isMarkedForDeletion
+                  ? { en: null, fr: null }
+                  : facetData.value;
               });
               return algoliaUpdate;
             } else {
