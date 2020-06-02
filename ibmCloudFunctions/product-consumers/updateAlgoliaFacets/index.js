@@ -51,8 +51,7 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
  */
 const generateStyleUpdatesFromAlgoliaUpdates = (algoliaUpdatesWithoutOutlet) => {
   return algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => {
-    const styleUpdate = Object.assign({}, algoliaUpdate);
-    styleUpdate._id = algoliaUpdate.objectID;
+    const styleUpdate = { _id: algoliaUpdate.objectID, ...algoliaUpdate };
     delete styleUpdate.objectID;
 
     return {
