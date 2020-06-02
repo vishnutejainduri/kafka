@@ -18,11 +18,12 @@ describe("consumeSalePrice", function() {
                 END_DATE: 1000000000000,
                 ACTIVITY_TYPE: priceActivityTypes.APPROVED,
                 PROCESS_DATE_CREATED: 1000000000000,
-                NEW_RETAIL_PRICE: 'newRetailPrice'
+                NEW_RETAIL_PRICE: 'newRetailPrice',
+                SITE_ID: '00990'
               }
           }]
         };
-        expect(await consumeSalePrice(validParams)).toBe(undefined);
+      expect(await consumeSalePrice(validParams)).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
     });
     it("invalid params -> failure", async function() {
       return expect(consumeSalePrice({})).rejects.toThrow();
