@@ -26,7 +26,7 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
             algoliaUpdate[facetData.name] = facetData.isMarkedForDeletion
               ? algoliaUpdate[facetData.name].filter((currentMongoFacet) =>
                 !(currentMongoFacet.en === facetData.value.en && currentMongoFacet.fr === facetData.value.fr))
-              : currentMongoStyleData[facetData.name].concat([facetData.value]);
+              : algoliaUpdate[facetData.name].concat([facetData.value]);
             return;
           }
 
