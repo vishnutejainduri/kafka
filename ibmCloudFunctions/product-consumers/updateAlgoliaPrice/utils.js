@@ -16,11 +16,11 @@ function findApplicablePriceChange (siteIdPriceChanges) {
   const addedPriceChanges = siteIdPriceChanges.filter(priceChange =>  [priceChangeActivityTypes.APPROVED, priceChangeActivityTypes.CREATED].includes(priceChange.activityType))
   const availablePriceChanges = addedPriceChanges.filter(({ priceChangeId }) => !deletedPriceChangeIds.includes(priceChangeId))
   const currentTime = new Date().getTime()
-  const activePriceChanges = availablePriceChanges.filter(({ startDate }) => !startDate || startDate.getTime() <= currentTime)
-  // technically, the second clause of the following filter condition is unncessary, but just to be on the safe side
-  const promotionalPriceChange = activePriceChanges.find(({ endDate }) => endDate && endDate.getTime() >= currentTime)
-  const standardPriceChange = activePriceChanges.find(({ endDate }) => !endDate)
-  return promotionalPriceChange || standardPriceChange
+  const activePriceChanges = availablePriceChanges.filter(({ startDate, endDate }) => startDate.getTime() <= currentTime && (!endDate || startDate.getTime() >= currentTime))
+  if (activePriceChanges.length > 1) {
+    throw new Error('Cannot process overlapping price changes for the same site ID.')
+  }
+  return activePriceChanges[0]
 }
 
 // standard price change: a price change that has an start date but no end date
