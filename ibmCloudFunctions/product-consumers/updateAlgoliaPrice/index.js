@@ -3,10 +3,11 @@
  */
 const algoliasearch = require('algoliasearch');
 const {
-    filterPriceMessages,
-    parsePriceMessage,
-    generateUpdateFromParsedMessage
-} = require('../../lib/parsePriceMessage');
+    validateSalePriceMessages,
+    parseSalePriceMessage,
+    findActivePriceChanges
+} = require('../../lib/parseSalePriceMessage');
+
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { createLog, addErrorHandling, log } = require('../utils');
@@ -48,38 +49,28 @@ global.main = async function (params) {
         }
     }
 
-    let styles;
-    let prices;
+    let stylesColelction;
+    let pricesCollection;
     let updateAlgoliaPriceCount;
     try {
-        styles = await getCollection(params);
-        prices = await getCollection(params, params.pricesCollectionName);
+        stylesColelction = await getCollection(params);
+        pricesCollection = await getCollection(params, params.pricesCollectionName);
         updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount');
     } catch (originalError) {
         throw createError.failedDbConnection(originalError); 
     }
 
     let updates = await Promise.all(params.messages
-        .filter(addErrorHandling(filterPriceMessages))
-        .map(addErrorHandling(parsePriceMessage))
-        .map(addErrorHandling(async (update) => {
-            const [styleData, priceData] = await Promise.all([styles.findOne({ _id: update._id }), prices.findOne({ _id: update._id })]);
-            if (!styleData || styleData.isOutlet) {
-                return null;
-            }
-            const algoliaUpdatedPayload = generateUpdateFromParsedMessage (update, priceData, styleData);
-            const priceHasNotChanged = priceData
-                ? (algoliaUpdatedPayload.onlineSalePrice === priceData.onlineSalePrice
-                    && algoliaUpdatedPayload.inStoreSalePrice === priceData.inStoreSalePrice
-                    && algoliaUpdatedPayload.currentPrice === priceData.currentPrice)
-                : (algoliaUpdatedPayload.onlineSalePrice === null
-                    && algoliaUpdatedPayload.inStoreSalePrice === null);
-            if (priceHasNotChanged) {
-                return null;
-            }
-            algoliaUpdatedPayload.objectID = styleData._id;
-
-            return algoliaUpdatedPayload;
+        .map(addErrorHandling(validateSalePriceMessages))
+        .map(addErrorHandling(parseSalePriceMessage))
+        .map(addErrorHandling(async ({ styleId }) => {
+            const [prices, style] = await Promise.all([
+                pricesCollection.findOne({ styleId }),
+                stylesColelction.findOne({ _id: styleId })
+            ])
+            const originalPrice = style.originalPrice
+            const priceChanges = prices.priceChanges
+            const { onlinePrice, inStorePrice } = findActivePriceChanges(priceChanges)
         }))
     );
 

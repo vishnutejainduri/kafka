@@ -1,5 +1,5 @@
 const consumeSalePrice = require('../');
-const { priceActivityTypes } = require('../../../constants');
+const { priceChangeActivityTypes } = require('../../../constants');
 
 describe("consumeSalePrice", function() {
     it("successfuly runs if all the parameters are provided and the messages are valid", async function() {
@@ -16,7 +16,7 @@ describe("consumeSalePrice", function() {
                 PRICE_CHANGE_ID: 'priceChangeId',
                 START_DATE: 1000000000000,
                 END_DATE: 1000000000000,
-                ACTIVITY_TYPE: priceActivityTypes.APPROVED,
+                ACTIVITY_TYPE: priceChangeActivityTypes.APPROVED,
                 PROCESS_DATE_CREATED: 1000000000000,
                 NEW_RETAIL_PRICE: 'newRetailPrice',
                 SITE_ID: '00990'
