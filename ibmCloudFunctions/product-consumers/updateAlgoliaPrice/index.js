@@ -2,15 +2,15 @@
  * Listens for messages from Event Streams about the sale price of a style.
  */
 const algoliasearch = require('algoliasearch');
+
 const {
     validateSalePriceMessages,
-    parseSalePriceMessage,
-    findActivePriceChanges
+    parseSalePriceMessage
 } = require('../../lib/parseSalePriceMessage');
-
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { createLog, addErrorHandling, log } = require('../utils');
+const { getPriceInfo } = require('./util');
 
 let client = null;
 let index = null;
@@ -70,7 +70,14 @@ global.main = async function (params) {
             ])
             const originalPrice = style.originalPrice
             const priceChanges = prices.priceChanges
-            const { onlinePrice, inStorePrice } = findActivePriceChanges(priceChanges)
+            const { onlinePrice, inStorePrice, isSale, isOnlineSale } = getPriceInfo(originalPrice, priceChanges)
+            return {
+                originalPrice,
+                onlinePrice,
+                inStorePrice,
+                isSale,
+                isOnlineSale
+            }
         }))
     );
 

@@ -1,4 +1,4 @@
-const { findApplicablePriceChanges } = require('../utils')
+const { findApplicablePriceChanges, getPriceInfo } = require('../utils')
 const { siteIds, priceChangeActivityTypes } = require('../../../constants');
 
 describe('findApplicablePriceChanges', () => {
@@ -122,3 +122,51 @@ describe('findApplicablePriceChanges', () => {
     expect(() => findApplicablePriceChanges(mockPriceChanges)).toThrow(new Error('Cannot process overlapping price changes for the same site ID.'))
   })
 })
+
+describe('findApplicablePriceChanges', () => {
+  const originalPrice = 10
+  it('returns original price if no price change exists and sale flags will be false', () => {
+    const priceChanges = {}
+    expect(getPriceInfo(originalPrice, priceChanges)).toEqual({
+      originalPrice,
+      onlinePrice: originalPrice,
+      inStorePrice: originalPrice,
+      isSale: false,
+      isOnlineSale: false
+    })
+  })
+
+  it('returns sale price if price changes exists and sale flags will be true', () => {
+    const applicablePriceChanges = {
+      '00990': {
+        newRetailPrice: 100
+      },
+      '00011': {
+        newRetailPrice: 150
+      }
+    }
+    expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
+      originalPrice,
+      onlinePrice: applicablePriceChanges['00990'].newRetailPrice,
+      inStorePrice: applicablePriceChanges['00011'].newRetailPrice,
+      isSale: true,
+      isOnlineSale: true
+    })
+  })
+
+  it('returns a mix of online and original sale price if only online sale price exists', () => {
+    const applicablePriceChanges = {
+      '00990': {
+        newRetailPrice: 100
+      }
+    }
+    expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
+      originalPrice,
+      onlinePrice: applicablePriceChanges['00990'].newRetailPrice,
+      inStorePrice: originalPrice,
+      isSale: false,
+      isOnlineSale: true
+    })
+  })
+})
+

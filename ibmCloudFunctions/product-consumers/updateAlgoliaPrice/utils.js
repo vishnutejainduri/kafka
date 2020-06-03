@@ -1,4 +1,4 @@
-const { priceChangeActivityTypes } = require('../../constants');
+const { priceChangeActivityTypes, siteIds } = require('../../constants');
 
 function groupPriceChangesBySiteId (parsedPriceChanges) {
   return parsedPriceChanges.reduce((groupedPriceChanges, priceChange) => {
@@ -26,6 +26,10 @@ function findApplicablePriceChange (siteIdPriceChanges) {
 // standard price change: a price change that has an start date but no end date
 // promotional price change: a price change that has a start date and an end date
 // original price: a price set along with the entry of the style into the catalog, has no start or end date
+/**
+ * @param {PriceChange[]} parsedPriceChanges
+ * @returns {{ [siteId: string]: PriceChange }}
+ */
 function findApplicablePriceChanges (parsedPriceChanges) {
   const priceChangesGroupedBySiteId = groupPriceChangesBySiteId (parsedPriceChanges)
   return Object.entries(priceChangesGroupedBySiteId).reduce((applicablePriceChanges, [siteId, priceChanges]) =>
@@ -33,6 +37,26 @@ function findApplicablePriceChanges (parsedPriceChanges) {
   {})
 }
 
+/**
+ * @param {number} originalPrice
+ * @param {{ [siteId: SiteId]: PriceChange }} applicablePriceChanges
+ */
+function getPriceInfo (originalPrice, applicablePriceChanges) {
+  const {
+    [siteIds.IN_STORE]: inStorePriceChange,
+    [siteIds.ONLINE]: onlinePriceChange
+  } = applicablePriceChanges
+
+  return {
+    originalPrice,
+    onlinePrice: (onlinePriceChange && onlinePriceChange.newRetailPrice) || originalPrice,
+    inStorePrice: (inStorePriceChange && inStorePriceChange.newRetailPrice) || originalPrice,
+    isSale: !!inStorePriceChange,
+    isOnlineSale: !!onlinePriceChange
+  }
+}
+
 module.exports = {
-  findApplicablePriceChanges
+  findApplicablePriceChanges,
+  getPriceInfo
 }
