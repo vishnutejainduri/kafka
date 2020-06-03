@@ -1,5 +1,9 @@
 const { getExistingCtStyle, getProductType, updateStyle, createAndPublishStyle } = require('../styleUtils');
 
+/**
+ * There's an assumption in this function that we will never sync microsites to CT (based on
+ * filterFacetMessageCt() ).
+ */
 const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) => {
     const productType = await getProductType(productTypeId, ctHelpers);
     let existingCtStyle = await getExistingCtStyle(stylesFacetMessage.id, ctHelpers);
