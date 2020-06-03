@@ -13,7 +13,7 @@ let index = null;
  * @return {Promise<Array>>} - array where the first element is failures and second is succesful transforms
  */
 const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, styles) => {
-  let algoliaUpdatesWithoutOutlet = await Promise.all(addErrorHandling(facetUpdatesByStyle.map((styleFacetUpdateData) => styles.findOne({ _id: styleFacetUpdateData._id })
+  let algoliaUpdatesWithoutOutlet = await Promise.all(facetUpdatesByStyle.map(addErrorHandling((styleFacetUpdateData) => styles.findOne({ _id: styleFacetUpdateData._id })
     .then((currentMongoStyleData) => {
       if (currentMongoStyleData && currentMongoStyleData.isOutlet) {
         return null;

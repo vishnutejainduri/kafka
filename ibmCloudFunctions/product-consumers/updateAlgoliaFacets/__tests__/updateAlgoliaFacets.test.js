@@ -5,6 +5,29 @@ const {
 const { parseFacetMessage } = require('../../../lib/parseFacetMessage');
 
 describe('updateAlgoliaFacets', () => {
+  it('should handle individual lookup or transform failures gracefully', async () => {
+    const validDeletionAggregate = [{
+      _id: 'styleId',
+      facets: [{
+        name: 'facetName',
+        value: { en: 'facetValueEn', fr: 'facetValueFr' },
+        type: 'facetType',
+        isMarkedForDeletion: false
+      }]
+    }];
+
+    const styles = {
+      findOne: jest.fn(() => {
+        throw new Error();
+      })
+    };
+
+    const [actual, successful] = await transformUpdateQueueRequestToAlgoliaUpdates(validDeletionAggregate, styles);
+
+    expect(actual).toHaveLength(1);
+    expect(successful).toBeEmpty;
+  });
+
   describe('microsite attribute deletion', () => {
     const validDeletionMessage = {
       topic: 'facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA',
@@ -42,9 +65,10 @@ describe('updateAlgoliaFacets', () => {
         })
       };
 
-      const actual = await transformUpdateQueueRequestToAlgoliaUpdates(validDeletionAggregate, styles);
+      const [failed, actual] = await transformUpdateQueueRequestToAlgoliaUpdates(validDeletionAggregate, styles);
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
 
+      expect(failed).toBeEmpty;
       expect(actual).toEqual([{
         objectID: 'styleId',
         microsite: []
@@ -66,9 +90,10 @@ describe('updateAlgoliaFacets', () => {
         })
       };
 
-      const actual = await transformUpdateQueueRequestToAlgoliaUpdates(validDeletionAggregate, styles);
+      const [failed, actual] = await transformUpdateQueueRequestToAlgoliaUpdates(validDeletionAggregate, styles);
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
 
+      expect(failed).toBeEmpty;
       expect(actual).toEqual([{
         objectID: 'styleId',
         microsite: [{ en: 'micrositeDesc2', fr: 'micrositeDesc2' }]
@@ -90,9 +115,10 @@ describe('updateAlgoliaFacets', () => {
         })
       };
 
-      const actual = await transformUpdateQueueRequestToAlgoliaUpdates(validDeletionAggregate, styles);
+      const [failed, actual] = await transformUpdateQueueRequestToAlgoliaUpdates(validDeletionAggregate, styles);
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
 
+      expect(failed).toBeEmpty;
       expect(actual).toEqual([{
         objectID: 'styleId',
         microsite: [{ en: 'micrositeDesc2', fr: 'micrositeDesc2' }]
@@ -141,9 +167,10 @@ describe('updateAlgoliaFacets', () => {
         })
       };
 
-      const actual = await transformUpdateQueueRequestToAlgoliaUpdates(validDeletionAggregate, styles);
+      const [failed, actual] = await transformUpdateQueueRequestToAlgoliaUpdates(validDeletionAggregate, styles);
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
 
+      expect(failed).toBeEmpty;
       expect(actual).toEqual([{
         objectID: 'styleId',
         category: { en: null, fr: null }
@@ -165,9 +192,10 @@ describe('updateAlgoliaFacets', () => {
         })
       };
 
-      const actual = await transformUpdateQueueRequestToAlgoliaUpdates(validDeletionAggregate, styles);
+      const [failed, actual] = await transformUpdateQueueRequestToAlgoliaUpdates(validDeletionAggregate, styles);
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
 
+      expect(failed).toBeEmpty;
       expect(actual).toEqual([{
         objectID: 'styleId',
         category: { en: null, fr: null }
@@ -189,9 +217,10 @@ describe('updateAlgoliaFacets', () => {
         })
       };
 
-      const actual = await transformUpdateQueueRequestToAlgoliaUpdates(validDeletionAggregate, styles);
+      const [failed, actual] = await transformUpdateQueueRequestToAlgoliaUpdates(validDeletionAggregate, styles);
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
 
+      expect(failed).toBeEmpty;
       expect(actual).toEqual([{
         objectID: 'styleId',
         category: { en: null, fr: null }
@@ -201,5 +230,5 @@ describe('updateAlgoliaFacets', () => {
         category: { en: null, fr: null }
       });
     });
-  })
+  });
 });
