@@ -1,6 +1,7 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
+const { addErrorHandling, log } = require('../utils');
 
 let client = null;
 let index = null;
@@ -9,39 +10,47 @@ let index = null;
  * Helper for transforming update queue requests to Algolia updates
  * @param {array} facetUpdatesByStyle - queue updates aggregated by style ID
  * @param {mongoDbCollection} styles - handle to the mongo db collection for styles
- * @return {Promise<array>} - array of updates for Algolia
+ * @return {Promise<Array>>} - array where the first element is failures and second is succesful transforms
  */
 const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, styles) => {
-  let algoliaUpdatesWithoutOutlet = await Promise.all(facetUpdatesByStyle.map((styleFacetUpdateData) => styles.findOne({ _id: styleFacetUpdateData._id })
+  let algoliaUpdatesWithoutOutlet = await Promise.all(addErrorHandling(facetUpdatesByStyle.map((styleFacetUpdateData) => styles.findOne({ _id: styleFacetUpdateData._id })
     .then((currentMongoStyleData) => {
-      if (currentMongoStyleData && !currentMongoStyleData.isOutlet) {
-        const algoliaUpdate = {
-          objectID: styleFacetUpdateData._id
-        };
-
-        styleFacetUpdateData.facets.forEach((facetData) => {
-          // DPM01 / microsites is an array of values. thus we add and delete values differently for it
-          if (facetData.type === 'DPM01') {
-            algoliaUpdate[facetData.name] = currentMongoStyleData[facetData.name] || [];
-            algoliaUpdate[facetData.name] = facetData.isMarkedForDeletion
-              ? algoliaUpdate[facetData.name].filter((currentMongoFacet) =>
-                !(currentMongoFacet.en === facetData.value.en && currentMongoFacet.fr === facetData.value.fr))
-              : algoliaUpdate[facetData.name].concat([facetData.value]);
-            return;
-          }
-
-          algoliaUpdate[facetData.name] = facetData.isMarkedForDeletion
-            ? { en: null, fr: null }
-            : facetData.value;
-        });
-        return algoliaUpdate;
-      } else {
+      if (currentMongoStyleData && currentMongoStyleData.isOutlet) {
         return null;
       }
-    })
-  ));
 
-  return algoliaUpdatesWithoutOutlet.filter((algoliaUpdate) => algoliaUpdate);
+      const algoliaUpdate = {
+        objectID: styleFacetUpdateData._id
+      };
+
+      styleFacetUpdateData.facets.forEach((facetData) => {
+        // DPM01 / microsites is an array of values. thus we add and delete values differently for it
+        if (facetData.type === 'DPM01') {
+          algoliaUpdate[facetData.name] = currentMongoStyleData[facetData.name] || [];
+          algoliaUpdate[facetData.name] = facetData.isMarkedForDeletion
+            ? algoliaUpdate[facetData.name].filter((currentMongoFacet) =>
+              !(currentMongoFacet.en === facetData.value.en && currentMongoFacet.fr === facetData.value.fr))
+            : algoliaUpdate[facetData.name].concat([facetData.value]);
+          return;
+        }
+
+        algoliaUpdate[facetData.name] = facetData.isMarkedForDeletion
+          ? { en: null, fr: null }
+          : facetData.value;
+      });
+
+      return algoliaUpdate;
+    })
+  )));
+
+  const failedTransforms = algoliaUpdatesWithoutOutlet
+    .filter((result) => result instanceof Error);
+
+  const successfulTransforms = algoliaUpdatesWithoutOutlet
+    .filter((result) => !(result instanceof Error))
+    .filter((result) => result);
+
+  return [failedTransforms, successfulTransforms];
 };
 
 /**
@@ -66,7 +75,7 @@ const generateStyleUpdatesFromAlgoliaUpdates = (algoliaUpdatesWithoutOutlet) => 
 };
 
 global.main = async function (params) {
-    console.log(JSON.stringify({
+    log(JSON.stringify({
         cfName: 'updateAlgoliaFacets',
         params
     }));
@@ -109,18 +118,22 @@ global.main = async function (params) {
         return;
     }
 
-    const algoliaUpdatesWithoutOutlet = await transformUpdateQueueRequestToAlgoliaUpdates(facetUpdatesByStyle, styles);
+    const [failures, algoliaUpdatesWithoutOutlet] = await transformUpdateQueueRequestToAlgoliaUpdates(facetUpdatesByStyle, styles);
 
     const styleUpdates = generateStyleUpdatesFromAlgoliaUpdates(algoliaUpdatesWithoutOutlet);
 
     const styleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
 
-    return index.partialUpdateObjects(algoliaUpdatesWithoutOutlet, true)
+    await index.partialUpdateObjects(algoliaUpdatesWithoutOutlet, true)
         .then(() => styles.bulkWrite(styleUpdates, { ordered : false })
         .then(() => algoliaFacetBulkImportQueue.deleteMany({ styleId: { $in: styleIds } }))
         .then(() => updateAlgoliaFacetsCount.insert({ batchSize: algoliaUpdatesWithoutOutlet.length }))
-        .then(() => console.log('updated styles', styleIds)));
-}
+        .then(() => log('updated styles', styleIds)));
+
+    if (failures.length) {
+      throw createError.updateAlgoliaFacets.failedTransforms(failures);
+    }
+};
 
 module.exports = {
   main: global.main,

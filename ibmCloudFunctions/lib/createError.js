@@ -401,6 +401,13 @@ module.exports = {
             `Failed to get current ats data for styles: ${stylesToCheck}`
         )
     },
+    updateAlgoliaFacets: {
+        failedTransforms: (failures) => new CustomError(
+          null,
+          'failed-to-fetch-or-transform-styles',
+          `Failed to prepare fetch or transform some facets or styles: ${failures}`
+        )
+    },
     consumeThresholdMessage: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(
             originalError,
