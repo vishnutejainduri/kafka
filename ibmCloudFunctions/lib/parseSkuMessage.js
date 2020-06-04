@@ -29,6 +29,11 @@ function parseSkuMessage(msg) {
         skuData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
     }
 
+    skuData.size = {
+        en: msg.value.SIZE_EN || msg.value.SIZE, // Not all English sizes in JESTA's translation table are populated, so we fall back to SIZE which is always English
+        fr: msg.value.SIZE_FR
+    }
+
     // Add _id for mongo
     skuData._id = skuData.id;
 
