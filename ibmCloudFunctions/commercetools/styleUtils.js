@@ -208,6 +208,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
         }
         : {
           action: 'addPrice',
+          variantId: variantPrice.variantId,
           price: createOriginalPriceUpdate(style.originalPrice),
           staged: isStaged
         }
