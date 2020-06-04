@@ -23,6 +23,52 @@ jest.mock('@commercetools/sdk-middleware-auth');
 jest.mock('@commercetools/sdk-middleware-http');
 jest.mock('node-fetch');
 
+const validMessage = {
+  topic: 'styles-connect-jdbc-CATALOG',
+  value: {
+      STYLEID: '20000000',
+      SUBDEPT: 'subDept',
+      BRAND_NAME_ENG: 'brandNameEng',
+      BRAND_NAME_FR: 'brandNameFr',
+      DESC_ENG: 'descEng',
+      DESC_FR: 'descFr',
+      MARKET_DESC_ENG: 'marketDescEng',
+      MARKET_DESC_ENG2: 'marketDescEng2',
+      MARKET_DESC_FR: 'marketDescFr',
+      MARKET_DESC_FR2: 'marketDescFr2',
+      DETAIL_DESC3_ENG: 'detailDescEng',
+      DETAIL_DESC3_FR: 'detailDescFr',
+      FABRICANDMATERIAL_EN: 'fabricAndMaterialEn',
+      FABRICANDMATERIAL_FR: 'fabricAndMaterialFr',
+      SIZE_DESC_ENG: 'sizeDescEng',
+      SIZE_DESC_FR: 'sizeDescFr',
+      CAREINSTRUCTIONS_EN: 'careInstructionsEn',
+      CAREINSTRUCTIONS_FR: 'careInstructionsFr',
+      ADVICE_EN: 'adviceEn',
+      ADVICE_FR: 'adviceFr',
+      COLOUR_DESC_ENG: 'colourDescEng',
+      COLOUR_DESC_FR: 'colourDescFr',
+      CATEGORY_EN: 'category_en',
+      CATEGORY_FR: 'category_fr',
+      CATEGORY_LEVEL_1A_EN: 'categoryLevel1A_en',
+      CATEGORY_LEVEL_1A_FR: 'categoryLevel1A_fr',
+      CATEGORY_LEVEL_2A_EN: 'categoryLevel2A_en',
+      CATEGORY_LEVEL_2A_FR: 'categoryLevel2A_fr',
+      WEBSTATUS: 'webStatus',
+      SEASON_CD: 'seasonCd',
+      COLORID: 'colorId',
+      UNIT_PRICE: 1.0,
+      VSN: 'vsn',
+      SUBCLASS: 341,
+      UPD_TIMESTAMP: 1000000000000,
+      EFFECTIVE_DATE: 1000000000000,
+      TRUE_COLOURGROUP_EN: 'trueColourGroupEn',
+      TRUE_COLOURGROUP_FR: 'trueColourGroupFr',
+      LAST_MODIFIED_DATE: 1470391439001, // circa 2016,
+      SIZE_CHART: 16
+  }
+};
+
 const validParams = {
   topicName: 'styles-connect-jdbc-CATALOG',
   ctpProjectKey: 'key',
@@ -32,51 +78,7 @@ const validParams = {
   ctpApiUrl: 'apiUrl',
   ctpScopes: 'manage_products:harryrosen-dev',
   productTypeId: 'product-type-reference-id',
-  messages: [{
-      topic: 'styles-connect-jdbc-CATALOG',
-      value: {
-          STYLEID: '20000000',
-          SUBDEPT: 'subDept',
-          BRAND_NAME_ENG: 'brandNameEng',
-          BRAND_NAME_FR: 'brandNameFr',
-          DESC_ENG: 'descEng',
-          DESC_FR: 'descFr',
-          MARKET_DESC_ENG: 'marketDescEng',
-          MARKET_DESC_ENG2: 'marketDescEng2',
-          MARKET_DESC_FR: 'marketDescFr',
-          MARKET_DESC_FR2: 'marketDescFr2',
-          DETAIL_DESC3_ENG: 'detailDescEng',
-          DETAIL_DESC3_FR: 'detailDescFr',
-          FABRICANDMATERIAL_EN: 'fabricAndMaterialEn',
-          FABRICANDMATERIAL_FR: 'fabricAndMaterialFr',
-          SIZE_DESC_ENG: 'sizeDescEng',
-          SIZE_DESC_FR: 'sizeDescFr',
-          CAREINSTRUCTIONS_EN: 'careInstructionsEn',
-          CAREINSTRUCTIONS_FR: 'careInstructionsFr',
-          ADVICE_EN: 'adviceEn',
-          ADVICE_FR: 'adviceFr',
-          COLOUR_DESC_ENG: 'colourDescEng',
-          COLOUR_DESC_FR: 'colourDescFr',
-          CATEGORY_EN: 'category_en',
-          CATEGORY_FR: 'category_fr',
-          CATEGORY_LEVEL_1A_EN: 'categoryLevel1A_en',
-          CATEGORY_LEVEL_1A_FR: 'categoryLevel1A_fr',
-          CATEGORY_LEVEL_2A_EN: 'categoryLevel2A_en',
-          CATEGORY_LEVEL_2A_FR: 'categoryLevel2A_fr',
-          WEBSTATUS: 'webStatus',
-          SEASON_CD: 'seasonCd',
-          COLORID: 'colorId',
-          UNIT_PRICE: 1.0,
-          VSN: 'vsn',
-          SUBCLASS: 341,
-          UPD_TIMESTAMP: 1000000000000,
-          EFFECTIVE_DATE: 1000000000000,
-          TRUE_COLOURGROUP_EN: 'trueColourGroupEn',
-          TRUE_COLOURGROUP_FR: 'trueColourGroupFr',
-          LAST_MODIFIED_DATE: 1470391439001, // circa 2016,
-          SIZE_CHART: 16
-      }
-  }]
+  messages: [validMessage]
 };
 
 const message = validParams.messages[0];
@@ -431,7 +433,15 @@ describe('consumeCatalogueMessageCT', () => {
 
   it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeCatalogueMessageCT(validParams);
-    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
+    expect(response).toEqual({ successCount: 1, ok: true });
+  });
+
+  it('returns one success result if given valid params and two valid messages for the same style', async () => {
+    const response = await consumeCatalogueMessageCT({
+      ...validParams,
+      messages: [validMessage, validMessage]
+    });
+    expect(response).toEqual({ successCount: 1, ok: true });
   });
 });
 
@@ -514,7 +524,7 @@ describe('getActionsFromStyle', () => {
   it('includes the correct actions when given a style that initially didnt have its original price set', () => {
     const expected = [
       {
-        action: 'setPrice',
+        action: 'addPrice',
         price: {
           country: 'CA',
           value: {

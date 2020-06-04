@@ -7,7 +7,6 @@ const {
   PRODUCT_SHOULD_BE_PUBLISHED,
   entityStatus
 } = require('./constantsCt');
-
 const { getAllVariantPrices, getExistingCtOriginalPrice } = require('./consumeSalePriceCT/utils');
 
 const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
@@ -208,7 +207,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
           staged: isStaged
         }
         : {
-          action: 'setPrice',
+          action: 'addPrice',
           price: createOriginalPriceUpdate(style.originalPrice),
           staged: isStaged
         }

@@ -7,7 +7,7 @@ function camelCase(str) {
 }
 
 const getUniqueAttributeValues = attributeName => items => {
-    const uniqueAttributeValues = items.reduce((previousUniqueValues, item) => (
+    const uniqueAttributeValues = items.filter(item => item).reduce((previousUniqueValues, item) => (
       previousUniqueValues.add(item[attributeName])
     ), new Set());
   
