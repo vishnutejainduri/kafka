@@ -115,6 +115,7 @@ const ctStyleNewerWithEmptyPrices = {
   "masterData": {
     [entityStatus]: {
       "masterVariant": {
+        "id": "master-variant",
         "prices": [],
         "attributes": [
           {
@@ -525,6 +526,7 @@ describe('getActionsFromStyle', () => {
     const expected = [
       {
         action: 'addPrice',
+        variantId: 'master-variant',
         price: {
           country: 'CA',
           value: {
@@ -543,7 +545,7 @@ describe('getActionsFromStyle', () => {
         staged: isStaged
       }
     ];
-    
+
     expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithoutOriginalPrice)).toEqual(expect.arrayContaining(expected));
   });
 });
