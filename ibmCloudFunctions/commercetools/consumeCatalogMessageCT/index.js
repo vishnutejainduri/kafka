@@ -18,7 +18,7 @@ const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
 // `main` so the same client can be shared between warm starts.
 let ctHelpers;
 
-const main = async params => {
+const main = params => {
   log(createLog.params('consumeCatalogMessageCT', params));
   validateParams(params);
   const handleErrors = err => { throw createError.consumeCatalogMessageCT.failed(err, params) };
