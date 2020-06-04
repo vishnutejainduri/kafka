@@ -50,7 +50,7 @@ const getCategory = async (category, { client, requestBuilder }) => {
     const response = await client.execute({ method, uri });
     return response.body;
   } catch (err) {
-      if (err.code === 404) return null; 
+      if (err.code === 404) return null;
       throw err;
   }
 };
@@ -125,7 +125,7 @@ const getProductType = async (productTypeId, { client, requestBuilder }) => {
     const response = await client.execute({ method, uri });
     return response.body;
   } catch (err) {
-      if (err.code === 404) return null; 
+      if (err.code === 404) return null;
       throw err;
   }
 };
@@ -184,7 +184,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
         value: style[attribute],
         staged: isStaged
       };
-    
+
       actionObj = formatAttributeValue(style, actionObj, attribute, attributeType);
 
       return actionObj;
@@ -195,7 +195,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   const nameUpdateAction = style.name
     ? { action: 'changeName', name: style.name, staged: isStaged }
     : null;
-  
+
   const descriptionUpdateAction = style.marketingDescription
     ? { action: 'setDescription', description: style.marketingDescription, staged: isStaged }
     : null;
@@ -238,7 +238,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   });
   priceUpdateActions = priceUpdateActions.reduce((finalActions, currentActions) => [...finalActions, ...currentActions], []);
 
-  const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...priceUpdateActions, 
+  const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...priceUpdateActions,
     ...categoriesAddAction, ...categoriesRemoveAction].filter(Boolean);
 
   return allUpdateActions;
@@ -259,7 +259,7 @@ const updateStyle = async ({ style, existingCtStyle, productType, categories, ct
 
 const getAttributesFromStyle = (style, productType) => {
   const customAttributesToCreate = Object.keys(style).filter(isCustomAttribute);
-  
+
   return customAttributesToCreate.map(attribute => {
       const attributeType = productType.attributes.find((attributeType) => attributeType.name === attribute).type.name;
       if (style[attribute]) {
