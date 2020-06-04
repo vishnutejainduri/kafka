@@ -56,10 +56,12 @@ const getCategory = async (category, { client, requestBuilder }) => {
 };
 
 const getCategories = async (style, ctHelpers) => {
+  const enCA = languageKeys.ENGLISH;
+  const frCA = languageKeys.FRENCH;
   const level0CategoryKey = categoryNameToKey(DPM_ROOT_CATEGORY);
-  const level1CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[languageKeys.ENGLISH]);
-  const level2CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[languageKeys.ENGLISH] + style.level2Category[languageKeys.ENGLISH]);
-  const level3CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[languageKeys.ENGLISH] + style.level2Category[languageKeys.ENGLISH] + style.level3Category[languageKeys.ENGLISH]);
+  const level1CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[enCA]);
+  const level2CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA]);
+  const level3CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA] + style.level3Category[enCA]);
 
   const categories = await Promise.all([
     getCategory(level0CategoryKey, ctHelpers),
@@ -68,10 +70,30 @@ const getCategories = async (style, ctHelpers) => {
     getCategory(level3CategoryKey, ctHelpers)
   ]);
 
-  if (!categories[0]) categories[0] = await createCategory(level0CategoryKey, { 'en-CA': DPM_ROOT_CATEGORY, 'fr-CA': DPM_ROOT_CATEGORY }, null, ctHelpers);
-  if (!categories[1]) categories[1] = await createCategory(level1CategoryKey, style.level1Category, categories[0], ctHelpers);
-  if (!categories[2]) categories[2] = await createCategory(level2CategoryKey, style.level2Category, categories[1], ctHelpers);
-  if (!categories[3]) categories[3] = await createCategory(level3CategoryKey, style.level3Category, categories[2], ctHelpers);
+  if (!categories[0]) {
+    categories[0] = await createCategory(level0CategoryKey, {
+      [enCA]: DPM_ROOT_CATEGORY,
+      [frCA]: DPM_ROOT_CATEGORY
+    }, null, ctHelpers);
+  }
+  if (!categories[1]) {
+    categories[1] = await createCategory(level1CategoryKey, {
+      [enCA]: style.level1Category[enCA],
+      [frCA]: style.level1Category[frCA]
+    }, categories[0], ctHelpers);
+  }
+  if (!categories[2]) {
+    categories[2] = await createCategory(level2CategoryKey, {
+      [enCA]: style.level2Category[enCA],
+      [frCA]: style.level2Category[frCA]
+    }, categories[1], ctHelpers);
+  }
+  if (!categories[3]) {
+    categories[3] = await createCategory(level3CategoryKey, {
+      [enCA]: style.level3Category[enCA],
+      [frCA]: style.level3Category[frCA]
+    }, categories[2], ctHelpers);
+  }
 
   return categories.slice(1, categories.length).filter(Boolean);
 };
