@@ -9,15 +9,16 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownAnyMessageErrors,
+  passDownBatchedErrorsAndFailureIndexes,
   validateParams
 } = require('../../product-consumers/utils');
+const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
 
 // Holds two CT helpers, including the CT client. It's declared outside of
 // `main` so the same client can be shared between warm starts.
 let ctHelpers;
 
-const main = params => {
+const main = async params => {
   log(createLog.params('consumeCatalogMessageCT', params));
   validateParams(params);
   const handleErrors = err => { throw createError.consumeCatalogMessageCT.failed(err, params) };
@@ -29,17 +30,22 @@ const main = params => {
   
   const stylesToCreateOrUpdate = (
     params.messages
-      .filter(addErrorHandling(filterStyleMessages))
+      .map(addErrorHandling(msg => filterStyleMessages(msg) ? msg : null))
       .map(addErrorHandling(parseStyleMessageCt))
   );
 
+  const batchedStylesToCreateOrUpdate = groupByAttribute('styleId')(stylesToCreateOrUpdate)
   const stylePromises = (
-    stylesToCreateOrUpdate
-      .map(addErrorHandling(createOrUpdateStyle.bind(null, ctHelpers, productTypeId)))
+    batchedStylesToCreateOrUpdate
+      .map(addErrorHandling(batchedParsedMessages => {
+        const latestParsedMessage = getMostUpToDateObject('lastModifiedDate')(batchedParsedMessages);
+        return createOrUpdateStyle(ctHelpers, productTypeId, latestParsedMessage);
+      }))
   );
 
+  
   return Promise.all(stylePromises)
-    .then(passDownAnyMessageErrors)
+    .then(passDownBatchedErrorsAndFailureIndexes(batchedStylesToCreateOrUpdate))
     .catch(handleErrors);
 };
 

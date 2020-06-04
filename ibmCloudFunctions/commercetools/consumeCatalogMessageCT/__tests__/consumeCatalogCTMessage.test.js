@@ -431,7 +431,7 @@ describe('consumeCatalogueMessageCT', () => {
 
   it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeCatalogueMessageCT(validParams);
-    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
+    expect(response).toEqual({ successCount: 1, ok: true });
   });
 });
 
@@ -514,7 +514,7 @@ describe('getActionsFromStyle', () => {
   it('includes the correct actions when given a style that initially didnt have its original price set', () => {
     const expected = [
       {
-        action: 'setPrice',
+        action: 'addPrice',
         price: {
           country: 'CA',
           value: {
