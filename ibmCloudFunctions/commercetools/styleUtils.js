@@ -207,7 +207,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
           staged: isStaged
         }
         : {
-          action: 'setPrice',
+          action: 'addPrice',
           price: createOriginalPriceUpdate(style.originalPrice),
           staged: isStaged
         }
