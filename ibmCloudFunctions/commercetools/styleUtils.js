@@ -40,6 +40,35 @@ const createCategory = async (categoryKey, categoryName, parentCategory, { clien
   return response.body;
 };
 
+const updateCategory = async (categoryKey, categoryVersion, categoryName, parentCategory, { client, requestBuilder }) => {
+  if (!categoryKey || !categoryName) return null;
+  const method = 'POST';
+  const uri = requestBuilder.categories.byKey(categoryKey).build();
+
+  const body = {
+    version: categoryVersion,
+    actions: [{
+      action: 'changeName',
+      name: categoryName
+    }]
+  };
+
+  if (parentCategory) {
+    body.actions.push({
+      action: 'changeParent',
+      parent: {
+        id: parentCategory.id,
+        typeId: 'category'
+      }
+    })
+  }
+
+  const requestBody = JSON.stringify(body);
+
+  const response = await client.execute({ method, uri, body: requestBody });
+  return response.body;
+};
+
 const getCategory = async (category, { client, requestBuilder }) => {
   if (!category) return null;
   const method = 'GET';
@@ -58,7 +87,15 @@ const getCategory = async (category, { client, requestBuilder }) => {
 const getCategories = async (style, ctHelpers) => {
   const enCA = languageKeys.ENGLISH;
   const frCA = languageKeys.FRENCH;
+
+  const categoryNeedsUpdating = (fetchedCategory, categoryKey, categoryNameEn, categoryNameFr) => {
+    return fetchedCategory.name[enCA] !== categoryNameEn
+      || fetchedCategory.name[frCA] !== categoryNameFr
+      || fetchedCategory.key !== categoryKey;
+  };
+
   const level0CategoryKey = categoryNameToKey(DPM_ROOT_CATEGORY);
+  // These keys are based on the English labels for the category and not the dictionary code.
   const level1CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[enCA]);
   const level2CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA]);
   const level3CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA] + style.level3Category[enCA]);
@@ -76,20 +113,38 @@ const getCategories = async (style, ctHelpers) => {
       [frCA]: DPM_ROOT_CATEGORY
     }, null, ctHelpers);
   }
+
   if (!categories[1]) {
     categories[1] = await createCategory(level1CategoryKey, {
       [enCA]: style.level1Category[enCA],
       [frCA]: style.level1Category[frCA]
     }, categories[0], ctHelpers);
+  } else if (categoryNeedsUpdating(categories[1], level1CategoryKey, style.level1Category[enCA], style.level1Category[frCA])) {
+    categories[1] = await updateCategory(level1CategoryKey, categories[1].version, {
+      [enCA]: style.level1Category[enCA],
+      [frCA]: style.level1Category[frCA]
+    }, categories[0], ctHelpers);
   }
+
   if (!categories[2]) {
     categories[2] = await createCategory(level2CategoryKey, {
       [enCA]: style.level2Category[enCA],
       [frCA]: style.level2Category[frCA]
     }, categories[1], ctHelpers);
+  } else if (categoryNeedsUpdating(categories[2], level2CategoryKey, style.level2Category[enCA], style.level2Category[frCA])) {
+    categories[2] = await updateCategory(level2CategoryKey, categories[2].version, {
+      [enCA]: style.level2Category[enCA],
+      [frCA]: style.level2Category[frCA]
+    }, categories[1], ctHelpers);
   }
+
   if (!categories[3]) {
     categories[3] = await createCategory(level3CategoryKey, {
+      [enCA]: style.level3Category[enCA],
+      [frCA]: style.level3Category[frCA]
+    }, categories[2], ctHelpers);
+  } else if (categoryNeedsUpdating(categories[3], level3CategoryKey, style.level3Category[enCA], style.level3Category[frCA])) {
+    categories[3] = await updateCategory(level3CategoryKey, categories[3].version, {
       [enCA]: style.level3Category[enCA],
       [frCA]: style.level3Category[frCA]
     }, categories[2], ctHelpers);
