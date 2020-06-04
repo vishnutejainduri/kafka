@@ -30,6 +30,9 @@ const main = params => {
   
   const stylesToCreateOrUpdate = (
     params.messages
+      // Note that if instead of using map we use filter here, we will end up with mismatched indexes if any message is filtered out
+      // The indexes have to be consistent from params.messages to what we pass into batchedStylesToCreateOrUpdate,
+      // because it'll be used to extract messages in passDownBatchedErrorsAndFailureIndexes
       .map(addErrorHandling(msg => filterStyleMessages(msg) ? msg : null))
       .map(addErrorHandling(parseStyleMessageCt))
   );
