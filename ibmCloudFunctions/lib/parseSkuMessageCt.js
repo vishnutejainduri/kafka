@@ -11,8 +11,6 @@ const attributeMap = {
 const parseSkuMessageCt = message => Object.keys(message.value).reduce((parsedMessage, attribute) => {
   if (!Object.prototype.hasOwnProperty.call(attributeMap, attribute)) return parsedMessage;
 
-  // Currently we have data only for English sizes. At some point this may
-  // change, and this function will have to be modified.
   if (attribute === 'SIZE') {
     return {
       ...parsedMessage,
@@ -20,7 +18,8 @@ const parseSkuMessageCt = message => Object.keys(message.value).reduce((parsedMe
          // CT throws an error if you try to add a language key whose value is
          // `null`, so we set the value to an empty string by default (which CT
          // is OK with)
-        'en-CA': message.value.SIZE || ''
+        'en-CA': message.value.SIZE_EN || message.value.SIZE || '', // in JESTA, the translation table is missing some values for English sizes, so we fall back to the SIZE value (which is always English)
+        'fr-CA': message.value.SIZE_FR || ''
       }
     };
   }
