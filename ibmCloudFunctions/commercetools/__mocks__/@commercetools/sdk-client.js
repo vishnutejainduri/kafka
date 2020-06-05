@@ -93,6 +93,9 @@ const ctMockResponse = {
   results: [mockOrder],
 };
 
+
+const mockUpdateFn = jest.fn();
+
 const categoryResponsePrototype = {
   "id": "8f1b6d78-c29d-46cf-88fe-5bd935e49fd9",
   "version": 1,
@@ -122,34 +125,66 @@ const categoryResponsePrototype = {
 };
 
 const responses = {
-  'GET-category_en': { ...categoryResponsePrototype, name: {
+  'GET-category_en': () => { return {
+    ...categoryResponsePrototype,
+    key: 'category_en',
+    name: {
       'en-CA': 'category_en',
       'fr-CA': 'category_fr'
     }
-  },
-  'GET-DPMROOTCATEGORY': categoryResponsePrototype,
-  'GET-DPMROOTCATEGORYcategory_en': { ...categoryResponsePrototype, name: {
+  } },
+  'GET-DPMROOTCATEGORY': () => categoryResponsePrototype,
+  'GET-DPMROOTCATEGORYcategory_en': () => { return {
+    ...categoryResponsePrototype,
+    key: 'DPMROOTCATEGORYcategory_en',
+    name: {
       'en-CA': 'category_en',
       'fr-CA': 'category_fr'
     }
-  },
-  'GET-DPMROOTCATEGORYcategory_encategoryLevel1A_en': { ...categoryResponsePrototype, name: {
+  } },
+  'GET-DPMROOTCATEGORYcategory_encategoryLevel1A_en': () => { return {
+    ...categoryResponsePrototype,
+    key: 'DPMROOTCATEGORYcategory_encategoryLevel1A_en',
+    name: {
       'en-CA': 'categoryLevel1A_en',
       'fr-CA': 'categoryLevel1A_fr'
     }
-  },
-  'GET-DPMROOTCATEGORYcategory_encategoryLevel1A_encategoryLevel2A_en': { ...categoryResponsePrototype, name: {
+  } },
+  'GET-DPMROOTCATEGORYcategory_encategoryLevel1A_encategoryLevel2A_en': () => { return {
+    ...categoryResponsePrototype,
+    key: 'DPMROOTCATEGORYcategory_encategoryLevel1A_encategoryLevel2A_en',
+    name: {
       'en-CA': 'categoryLevel2A_en',
       'fr-CA': 'categoryLevel2A_fr'
     }
-  },
+  } },
+  'GET-DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en': () => null,
+  'POST-DPMROOTCATEGORYcategory_encategoryLevel1A_en': (...args) => {
+    mockUpdateFn(...args);
+    return {
+      ...categoryResponsePrototype,
+      key: 'DPMROOTCATEGORYcategory_encategoryLevel1A_en',
+      name: {
+        'en-CA': 'categoryLevel1A_en',
+        'fr-CA': 'updated_fr_value'
+      }
+    }
+  }
 };
 
 const mockClient = {
-  execute: ({ method, uri }) => {
-    if (responses[`${method}-${uri}`]) return { body: responses[`${method}-${uri}`] };
+  execute: ({ method, uri, body }) => {
+    if (responses[`${method}-${uri}`]) return { body: responses[`${method}-${uri}`](method, uri, body) };
+
+    // record other update calls
+    if (method === 'POST') {
+      mockUpdateFn(method, uri, body);
+    }
 
     return ({ body: { ...ctMockResponse, value: { lastModifiedDate: '1970-01-01T00:00:00.050Z' } }});
+  },
+  mocks: {
+    mockUpdateFn
   }
 };
 

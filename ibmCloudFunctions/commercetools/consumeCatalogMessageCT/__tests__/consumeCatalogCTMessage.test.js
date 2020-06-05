@@ -397,12 +397,49 @@ describe('createOrUpdateCategoriesFromStyle', () => {
     expect(response).toBeInstanceOf(Object);
   });
 
-  it('should create categories if they exist in the style data but not CT', () => {
-    throw new Error('not implemented');
+  it('should update categories if they exist in the style data and don\'t match existing CT categories', async () => {
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+    const validMessageUpdatedCategory = {
+      topic: 'styles-connect-jdbc-CATALOG',
+      value: {
+        ... validParams.messages[0].value,
+        CATEGORY_LEVEL_1A_FR: 'updated_fr_value'
+      }
+    };
+    const style = parseStyleMessageCt(validMessageUpdatedCategory);
+    await createOrUpdateCategoriesFromStyle(style, mockedCtHelpers);
+
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls.length).toEqual(1);
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls[0])
+      .toEqual([
+        'POST',
+        'DPMROOTCATEGORYcategory_encategoryLevel1A_en',
+        '{"version":1,"actions":[{"action":"changeName","name":{"en-CA":"categoryLevel1A_en","fr-CA":"updated_fr_value"}},{"action":"changeParent","parent":{"id":"8f1b6d78-c29d-46cf-88fe-5bd935e49fd9","typeId":"category"}}]}'
+      ]);
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
   });
 
-  it('should update categories if they exist in the style data and don\'t match existing CT categories', () => {
-    throw new Error('not implemented');
+  it('should create categories if they exist in the style data but not CT', async () => {
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+    const validMessageNewCategory = {
+      topic: 'styles-connect-jdbc-CATALOG',
+      value: {
+        ... validParams.messages[0].value,
+        CATEGORY_LEVEL_2A_EN: 'new_category_en',
+        CATEGORY_LEVEL_2A_FR: 'new_category_fr'
+      }
+    };
+    const style = parseStyleMessageCt(validMessageNewCategory);
+    await createOrUpdateCategoriesFromStyle(style, mockedCtHelpers);
+
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls.length).toEqual(1);
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls[0])
+      .toEqual([
+        'POST',
+        'category',
+        '{"key":"DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en","name":{"en-CA":"new_category_en","fr-CA":"new_category_fr"},"slug":{"en-CA":"DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en","fr-CA":"DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en"},"parent":{"id":"8f1b6d78-c29d-46cf-88fe-5bd935e49fd9","typeId":"category"}}'
+      ]);
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
   });
 });
 
