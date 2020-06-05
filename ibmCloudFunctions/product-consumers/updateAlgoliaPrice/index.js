@@ -10,7 +10,7 @@ const {
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { createLog, addErrorHandling, log } = require('../utils');
-const { getPriceInfo } = require('./util');
+const { getPriceInfo } = require('./utils');
 
 let client = null;
 let index = null;
