@@ -2,15 +2,10 @@
  * Listens for messages from Event Streams about the sale price of a style.
  */
 const algoliasearch = require('algoliasearch');
-
-const {
-    validateSalePriceMessages,
-    parseSalePriceMessage
-} = require('../../lib/parseSalePriceMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { createLog, addErrorHandling, log } = require('../utils');
-const { getPriceInfo, findApplicablePriceChanges } = require('./utils');
+const { extractStyleId, getPriceInfo, findApplicablePriceChanges } = require('./utils.js');
 
 let client = null;
 let index = null;
@@ -59,11 +54,10 @@ global.main = async function (params) {
     } catch (originalError) {
         throw createError.failedDbConnection(originalError); 
     }
-    
+
     let updates = await Promise.all(params.messages
-        .map(addErrorHandling(validateSalePriceMessages))
-        .map(addErrorHandling(parseSalePriceMessage))
-        .map(addErrorHandling(async ({ styleId }) => {
+        .map(addErrorHandling(extractStyleId))
+        .map(addErrorHandling(async (styleId) => {
             const [prices, style] = await Promise.all([
                 pricesCollection.findOne({ styleId }),
                 stylesColelction.findOne({ _id: styleId })

@@ -33,9 +33,9 @@ describe('updateAlgoliaPrice', () => {
     const invalidMessage = {
         topic: 'sale-prices-connect-jdbc',
         value: {
-            // Invalid message, missing PRICE_CHANGE_ID
-            STYLE_ID: 'different-styleId-with-priceChange',
-            PRICE_CHANGE_ID: undefined,
+            // Invalid message, missing STYLE_ID
+            STYLE_ID: undefined,
+            PRICE_CHANGE_ID: 'priceChangeId',
             START_DATE: '2020',
             END_DATE: '2021',
             ACTIVITY_TYPE: 'a',

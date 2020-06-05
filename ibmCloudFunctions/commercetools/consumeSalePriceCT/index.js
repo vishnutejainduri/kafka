@@ -12,7 +12,7 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownAnyMessageErrors,
+  passDownProcessedMessages,
   validateParams
 } = require('../../product-consumers/utils');
 
@@ -43,7 +43,7 @@ const main = async params => {
   );
   
   return Promise.all(updateStyleSalePricesPromises)
-    .then(passDownAnyMessageErrors)
+    .then(passDownProcessedMessages(params.messages))
     .catch(handleErrors);
 };
 

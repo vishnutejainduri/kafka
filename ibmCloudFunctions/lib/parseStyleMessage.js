@@ -20,9 +20,11 @@ const translatableAttributeMap = {
     'CATEGORY_LEVEL_2A': 'level3Category'
 };
 
+const styleIdKey = 'STYLEID'
+
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
-    'STYLEID': 'id',
+    [styleIdKey]: 'id',
     'WEBSTATUS': 'webStatus',
     'SEASON_CD': 'season',
     'COLORID': 'colourId',
@@ -91,6 +93,8 @@ function parseStyleMessage(msg) {
 }
 
 module.exports = {
+    topicName: TOPIC_NAME,
+    styleIdKey,
     parseStyleMessage,
     filterStyleMessages
 };

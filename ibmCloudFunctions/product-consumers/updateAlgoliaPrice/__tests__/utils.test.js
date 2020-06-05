@@ -1,4 +1,4 @@
-const { findApplicablePriceChanges, getPriceInfo } = require('../utils')
+const { findApplicablePriceChanges, getPriceInfo, extractStyleId } = require('../utils')
 const { siteIds, priceChangeActivityTypes } = require('../../../constants');
 
 describe('findApplicablePriceChanges', () => {
@@ -170,3 +170,41 @@ describe('findApplicablePriceChanges', () => {
   })
 })
 
+describe('extractStyleId', () => {
+  it ('extracts style from sale price messages', () => {
+    const message = {
+      topic: 'sale-prices-connect-jdbc',
+      value: {
+        STYLE_ID: 'sale-style'
+      }
+    }
+    expect(extractStyleId(message)).toEqual('sale-style')
+  })
+  it ('extracts style from catalog messages', () => {
+    const message = {
+      topic: 'styles-connect-jdbc-CATALOG',
+      value: {
+        STYLEID: 'catalog-style'
+      }
+    }
+    expect(extractStyleId(message)).toEqual('catalog-style')
+  })
+  it ('throws an error for unknown topic', () => {
+    const message = {
+      topic: 'unknown-topic',
+      value: {
+        STYLEID: 'catalog-style'
+      }
+    }
+    expect(() => extractStyleId(message)).toThrow()
+  })
+  it ('throws an error if style ID is not defined', () => {
+    const message = {
+      topic: 'styles-connect-jdbc-CATALOG',
+      value: {
+        STYLEID: undefined
+      }
+    }
+    expect(() => extractStyleId(message)).toThrow()
+  })
+})

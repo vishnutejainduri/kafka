@@ -3,10 +3,11 @@ const createError = require('./createError');
 const { siteIds } = require('../constants');
 
 const TOPIC_NAME = 'sale-prices-connect-jdbc';
+const styleIdKey = 'STYLE_ID';
 
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
-    STYLE_ID: 'styleId',
+    [styleIdKey]: 'styleId',
     PRICE_CHANGE_ID: 'priceChangeId',
     START_DATE: 'startDate',
     END_DATE: 'endDate',
@@ -61,6 +62,8 @@ function parseSalePriceMessage(msg) {
 }
 
 module.exports = {
+    topicName: TOPIC_NAME,
+    styleIdKey,
     parseSalePriceMessage,
     validateSalePriceMessages,
     passOnlinePriceMessages

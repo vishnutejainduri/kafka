@@ -76,15 +76,7 @@ const main = async function (params) {
                 return err;
             })
         ))
-    ).then((results) => {
-        const errors = results.filter((res) => res instanceof Error);
-        if (errors.length > 0) {
-            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
-            e.failedUpdatesErrors = errors;
-            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            throw e;
-        }
-    })
+    ).then()
     .catch(originalError => {
         throw createError.consumeCatalogMessage.failed(originalError, params);
     });

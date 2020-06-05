@@ -1,4 +1,6 @@
 const { priceChangeActivityTypes, siteIds } = require('../../constants');
+const parseSalePriceMessage = require('../../lib/parseSalePriceMessage')
+const parseStyleMessage = require('../../lib/parseStyleMessage')
 
 function groupPriceChangesBySiteId (parsedPriceChanges) {
   return parsedPriceChanges.reduce((groupedPriceChanges, priceChange) => {
@@ -57,7 +59,21 @@ function getPriceInfo (originalPrice, applicablePriceChanges) {
   }
 }
 
+const topicStyleIdMapping = {
+  [parseSalePriceMessage.topicName]: parseSalePriceMessage.styleIdKey,
+  [parseStyleMessage.topicName]: parseStyleMessage.styleIdKey
+}
+
+function extractStyleId ({ topic, value }) {
+  const styleId = value[topicStyleIdMapping[topic]]
+  if (!styleId) {
+    throw new Error(`Could not extract style ID from message for topic ${topic} with value: `, value);
+  }
+  return styleId
+}
+
 module.exports = {
   findApplicablePriceChanges,
-  getPriceInfo
+  getPriceInfo,
+  extractStyleId
 }

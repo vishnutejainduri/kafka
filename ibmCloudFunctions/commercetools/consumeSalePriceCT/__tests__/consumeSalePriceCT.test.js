@@ -59,13 +59,11 @@ describe('consumeSalePriceCT', () => {
   it('returns expected success result for correct params and a valid message', async () => {
     const response = await consumeSalePriceCT(validParams);
     return expect(response).toEqual({
-      successCount: 1,
-      failureIndexes: [],
-      errors: []
+      messages: validParams.messages
     });
   });
 
-  it('returns expected ignored result for correct params and a message that should be ignored', async () => {
+  it('ignored messages are still passed down to the next action in the sequence', async () => {
     // site ID is not 09900
     const messageToBeIgnored = {
       ...validMessage,
@@ -79,16 +77,11 @@ describe('consumeSalePriceCT', () => {
       messages: [messageToBeIgnored]
     });
     return expect(response).toEqual({
-      successCount: 0,
-      errorCount: 0,
-      ignoredCount: 1,
-      ignoredIndexes: [0],
-      failureIndexes: [],
-      errors: []
+      messages: [messageToBeIgnored]
     });
   });
 
-  it('returns mixed error/success result for correct params and valid message and an invalid message', async () => {
+  it('messages that resulted in an error are not passed down to the next action in the sequence', async () => {
     // missing topic
     const invalidMessage = { id: 'invalid_message' }; 
     const response = await consumeSalePriceCT({
@@ -98,14 +91,8 @@ describe('consumeSalePriceCT', () => {
         invalidMessage
       ]
     });
-    const error = new Error('Can only parse Sale Price update messages');
     return expect(response).toEqual({
-      successCount: 1,
-      failureIndexes: [1],
-      errors: [{
-        failureIndex: 1,
-        error
-      }]
+      messages: [validMessage]
     });
   });
 });
