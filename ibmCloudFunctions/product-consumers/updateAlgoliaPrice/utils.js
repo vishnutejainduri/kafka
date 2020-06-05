@@ -39,7 +39,8 @@ function findApplicablePriceChanges (parsedPriceChanges) {
 
 /**
  * @param {number} originalPrice
- * @param {{ [siteId: SiteId]: PriceChange }} applicablePriceChanges
+ * @param {ApplicablePriceChanges} applicablePriceChanges
+ * @returns {{ originalPrice?: number, onlinePrice?: number, inStorePrice?: number, isSale: boolean, isOnlineSale: boolean }}
  */
 function getPriceInfo (originalPrice, applicablePriceChanges) {
   const {

@@ -10,7 +10,7 @@ const {
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { createLog, addErrorHandling, log } = require('../utils');
-const { getPriceInfo } = require('./utils');
+const { getPriceInfo, findApplicablePriceChanges } = require('./utils');
 
 let client = null;
 let index = null;
@@ -59,7 +59,7 @@ global.main = async function (params) {
     } catch (originalError) {
         throw createError.failedDbConnection(originalError); 
     }
-
+    
     let updates = await Promise.all(params.messages
         .map(addErrorHandling(validateSalePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage))
@@ -68,16 +68,9 @@ global.main = async function (params) {
                 pricesCollection.findOne({ styleId }),
                 stylesColelction.findOne({ _id: styleId })
             ])
-            const originalPrice = style.originalPrice
-            const priceChanges = prices.priceChanges
-            const { onlinePrice, inStorePrice, isSale, isOnlineSale } = getPriceInfo(originalPrice, priceChanges)
-            return {
-                originalPrice,
-                onlinePrice,
-                inStorePrice,
-                isSale,
-                isOnlineSale
-            }
+
+            const applicablePriceChanges = findApplicablePriceChanges(prices.priceChanges)
+            return getPriceInfo(style.originalPrice, applicablePriceChanges)
         }))
     );
 

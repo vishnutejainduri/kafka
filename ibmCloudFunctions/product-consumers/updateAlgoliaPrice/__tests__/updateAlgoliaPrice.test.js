@@ -17,20 +17,31 @@ describe('updateAlgoliaPrice', () => {
     };
 
     const validMessage = {
-        topic: 'prices-connect-jdbc',
+        topic: 'sale-prices-connect-jdbc',
         value: {
-            STYLE_ID: 'STYLE_ID',
-            SITE_ID: 'SITE_ID',
-            NEW_RETAIL_PRICE: 'NEW_RETAIL_PRICE'
+            STYLE_ID: 'styleId-with-priceChange',
+            PRICE_CHANGE_ID: 'priceChangeId',
+            START_DATE: '2020',
+            END_DATE: '2021',
+            ACTIVITY_TYPE: 'a',
+            PROCESS_DATE_CREATED: 2020,
+            NEW_RETAIL_PRICE: 100,
+            SITE_ID: 'siteId'
         }
     };
 
     const invalidMessage = {
-        topic: 'prices-connect-jdbc',
+        topic: 'sale-prices-connect-jdbc',
         value: {
-            // Invalid message, missing STYLE_ID: 'STYLE_ID',
-            SITE_ID: 'SITE_ID',
-            NEW_RETAIL_PRICE: 'NEW_RETAIL_PRICE'
+            // Invalid message, missing PRICE_CHANGE_ID
+            STYLE_ID: 'different-styleId-with-priceChange',
+            PRICE_CHANGE_ID: undefined,
+            START_DATE: '2020',
+            END_DATE: '2021',
+            ACTIVITY_TYPE: 'a',
+            PROCESS_DATE_CREATED: 2020,
+            NEW_RETAIL_PRICE: 'newRetailPrice',
+            SITE_ID: 'siteId'
         }
     };
 

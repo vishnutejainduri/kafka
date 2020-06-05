@@ -1,4 +1,4 @@
-type PriceChangeActivity = 'c' | 'a' | 'd'
+type PriceChangeActivity = 'C' | 'A' | 'D'
 
 type SiteId = '00990' | '00110'
 
@@ -8,4 +8,8 @@ type PriceChange = {
   startDate: Date,
   activityType: PriceChangeActivity,
   newRetailPrice: number
+}
+
+type ApplicablePriceChanges = {
+  [siteId: SiteId]: PriceChange
 }
