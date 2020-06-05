@@ -68,9 +68,10 @@ global.main = async function (params) {
                 pricesCollection.findOne({ styleId }),
                 stylesColelction.findOne({ _id: styleId })
             ])
-
-            const applicablePriceChanges = findApplicablePriceChanges(prices.priceChanges)
-            return getPriceInfo(style.originalPrice, applicablePriceChanges)
+            const priceChanges = prices && prices.priceChanges || []
+            const originalPrice = style && style.originalPrice || 0
+            const applicablePriceChanges = findApplicablePriceChanges(priceChanges)
+            return getPriceInfo(originalPrice, applicablePriceChanges)
         }))
     );
 
