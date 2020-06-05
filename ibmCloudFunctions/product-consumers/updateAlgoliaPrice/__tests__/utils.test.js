@@ -130,8 +130,8 @@ describe('findApplicablePriceChanges', () => {
       const priceChanges = {}
       expect(getPriceInfo(originalPrice, priceChanges)).toEqual({
         originalPrice,
-        onlinePrice: originalPrice,
-        inStorePrice: originalPrice,
+        onlineSalePrice: null,
+        inStoreSalePrice: null,
         isSale: false,
         isOnlineSale: false,
         lowestPrice: originalPrice,
@@ -150,8 +150,8 @@ describe('findApplicablePriceChanges', () => {
       }
       expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
         originalPrice,
-        onlinePrice: applicablePriceChanges['00990'].newRetailPrice,
-        inStorePrice: applicablePriceChanges['00011'].newRetailPrice,
+        inStoreSalePrice: applicablePriceChanges['00011'].newRetailPrice,
+        onlineSalePrice: applicablePriceChanges['00990'].newRetailPrice,
         isSale: true,
         isOnlineSale: true,
         lowestPrice: originalPrice,
@@ -167,8 +167,8 @@ describe('findApplicablePriceChanges', () => {
       }
       expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
         originalPrice,
-        onlinePrice: applicablePriceChanges['00990'].newRetailPrice,
-        inStorePrice: originalPrice,
+        inStoreSalePrice: null,
+        onlineSalePrice: applicablePriceChanges['00990'].newRetailPrice,
         isSale: false,
         isOnlineSale: true,
         lowestPrice: originalPrice,
@@ -186,8 +186,8 @@ describe('findApplicablePriceChanges', () => {
       }
       expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
         originalPrice,
-        onlinePrice: applicablePriceChanges['00990'].newRetailPrice,
-        inStorePrice: originalPrice,
+        inStoreSalePrice: null,
+        onlineSalePrice: applicablePriceChanges['00990'].newRetailPrice,
         isSale: false,
         isOnlineSale: true,
         lowestPrice: applicablePriceChanges['00990'].newRetailPrice,
@@ -202,8 +202,8 @@ describe('findApplicablePriceChanges', () => {
       }
       expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
         originalPrice,
-        onlinePrice: originalPrice,
-        inStorePrice: applicablePriceChanges['00011'].newRetailPrice,
+        inStoreSalePrice: applicablePriceChanges['00011'].newRetailPrice,
+        onlineSalePrice: null,
         isSale: true,
         isOnlineSale: false,
         lowestPrice: applicablePriceChanges['00011'].newRetailPrice,
@@ -222,13 +222,56 @@ describe('findApplicablePriceChanges', () => {
       }
       expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
         originalPrice,
-        onlinePrice: applicablePriceChanges['00990'].newRetailPrice,
-        inStorePrice: applicablePriceChanges['00011'].newRetailPrice,
+        onlineSalePrice: applicablePriceChanges['00990'].newRetailPrice,
+        inStoreSalePrice: applicablePriceChanges['00011'].newRetailPrice,
         isSale: true,
         isOnlineSale: true,
         lowestPrice: applicablePriceChanges['00011'].newRetailPrice,
         lowestOnlinePrice: applicablePriceChanges['00990'].newRetailPrice
       })
+    })
+  })
+
+  it('returns null as all prices if no prices are available', () => {
+    const applicablePriceChanges = {}
+    expect(getPriceInfo(undefined, applicablePriceChanges)).toEqual({
+      originalPrice: null,
+      onlineSalePrice: null,
+      inStoreSalePrice: null,
+      isSale: false,
+      isOnlineSale: false,
+      lowestPrice: null,
+      lowestOnlinePrice: null
+    })
+  })
+
+  it('returns prices that are 0 properly', () => {
+    const applicablePriceChanges = {}
+    expect(getPriceInfo(0, applicablePriceChanges)).toEqual({
+      originalPrice: 0,
+      onlineSalePrice: null,
+      inStoreSalePrice: null,
+      isSale: false,
+      isOnlineSale: false,
+      lowestPrice: 0,
+      lowestOnlinePrice: 0
+    })
+  })
+
+  it('handles sale price that is 0 properly', () => {
+    const applicablePriceChanges = {
+      '00011': {
+        newRetailPrice: 0
+      }
+    }
+    expect(getPriceInfo(undefined, applicablePriceChanges)).toEqual({
+      originalPrice: null,
+      onlineSalePrice: null,
+      inStoreSalePrice: 0,
+      isSale: true,
+      isOnlineSale: false,
+      lowestPrice: 0,
+      lowestOnlinePrice: null
     })
   })
 })
