@@ -513,7 +513,7 @@
             },
             "isRequired": false,
             "type": {
-                "name": "ltext"
+                "name": "number"
             },
             "attributeConstraint": "SameForAll",
             "isSearchable": false,
