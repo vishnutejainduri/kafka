@@ -173,12 +173,14 @@ const responses = {
 };
 
 const mockClient = {
-  execute: ({ method, uri, body }) => {
-    if (responses[`${method}-${uri}`]) return { body: responses[`${method}-${uri}`](method, uri, body) };
+  execute: (config) => {
+    if (config) {
+      const { method, uri, body } = config;
 
-    // record other update calls
-    if (method === 'POST') {
-      mockUpdateFn(method, uri, body);
+      if (responses[`${method}-${uri}`]) return { body: responses[`${method}-${uri}`](method, uri, body) };
+
+      // record other update calls
+      if (method === 'POST') mockUpdateFn(method, uri, body);
     }
 
     return ({ body: { ...ctMockResponse, value: { lastModifiedDate: '1970-01-01T00:00:00.050Z' } }});
