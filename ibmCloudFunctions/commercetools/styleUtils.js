@@ -88,9 +88,9 @@ const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
   const enCA = languageKeys.ENGLISH;
   const frCA = languageKeys.FRENCH;
 
-  const categoryNeedsUpdating = (fetchedCategory, categoryKey, categoryNameEn, categoryNameFr) => {
-    return fetchedCategory.name[enCA] !== categoryNameEn
-      || fetchedCategory.name[frCA] !== categoryNameFr
+  const categoryNeedsUpdating = (fetchedCategory, categoryKey, categoryName) => {
+    return fetchedCategory.name[enCA] !== categoryName[enCA]
+      || fetchedCategory.name[frCA] !== categoryName[frCA]
       || fetchedCategory.key !== categoryKey;
   };
 
@@ -121,39 +121,21 @@ const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
   }
 
   if (!categories[1]) {
-    categories[1] = await createCategory(level1CategoryKey, {
-      [enCA]: style.level1Category[enCA],
-      [frCA]: style.level1Category[frCA]
-    }, categories[0], ctHelpers);
-  } else if (categoryNeedsUpdating(categories[1], level1CategoryKey, style.level1Category[enCA], style.level1Category[frCA])) {
-    categories[1] = await updateCategory(level1CategoryKey, categories[1].version, {
-      [enCA]: style.level1Category[enCA],
-      [frCA]: style.level1Category[frCA]
-    }, categories[0], ctHelpers);
+    categories[1] = await createCategory(level1CategoryKey, style.level1Category, categories[0], ctHelpers);
+  } else if (categoryNeedsUpdating(categories[1], level1CategoryKey, style.level1Category)) {
+    categories[1] = await updateCategory(level1CategoryKey, categories[1].version, style.level1Category, categories[0], ctHelpers);
   }
 
   if (!categories[2]) {
-    categories[2] = await createCategory(level2CategoryKey, {
-      [enCA]: style.level2Category[enCA],
-      [frCA]: style.level2Category[frCA]
-    }, categories[1], ctHelpers);
-  } else if (categoryNeedsUpdating(categories[2], level2CategoryKey, style.level2Category[enCA], style.level2Category[frCA])) {
-    categories[2] = await updateCategory(level2CategoryKey, categories[2].version, {
-      [enCA]: style.level2Category[enCA],
-      [frCA]: style.level2Category[frCA]
-    }, categories[1], ctHelpers);
+    categories[2] = await createCategory(level2CategoryKey, style.level2Category, categories[1], ctHelpers);
+  } else if (categoryNeedsUpdating(categories[2], level2CategoryKey, style.level2Category)) {
+    categories[2] = await updateCategory(level2CategoryKey, categories[2].version, style.level2Category, categories[1], ctHelpers);
   }
 
   if (!categories[3]) {
-    categories[3] = await createCategory(level3CategoryKey, {
-      [enCA]: style.level3Category[enCA],
-      [frCA]: style.level3Category[frCA]
-    }, categories[2], ctHelpers);
-  } else if (categoryNeedsUpdating(categories[3], level3CategoryKey, style.level3Category[enCA], style.level3Category[frCA])) {
-    categories[3] = await updateCategory(level3CategoryKey, categories[3].version, {
-      [enCA]: style.level3Category[enCA],
-      [frCA]: style.level3Category[frCA]
-    }, categories[2], ctHelpers);
+    categories[3] = await createCategory(level3CategoryKey, style.level3Category, categories[2], ctHelpers);
+  } else if (categoryNeedsUpdating(categories[3], level3CategoryKey, style.level3Category)) {
+    categories[3] = await updateCategory(level3CategoryKey, categories[3].version, style.level3Category, categories[2], ctHelpers);
   }
 
   return categories.slice(1, categories.length).filter(Boolean);
