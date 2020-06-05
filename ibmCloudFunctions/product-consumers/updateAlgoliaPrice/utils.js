@@ -50,15 +50,15 @@ function getPriceInfo (originalPrice, applicablePriceChanges) {
     [siteIds.ONLINE]: onlinePriceChange
   } = applicablePriceChanges
 
-  const onlinePrice = (onlinePriceChange && onlinePriceChange.newRetailPrice) || originalPrice
-  const inStorePrice = (inStorePriceChange && inStorePriceChange.newRetailPrice) || originalPrice
-  const lowestOnlinePrice = Math.min((onlinePrice || 0), (originalPrice || 0))
-  const lowestPrice = Math.min(lowestOnlinePrice, inStorePrice || 0)
+  const onlineSalePrice = onlinePriceChange && Number.isFinite(onlinePriceChange.newRetailPrice) ? onlinePriceChange.newRetailPrice : null
+  const inStoreSalePrice = inStorePriceChange && Number.isFinite(inStorePriceChange.newRetailPrice) ? inStorePriceChange.newRetailPrice : null
+  const lowestOnlinePrice = Math.min((onlineSalePrice || originalPrice), (originalPrice || 0))
+  const lowestPrice = Math.min(lowestOnlinePrice, inStoreSalePrice || originalPrice)
 
   return {
     originalPrice,
-    onlinePrice,
-    inStorePrice,
+    onlineSalePrice,
+    inStoreSalePrice,
     isSale: !!inStorePriceChange,
     isOnlineSale: !!onlinePriceChange,
     lowestOnlinePrice,
