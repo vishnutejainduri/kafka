@@ -88,10 +88,9 @@ const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
   const enCA = languageKeys.ENGLISH;
   const frCA = languageKeys.FRENCH;
 
-  const categoryNeedsUpdating = (fetchedCategory, categoryKey, categoryName) => {
+  const categoryNeedsUpdating = (fetchedCategory, categoryName) => {
     return fetchedCategory.name[enCA] !== categoryName[enCA]
-      || fetchedCategory.name[frCA] !== categoryName[frCA]
-      || fetchedCategory.key !== categoryKey;
+      || fetchedCategory.name[frCA] !== categoryName[frCA];
   };
 
   // TODO
@@ -102,16 +101,14 @@ const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
   // bug 2: this uses the en-CA label for the category name and not the category code from the dictionaryitem
   //  table. this means that changing the label will change the key for the category.
   const level0CategoryKey = categoryNameToKey(DPM_ROOT_CATEGORY);
-  const level1CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[enCA]);
-  const level2CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA]);
-  const level3CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA] + style.level3Category[enCA]);
+  const categoryKeys = [
+    level0CategoryKey,
+    categoryNameToKey(level0CategoryKey + style.level1Category[enCA]),
+    categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA]),
+    categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA] + style.level3Category[enCA]),
+  ];
 
-  const categories = await Promise.all([
-    getCategory(level0CategoryKey, ctHelpers),
-    getCategory(level1CategoryKey, ctHelpers),
-    getCategory(level2CategoryKey, ctHelpers),
-    getCategory(level3CategoryKey, ctHelpers)
-  ]);
+  const categories = await Promise.all(categoryKeys.map(key => getCategory(key, ctHelpers)));
 
   if (!categories[0]) {
     categories[0] = await createCategory(level0CategoryKey, {
@@ -120,22 +117,13 @@ const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
     }, null, ctHelpers);
   }
 
-  if (!categories[1]) {
-    categories[1] = await createCategory(level1CategoryKey, style.level1Category, categories[0], ctHelpers);
-  } else if (categoryNeedsUpdating(categories[1], level1CategoryKey, style.level1Category)) {
-    categories[1] = await updateCategory(level1CategoryKey, categories[1].version, style.level1Category, categories[0], ctHelpers);
-  }
-
-  if (!categories[2]) {
-    categories[2] = await createCategory(level2CategoryKey, style.level2Category, categories[1], ctHelpers);
-  } else if (categoryNeedsUpdating(categories[2], level2CategoryKey, style.level2Category)) {
-    categories[2] = await updateCategory(level2CategoryKey, categories[2].version, style.level2Category, categories[1], ctHelpers);
-  }
-
-  if (!categories[3]) {
-    categories[3] = await createCategory(level3CategoryKey, style.level3Category, categories[2], ctHelpers);
-  } else if (categoryNeedsUpdating(categories[3], level3CategoryKey, style.level3Category)) {
-    categories[3] = await updateCategory(level3CategoryKey, categories[3].version, style.level3Category, categories[2], ctHelpers);
+  for (let i = 1; i < categories.length; i++) {
+    console.log(style[`level${i}Category`])
+    if (!categories[i]) {
+      categories[i] = await createCategory(categoryKeys[i], style[`level${i}Category`], categories[i - 1], ctHelpers);
+    } else if (categoryNeedsUpdating(categories[i], style[`level${i}Category`])) {
+      categories[i] = await updateCategory(categoryKeys[i], categories[i].version, style[`level${i}Category`], categories[i - 1], ctHelpers);
+    }
   }
 
   return categories.slice(1, categories.length).filter(Boolean);
