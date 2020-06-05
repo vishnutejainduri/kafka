@@ -19,7 +19,7 @@ const mockRequestBuilder = {
     build: () => mockRequestBuilder.productTypes
   },
   categories: {
-    byKey: () => mockRequestBuilder.categories,
+    byKey: (categoryKey) => { return { build: () => categoryKey  } },
     build: () => mockRequestBuilder.categories
   },
 };

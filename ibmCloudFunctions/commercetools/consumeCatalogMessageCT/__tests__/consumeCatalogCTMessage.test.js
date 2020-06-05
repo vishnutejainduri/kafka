@@ -9,7 +9,7 @@ const {
   existingCtStyleIsNewer,
   getCtStyleAttributeValue,
   getCategory,
-  getCategories,
+  createOrUpdateCategoriesFromStyle,
   getUniqueCategoryIdsFromCategories,
   createCategory,
   categoryNameToKey,
@@ -273,6 +273,7 @@ const styleActions = [
 ];
 
 const jestaStyle = parseStyleMessageCt(message);
+// See ../../__mocks__
 const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('formatLanguageKeys', () => {
@@ -386,14 +387,22 @@ describe('getCategory', () => {
   });
 });
 
-describe('getCategories', () => {
+describe('createOrUpdateCategoriesFromStyle', () => {
   it('correct message; return mock data', async () => {
      const result =
         validParams.messages
         .filter(addErrorHandling(filterStyleMessages))
-        .map(addErrorHandling(parseStyleMessageCt))
-    const response = await getCategories(result[0], mockedCtHelpers);
+        .map(addErrorHandling(parseStyleMessageCt));
+    const response = await createOrUpdateCategoriesFromStyle(result[0], mockedCtHelpers);
     expect(response).toBeInstanceOf(Object);
+  });
+
+  it('should create categories if they exist in the style data but not CT', () => {
+    throw new Error('not implemented');
+  });
+
+  it('should update categories if they exist in the style data and don\'t match existing CT categories', () => {
+    throw new Error('not implemented');
   });
 });
 
@@ -403,7 +412,7 @@ describe('createCategory', () => {
         validParams.messages
         .filter(addErrorHandling(filterStyleMessages))
         .map(addErrorHandling(parseStyleMessageCt))
-    const categories = await getCategories(result[0], mockedCtHelpers);
+    const categories = await createOrUpdateCategoriesFromStyle(result[0], mockedCtHelpers);
     const categoryName = result[0].level2Category;
     const categoryKey = categoryNameToKey(result[0].level1Category + result[0].level2Category);
 
@@ -420,6 +429,12 @@ describe('createCategory', () => {
   it('returns `null` when given a falsy value as a category name', async () => {
     const response = await createCategory('categoryKey', '', 'parentCategory', mockedCtHelpers);
     expect(response).toBe(null);
+  });
+});
+
+describe('updateCategory', () => {
+  it('should return the proper update actions and endpoint URI', () => {
+    throw new Error('not implemented');
   });
 });
 
@@ -533,7 +548,7 @@ describe('getActionsFromStyle', () => {
         staged: isStaged
       }
     ];
-    
+
     expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithoutOriginalPrice)).toEqual(expect.arrayContaining(expected));
   });
 });
