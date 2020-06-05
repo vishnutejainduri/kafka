@@ -244,6 +244,36 @@ describe('findApplicablePriceChanges', () => {
       lowestOnlinePrice: null
     })
   })
+
+  it('returns prices that are 0 properly', () => {
+    const applicablePriceChanges = {}
+    expect(getPriceInfo(0, applicablePriceChanges)).toEqual({
+      originalPrice: 0,
+      onlineSalePrice: null,
+      inStoreSalePrice: null,
+      isSale: false,
+      isOnlineSale: false,
+      lowestPrice: 0,
+      lowestOnlinePrice: 0
+    })
+  })
+
+  it('handles sale price that is 0 properly', () => {
+    const applicablePriceChanges = {
+      '00011': {
+        newRetailPrice: 0
+      }
+    }
+    expect(getPriceInfo(undefined, applicablePriceChanges)).toEqual({
+      originalPrice: null,
+      onlineSalePrice: null,
+      inStoreSalePrice: 0,
+      isSale: true,
+      isOnlineSale: false,
+      lowestPrice: 0,
+      lowestOnlinePrice: null
+    })
+  })
 })
 
 describe('extractStyleId', () => {
