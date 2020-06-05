@@ -52,8 +52,8 @@ function getPriceInfo (originalPrice, applicablePriceChanges) {
 
   const onlinePrice = (onlinePriceChange && onlinePriceChange.newRetailPrice) || originalPrice
   const inStorePrice = (inStorePriceChange && inStorePriceChange.newRetailPrice) || originalPrice
-  const lowestOnlinePrice = (onlinePrice >= 0 || originalPrice >= 0) ? Math.min((onlinePrice || 0), (originalPrice || 0)) : undefined
-  const lowestPrice = (lowestOnlinePrice >= 0 || inStorePrice >= 0) ? Math.min(lowestOnlinePrice, inStorePrice) : undefined
+  const lowestOnlinePrice = Math.min((onlinePrice || 0), (originalPrice || 0))
+  const lowestPrice = Math.min(lowestOnlinePrice, inStorePrice || 0)
 
   return {
     originalPrice,
