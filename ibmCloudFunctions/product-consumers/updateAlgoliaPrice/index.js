@@ -25,10 +25,6 @@ global.main = async function (params) {
         throw new Error('Requires an App ID for writing to Algolia.');
     }
 
-    if (!params.topicName) {
-        throw new Error('Requires an Event Streams topic.');
-    }
-
     if (index === null) {
         try {
             client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
