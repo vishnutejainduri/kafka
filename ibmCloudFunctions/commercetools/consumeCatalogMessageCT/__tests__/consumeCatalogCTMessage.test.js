@@ -6,16 +6,17 @@ const { addErrorHandling } = require('../../../product-consumers/utils');
 const {
   createStyle,
   updateStyle,
+  updateCategory,
   existingCtStyleIsNewer,
   getCtStyleAttributeValue,
   getCategory,
-  getCategories,
+  createOrUpdateCategoriesFromStyle,
   getUniqueCategoryIdsFromCategories,
   createCategory,
   categoryNameToKey,
   getActionsFromStyle
 } = require('../../styleUtils');
-const { styleAttributeNames, isStaged, entityStatus } = require('../../constantsCt');
+const { languageKeys, styleAttributeNames, isStaged, entityStatus } = require('../../constantsCt');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -276,6 +277,7 @@ const styleActions = [
 ];
 
 const jestaStyle = parseStyleMessageCt(message);
+// See ../../__mocks__
 const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('formatLanguageKeys', () => {
@@ -389,15 +391,63 @@ describe('getCategory', () => {
   });
 });
 
-describe('getCategories', () => {
+describe('createOrUpdateCategoriesFromStyle', () => {
   it('correct message; return mock data', async () => {
      const result =
         validParams.messages
         .filter(addErrorHandling(filterStyleMessages))
-        .map(addErrorHandling(parseStyleMessageCt))
-    const response = await getCategories(result[0], mockedCtHelpers);
+        .map(addErrorHandling(parseStyleMessageCt));
+    const response = await createOrUpdateCategoriesFromStyle(result[0], mockedCtHelpers);
     expect(response).toBeInstanceOf(Object);
   });
+
+  it('should update categories if they exist in the style data and don\'t match existing CT categories', async () => {
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+    const validMessageUpdatedCategory = {
+      topic: 'styles-connect-jdbc-CATALOG',
+      value: {
+        ... validParams.messages[0].value,
+        CATEGORY_LEVEL_1A_FR: 'updated_fr_value'
+      }
+    };
+    const style = parseStyleMessageCt(validMessageUpdatedCategory);
+    await createOrUpdateCategoriesFromStyle(style, mockedCtHelpers);
+
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls.length).toEqual(1);
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls[0])
+      .toEqual([
+        'POST',
+        'DPMROOTCATEGORYcategory_encategoryLevel1A_en',
+        '{"version":1,"actions":[{"action":"changeName","name":{"en-CA":"categoryLevel1A_en","fr-CA":"updated_fr_value"}},{"action":"changeParent","parent":{"id":"8f1b6d78-c29d-46cf-88fe-5bd935e49fd9","typeId":"category"}}]}'
+      ]);
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+  });
+
+  it('should create categories if they exist in the style data but not CT', async () => {
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+    const validMessageNewCategory = {
+      topic: 'styles-connect-jdbc-CATALOG',
+      value: {
+        ... validParams.messages[0].value,
+        CATEGORY_LEVEL_2A_EN: 'new_category_en',
+        CATEGORY_LEVEL_2A_FR: 'new_category_fr'
+      }
+    };
+    const style = parseStyleMessageCt(validMessageNewCategory);
+    await createOrUpdateCategoriesFromStyle(style, mockedCtHelpers);
+
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls.length).toEqual(1);
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls[0])
+      .toEqual([
+        'POST',
+        'category',
+        '{"key":"DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en","name":{"en-CA":"new_category_en","fr-CA":"new_category_fr"},"slug":{"en-CA":"DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en","fr-CA":"DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en"},"parent":{"id":"8f1b6d78-c29d-46cf-88fe-5bd935e49fd9","typeId":"category"}}'
+      ]);
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+  });
+
+  // TODO this is not implemented in the code. It's an edge case but ideally we would.
+  it.todo('should remove categories that are removed from the style');
 });
 
 describe('createCategory', () => {
@@ -406,7 +456,7 @@ describe('createCategory', () => {
         validParams.messages
         .filter(addErrorHandling(filterStyleMessages))
         .map(addErrorHandling(parseStyleMessageCt))
-    const categories = await getCategories(result[0], mockedCtHelpers);
+    const categories = await createOrUpdateCategoriesFromStyle(result[0], mockedCtHelpers);
     const categoryName = result[0].level2Category;
     const categoryKey = categoryNameToKey(result[0].level1Category + result[0].level2Category);
 
@@ -423,6 +473,26 @@ describe('createCategory', () => {
   it('returns `null` when given a falsy value as a category name', async () => {
     const response = await createCategory('categoryKey', '', 'parentCategory', mockedCtHelpers);
     expect(response).toBe(null);
+  });
+});
+
+describe('updateCategory', () => {
+  it('should return the proper update actions and endpoint URI', async () => {
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+    await updateCategory('categoryKey', 1, {
+      [languageKeys.ENGLISH]: 'new category name en',
+      [languageKeys.FRENCH]: 'new category name fr',
+    }, {
+      id: 'parent_category_id'
+    }, mockedCtHelpers);
+
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls.length).toEqual(1);
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls[0]).toEqual([
+      'POST',
+      'categoryKey',
+      '{"version":1,"actions":[{"action":"changeName","name":{"en-CA":"new category name en","fr-CA":"new category name fr"}},{"action":"changeParent","parent":{"id":"parent_category_id","typeId":"category"}}]}'
+    ]);
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
   });
 });
 
@@ -445,7 +515,6 @@ describe('consumeCatalogueMessageCT', () => {
     expect(response).toEqual({ successCount: 1, ok: true });
   });
 });
-
 
 describe('getUniqueCategoryIdsFromCategories', () => {
   it('returns an array of all category IDs when there are no duplicate IDs', () => {
