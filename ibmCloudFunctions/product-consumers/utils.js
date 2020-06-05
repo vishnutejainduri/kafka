@@ -89,11 +89,7 @@ const validateParams = params => {
     }
 };
 
-// Used to handle errors that occurred within particular promises in an array
-// of promises. Should be used together with `addErrorHandling`.
-// Based on the error handling code in `/product-consumers/consumeCatalogMessage/index.js`.
-// Example usage is in `/product-consumers/consumeCatalogMessageCT/index.js`.
-const passDownAnyMessageErrors = messages => {
+const getErrorsAndFailureIndexes = (messages) => {
     let failureIndexes = []
     const errors = messages.filter((result, index) => {
         if (result instanceof Error) {
@@ -101,8 +97,23 @@ const passDownAnyMessageErrors = messages => {
             return true
         }
     });
-    
+    return {
+        failureIndexes,
+        errors
+    }
+}
 
+const passDownProcessedMessages = rawMessages => processedMessages => {
+    const failureIndexes = getErrorsAndFailureIndexes(processedMessages).failureIndexes
+    return { messages: rawMessages.filter((_, index) => !failureIndexes.includes(index)) }
+}
+
+// Used to handle errors that occurred within particular promises in an array
+// of promises. Should be used together with `addErrorHandling`.
+// Based on the error handling code in `/product-consumers/consumeCatalogMessage/index.js`.
+// Example usage is in `/product-consumers/consumeCatalogMessageCT/index.js`.
+const passDownAnyMessageErrors = (messages) => {
+    const { errors, failureIndexes } = getErrorsAndFailureIndexes(messages)
     const ignoredIndexes = messages.reduce((ignoredIndexes, result, index) => {
         if (result === null) {
             ignoredIndexes.push(index)
@@ -124,7 +135,7 @@ const passDownAnyMessageErrors = messages => {
         });
     }
 
-    return result
+    return result;
 };
 
 
@@ -248,6 +259,7 @@ module.exports = {
     createLog,
     validateParams,
     addLoggingToMain,
+    passDownProcessedMessages,
     passDownAnyMessageErrors,
     passDownBatchedErrorsAndFailureIndexes,
     addRetries,

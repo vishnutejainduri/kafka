@@ -14,7 +14,7 @@ const {
 } = require('../../../product-consumers/utils');
 const { priceAttributeNames, isStaged } = require('../../constantsCt');
 
-const { priceActivityTypes } = require('../../../constants');
+const { priceChangeActivityTypes } = require('../../../constants');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -29,7 +29,7 @@ const validMessage = {
     PRICE_CHANGE_ID: 'priceChangeId',
     START_DATE: 1000000000000,
     END_DATE: 1000000000000,
-    ACTIVITY_TYPE: priceActivityTypes.APPROVED,
+    ACTIVITY_TYPE: priceChangeActivityTypes.APPROVED,
     PROCESS_DATE_CREATED: 1000000000000,
     NEW_RETAIL_PRICE: 'newRetailPrice',
     SITE_ID: '00990'
@@ -59,13 +59,11 @@ describe('consumeSalePriceCT', () => {
   it('returns expected success result for correct params and a valid message', async () => {
     const response = await consumeSalePriceCT(validParams);
     return expect(response).toEqual({
-      successCount: 1,
-      failureIndexes: [],
-      errors: []
+      messages: validParams.messages
     });
   });
 
-  it('returns expected ignored result for correct params and a message that should be ignored', async () => {
+  it('ignored messages are still passed down to the next action in the sequence', async () => {
     // site ID is not 09900
     const messageToBeIgnored = {
       ...validMessage,
@@ -79,16 +77,11 @@ describe('consumeSalePriceCT', () => {
       messages: [messageToBeIgnored]
     });
     return expect(response).toEqual({
-      successCount: 0,
-      errorCount: 0,
-      ignoredCount: 1,
-      ignoredIndexes: [0],
-      failureIndexes: [],
-      errors: []
+      messages: [messageToBeIgnored]
     });
   });
 
-  it('returns mixed error/success result for correct params and valid message and an invalid message', async () => {
+  it('messages that resulted in an error are not passed down to the next action in the sequence', async () => {
     // missing topic
     const invalidMessage = { id: 'invalid_message' }; 
     const response = await consumeSalePriceCT({
@@ -98,14 +91,8 @@ describe('consumeSalePriceCT', () => {
         invalidMessage
       ]
     });
-    const error = new Error('Can only parse Sale Price update messages');
     return expect(response).toEqual({
-      successCount: 1,
-      failureIndexes: [1],
-      errors: [{
-        failureIndex: 1,
-        error
-      }]
+      messages: [validMessage]
     });
   });
 });
@@ -121,7 +108,7 @@ describe('updateStyleSalePrice', () => {
     await updateStyleSalePrice(mockedCtHelpers, validParams.productTypeId, pricesToUpdate[0]);
   });
   it('runs without throwing an error for create "C" action', async () => {
-     validParams.messages[0].value.ACTIVITY_TYPE = priceActivityTypes.CREATED;
+     validParams.messages[0].value.ACTIVITY_TYPE = priceChangeActivityTypes.CREATED;
      const result =  
         validParams.messages
         .map(addErrorHandling(validateSalePriceMessages))
@@ -131,7 +118,7 @@ describe('updateStyleSalePrice', () => {
     await updateStyleSalePrice(mockedCtHelpers, validParams.productTypeId, result[0]);
   });
   it('should throw an error of trying to delete "D" a price that does not exist', async () => {
-     validParams.messages[0].value.ACTIVITY_TYPE = priceActivityTypes.DELETED;
+     validParams.messages[0].value.ACTIVITY_TYPE = priceChangeActivityTypes.DELETED;
      const result =  
         validParams.messages
         .map(addErrorHandling(validateSalePriceMessages))
@@ -286,7 +273,7 @@ describe('action generation', () => {
     describe('An update is requird i.e. there is no existing data or it is older than the incoming price message', () => {  
       describe('There is no existing price', () => {
         it('returns an "add price" action for activity types approve "A" and create "C"', () => {
-          const activityTypes = [priceActivityTypes.APPROVED, priceActivityTypes.CREATED];
+          const activityTypes = [priceChangeActivityTypes.APPROVED, priceChangeActivityTypes.CREATED];
           activityTypes.forEach(activityType => {
             const parsedPriceMessage = {
               ...baseParsedPriceMessage,
@@ -304,11 +291,36 @@ describe('action generation', () => {
             expect(actions).toEqual(expectedActions);
           });
         });
+
+        it('returns an "add price" action for activity types approve "A" and create "C" even if there is no endDate specified', () => {
+          const activityTypes = [priceChangeActivityTypes.APPROVED, priceChangeActivityTypes.CREATED];
+          activityTypes.forEach(activityType => {
+            const parsedPriceMessage = {
+              ...baseParsedPriceMessage,
+              endDate: undefined,
+              activityType,
+              priceChangeId: 'different-from' + variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
+            };
+            const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
+    
+            baseExpectedAction.price.custom.fields[priceAttributeNames.PRICE_CHANGE_ID] = parsedPriceMessage.priceChangeId
+            const expectedActions = [{
+              ...baseExpectedAction,
+              price: {
+                ...baseExpectedAction.price,
+                validUntil: undefined
+              },
+              action: 'addPrice',
+              variantId: variantPrice.variantId
+            }];
+            expect(actions).toEqual(expectedActions);
+          });
+        });
     
         it('throws an error for activity type delete "D"', () => {
           const parsedPriceMessage = {
             ...baseParsedPriceMessage,
-            activityType: priceActivityTypes.DELETED,
+            activityType: priceChangeActivityTypes.DELETED,
             priceChangeId: 'different-from' + variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
           }
           expect(() => getActionsForVariantPrice(parsedPriceMessage, variantPrice)).toThrow(new Error ('Price does not exist'));
@@ -328,7 +340,7 @@ describe('action generation', () => {
       describe('There is an existing price', () => {
         describe('and it is outdated i.e. older than the incoming price message', () => {
           it('returns a "change price" action for activity types approve "A" and create "C"', () => {
-            const activityTypes = [priceActivityTypes.APPROVED, priceActivityTypes.CREATED];
+            const activityTypes = [priceChangeActivityTypes.APPROVED, priceChangeActivityTypes.CREATED];
             activityTypes.forEach(activityType => {
               const parsedPriceMessage = {
                 ...baseParsedPriceMessage,
@@ -350,7 +362,7 @@ describe('action generation', () => {
           it('returns a "delete" action for activity types delete "D"', () => {
             const parsedPriceMessage = {
               ...baseParsedPriceMessage,
-              activityType: priceActivityTypes.DELETED,
+              activityType: priceChangeActivityTypes.DELETED,
               priceChangeId: variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
             };
             const actions = getActionsForVariantPrice(parsedPriceMessage, variantPrice);
@@ -370,7 +382,7 @@ describe('action generation', () => {
     it('flatmaps the nested arrays of actions into one flat array of actions', () => {
       const parsedPriceMessage = {
         ...baseParsedPriceMessage,
-        activityType: priceActivityTypes.APPROVED,
+        activityType: priceChangeActivityTypes.APPROVED,
         priceChangeId: 'different-from' + variantPrice.prices[0].custom.fields[priceAttributeNames.PRICE_CHANGE_ID],
       }; 
       const allActions = getActionsForSalePrice(parsedPriceMessage,[variantPrice, variantPrice]);
