@@ -42,7 +42,7 @@ function findApplicablePriceChanges (parsedPriceChanges) {
 /**
  * @param {number} originalPrice
  * @param {ApplicablePriceChanges} applicablePriceChanges
- * @returns {{ originalPrice?: number, onlinePrice?: number, inStorePrice?: number, isSale: boolean, isOnlineSale: boolean }}
+ * @returns {{ originalPrice?: number, onlinePrice?: number, inStorePrice?: number, isSale: boolean, isOnlineSale: boolean, lowestPrice?: number, lowestOnlinePrice?: number }}
  */
 function getPriceInfo (originalPrice, applicablePriceChanges) {
   const {
@@ -50,12 +50,19 @@ function getPriceInfo (originalPrice, applicablePriceChanges) {
     [siteIds.ONLINE]: onlinePriceChange
   } = applicablePriceChanges
 
+  const onlinePrice = (onlinePriceChange && onlinePriceChange.newRetailPrice) || originalPrice
+  const inStorePrice = (inStorePriceChange && inStorePriceChange.newRetailPrice) || originalPrice
+  const lowestOnlinePrice = Math.min((onlinePrice || 0), (originalPrice || 0))
+  const lowestPrice = Math.min(lowestOnlinePrice, inStorePrice || 0)
+
   return {
     originalPrice,
-    onlinePrice: (onlinePriceChange && onlinePriceChange.newRetailPrice) || originalPrice,
-    inStorePrice: (inStorePriceChange && inStorePriceChange.newRetailPrice) || originalPrice,
+    onlinePrice,
+    inStorePrice,
     isSale: !!inStorePriceChange,
-    isOnlineSale: !!onlinePriceChange
+    isOnlineSale: !!onlinePriceChange,
+    lowestOnlinePrice,
+    lowestPrice: lowestPrice
   }
 }
 

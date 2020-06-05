@@ -125,47 +125,110 @@ describe('findApplicablePriceChanges', () => {
 
 describe('findApplicablePriceChanges', () => {
   const originalPrice = 10
-  it('returns original price if no price change exists and sale flags will be false', () => {
-    const priceChanges = {}
-    expect(getPriceInfo(originalPrice, priceChanges)).toEqual({
-      originalPrice,
-      onlinePrice: originalPrice,
-      inStorePrice: originalPrice,
-      isSale: false,
-      isOnlineSale: false
+  describe('original price is applicable as the lowest price', () => {
+    it('returns original price if no price change exists and sale flags will be false', () => {
+      const priceChanges = {}
+      expect(getPriceInfo(originalPrice, priceChanges)).toEqual({
+        originalPrice,
+        onlinePrice: originalPrice,
+        inStorePrice: originalPrice,
+        isSale: false,
+        isOnlineSale: false,
+        lowestPrice: originalPrice,
+        lowestOnlinePrice: originalPrice
+      })
+    })
+  
+    it('returns sale price if price changes exists and sale flags will be true', () => {
+      const applicablePriceChanges = {
+        '00990': {
+          newRetailPrice: 100
+        },
+        '00011': {
+          newRetailPrice: 150
+        }
+      }
+      expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
+        originalPrice,
+        onlinePrice: applicablePriceChanges['00990'].newRetailPrice,
+        inStorePrice: applicablePriceChanges['00011'].newRetailPrice,
+        isSale: true,
+        isOnlineSale: true,
+        lowestPrice: originalPrice,
+        lowestOnlinePrice: originalPrice
+      })
+    })
+  
+    it('returns a mix of online and original sale price if only online sale price exists', () => {
+      const applicablePriceChanges = {
+        '00990': {
+          newRetailPrice: 100
+        }
+      }
+      expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
+        originalPrice,
+        onlinePrice: applicablePriceChanges['00990'].newRetailPrice,
+        inStorePrice: originalPrice,
+        isSale: false,
+        isOnlineSale: true,
+        lowestPrice: originalPrice,
+        lowestOnlinePrice: originalPrice
+      })
     })
   })
 
-  it('returns sale price if price changes exists and sale flags will be true', () => {
-    const applicablePriceChanges = {
-      '00990': {
-        newRetailPrice: 100
-      },
-      '00011': {
-        newRetailPrice: 150
+  describe('sale prices are applicable as the lowest price', () => {
+    it('returns a mix of online and original sale price if only online sale price exists and correctly', () => {
+      const applicablePriceChanges = {
+        '00990': {
+          newRetailPrice: 5
+        }
       }
-    }
-    expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
-      originalPrice,
-      onlinePrice: applicablePriceChanges['00990'].newRetailPrice,
-      inStorePrice: applicablePriceChanges['00011'].newRetailPrice,
-      isSale: true,
-      isOnlineSale: true
+      expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
+        originalPrice,
+        onlinePrice: applicablePriceChanges['00990'].newRetailPrice,
+        inStorePrice: originalPrice,
+        isSale: false,
+        isOnlineSale: true,
+        lowestPrice: applicablePriceChanges['00990'].newRetailPrice,
+        lowestOnlinePrice: applicablePriceChanges['00990'].newRetailPrice
+      })
     })
-  })
-
-  it('returns a mix of online and original sale price if only online sale price exists', () => {
-    const applicablePriceChanges = {
-      '00990': {
-        newRetailPrice: 100
+    it('returns a mix of in-store and original sale price if only in-store sale price exists and correctly', () => {
+      const applicablePriceChanges = {
+        '00011': {
+          newRetailPrice: 5
+        }
       }
-    }
-    expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
-      originalPrice,
-      onlinePrice: applicablePriceChanges['00990'].newRetailPrice,
-      inStorePrice: originalPrice,
-      isSale: false,
-      isOnlineSale: true
+      expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
+        originalPrice,
+        onlinePrice: originalPrice,
+        inStorePrice: applicablePriceChanges['00011'].newRetailPrice,
+        isSale: true,
+        isOnlineSale: false,
+        lowestPrice: applicablePriceChanges['00011'].newRetailPrice,
+        lowestOnlinePrice: originalPrice
+      })
+    })
+
+    it('returns sale price if price changes exists and sale flags will be true and lowest online price is not affected by instore price', () => {
+      const applicablePriceChanges = {
+        '00990': {
+          newRetailPrice: 8
+        },
+        '00011': {
+          newRetailPrice: 5
+        }
+      }
+      expect(getPriceInfo(originalPrice, applicablePriceChanges)).toEqual({
+        originalPrice,
+        onlinePrice: applicablePriceChanges['00990'].newRetailPrice,
+        inStorePrice: applicablePriceChanges['00011'].newRetailPrice,
+        isSale: true,
+        isOnlineSale: true,
+        lowestPrice: applicablePriceChanges['00011'].newRetailPrice,
+        lowestOnlinePrice: applicablePriceChanges['00990'].newRetailPrice
+      })
     })
   })
 })
