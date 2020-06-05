@@ -18,7 +18,7 @@ function findApplicablePriceChange (siteIdPriceChanges) {
   const addedPriceChanges = siteIdPriceChanges.filter(priceChange =>  [priceChangeActivityTypes.APPROVED, priceChangeActivityTypes.CREATED].includes(priceChange.activityType))
   const availablePriceChanges = addedPriceChanges.filter(({ priceChangeId }) => !deletedPriceChangeIds.includes(priceChangeId))
   const currentTime = new Date().getTime()
-  const activePriceChanges = availablePriceChanges.filter(({ startDate, endDate }) => startDate.getTime() <= currentTime && (!endDate || startDate.getTime() >= currentTime))
+  const activePriceChanges = availablePriceChanges.filter(({ startDate, endDate }) => startDate.getTime() <= currentTime && (!endDate || endDate.getTime() >= currentTime))
   if (activePriceChanges.length > 1) {
     throw new Error('Cannot process overlapping price changes for the same site ID.')
   }

@@ -43,7 +43,7 @@ describe('findApplicablePriceChanges', () => {
     }]
     const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
     expect(applicablePriceChanges).toEqual({
-      [siteIds.IN_STORE]: undefined
+      [siteIds.IN_STORE]: mockPriceChanges[0]
     })
   })
   it('returns no price change if the start date is in the future', () => {

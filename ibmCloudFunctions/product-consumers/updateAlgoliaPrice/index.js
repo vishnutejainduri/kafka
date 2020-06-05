@@ -44,11 +44,11 @@ global.main = async function (params) {
         }
     }
 
-    let stylesColelction;
+    let stylesCollection;
     let pricesCollection;
     let updateAlgoliaPriceCount;
     try {
-        stylesColelction = await getCollection(params);
+        stylesCollection = await getCollection(params);
         pricesCollection = await getCollection(params, params.pricesCollectionName);
         updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount');
     } catch (originalError) {
@@ -60,7 +60,7 @@ global.main = async function (params) {
         .map(addErrorHandling(async (styleId) => {
             const [prices, style] = await Promise.all([
                 pricesCollection.findOne({ styleId }),
-                stylesColelction.findOne({ _id: styleId })
+                stylesCollection.findOne({ _id: styleId })
             ])
             const priceChanges = prices && prices.priceChanges || []
             const originalPrice = style && style.originalPrice || 0
