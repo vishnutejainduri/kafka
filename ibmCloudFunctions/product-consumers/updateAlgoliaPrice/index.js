@@ -61,7 +61,12 @@ global.main = async function (params) {
             const priceChanges = prices && prices.priceChanges || []
             const originalPrice = style && style.originalPrice || 0
             const applicablePriceChanges = findApplicablePriceChanges(priceChanges)
-            return getPriceInfo(originalPrice, applicablePriceChanges)
+            const priceInfo = getPriceInfo(originalPrice, applicablePriceChanges)
+            const algoliaUpdatePayload = {
+                objectID: styleId,
+                ...priceInfo
+            }
+            return algoliaUpdatePayload
         }))
     );
 
