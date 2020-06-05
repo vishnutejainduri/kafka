@@ -470,6 +470,7 @@ module.exports = {
   createStyle,
   createAndPublishStyle,
   updateStyle,
+  updateCategory,
   createOrUpdateStyle,
   existingCtStyleIsNewer,
   getActionsFromStyle,

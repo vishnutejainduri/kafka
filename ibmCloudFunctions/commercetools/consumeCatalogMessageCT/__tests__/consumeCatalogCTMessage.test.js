@@ -6,6 +6,7 @@ const { addErrorHandling } = require('../../../product-consumers/utils');
 const {
   createStyle,
   updateStyle,
+  updateCategory,
   existingCtStyleIsNewer,
   getCtStyleAttributeValue,
   getCategory,
@@ -15,7 +16,7 @@ const {
   categoryNameToKey,
   getActionsFromStyle
 } = require('../../styleUtils');
-const { styleAttributeNames, isStaged, entityStatus } = require('../../constantsCt');
+const { languageKeys, styleAttributeNames, isStaged, entityStatus } = require('../../constantsCt');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -441,6 +442,9 @@ describe('createOrUpdateCategoriesFromStyle', () => {
       ]);
     mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
   });
+
+  // TODO this is not implemented in the code. It's an edge case but ideally we would.
+  it.todo('should remove categories that are removed from the style');
 });
 
 describe('createCategory', () => {
@@ -470,8 +474,22 @@ describe('createCategory', () => {
 });
 
 describe('updateCategory', () => {
-  it('should return the proper update actions and endpoint URI', () => {
-    throw new Error('not implemented');
+  it('should return the proper update actions and endpoint URI', async () => {
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+    await updateCategory('categoryKey', 1, {
+      [languageKeys.ENGLISH]: 'new category name en',
+      [languageKeys.FRENCH]: 'new category name fr',
+    }, {
+      id: 'parent_category_id'
+    }, mockedCtHelpers);
+
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls.length).toEqual(1);
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls[0]).toEqual([
+      'POST',
+      'categoryKey',
+      '{"version":1,"actions":[{"action":"changeName","name":{"en-CA":"new category name en","fr-CA":"new category name fr"}},{"action":"changeParent","parent":{"id":"parent_category_id","typeId":"category"}}]}'
+    ]);
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
   });
 });
 
@@ -486,7 +504,6 @@ describe('consumeCatalogueMessageCT', () => {
     expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
   });
 });
-
 
 describe('getUniqueCategoryIdsFromCategories', () => {
   it('returns an array of all category IDs when there are no duplicate IDs', () => {
