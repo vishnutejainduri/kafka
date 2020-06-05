@@ -84,7 +84,7 @@ const getCategory = async (category, { client, requestBuilder }) => {
   }
 };
 
-const getCategories = async (style, ctHelpers) => {
+const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
   const enCA = languageKeys.ENGLISH;
   const frCA = languageKeys.FRENCH;
 
@@ -94,8 +94,14 @@ const getCategories = async (style, ctHelpers) => {
       || fetchedCategory.key !== categoryKey;
   };
 
+  // TODO
+  // bug 1: this will create the same key for different categories in some cases
+  //  ex: if the style is part of a lv 1 category for Clothing and lvl 3 for "Dress Shirts"
+  //  and another style is part of lv 1: Clothing and lvl _2_ "Dress Shirts" they will have the same
+  //  category key
+  // bug 2: this uses the en-CA label for the category name and not the category code from the dictionaryitem
+  //  table. this means that changing the label will change the key for the category.
   const level0CategoryKey = categoryNameToKey(DPM_ROOT_CATEGORY);
-  // These keys are based on the English labels for the category and not the dictionary code.
   const level1CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[enCA]);
   const level2CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA]);
   const level3CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA] + style.level3Category[enCA]);
@@ -439,7 +445,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
 
     if (!existingCtStyle) {
       // the given style isn't currently stored in CT, so we create a new one
-      const categories = await getCategories(style, ctHelpers);
+      const categories = await createOrUpdateCategoriesFromStyle(style, ctHelpers);
       return createAndPublishStyle(style, productType, categories, ctHelpers);
     }
 
@@ -456,7 +462,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     }
     // the given style is up-to-date and an earlier version of it is already
     // stored in CT, so we just need to update its attributes
-    const categories = await getCategories(style, ctHelpers);
+    const categories = await createOrUpdateCategoriesFromStyle(style, ctHelpers);
     return updateStyle({ style, existingCtStyle, productType, categories, ctHelpers });
 };
 
@@ -472,7 +478,7 @@ module.exports = {
   getProductType,
   getExistingCtStyle,
   getCategory,
-  getCategories,
+  createOrUpdateCategoriesFromStyle,
   getUniqueCategoryIdsFromCategories,
   createCategory,
   categoryNameToKey
