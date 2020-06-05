@@ -1,6 +1,6 @@
     rules:
       catalog-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message-with-retry
+        action: /${ORG}_${SPACE}/product-consumers/update-catalog-sequence
         trigger: catalog-trigger
       styles-basic-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-styles-basic-message-with-retry
