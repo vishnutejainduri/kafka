@@ -118,7 +118,6 @@ const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
   }
 
   for (let i = 1; i < categories.length; i++) {
-    console.log(style[`level${i}Category`])
     if (!categories[i]) {
       categories[i] = await createCategory(categoryKeys[i], style[`level${i}Category`], categories[i - 1], ctHelpers);
     } else if (categoryNeedsUpdating(categories[i], style[`level${i}Category`])) {
