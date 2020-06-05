@@ -52,11 +52,32 @@ function getPriceInfo (originalPrice, applicablePriceChanges) {
 
   const onlineSalePrice = onlinePriceChange && Number.isFinite(onlinePriceChange.newRetailPrice) ? onlinePriceChange.newRetailPrice : null
   const inStoreSalePrice = inStorePriceChange && Number.isFinite(inStorePriceChange.newRetailPrice) ? inStorePriceChange.newRetailPrice : null
-  const lowestOnlinePrice = Math.min((onlineSalePrice || originalPrice), (originalPrice || 0))
-  const lowestPrice = Math.min(lowestOnlinePrice, inStoreSalePrice || originalPrice)
+
+  let lowestOnlinePrice
+  let lowestPrice
+
+  if (Number.isFinite(originalPrice)) {
+    if (onlineSalePrice === null) {
+      lowestOnlinePrice = originalPrice
+    } else {
+      lowestOnlinePrice = Math.min(originalPrice, onlineSalePrice)
+    }
+    if (lowestOnlinePrice === null) {
+      lowestPrice = inStoreSalePrice
+    } else {
+      if (inStoreSalePrice === null) {
+        lowestPrice = lowestOnlinePrice
+      } else {
+        lowestPrice = Math.min(inStoreSalePrice, lowestOnlinePrice)
+      }
+    }
+  } else {
+    lowestOnlinePrice = onlineSalePrice
+    lowestPrice = inStoreSalePrice
+  }
 
   return {
-    originalPrice,
+    originalPrice: Number.isFinite(originalPrice) ? originalPrice : null,
     onlineSalePrice,
     inStoreSalePrice,
     isSale: !!inStorePriceChange,

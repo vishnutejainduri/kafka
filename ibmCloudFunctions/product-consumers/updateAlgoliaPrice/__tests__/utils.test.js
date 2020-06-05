@@ -231,6 +231,19 @@ describe('findApplicablePriceChanges', () => {
       })
     })
   })
+
+  it('returns null as all prices if no prices are available', () => {
+    const applicablePriceChanges = {}
+    expect(getPriceInfo(undefined, applicablePriceChanges)).toEqual({
+      originalPrice: null,
+      onlineSalePrice: null,
+      inStoreSalePrice: null,
+      isSale: false,
+      isOnlineSale: false,
+      lowestPrice: null,
+      lowestOnlinePrice: null
+    })
+  })
 })
 
 describe('extractStyleId', () => {
