@@ -1,6 +1,7 @@
 const { priceChangeActivityTypes, siteIds } = require('../../constants');
 const parseSalePriceMessage = require('../../lib/parseSalePriceMessage')
 const parseStyleMessage = require('../../lib/parseStyleMessage')
+const { getMostUpToDateObject } = require('../../lib/utils')
 
 function groupPriceChangesBySiteId (parsedPriceChanges) {
   return parsedPriceChanges.reduce((groupedPriceChanges, priceChange) => {
@@ -13,16 +14,36 @@ function groupPriceChangesBySiteId (parsedPriceChanges) {
   }, {})
 }
 
+function getLatestPriceChanges (groupedParsedPriceChanges) {
+  return Object.values(groupedParsedPriceChanges).reduce((latestPriceChanges, groupedPriceChanges) => {
+    latestPriceChanges.push(getMostUpToDateObject('processDateCreated')(groupedPriceChanges))
+    return latestPriceChanges
+  }, [])
+}
+
+function groupPriceChangesById (parsedPriceChanges) {
+  return parsedPriceChanges.reduce((groupedPriceChanges, priceChange) => {
+    if (groupedPriceChanges[priceChange.priceChangeId]) {
+      groupedPriceChanges[priceChange.priceChangeId].push(priceChange)
+    } else {
+      groupedPriceChanges[priceChange.priceChangeId] = [priceChange]
+    }
+    return groupedPriceChanges
+  }, {})
+}
+
 function findApplicablePriceChange (siteIdPriceChanges) {
-  const deletedPriceChangeIds = siteIdPriceChanges.filter(priceChange => priceChange.activityType === priceChangeActivityTypes.DELETED).map(({ priceChangeId }) => priceChangeId)
   const addedPriceChanges = siteIdPriceChanges.filter(priceChange =>  [priceChangeActivityTypes.APPROVED, priceChangeActivityTypes.CREATED].includes(priceChange.activityType))
-  const availablePriceChanges = addedPriceChanges.filter(({ priceChangeId }) => !deletedPriceChangeIds.includes(priceChangeId))
+  const deletedPriceChanges = siteIdPriceChanges.filter(priceChange => priceChange.activityType === priceChangeActivityTypes.DELETED)
+  const availablePriceChanges = addedPriceChanges.filter(({ priceChangeId, processDateCreated }) => !deletedPriceChanges.find(deletedPriceChange => (deletedPriceChange.priceChangeId === priceChangeId && deletedPriceChange.processDateCreated >= processDateCreated)))
   const currentTime = new Date().getTime()
   const activePriceChanges = availablePriceChanges.filter(({ startDate, endDate }) => startDate.getTime() <= currentTime && (!endDate || endDate.getTime() >= currentTime))
-  if (activePriceChanges.length > 1) {
+  const activePriceChangesGroupedById = groupPriceChangesById(activePriceChanges)
+  const latestActivePriceChanges = getLatestPriceChanges(activePriceChangesGroupedById)
+  if (latestActivePriceChanges.length > 1) {
     throw new Error('Cannot process overlapping price changes for the same site ID.')
   }
-  return activePriceChanges[0]
+  return latestActivePriceChanges[0]
 }
 
 // standard price change: a price change that has an start date but no end date

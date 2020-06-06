@@ -63,7 +63,8 @@ describe('findApplicablePriceChanges', () => {
       priceChangeId: '1',
       siteId: siteIds.IN_STORE,
       startDate: new Date('2019'),
-      activityType: priceChangeActivityTypes.APPROVED
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2019')
     },{
       priceChangeId: '2',
       siteId: siteIds.ONLINE,
@@ -72,11 +73,36 @@ describe('findApplicablePriceChanges', () => {
     },{
       priceChangeId: '1',
       siteId: siteIds.IN_STORE,
-      activityType: priceChangeActivityTypes.DELETED
+      activityType: priceChangeActivityTypes.DELETED,
+      processDateCreated: new Date('2020')
     }]
     const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
     expect(applicablePriceChanges).toEqual({
       [siteIds.IN_STORE]: undefined,
+      [siteIds.ONLINE]: mockPriceChanges[1]
+    })
+  })
+  it('does not deleted a price change if deletion had happened before approval/creation', () => {
+    const mockPriceChanges = [{
+      priceChangeId: '1',
+      siteId: siteIds.IN_STORE,
+      startDate: new Date('2019'),
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2020')
+    },{
+      priceChangeId: '2',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      activityType: priceChangeActivityTypes.CREATED
+    },{
+      priceChangeId: '1',
+      siteId: siteIds.IN_STORE,
+      activityType: priceChangeActivityTypes.DELETED,
+      processDateCreated: new Date('2019')
+    }]
+    const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
+    expect(applicablePriceChanges).toEqual({
+      [siteIds.IN_STORE]: mockPriceChanges[0],
       [siteIds.ONLINE]: mockPriceChanges[1]
     })
   })
@@ -102,7 +128,34 @@ describe('findApplicablePriceChanges', () => {
       [siteIds.ONLINE]: mockPriceChanges[1]
     })
   })
-  it('throws an error if there are overlapping price changes for the same site ID', () => {
+  it('applies the latest change there are overlapping price changes for the same site ID with different price change IDs', () => {
+    const mockPriceChanges = [{
+      priceChangeId: '1',
+      siteId: siteIds.IN_STORE,
+      startDate: new Date('2019'),
+      activityType: priceChangeActivityTypes.APPROVED
+    },{
+      priceChangeId: '1',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2019'),
+      activityType: priceChangeActivityTypes.CREATED,
+      newRetailPrice: 100,
+      processDateCreated: new Date('2019')
+    },{
+      priceChangeId: '1',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2019'),
+      activityType: priceChangeActivityTypes.CREATED,
+      newRetailPrice: 105,
+      processDateCreated: new Date('2020')
+    }]
+    const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
+    expect(applicablePriceChanges).toEqual({
+      [siteIds.IN_STORE]: mockPriceChanges[0],
+      [siteIds.ONLINE]: mockPriceChanges[2]
+    })
+  })
+  it('throws an error if there are overlapping price changes for the same site ID with the same price change IDs', () => {
     const mockPriceChanges = [{
       priceChangeId: '1',
       siteId: siteIds.IN_STORE,
@@ -114,7 +167,7 @@ describe('findApplicablePriceChanges', () => {
       startDate: new Date('2020'),
       activityType: priceChangeActivityTypes.CREATED
     },{
-      priceChangeId: '1',
+      priceChangeId: '2',
       siteId: siteIds.ONLINE,
       startDate: new Date('2020'),
       activityType: priceChangeActivityTypes.CREATED
