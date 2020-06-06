@@ -35,7 +35,7 @@ const existingCtPriceIsNewer = (existingCtPrice, parsedPriceMessage) => {
 
   if (!existingProcessDateCreated) return false;
   
-  return getTime(existingProcessDateCreated) >= getTime(parsedPriceMessage[priceAttributeNames.PROCESS_DATE_CREATED]);
+  return getTime(existingProcessDateCreated) > getTime(parsedPriceMessage[priceAttributeNames.PROCESS_DATE_CREATED]);
 };
 
 const getExistingCtOriginalPrice = (variantPrice) => {
