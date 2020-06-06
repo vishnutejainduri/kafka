@@ -88,23 +88,22 @@ const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
   const frCA = languageKeys.FRENCH;
 
   const categoryNeedsUpdating = (fetchedCategory, categoryName) => {
+    if (!fetchedCategory.name || !categoryName) {
+      console.log(fetchedCategory, categoryName)
+    }
     return fetchedCategory.name[enCA] !== categoryName[enCA]
       || fetchedCategory.name[frCA] !== categoryName[frCA];
   };
 
   // TODO
-  // bug 1: this will create the same key for different categories in some cases
-  //  ex: if the style is part of a lv 1 category for Clothing and lvl 3 for "Dress Shirts"
-  //  and another style is part of lv 1: Clothing and lvl _2_ "Dress Shirts" they will have the same
-  //  category key
-  // bug 2: this uses the en-CA label for the category name and not the category code from the dictionaryitem
+  // bug 1: this uses the en-CA label for the category name and not the category code from the dictionaryitem
   //  table. this means that changing the label will change the key for the category.
   const level0CategoryKey = categoryNameToKey(DPM_ROOT_CATEGORY);
   const categoryKeys = [
     level0CategoryKey,
     categoryNameToKey(level0CategoryKey + style.level1Category[enCA]),
-    categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA]),
-    categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA] + style.level3Category[enCA]),
+    categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + '-' + style.level2Category[enCA]),
+    categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + '-' + style.level2Category[enCA] + '-' + style.level3Category[enCA]),
   ];
 
   const categories = await Promise.all(categoryKeys.map(key => getCategory(key, ctHelpers)));
