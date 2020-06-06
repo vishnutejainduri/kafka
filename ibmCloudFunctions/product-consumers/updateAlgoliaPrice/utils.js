@@ -33,9 +33,9 @@ function groupPriceChangesById (parsedPriceChanges) {
 }
 
 function findApplicablePriceChange (siteIdPriceChanges) {
-  const deletedPriceChangeIds = siteIdPriceChanges.filter(priceChange => priceChange.activityType === priceChangeActivityTypes.DELETED).map(({ priceChangeId }) => priceChangeId)
   const addedPriceChanges = siteIdPriceChanges.filter(priceChange =>  [priceChangeActivityTypes.APPROVED, priceChangeActivityTypes.CREATED].includes(priceChange.activityType))
-  const availablePriceChanges = addedPriceChanges.filter(({ priceChangeId }) => !deletedPriceChangeIds.includes(priceChangeId))
+  const deletedPriceChanges = siteIdPriceChanges.filter(priceChange => priceChange.activityType === priceChangeActivityTypes.DELETED)
+  const availablePriceChanges = addedPriceChanges.filter(({ priceChangeId, processDateCreated }) => !deletedPriceChanges.find(deletedPriceChange => (deletedPriceChange.priceChangeId === priceChangeId && deletedPriceChange.processDateCreated >= processDateCreated)))
   const currentTime = new Date().getTime()
   const activePriceChanges = availablePriceChanges.filter(({ startDate, endDate }) => startDate.getTime() <= currentTime && (!endDate || endDate.getTime() >= currentTime))
   const activePriceChangesGroupedById = groupPriceChangesById(activePriceChanges)

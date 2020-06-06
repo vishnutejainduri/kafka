@@ -63,7 +63,8 @@ describe('findApplicablePriceChanges', () => {
       priceChangeId: '1',
       siteId: siteIds.IN_STORE,
       startDate: new Date('2019'),
-      activityType: priceChangeActivityTypes.APPROVED
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2019')
     },{
       priceChangeId: '2',
       siteId: siteIds.ONLINE,
@@ -72,11 +73,36 @@ describe('findApplicablePriceChanges', () => {
     },{
       priceChangeId: '1',
       siteId: siteIds.IN_STORE,
-      activityType: priceChangeActivityTypes.DELETED
+      activityType: priceChangeActivityTypes.DELETED,
+      processDateCreated: new Date('2020')
     }]
     const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
     expect(applicablePriceChanges).toEqual({
       [siteIds.IN_STORE]: undefined,
+      [siteIds.ONLINE]: mockPriceChanges[1]
+    })
+  })
+  it('does not deleted a price change if deletion had happened before approval/creation', () => {
+    const mockPriceChanges = [{
+      priceChangeId: '1',
+      siteId: siteIds.IN_STORE,
+      startDate: new Date('2019'),
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2020')
+    },{
+      priceChangeId: '2',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      activityType: priceChangeActivityTypes.CREATED
+    },{
+      priceChangeId: '1',
+      siteId: siteIds.IN_STORE,
+      activityType: priceChangeActivityTypes.DELETED,
+      processDateCreated: new Date('2019')
+    }]
+    const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
+    expect(applicablePriceChanges).toEqual({
+      [siteIds.IN_STORE]: mockPriceChanges[0],
       [siteIds.ONLINE]: mockPriceChanges[1]
     })
   })
