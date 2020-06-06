@@ -268,8 +268,18 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   });
   priceUpdateActions = priceUpdateActions.reduce((finalActions, currentActions) => [...finalActions, ...currentActions], []);
 
+  // Tax category is currently set on product creation, but it wasn't always.
+  // This is to set the tax categories of any products that were created before
+  // we made  that change.
+  const taxCategoryUpdateAction = {
+    action: 'setTaxCategory',
+    taxCategory: {
+      key: TAX_CATEGORY
+    }
+  }
+
   const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...priceUpdateActions,
-    ...categoriesAddAction, ...categoriesRemoveAction].filter(Boolean);
+    ...categoriesAddAction, ...categoriesRemoveAction, taxCategoryUpdateAction].filter(Boolean);
 
   return allUpdateActions;
 };
