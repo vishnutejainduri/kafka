@@ -274,6 +274,12 @@ const styleActions = [
     category: { id: 'cat3', typeId: 'category' },
     staged: false,
   },
+  {
+    action: 'setTaxCategory',
+    taxCategory: {
+      key: 'jesta-tax-descriptions'
+    }
+  }
 ];
 
 const jestaStyle = parseStyleMessageCt(message);
@@ -581,14 +587,13 @@ describe('getActionsFromStyle', () => {
   });
 
   it('returns the correct actions when given a style from which categories should be removed', () => {
-    const expected = [...styleActions, {
+    const removeAction = {
         action: 'removeFromCategory',
         category: { id: 'cat4', typeId: 'category' },
         staged: false,
-      },
-    ];
+    }
 
-    expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithCategories)).toEqual(expected);
+    expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithCategories)).toEqual(expect.arrayContaining([removeAction]));
   });
 
   it('includes the correct actions when given a style that initially didnt have its original price set', () => {
