@@ -423,7 +423,7 @@ describe('createOrUpdateCategoriesFromStyle', () => {
     expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls[0])
       .toEqual([
         'POST',
-        'DPMROOTCATEGORYcategory_encategoryLevel1A_en',
+        'DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en',
         '{"version":1,"actions":[{"action":"changeName","name":{"en-CA":"categoryLevel1A_en","fr-CA":"updated_fr_value"}},{"action":"changeParent","parent":{"id":"8f1b6d78-c29d-46cf-88fe-5bd935e49fd9","typeId":"category"}}]}'
       ]);
     mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
@@ -447,7 +447,7 @@ describe('createOrUpdateCategoriesFromStyle', () => {
       .toEqual([
         'POST',
         'category',
-        '{"key":"DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en","name":{"en-CA":"new_category_en","fr-CA":"new_category_fr"},"slug":{"en-CA":"DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en","fr-CA":"DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en"},"parent":{"id":"8f1b6d78-c29d-46cf-88fe-5bd935e49fd9","typeId":"category"}}'
+        '{"key":"DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3new_category_en","name":{"en-CA":"new_category_en","fr-CA":"new_category_fr"},"slug":{"en-CA":"DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3new_category_en","fr-CA":"DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3new_category_en"},"parent":{"id":"8f1b6d78-c29d-46cf-88fe-5bd935e49fd9","typeId":"category"}}'
       ]);
     mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
   });

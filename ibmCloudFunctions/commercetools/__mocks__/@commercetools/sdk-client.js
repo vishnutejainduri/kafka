@@ -134,36 +134,36 @@ const responses = {
     }
   } },
   'GET-DPMROOTCATEGORY': () => categoryResponsePrototype,
-  'GET-DPMROOTCATEGORYcategory_en': () => { return {
+  'GET-DPMROOTCATEGORY-l1category_en': () => { return {
     ...categoryResponsePrototype,
-    key: 'DPMROOTCATEGORYcategory_en',
+    key: 'DPMROOTCATEGORY-l1category_en',
     name: {
       'en-CA': 'category_en',
       'fr-CA': 'category_fr'
     }
   } },
-  'GET-DPMROOTCATEGORYcategory_encategoryLevel1A_en': () => { return {
+  'GET-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en': () => { return {
     ...categoryResponsePrototype,
-    key: 'DPMROOTCATEGORYcategory_encategoryLevel1A_en',
+    key: 'DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en',
     name: {
       'en-CA': 'categoryLevel1A_en',
       'fr-CA': 'categoryLevel1A_fr'
     }
   } },
-  'GET-DPMROOTCATEGORYcategory_encategoryLevel1A_encategoryLevel2A_en': () => { return {
+  'GET-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3categoryLevel2A_en': () => { return {
     ...categoryResponsePrototype,
-    key: 'DPMROOTCATEGORYcategory_encategoryLevel1A_encategoryLevel2A_en',
+    key: 'DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3categoryLevel2A_en',
     name: {
       'en-CA': 'categoryLevel2A_en',
       'fr-CA': 'categoryLevel2A_fr'
     }
   } },
-  'GET-DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en': () => null,
-  'POST-DPMROOTCATEGORYcategory_encategoryLevel1A_en': (...args) => {
+  'GET-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3new_category_en': () => null,
+  'POST-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en': (...args) => {
     mockUpdateFn(...args);
     return {
       ...categoryResponsePrototype,
-      key: 'DPMROOTCATEGORYcategory_encategoryLevel1A_en',
+      key: 'DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en',
       name: {
         'en-CA': 'categoryLevel1A_en',
         'fr-CA': 'updated_fr_value'
