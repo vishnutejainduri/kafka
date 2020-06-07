@@ -17,7 +17,7 @@ const { getAllVariantPrices, getExistingCtOriginalPrice } = require('./consumeSa
 const categoryKeyFromNames = (...categoryNames) => {
   return categoryNames
     .map((categoryName) => {
-      return categoryName instanceof Object && categoryName[languageKeys.ENGLISH]
+      return categoryName instanceof Object && Object.prototype.hasOwnProperty.call(categoryName, languageKeys.ENGLISH)
         ? categoryName[languageKeys.ENGLISH]
         : categoryName;
     })
