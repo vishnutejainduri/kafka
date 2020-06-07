@@ -359,6 +359,14 @@ describe('categoryKeyFromNames', () => {
     expect(actual2).toEqual('name_en');
   });
 
+  it('should handle blank localizedStrings', () => {
+    const actual = categoryKeyFromNames('root', {
+      [languageKeys.ENGLISH]: '',
+      [languageKeys.FRENCH]: '',
+    }, 'name_l2');
+    expect(actual).toEqual('root-l1-l2name_l2');
+  });
+
   it('should generate different category keys for the same category name at different levels', () => {
     const actual = categoryKeyFromNames('root', 'leaf');
     const actual2 = categoryKeyFromNames('root', '', 'leaf');
