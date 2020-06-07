@@ -13,7 +13,7 @@ const {
   createOrUpdateCategoriesFromStyle,
   getUniqueCategoryIdsFromCategories,
   createCategory,
-  categoryNameToKey,
+  categoryKeyFromNames,
   getActionsFromStyle
 } = require('../../styleUtils');
 const { languageKeys, styleAttributeNames, isStaged, entityStatus } = require('../../constantsCt');
@@ -343,6 +343,30 @@ describe('parseStyleMessageCt', () => {
   });
 });
 
+describe('categoryKeyFromNames', () => {
+  it('should only allow certain characters to match CT', () => {
+    const actual = categoryKeyFromNames('Aa 123_- !@#');
+    expect(actual).toEqual('Aa123_');
+  });
+
+  it('should handle either name strings or CT localizeString objects', () => {
+    const actual = categoryKeyFromNames({
+      [languageKeys.ENGLISH]: 'name_en',
+      [languageKeys.FRENCH]: 'name_fr',
+    });
+    const actual2 = categoryKeyFromNames('name_en');
+    expect(actual).toEqual('name_en');
+    expect(actual2).toEqual('name_en');
+  });
+
+  it('should generate different category keys for the same category name at different levels', () => {
+    const actual = categoryKeyFromNames('root', 'leaf');
+    const actual2 = categoryKeyFromNames('root', '', 'leaf');
+    expect(actual).toEqual('root-l1leaf');
+    expect(actual2).toEqual('root-l1-l2leaf');
+  });
+});
+
 describe('existingCtStyleIsNewer', () => {
   it('returns true if existing CT style is newer than the given JESTA style', () => {
     expect(existingCtStyleIsNewer(ctStyleNewer, jestaStyle, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)).toBe(true);
@@ -423,7 +447,7 @@ describe('createOrUpdateCategoriesFromStyle', () => {
     expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls[0])
       .toEqual([
         'POST',
-        'DPMROOTCATEGORYcategory_encategoryLevel1A_en',
+        'DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en',
         '{"version":1,"actions":[{"action":"changeName","name":{"en-CA":"categoryLevel1A_en","fr-CA":"updated_fr_value"}},{"action":"changeParent","parent":{"id":"8f1b6d78-c29d-46cf-88fe-5bd935e49fd9","typeId":"category"}}]}'
       ]);
     mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
@@ -447,7 +471,7 @@ describe('createOrUpdateCategoriesFromStyle', () => {
       .toEqual([
         'POST',
         'category',
-        '{"key":"DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en","name":{"en-CA":"new_category_en","fr-CA":"new_category_fr"},"slug":{"en-CA":"DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en","fr-CA":"DPMROOTCATEGORYcategory_encategoryLevel1A_ennew_category_en"},"parent":{"id":"8f1b6d78-c29d-46cf-88fe-5bd935e49fd9","typeId":"category"}}'
+        '{"key":"DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3new_category_en","name":{"en-CA":"new_category_en","fr-CA":"new_category_fr"},"slug":{"en-CA":"DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3new_category_en","fr-CA":"DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3new_category_en"},"parent":{"id":"8f1b6d78-c29d-46cf-88fe-5bd935e49fd9","typeId":"category"}}'
       ]);
     mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
   });
@@ -464,7 +488,7 @@ describe('createCategory', () => {
         .map(addErrorHandling(parseStyleMessageCt))
     const categories = await createOrUpdateCategoriesFromStyle(result[0], mockedCtHelpers);
     const categoryName = result[0].level2Category;
-    const categoryKey = categoryNameToKey(result[0].level1Category + result[0].level2Category);
+    const categoryKey = categoryKeyFromNames(result[0].level1Category, result[0].level2Category);
 
     const response = await createCategory(categoryKey, categoryName, categories[0], mockedCtHelpers);
 

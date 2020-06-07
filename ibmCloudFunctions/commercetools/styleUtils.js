@@ -9,7 +9,26 @@ const {
 } = require('./constantsCt');
 const { getAllVariantPrices, getExistingCtOriginalPrice } = require('./consumeSalePriceCT/utils');
 
-const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
+/**
+ * Generates a category key based on the names of the category and all it's ancestors.
+ * @param {Array<string|LocalizedString>} categoryNames
+ * @return {string}
+ */
+const categoryKeyFromNames = (...categoryNames) => {
+  return categoryNames
+    .map((categoryName) => {
+      return categoryName instanceof Object && categoryName[languageKeys.ENGLISH]
+        ? categoryName[languageKeys.ENGLISH]
+        : categoryName;
+    })
+    .map((categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, ''))
+    .reduce((categoryKey, categoryName, index) => {
+      return index > 0
+        ? categoryKey + `-l${index}` + categoryName
+        : categoryName;
+    }, '');
+};
+
 const DPM_ROOT_CATEGORY = 'DPM ROOT CATEGORY';
 
 const createCategory = async (categoryKey, categoryName, parentCategory, { client, requestBuilder }) => {
@@ -93,24 +112,19 @@ const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
   };
 
   // TODO
-  // bug 1: this will create the same key for different categories in some cases
-  //  ex: if the style is part of a lv 1 category for Clothing and lvl 3 for "Dress Shirts"
-  //  and another style is part of lv 1: Clothing and lvl _2_ "Dress Shirts" they will have the same
-  //  category key
-  // bug 2: this uses the en-CA label for the category name and not the category code from the dictionaryitem
+  // bug 1: this uses the en-CA label for the category name and not the category code from the dictionaryitem
   //  table. this means that changing the label will change the key for the category.
-  const level0CategoryKey = categoryNameToKey(DPM_ROOT_CATEGORY);
   const categoryKeys = [
-    level0CategoryKey,
-    categoryNameToKey(level0CategoryKey + style.level1Category[enCA]),
-    categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA]),
-    categoryNameToKey(level0CategoryKey + style.level1Category[enCA] + style.level2Category[enCA] + style.level3Category[enCA]),
+    categoryKeyFromNames(DPM_ROOT_CATEGORY),
+    categoryKeyFromNames(DPM_ROOT_CATEGORY, style.level1Category),
+    categoryKeyFromNames(DPM_ROOT_CATEGORY, style.level1Category, style.level2Category),
+    categoryKeyFromNames(DPM_ROOT_CATEGORY, style.level1Category, style.level2Category, style.level3Category),
   ];
 
   const categories = await Promise.all(categoryKeys.map(key => getCategory(key, ctHelpers)));
 
   if (!categories[0]) {
-    categories[0] = await createCategory(level0CategoryKey, {
+    categories[0] = await createCategory(categoryKeys[0], {
       [enCA]: DPM_ROOT_CATEGORY,
       [frCA]: DPM_ROOT_CATEGORY
     }, null, ctHelpers);
@@ -461,5 +475,5 @@ module.exports = {
   createOrUpdateCategoriesFromStyle,
   getUniqueCategoryIdsFromCategories,
   createCategory,
-  categoryNameToKey
+  categoryKeyFromNames
 };
