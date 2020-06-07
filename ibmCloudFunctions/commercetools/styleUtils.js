@@ -11,7 +11,7 @@ const { getAllVariantPrices, getExistingCtOriginalPrice } = require('./consumeSa
 
 /**
  * Generates a category key based on the names of the category and all it's ancestors.
- * @param {Array<string>} categoryNames
+ * @param {Array<string|LocalizedString>} categoryNames
  * @return {string}
  */
 const categoryKeyFromNames = (...categoryNames) => {

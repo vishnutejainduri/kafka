@@ -343,6 +343,30 @@ describe('parseStyleMessageCt', () => {
   });
 });
 
+describe('categoryKeyFromNames', () => {
+  it('should only allow certain characters to match CT', () => {
+    const actual = categoryKeyFromNames('Aa 123_- !@#');
+    expect(actual).toEqual('Aa123_');
+  });
+
+  it('should handle either name strings or CT localizeString objects', () => {
+    const actual = categoryKeyFromNames({
+      [languageKeys.ENGLISH]: 'name_en',
+      [languageKeys.FRENCH]: 'name_fr',
+    });
+    const actual2 = categoryKeyFromNames('name_en');
+    expect(actual).toEqual('name_en');
+    expect(actual2).toEqual('name_en');
+  });
+
+  it('should generate different category keys for the same category name at different levels', () => {
+    const actual = categoryKeyFromNames('root', 'leaf');
+    const actual2 = categoryKeyFromNames('root', '', 'leaf');
+    expect(actual).toEqual('root-l1leaf');
+    expect(actual2).toEqual('root-l1-l2leaf');
+  });
+});
+
 describe('existingCtStyleIsNewer', () => {
   it('returns true if existing CT style is newer than the given JESTA style', () => {
     expect(existingCtStyleIsNewer(ctStyleNewer, jestaStyle, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)).toBe(true);
