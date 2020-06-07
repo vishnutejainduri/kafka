@@ -13,7 +13,7 @@ const {
   createOrUpdateCategoriesFromStyle,
   getUniqueCategoryIdsFromCategories,
   createCategory,
-  categoryNameToKey,
+  categoryKeyFromNames,
   getActionsFromStyle
 } = require('../../styleUtils');
 const { languageKeys, styleAttributeNames, isStaged, entityStatus } = require('../../constantsCt');
@@ -464,7 +464,7 @@ describe('createCategory', () => {
         .map(addErrorHandling(parseStyleMessageCt))
     const categories = await createOrUpdateCategoriesFromStyle(result[0], mockedCtHelpers);
     const categoryName = result[0].level2Category;
-    const categoryKey = categoryNameToKey(result[0].level1Category + result[0].level2Category);
+    const categoryKey = categoryKeyFromNames(result[0].level1Category, result[0].level2Category);
 
     const response = await createCategory(categoryKey, categoryName, categories[0], mockedCtHelpers);
 
