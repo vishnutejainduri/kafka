@@ -654,4 +654,23 @@ describe('getActionsFromStyle', () => {
 
     expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithoutOriginalPrice)).toEqual(expect.arrayContaining(expected));
   });
+
+  it('does not include an action to set the tax category if it was already set on the style', () => {
+    const mockStyleThatHasATaxCategory = {
+      ...mockCtStyleWithoutCategories,
+      taxCategory: {
+        typeId: 'tax-category',
+        id: 't-1'
+      }
+    };
+
+    const taxCategoryUpdateAction = {
+      action: 'setTaxCategory',
+      taxCategory: {
+        key: 'jesta-tax-descriptions'
+      }
+    };
+
+    expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockStyleThatHasATaxCategory)).toEqual(expect.not.arrayContaining([taxCategoryUpdateAction]));
+  })
 });

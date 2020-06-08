@@ -285,7 +285,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   // Tax category is currently set on product creation, but it wasn't always.
   // This is to set the tax categories of any products that were created before
   // we made that change.
-  const taxCategoryUpdateAction = {
+  const taxCategoryUpdateAction = existingCtStyle.taxCategory ? null : {
     action: 'setTaxCategory',
     taxCategory: {
       key: TAX_CATEGORY
