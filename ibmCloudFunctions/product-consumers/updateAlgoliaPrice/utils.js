@@ -121,8 +121,83 @@ function extractStyleId ({ topic, value }) {
   return styleId
 }
 
+async function findUnprocessedStyleIds (pricesCollection, processingDate) {
+  return pricesCollection({
+    priceChanges: {
+        $elemMatch: {
+            $or: [{
+                $and: [{
+                    startDate: {
+                        $lt: processingDate
+                    },
+                    startDateProcessed: 'false'
+                }]
+            }, {
+                $and: [{
+                    endDate: {
+                        $lt: processingDate
+                    }
+                }, {
+                    endDateProcessed: 'false'
+                }]
+            }]
+        }
+    }
+  }, {
+    styleId: 1
+  }).limit(10000)
+}
+
+function updateChangesQuery ({ isEndDate, isFailure, processingDate, processedStyleIds }) {
+  return [
+    {
+      $and: [
+        {
+          styleId: { $in: processedStyleIds }
+        },
+        {
+          priceChanges: {
+            $elemMatch: {
+              [isEndDate ? 'endDate' : 'startDate']: {
+                $lt: processingDate
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      $set: {
+          [`priceChanges.$[].${isEndDate ? 'endDateProcessed' : 'startDateProcessed'}`]: isFailure ? 'failure' : 'true'
+      }
+    },
+    {
+      multi: true
+    }
+  ]
+}
+
+async function markProcessedChanges (pricesCollection, processingDate, processedStyleIds) {
+  const isFailure = false
+  return Promise.all([
+    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, processedStyleIds })),
+    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, processedStyleIds }))
+  ])
+}
+
+async function markFailedChanges (pricesCollection, processingDate, failedStyleIds) {
+  const isFailure = true
+  return Promise.all([
+    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, failedStyleIds })),
+    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, failedStyleIds }))
+  ])
+}
+
 module.exports = {
   findApplicablePriceChanges,
   getPriceInfo,
-  extractStyleId
+  extractStyleId,
+  findUnprocessedStyleIds,
+  markProcessedChanges,
+  markFailedChanges
 }
