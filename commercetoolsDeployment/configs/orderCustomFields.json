@@ -10,7 +10,7 @@
           "name": "orderLastModifiedDate",
           "label": {
               "fr-CA": "",
-              "en-CA": "Order Last Modified Date"
+              "en-CA": "Order last modified date"
           },
           "required": false,
           "type": {
@@ -34,7 +34,7 @@
           "name": "isStorePickup",
           "label": {
               "fr-CA": "",
-              "en-CA": "Is Store Pickup"
+              "en-CA": "Is store pickup"
           },
           "required": false,
           "type": {
@@ -72,7 +72,7 @@
       {
           "name": "signatureIsRequired",
           "label": {
-              "en-CA": "Signaure is required"
+              "en-CA": "Signature is required"
           },
           "required": false,
           "type": {
