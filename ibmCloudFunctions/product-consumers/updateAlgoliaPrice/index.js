@@ -55,7 +55,7 @@ global.main = async function (params) {
     // which were not applicable immediate after we received the messages including the price change.
     // Price changes won't be applicable if they have a start date or end date that is in future.
     // Here, we find the messages which initially were not processed, but now can be processed since their startDate or endDate has arrived.
-    const processingDate = new this.Date()
+    const processingDate = new Date()
     const styleIds = params.messages && params.messages.length
         ? params.messages.map(addErrorHandling(extractStyleId))
         : await findUnprocessedStyleIds(pricesCollection, processingDate)
@@ -92,11 +92,13 @@ global.main = async function (params) {
         return true
     });
 
+    // We mark the price changes that were successfully processed as well as those that failed to process,
+    // so that in the next run we don't reprocess them
     await Promise.all([
         markProcessedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => !failureIndexes.includes(index))),
         markFailedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => failureIndexes.includes(index))),
     ])
-    
+
     if (updates.length > 0) {
         await index.partialUpdateObjects(updates)
             .then(() => updateAlgoliaPriceCount.insert({ batchSize: updates.length }))
@@ -111,10 +113,19 @@ global.main = async function (params) {
     }
 
     if (messageFailures.length > 0) {
-        throw createError.updateAlgoliaPrice.partialFailure(params.messages, messageFailures);
+        throw createError.updateAlgoliaPrice.partialFailure(params.messages || styleIds, messageFailures);
     }
 
-    return params;
+    return {
+        counts: {
+            styleIds: styleIds.length,
+            successes: styleIds.length - failureIndexes.length,
+            failures: failureIndexes.length
+        },
+        styleIds,
+        failureIndexes,
+        messageFailures
+    };
 };
 
 module.exports = global.main;

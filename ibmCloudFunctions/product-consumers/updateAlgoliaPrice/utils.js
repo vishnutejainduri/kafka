@@ -41,7 +41,7 @@ function findApplicablePriceChange (siteIdPriceChanges) {
   const activePriceChangesGroupedById = groupPriceChangesById(activePriceChanges)
   const latestActivePriceChanges = getLatestPriceChanges(activePriceChangesGroupedById)
   if (latestActivePriceChanges.length > 1) {
-    throw new Error('Cannot process overlapping price changes for the same site ID.')
+    throw new Error(`Cannot process overlapping price changes for the same site ID for price changes: ${siteIdPriceChanges.map(({ priceChangeId }) => priceChangeId)}`)
   }
   return latestActivePriceChanges[0]
 }
@@ -122,7 +122,7 @@ function extractStyleId ({ topic, value }) {
 }
 
 async function findUnprocessedStyleIds (pricesCollection, processingDate) {
-  return pricesCollection({
+  const documents = await pricesCollection.find({
     priceChanges: {
         $elemMatch: {
             $or: [{
@@ -143,17 +143,21 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate) {
             }]
         }
     }
-  }, {
-    styleId: 1
-  }).limit(10000)
+  })
+    .project({
+      styleId: 1
+    })
+    .limit(10000)
+    .toArray()
+  return documents.map(({ styleId }) => styleId)
 }
 
-function updateChangesQuery ({ isEndDate, isFailure, processingDate, processedStyleIds }) {
+function updateChangesQuery ({ isEndDate, isFailure, processingDate, styleIds }) {
   return [
     {
       $and: [
         {
-          styleId: { $in: processedStyleIds }
+          styleId: { $in: styleIds }
         },
         {
           priceChanges: {
@@ -180,16 +184,16 @@ function updateChangesQuery ({ isEndDate, isFailure, processingDate, processedSt
 async function markProcessedChanges (pricesCollection, processingDate, processedStyleIds) {
   const isFailure = false
   return Promise.all([
-    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, processedStyleIds })),
-    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, processedStyleIds }))
+    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, styleIds: processedStyleIds })),
+    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, styleIds: processedStyleIds }))
   ])
 }
 
 async function markFailedChanges (pricesCollection, processingDate, failedStyleIds) {
   const isFailure = true
   return Promise.all([
-    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, failedStyleIds })),
-    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, failedStyleIds }))
+    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, styleIds: failedStyleIds })),
+    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, styleIds: failedStyleIds }))
   ])
 }
 
