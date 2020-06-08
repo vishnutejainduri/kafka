@@ -1,5 +1,5 @@
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
-const { addErrorHandling, log, createLog, addLoggingToMain } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain, passDownProcessedMessages } = require('../utils');
 const createError = require('../../lib/createError');
 const getCollection = require('../../lib/getCollection');
 
@@ -76,15 +76,7 @@ const main = async function (params) {
                 return err;
             })
         ))
-    ).then((results) => {
-        const errors = results.filter((res) => res instanceof Error);
-        if (errors.length > 0) {
-            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
-            e.failedUpdatesErrors = errors;
-            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            throw e;
-        }
-    })
+    ).then(passDownProcessedMessages(params.messages))
     .catch(originalError => {
         throw createError.consumeCatalogMessage.failed(originalError, params);
     });

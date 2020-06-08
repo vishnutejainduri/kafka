@@ -9,9 +9,10 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownAnyMessageErrors,
+  passDownBatchedErrorsAndFailureIndexes,
   validateParams
 } = require('../../product-consumers/utils');
+const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
 
 // Holds two CT helpers, including the CT client. It's declared outside of
 // `main` so the same client can be shared between warm starts.
@@ -29,17 +30,25 @@ const main = params => {
   
   const stylesToCreateOrUpdate = (
     params.messages
-      .filter(addErrorHandling(filterStyleMessages))
+      // Note that if instead of using map we use filter here, we will end up with mismatched indexes if any message is filtered out
+      // The indexes have to be consistent from params.messages to what we pass into batchedStylesToCreateOrUpdate,
+      // because it'll be used to extract messages in passDownBatchedErrorsAndFailureIndexes
+      .map(addErrorHandling(msg => filterStyleMessages(msg) ? msg : null))
       .map(addErrorHandling(parseStyleMessageCt))
   );
 
+  const batchedStylesToCreateOrUpdate = groupByAttribute('styleId')(stylesToCreateOrUpdate)
   const stylePromises = (
-    stylesToCreateOrUpdate
-      .map(addErrorHandling(createOrUpdateStyle.bind(null, ctHelpers, productTypeId)))
+    batchedStylesToCreateOrUpdate
+      .map(addErrorHandling(batchedParsedMessages => {
+        const latestParsedMessage = getMostUpToDateObject('lastModifiedDate')(batchedParsedMessages);
+        return createOrUpdateStyle(ctHelpers, productTypeId, latestParsedMessage);
+      }))
   );
 
+  
   return Promise.all(stylePromises)
-    .then(passDownAnyMessageErrors)
+    .then(passDownBatchedErrorsAndFailureIndexes(batchedStylesToCreateOrUpdate))
     .catch(handleErrors);
 };
 

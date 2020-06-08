@@ -44,7 +44,7 @@ const existingCtBarcodeIsNewer = (existingCtBarcode, givenBarcode) => {
   const existingCtBarcodeDate = new Date(existingCtBarcode.value.lastModifiedDate); // the date is stored as a UTC string in CT
   const givenBarcodeDate = new Date(givenBarcode.lastModifiedDate); // the date is stored as a Unix time integer in JESTA
 
-  return existingCtBarcodeDate.getTime() >= givenBarcodeDate.getTime();
+  return existingCtBarcodeDate.getTime() > givenBarcodeDate.getTime();
 };
 
 const createOrUpdateBarcodes = (barcodes, ctHelpers) => (

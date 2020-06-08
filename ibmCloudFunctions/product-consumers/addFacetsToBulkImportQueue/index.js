@@ -9,20 +9,36 @@ const parseFacetMessageWithErrorHandling = addErrorHandling(
 );
 
 const updateAlgoliaFacetQueue = algoliaFacetQueue => (facetData) => {
-    return algoliaFacetQueue.updateOne({ _id: facetData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: facetData }, { upsert: true })
-        .catch((err) => {
-            console.error('Problem with facet ' + facetData._id);
-            console.error(err);
-            if (!(err instanceof Error)) {
-                const e = new Error();
-                e.originalError = err;
-                e.attemptedDocument = facetData;
-                return e;
-            }
+    return algoliaFacetQueue.updateOne(
+      {
+        facetValue: {
+          en: facetData.facetValue.en,
+          fr: facetData.facetValue.fr
+        },
+        facetName: facetData.facetName,
+        styleId: facetData.styleId,
+        typeId: facetData.typeId,
+        isMarkedForDeletion: facetData.isMarkedForDeletion
+      },
+      {
+        $currentDate: { lastModifiedInternal: { $type:"timestamp" } },
+        $set: facetData
+      },
+      { upsert: true }
+    )
+      .catch((err) => {
+          console.error('Problem with facet ' + facetData.styleId + facetData.facetName);
+          console.error(err);
+          if (!(err instanceof Error)) {
+              const e = new Error();
+              e.originalError = err;
+              e.attemptedDocument = facetData;
+              return e;
+          }
 
-            err.attemptedDocument = facetData;
-            return err;
-        })
+          err.attemptedDocument = facetData;
+          return err;
+      })
 };
 
 const updateAlgoliaFacetQueueWithErrorHandling = algoliaFacetQueue => addErrorHandling(

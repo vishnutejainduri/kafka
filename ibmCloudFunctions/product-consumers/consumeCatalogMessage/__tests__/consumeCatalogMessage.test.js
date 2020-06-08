@@ -229,7 +229,7 @@ describe('consumeCatalogMessage', () => {
             bulkAtsRecalculateQueue: 'bulkAtsRecalculateQueue'
         };
         const response = await consumeCatalogMessage(params);
-        // returns nothing/undefined if successfully run
-        expect(response).toEqual(undefined);
+        // returns messages
+        expect(response).toEqual({ messages: params.messages });
     });
 });

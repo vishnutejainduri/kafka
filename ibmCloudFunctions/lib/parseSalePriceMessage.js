@@ -3,16 +3,18 @@ const createError = require('./createError');
 const { siteIds } = require('../constants');
 
 const TOPIC_NAME = 'sale-prices-connect-jdbc';
+const styleIdKey = 'STYLE_ID';
 
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
-    STYLE_ID: 'styleId',
+    [styleIdKey]: 'styleId',
     PRICE_CHANGE_ID: 'priceChangeId',
     START_DATE: 'startDate',
     END_DATE: 'endDate',
     ACTIVITY_TYPE: 'activityType',
     PROCESS_DATE_CREATED: 'processDateCreated',
-    NEW_RETAIL_PRICE: 'newRetailPrice'
+    NEW_RETAIL_PRICE: 'newRetailPrice',
+    SITE_ID: 'siteId'
 };
 
 function validateSalePriceMessages(msg) {
@@ -41,9 +43,6 @@ function parseSalePriceMessage(msg) {
         throw createError.parsePriceMessage.noStyleId()
     }
 
-    priceData._id = priceData.styleId + '-' + priceData.priceChangeId;
-    priceData.id = priceData.styleId + '-' + priceData.priceChangeId;
-
     if (priceData.endDate) {
         // Jesta forces a time of 00:00 for all dates
         // So when HR people set an end date of May 28, Jesta converts it to May 28 at 00:00
@@ -54,7 +53,7 @@ function parseSalePriceMessage(msg) {
 
     priceData.startDate = new Date(priceData.startDate)
 
-    priceData._id = priceData.styleId;
+    priceData.id = priceData.styleId;
     priceData.priceChangeId = priceData.priceChangeId.toString();
     priceData.processDateCreated = new Date(priceData.processDateCreated);
     priceData.isOriginalPrice = false;
@@ -63,6 +62,8 @@ function parseSalePriceMessage(msg) {
 }
 
 module.exports = {
+    topicName: TOPIC_NAME,
+    styleIdKey,
     parseSalePriceMessage,
     validateSalePriceMessages,
     passOnlinePriceMessages

@@ -93,8 +93,101 @@ const ctMockResponse = {
   results: [mockOrder],
 };
 
+
+const mockUpdateFn = jest.fn();
+
+const categoryResponsePrototype = {
+  "id": "8f1b6d78-c29d-46cf-88fe-5bd935e49fd9",
+  "version": 1,
+  "lastMessageSequenceNumber": 1,
+  "createdAt": "2020-04-20T19:57:34.586Z",
+  "lastModifiedAt": "2020-04-20T19:57:34.586Z",
+  "lastModifiedBy": {
+    "clientId": "9YnDCNDg16EER7mWlMjXeHkF",
+    "isPlatformClient": false
+  },
+  "createdBy": {
+    "clientId": "9YnDCNDg16EER7mWlMjXeHkF",
+    "isPlatformClient": false
+  },
+  "key": "DPMROOTCATEGORY",
+  "name": {
+    "en-CA": "DPM ROOT CATEGORY",
+    "fr-CA": "DPM ROOT CATEGORY"
+  },
+  "slug": {
+    "en-CA": "DPMROOTCATEGORY",
+    "fr-CA": "DPMROOTCATEGORY"
+  },
+  "ancestors": [],
+  "orderHint": "0.00001587412654585211010057",
+  "assets": []
+};
+
+const responses = {
+  'GET-category_en': () => { return {
+    ...categoryResponsePrototype,
+    key: 'category_en',
+    name: {
+      'en-CA': 'category_en',
+      'fr-CA': 'category_fr'
+    }
+  } },
+  'GET-DPMROOTCATEGORY': () => categoryResponsePrototype,
+  'GET-DPMROOTCATEGORY-l1category_en': () => { return {
+    ...categoryResponsePrototype,
+    key: 'DPMROOTCATEGORY-l1category_en',
+    name: {
+      'en-CA': 'category_en',
+      'fr-CA': 'category_fr'
+    }
+  } },
+  'GET-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en': () => { return {
+    ...categoryResponsePrototype,
+    key: 'DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en',
+    name: {
+      'en-CA': 'categoryLevel1A_en',
+      'fr-CA': 'categoryLevel1A_fr'
+    }
+  } },
+  'GET-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3categoryLevel2A_en': () => { return {
+    ...categoryResponsePrototype,
+    key: 'DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3categoryLevel2A_en',
+    name: {
+      'en-CA': 'categoryLevel2A_en',
+      'fr-CA': 'categoryLevel2A_fr'
+    }
+  } },
+  'GET-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3new_category_en': () => null,
+  'POST-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en': (...args) => {
+    mockUpdateFn(...args);
+    return {
+      ...categoryResponsePrototype,
+      key: 'DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en',
+      name: {
+        'en-CA': 'categoryLevel1A_en',
+        'fr-CA': 'updated_fr_value'
+      }
+    }
+  }
+};
+
 const mockClient = {
-  execute: () => ({ body: { ...ctMockResponse, value: { lastModifiedDate: '1970-01-01T00:00:00.050Z' } }})
+  execute: (config) => {
+    if (config) {
+      const { method, uri, body } = config;
+
+      if (responses[`${method}-${uri}`]) return { body: responses[`${method}-${uri}`](method, uri, body) };
+
+      // record other update calls
+      if (method === 'POST') mockUpdateFn(method, uri, body);
+    }
+
+    return ({ body: { ...ctMockResponse, value: { lastModifiedDate: '1970-01-01T00:00:00.050Z' } }});
+  },
+  mocks: {
+    mockUpdateFn
+  }
 };
 
 const sdkClient = {

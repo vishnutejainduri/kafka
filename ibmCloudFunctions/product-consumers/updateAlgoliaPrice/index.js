@@ -2,14 +2,10 @@
  * Listens for messages from Event Streams about the sale price of a style.
  */
 const algoliasearch = require('algoliasearch');
-const {
-    filterPriceMessages,
-    parsePriceMessage,
-    generateUpdateFromParsedMessage
-} = require('../../lib/parsePriceMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { createLog, addErrorHandling, log } = require('../utils');
+const { extractStyleId, getPriceInfo, findApplicablePriceChanges } = require('./utils.js');
 
 let client = null;
 let index = null;
@@ -29,10 +25,6 @@ global.main = async function (params) {
         throw new Error('Requires an App ID for writing to Algolia.');
     }
 
-    if (!params.topicName) {
-        throw new Error('Requires an Event Streams topic.');
-    }
-
     if (index === null) {
         try {
             client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
@@ -48,38 +40,33 @@ global.main = async function (params) {
         }
     }
 
-    let styles;
-    let prices;
+    let stylesCollection;
+    let pricesCollection;
     let updateAlgoliaPriceCount;
     try {
-        styles = await getCollection(params);
-        prices = await getCollection(params, params.pricesCollectionName);
+        stylesCollection = await getCollection(params);
+        pricesCollection = await getCollection(params, params.pricesCollectionName);
         updateAlgoliaPriceCount = await getCollection(params, 'updateAlgoliaPriceCount');
     } catch (originalError) {
         throw createError.failedDbConnection(originalError); 
     }
 
     let updates = await Promise.all(params.messages
-        .filter(addErrorHandling(filterPriceMessages))
-        .map(addErrorHandling(parsePriceMessage))
-        .map(addErrorHandling(async (update) => {
-            const [styleData, priceData] = await Promise.all([styles.findOne({ _id: update._id }), prices.findOne({ _id: update._id })]);
-            if (!styleData || styleData.isOutlet) {
-                return null;
+        .map(addErrorHandling(extractStyleId))
+        .map(addErrorHandling(async (styleId) => {
+            const [prices, style] = await Promise.all([
+                pricesCollection.findOne({ styleId }),
+                stylesCollection.findOne({ _id: styleId })
+            ])
+            const priceChanges = prices && prices.priceChanges || []
+            const originalPrice = style && style.originalPrice || 0
+            const applicablePriceChanges = findApplicablePriceChanges(priceChanges)
+            const priceInfo = getPriceInfo(originalPrice, applicablePriceChanges)
+            const algoliaUpdatePayload = {
+                objectID: styleId,
+                ...priceInfo
             }
-            const algoliaUpdatedPayload = generateUpdateFromParsedMessage (update, priceData, styleData);
-            const priceHasNotChanged = priceData
-                ? (algoliaUpdatedPayload.onlineSalePrice === priceData.onlineSalePrice
-                    && algoliaUpdatedPayload.inStoreSalePrice === priceData.inStoreSalePrice
-                    && algoliaUpdatedPayload.currentPrice === priceData.currentPrice)
-                : (algoliaUpdatedPayload.onlineSalePrice === null
-                    && algoliaUpdatedPayload.inStoreSalePrice === null);
-            if (priceHasNotChanged) {
-                return null;
-            }
-            algoliaUpdatedPayload.objectID = styleData._id;
-
-            return algoliaUpdatedPayload;
+            return algoliaUpdatePayload
         }))
     );
 

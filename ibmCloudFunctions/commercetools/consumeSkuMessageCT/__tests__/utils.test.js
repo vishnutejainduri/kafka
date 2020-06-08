@@ -180,6 +180,24 @@ describe('parseStyleMessageCt', () => {
     expect(parseSkuMessageCt(messageThatLacksASize).size['en-CA']).toBe('');
   });
 
+  it('handles localized sizes correctly', () => {
+    const rawMessageWithLocalizedSizes = {
+      ...rawMessage,
+      value: {
+        ...rawMessage.value,
+        SIZE_EN: 'English size',
+        SIZE_FR: 'French size'
+      }
+    }
+    const parsedMessageWithLocalizedSizes = parseSkuMessageCt(rawMessageWithLocalizedSizes);
+
+
+    expect(parsedMessageWithLocalizedSizes.size).toEqual({
+      'en-CA': 'English size',
+      'fr-CA': 'French size'
+    });
+  })
+
   it('handles sizeIds correctly', () => {
     const messageWithANumberForSizeId = { value: { SIZEID: 1 } };
     expect(parseSkuMessageCt(messageWithANumberForSizeId).sizeId).toBe('1');
