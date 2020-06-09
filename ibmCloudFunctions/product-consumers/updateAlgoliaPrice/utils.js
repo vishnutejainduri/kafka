@@ -121,6 +121,12 @@ function extractStyleId ({ topic, value }) {
   return styleId
 }
 
+const processStatus = {
+  false: 'false',
+  true: 'true',
+  failure: 'failure'
+}
+
 async function findUnprocessedStyleIds (pricesCollection, processingDate) {
   const documents = await pricesCollection.find({
     priceChanges: {
@@ -130,7 +136,7 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate) {
                     startDate: {
                         $lt: processingDate
                     },
-                    startDateProcessed: 'false'
+                    startDateProcessed: processStatus.false
                 }]
             }, {
                 $and: [{
@@ -138,7 +144,7 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate) {
                         $lt: processingDate
                     }
                 }, {
-                    endDateProcessed: 'false'
+                    endDateProcessed: processStatus.false
                 }]
             }]
         }
@@ -147,6 +153,12 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate) {
     .project({
       styleId: 1
     })
+    // The limit is found experimentally; this is the number of messages that we can process in roughly one minute
+    // One minute, because this function is called periodically every one minute.
+    // It is possible that we double process the same price changes twice using these method,
+    // but since the price updates are time stamp based, the effect on Algolia operations should be minimal unless we do a massive resync of all of the data
+    // TODO Set the status of the messages are currently being processed to 'processing' immediately after fetching them so we can skip processing those
+    // The difficulty would be handling messages that were put into 'processing' status but never finished because of a failure; will just complicate the 'findUnprocessedStyleIds' function
     .limit(1000)
     .toArray()
   return documents.map(({ styleId }) => styleId)
@@ -172,7 +184,7 @@ function updateChangesQuery ({ isEndDate, isFailure, processingDate, styleIds })
     },
     {
       $set: {
-          [`priceChanges.$[].${isEndDate ? 'endDateProcessed' : 'startDateProcessed'}`]: isFailure ? 'failure' : 'true'
+          [`priceChanges.$[].${isEndDate ? 'endDateProcessed' : 'startDateProcessed'}`]: isFailure ? processStatus.failure : processStatus.true
       }
     },
     {
