@@ -51,9 +51,10 @@ global.main = async function (params) {
         throw createError.failedDbConnection(originalError); 
     }
     
-    // This function is called by a periodic trigger with no messages passed to it to process price changes
-    // which were not applicable immediate after we received the messages including the price change.
-    // Price changes won't be applicable if they have a start date or end date that is in future.
+    // In addition to being called as a step of the update-pricing-sequence,
+    // this function can also called by a periodic trigger with no messages passed to it
+    // in order to process price changes which were not applicable immediately after update-pricing-sequence was run.
+    // (Note that price changes won't be applicable immediately if they have a start date or end date that is in future.)
     // Here, we find the messages which initially were not processed, but now can be processed since their startDate or endDate has arrived.
     const processingDate = new Date()
     const styleIds = params.messages && params.messages.length
