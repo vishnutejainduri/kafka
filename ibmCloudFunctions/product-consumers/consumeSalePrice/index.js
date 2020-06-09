@@ -8,6 +8,7 @@ const {
 } = require('../../lib/parseSalePriceMessage');
 const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling, addLoggingToMain, passDownProcessedMessages } = require('../utils');
+const { priceChangeProcessStatus } = require('../constants')
 
 const main = async function (params) {
     log(createLog.params("consumeSalePrice", params));
@@ -40,8 +41,9 @@ const main = async function (params) {
                 })
                 return query
             }, { $and: [] })
-            await pricesCollection.updateOne({ styleId: styleId }, { $pull: { priceChanges: findDuplicatePriceChangeQuery } });
-            await pricesCollection.updateOne({ styleId: styleId }, { $push: { priceChanges: priceChangeUpdate } }, { upsert: true });
+            await pricesCollection.updateOne({ styleId: styleId }, { $pull: { priceChanges: findDuplicatePriceChangeQuery } })
+            const priceChangeUpdateWithProcessFlagSet = { ...priceChangeUpdate, startDateProcessed: priceChangeProcessStatus.false, endDateProcessed: priceChangeProcessStatus.false }
+            await pricesCollection.updateOne({ styleId: styleId }, { $push: { priceChanges: priceChangeUpdateWithProcessFlagSet } }, { upsert: true })
         })))
         .then(passDownProcessedMessages(params.messages))
         .catch(error => ({

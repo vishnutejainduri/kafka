@@ -172,7 +172,7 @@ describe('findApplicablePriceChanges', () => {
       startDate: new Date('2020'),
       activityType: priceChangeActivityTypes.CREATED
     }]
-    expect(() => findApplicablePriceChanges(mockPriceChanges)).toThrow(new Error('Cannot process overlapping price changes for the same site ID.'))
+    expect(() => findApplicablePriceChanges(mockPriceChanges)).toThrow(new Error(`Cannot process overlapping price changes for the same site ID for price changes: ${[mockPriceChanges[0].priceChangeId, mockPriceChanges[2].priceChangeId,]}`))
   })
 })
 

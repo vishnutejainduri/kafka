@@ -5,7 +5,7 @@ const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { createLog, addErrorHandling, log } = require('../utils');
-const { extractStyleId, getPriceInfo, findApplicablePriceChanges } = require('./utils.js');
+const { extractStyleId, getPriceInfo, findApplicablePriceChanges, findUnprocessedStyleIds, markProcessedChanges, markFailedChanges } = require('./utils.js');
 
 let client = null;
 let index = null;
@@ -50,9 +50,18 @@ global.main = async function (params) {
     } catch (originalError) {
         throw createError.failedDbConnection(originalError); 
     }
+    
+    // In addition to being called as a step of the update-pricing-sequence,
+    // this function can also called by a periodic trigger with no messages passed to it
+    // in order to process price changes which were not applicable immediately after update-pricing-sequence was run.
+    // (Note that price changes won't be applicable immediately if they have a start date or end date that is in future.)
+    // Here, we find the messages which initially were not processed, but now can be processed since their startDate or endDate has arrived.
+    const processingDate = new Date()
+    const styleIds = params.messages && params.messages.length
+        ? params.messages.map(addErrorHandling(extractStyleId))
+        : await findUnprocessedStyleIds(pricesCollection, processingDate)
 
-    let updates = await Promise.all(params.messages
-        .map(addErrorHandling(extractStyleId))
+    let updates = await Promise.all(styleIds
         .map(addErrorHandling(async (styleId) => {
             const [prices, style] = await Promise.all([
                 pricesCollection.findOne({ styleId }),
@@ -71,16 +80,25 @@ global.main = async function (params) {
     );
 
     const messageFailures = [];
-    updates = updates.filter((update) => {
+    const failureIndexes = []
+    updates = updates.filter((update, index) => {
         if (!update) {
             return false
         }
         if ((update instanceof Error)) {
-            messageFailures.push(update);
-            return false;
+            messageFailures.push(update)
+            failureIndexes.push(index)
+            return false
         }
         return true
     });
+
+    // We mark the price changes that were successfully processed as well as those that failed to process,
+    // so that in the next run we don't reprocess them
+    await Promise.all([
+        markProcessedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => !failureIndexes.includes(index))),
+        markFailedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => failureIndexes.includes(index))),
+    ])
 
     if (updates.length > 0) {
         await index.partialUpdateObjects(updates)
@@ -95,11 +113,22 @@ global.main = async function (params) {
         });
     }
 
-    if (messageFailures.length > 0) {
-        throw createError.updateAlgoliaPrice.partialFailure(params.messages, messageFailures);
+    const error = messageFailures.length ? messageFailures : this.undefined
+
+    if (error) {
+        log.error(error)
     }
 
-    return params;
+    return {
+        counts: {
+            styleIds: styleIds.length,
+            successes: styleIds.length - failureIndexes.length,
+            failures: failureIndexes.length
+        },
+        error,
+        styleIds,
+        failureIndexes
+    };
 };
 
 module.exports = global.main;

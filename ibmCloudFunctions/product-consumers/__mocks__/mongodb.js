@@ -97,6 +97,7 @@ const getCollection = (collectionName) => {
             }; 
         case 'prices':
             return {
+                update: async () => {}, 
                 updateOne: async ({ _id }) => ({ _id }),
                 findOne: async (query) => {
                     if (query && query.styleId && query.styleId.includes('with-priceChange')) {

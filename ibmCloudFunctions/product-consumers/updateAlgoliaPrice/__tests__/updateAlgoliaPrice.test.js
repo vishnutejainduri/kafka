@@ -53,7 +53,32 @@ describe('updateAlgoliaPrice', () => {
         };
         
         const response = await updateAlgoliaPrice(params);
-        expect(response).toEqual(params);
+        expect(response).toEqual({
+            counts: {
+                styleIds: 1,
+                successes: 1,
+                failures: 0
+            },
+            error: undefined,
+            styleIds: ['styleId-with-priceChange'],
+            failureIndexes: []
+        });
+    });
+
+    it('Returns an array of failed messages if any of the messages are invalid', async () =>{
+        const messages = [
+            invalidMessage,
+            validMessage
+        ];
+
+        const params = {
+            ...validParams,
+            messages
+        };
+
+        const response = await updateAlgoliaPrice(params)
+        expect(response.error.length).toEqual(1);
+        expect(response.failureIndexes[0]).toEqual(0);
     });
 
     it('Returns an array of failed messages if any of the messages are invalid', async () =>{
@@ -67,25 +92,10 @@ describe('updateAlgoliaPrice', () => {
             messages
         };
 
-        const error = await updateAlgoliaPrice(params).catch(error => error)
-        expect(error.debugInfo.messageFailures.length).toBe(1);
-    });
+        const response = await updateAlgoliaPrice(params)
 
-    it('Returns an array of failed messages if any of the messages are invalid', async () =>{
-        const messages = [
-            validMessage,
-            invalidMessage
-        ];
-
-        const params = {
-            ...validParams,
-            messages
-        };
-
-        const error = await updateAlgoliaPrice(params).catch(error => error)
-        expect(error.debugInfo.messageFailures.length).toBe(1);
-        //TODO: Explictly check for valid/invalid message in returned error.debugInfo
-        expect(error.debugInfo.messageFailures[0]).toBeInstanceOf(Error)
+        expect(response.error.length).toBe(1);
+        expect(response.failureIndexes[0]).toEqual(1)
     });
 
     it('Filters out invalid messages from response messages property', async () =>{
@@ -99,9 +109,9 @@ describe('updateAlgoliaPrice', () => {
             messages
         };
 
-        const error = await updateAlgoliaPrice(params).catch(error => error)
-        expect(error.debugInfo.messageFailures.length).toBe(1);
-        //TODO: Explictly check for valid/invalid message in returned error.debugInfo
-        expect(error.debugInfo.messageFailures[0]).toBeInstanceOf(Object)
+        const response = await updateAlgoliaPrice(params)
+
+        expect(response.error.length).toBe(1);
+        expect(response.failureIndexes[0]).toEqual(1)
     });
 });

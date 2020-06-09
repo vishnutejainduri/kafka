@@ -65,3 +65,6 @@
       remove-quantity-reserved-rule:
         action: /${ORG}_${SPACE}/product-consumers/remove-quantity-reserved
         trigger: every-minute
+      update-future-sale-price-changes-rule:
+        action: /${ORG}_${SPACE}/product-consumers/update-algolia-price
+        trigger: every-minute
