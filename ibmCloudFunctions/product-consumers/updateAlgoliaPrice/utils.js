@@ -147,7 +147,7 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate) {
     .project({
       styleId: 1
     })
-    .limit(10000)
+    .limit(1000)
     .toArray()
   return documents.map(({ styleId }) => styleId)
 }

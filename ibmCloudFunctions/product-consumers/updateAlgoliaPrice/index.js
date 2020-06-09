@@ -112,8 +112,10 @@ global.main = async function (params) {
         });
     }
 
-    if (messageFailures.length > 0) {
-        throw createError.updateAlgoliaPrice.partialFailure(params.messages || styleIds, messageFailures);
+    const error = messageFailures.length ? messageFailures : this.undefined
+
+    if (error) {
+        console.error(error)
     }
 
     return {
@@ -122,9 +124,9 @@ global.main = async function (params) {
             successes: styleIds.length - failureIndexes.length,
             failures: failureIndexes.length
         },
+        error,
         styleIds,
-        failureIndexes,
-        messageFailures
+        failureIndexes
     };
 };
 
