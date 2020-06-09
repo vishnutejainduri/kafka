@@ -86,9 +86,9 @@ global.main = async function (params) {
             return false
         }
         if ((update instanceof Error)) {
-            messageFailures.push(update);
+            messageFailures.push(update)
             failureIndexes.push(index)
-            return false;
+            return false
         }
         return true
     });

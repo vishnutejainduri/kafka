@@ -1,4 +1,5 @@
-const { priceChangeActivityTypes, siteIds } = require('../../constants');
+const { priceChangeActivityTypes, siteIds } = require('../../constants')
+const { priceChangeProcessStatus } = require('../constants')
 const parseSalePriceMessage = require('../../lib/parseSalePriceMessage')
 const parseStyleMessage = require('../../lib/parseStyleMessage')
 const { getMostUpToDateObject } = require('../../lib/utils')
@@ -121,12 +122,6 @@ function extractStyleId ({ topic, value }) {
   return styleId
 }
 
-const processStatus = {
-  false: 'false',
-  true: 'true',
-  failure: 'failure'
-}
-
 async function findUnprocessedStyleIds (pricesCollection, processingDate) {
   const documents = await pricesCollection.find({
     priceChanges: {
@@ -136,7 +131,7 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate) {
                     startDate: {
                         $lt: processingDate
                     },
-                    startDateProcessed: processStatus.false
+                    startDateProcessed: priceChangeProcessStatus.false
                 }]
             }, {
                 $and: [{
@@ -144,7 +139,7 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate) {
                         $lt: processingDate
                     }
                 }, {
-                    endDateProcessed: processStatus.false
+                    endDateProcessed: priceChangeProcessStatus.false
                 }]
             }]
         }
@@ -184,7 +179,7 @@ function updateChangesQuery ({ isEndDate, isFailure, processingDate, styleIds })
     },
     {
       $set: {
-          [`priceChanges.$[].${isEndDate ? 'endDateProcessed' : 'startDateProcessed'}`]: isFailure ? processStatus.failure : processStatus.true
+          [`priceChanges.$[].${isEndDate ? 'endDateProcessed' : 'startDateProcessed'}`]: isFailure ? priceChangeProcessStatus.failure : priceChangeProcessStatus.true
       }
     },
     {
