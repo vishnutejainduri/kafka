@@ -77,7 +77,7 @@ describe('updateAlgoliaPrice', () => {
         };
 
         const response = await updateAlgoliaPrice(params)
-        expect(response.error.length).toEqual(1);
+        expect(response.error.messageFailures.length).toEqual(1);
         expect(response.failureIndexes[0]).toEqual(0);
     });
 
@@ -94,7 +94,7 @@ describe('updateAlgoliaPrice', () => {
 
         const response = await updateAlgoliaPrice(params)
 
-        expect(response.error.length).toBe(1);
+        expect(response.error.messageFailures.length).toBe(1);
         expect(response.failureIndexes[0]).toEqual(1)
     });
 
@@ -111,7 +111,7 @@ describe('updateAlgoliaPrice', () => {
 
         const response = await updateAlgoliaPrice(params)
 
-        expect(response.error.length).toBe(1);
+        expect(response.error.messageFailures.length).toBe(1);
         expect(response.failureIndexes[0]).toEqual(1)
     });
 });

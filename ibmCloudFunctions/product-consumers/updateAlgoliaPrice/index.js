@@ -116,7 +116,12 @@ global.main = async function (params) {
     }
 
 
-    const error = messageFailures.length ? messageFailures : algoliaUpdateError
+    const error = (algoliaUpdateError || messageFailures.length)
+        ? {
+            messageFailures,
+            algoliaUpdateError
+        }
+        : undefined
 
     if (error) {
         log.error(error)
