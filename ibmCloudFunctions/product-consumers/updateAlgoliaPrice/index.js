@@ -116,7 +116,7 @@ global.main = async function (params) {
     const error = messageFailures.length ? messageFailures : this.undefined
 
     if (error) {
-        console.error(error)
+        log.error(error)
     }
 
     return {
