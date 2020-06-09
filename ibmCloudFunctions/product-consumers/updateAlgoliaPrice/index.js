@@ -71,6 +71,7 @@ global.main = async function (params) {
             const originalPrice = style && style.originalPrice || 0
             const applicablePriceChanges = findApplicablePriceChanges(priceChanges)
             const priceInfo = getPriceInfo(originalPrice, applicablePriceChanges)
+            await pricesCollection.update({ styleId }, { $set: priceInfo })
             const algoliaUpdatePayload = {
                 objectID: styleId,
                 ...priceInfo
@@ -93,27 +94,34 @@ global.main = async function (params) {
         return true
     });
 
-    // We mark the price changes that were successfully processed as well as those that failed to process,
-    // so that in the next run we don't reprocess them
-    await Promise.all([
-        markProcessedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => !failureIndexes.includes(index))),
-        markFailedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => failureIndexes.includes(index))),
-    ])
-
+    let algoliaUpdateResult
     if (updates.length > 0) {
-        await index.partialUpdateObjects(updates)
+        algoliaUpdateResult = await index.partialUpdateObjects(updates)
             .then(() => updateAlgoliaPriceCount.insert({ batchSize: updates.length }))
             .catch((error) => {
-                console.error('Failed to send prices to Algolia.');
-                error.debugInfo = {
-                    messageFailures,
-                    messages: params.messages
-                }
+                log.error('Failed to send prices to Algolia.');
                 return { error };
         });
     }
 
-    const error = messageFailures.length ? messageFailures : this.undefined
+    const algoliaUpdateError = algoliaUpdateResult ? algoliaUpdateResult.error : undefined
+
+    if (!algoliaUpdateError) {
+        // We mark the price changes that were successfully processed as well as those that failed to process,
+        // so that in the next run we don't reprocess them
+        await Promise.all([
+            markProcessedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => !failureIndexes.includes(index))),
+            markFailedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => failureIndexes.includes(index))),
+        ])
+    }
+
+
+    const error = (algoliaUpdateError || messageFailures.length)
+        ? {
+            messageFailures,
+            algoliaUpdateError
+        }
+        : undefined
 
     if (error) {
         log.error(error)
