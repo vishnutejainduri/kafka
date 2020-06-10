@@ -162,7 +162,7 @@ function writeToDebugLog(data) {
 }
 
 const connectionUrls = {
-  'produdction': process.env['JESTA_PRODUCTION'],
+  'production': process.env['JESTA_PRODUCTION'],
   'staging': process.env['JESTA_STAGING'],
   'development': process.env['JESTA_DEVELOPMENT']
 };
