@@ -1,7 +1,7 @@
-const { parseStyleBasicMessage, filterStyleBasicMessage } = require('../../lib/parseStyleBasicMessage');
+const { parseStyleBasicMessage } = require('../../lib/parseStyleBasicMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { addLoggingToMain } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain, passDownProcessedMessages } = require('../utils');
 
 const handleError = function (err, msg) {
   console.error('Problem with document ' + msg._id);
@@ -18,10 +18,7 @@ const handleError = function (err, msg) {
 };
 
 const main = async function (params) {
-    console.log(JSON.stringify({
-      cfName: 'consumeStylesBasicMessage',
-      params
-    }));
+    log(createLog.params('consumeStylesBasicMessage', params));
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
@@ -41,44 +38,30 @@ const main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter(filterStyleBasicMessage)
-        .map(parseStyleBasicMessage)
-        .map(async (styleData) => {
-            const operations = [];
-            const existingDoc = await styles.findOne({ _id: styleData._id });
+        .map(addErrorHandling(parseStyleBasicMessage))
+        .map(addErrorHandling(async (styleData) => {
+          const existingDoc = await styles.findOne({ _id: styleData._id });
 
-            if (existingDoc) {
-              operations.push(styles.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOutlet: { $type:"timestamp" } }, $set: { isOutlet: styleData.isOutlet } }, { upsert: true })
-                .catch((err) => {
-                  return handleError(err, styleData)
-                })
-              );
-            }
+          // checking for change to reduce Algolia operations
+          if (!existingDoc || existingDoc.isOutlet !== styleData.isOutlet) {
+            await algoliaDeleteCreateQueue.insertOne({ styleId: styleData._id, delete: styleData.isOutlet, create: !styleData.isOutlet, insertionTime: styleData.lastModifiedDate})
+              .catch((err) => {
+                throw handleError(err, styleData)
+              });
+          } else {
+            log(`Style data needs no update: ${styleData}`);
+          }
 
-            if ((existingDoc && !existingDoc.isOutlet && styleData.isOutlet) || (!existingDoc && styleData.isOutlet)) {
-              operations.push(algoliaDeleteCreateQueue.insertOne({ styleId: styleData._id, delete: true, create: false, insertionTime: styleData.lastModifiedDate})
-                .catch((err) => {
-                  return handleError(err, styleData)
-                })
-              );
-            } else if (existingDoc && existingDoc.isOutlet && !styleData.isOutlet) {
-              operations.push(algoliaDeleteCreateQueue.insertOne({ styleId: styleData._id, delete: false, create: true, insertionTime: styleData.lastModifiedDate})
-                .catch((err) => {
-                  return handleError(err, styleData)
-                })
-              );
-            }
-            return Promise.all(operations);
-        })
-    ).then((results) => {
-        const errors = results.filter((res) => res instanceof Error);
-        if (errors.length > 0) {
-            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
-            e.failedUpdatesErrors = errors;
-            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            throw e;
-        }
-    });
+          await styles.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOutlet: { $type:"timestamp" } }, $set: { brandId: styleData.brandId, isOutlet: styleData.isOutlet, lastModifiedExternalOutlet: styleData.lastModifiedDate } }, { upsert: true })
+            .catch((err) => {
+                throw handleError(err, styleData)
+            });
+        }))
+    )
+      .then(passDownProcessedMessages(params.messages))
+      .catch(error => ({
+          error
+      }));
 }
 
 global.main = addLoggingToMain(main);
