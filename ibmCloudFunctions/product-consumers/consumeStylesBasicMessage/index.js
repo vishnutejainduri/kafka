@@ -44,7 +44,9 @@ const main = async function (params) {
 
           // checking for change to reduce Algolia operations
           if (!existingDoc || existingDoc.isOutlet !== styleData.isOutlet) {
-            await algoliaDeleteCreateQueue.insertOne({ styleId: styleData._id, delete: styleData.isOutlet, create: !styleData.isOutlet, insertionTime: styleData.lastModifiedDate})
+            const shouldBeCreated = existingDoc && !styleData.isOutlet
+            const shouldBeDeleted = !shouldBeCreated
+            await algoliaDeleteCreateQueue.insertOne({ styleId: styleData._id, delete: shouldBeDeleted, create: shouldBeCreated, insertionTime: styleData.lastModifiedDate})
               .catch((err) => {
                 throw handleError(err, styleData)
               });
@@ -52,10 +54,16 @@ const main = async function (params) {
             log(`Style data needs no update: ${styleData}`);
           }
 
-          await styles.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOutlet: { $type:"timestamp" } }, $set: { brandId: styleData.brandId, isOutlet: styleData.isOutlet, lastModifiedExternalOutlet: styleData.lastModifiedDate } }, { upsert: true })
-            .catch((err) => {
-                throw handleError(err, styleData)
-            });
+          // do not add styles if its not already populated
+          // we perform update on mongo later, because if it was first and would succeed but the algolia updates were to fail, we'd end up in a partial failed status with no operations for algolia updates
+          if (existingDoc) {
+            await styles.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOutlet: { $type:"timestamp" } }, $set: { brandId: styleData.brandId, isOutlet: styleData.isOutlet, lastModifiedExternalOutlet: styleData.lastModifiedDate } })
+              .catch((err) => {
+                  throw handleError(err, styleData)
+              });
+          } else {
+            log(`Style data not populated: ${styleData}`);
+          }
         }))
     )
       .then(passDownProcessedMessages(params.messages))
