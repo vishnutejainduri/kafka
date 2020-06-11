@@ -6,22 +6,69 @@ const { addErrorHandling } = require('../../../product-consumers/utils');
 const {
   createStyle,
   updateStyle,
+  updateCategory,
   existingCtStyleIsNewer,
   getCtStyleAttributeValue,
   getCategory,
-  getCategories,
+  createOrUpdateCategoriesFromStyle,
   getUniqueCategoryIdsFromCategories,
   createCategory,
-  categoryNameToKey,
+  categoryKeyFromNames,
   getActionsFromStyle
 } = require('../../styleUtils');
-const { styleAttributeNames } = require('../../constantsCt');
+const { languageKeys, styleAttributeNames, isStaged, entityStatus } = require('../../constantsCt');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
 jest.mock('@commercetools/sdk-middleware-auth');
 jest.mock('@commercetools/sdk-middleware-http');
 jest.mock('node-fetch');
+
+const validMessage = {
+  topic: 'styles-connect-jdbc-CATALOG',
+  value: {
+      STYLEID: '20000000',
+      SUBDEPT: 'subDept',
+      BRAND_NAME_ENG: 'brandNameEng',
+      BRAND_NAME_FR: 'brandNameFr',
+      DESC_ENG: 'descEng',
+      DESC_FR: 'descFr',
+      MARKET_DESC_ENG: 'marketDescEng',
+      MARKET_DESC_ENG2: 'marketDescEng2',
+      MARKET_DESC_FR: 'marketDescFr',
+      MARKET_DESC_FR2: 'marketDescFr2',
+      DETAIL_DESC3_ENG: 'detailDescEng',
+      DETAIL_DESC3_FR: 'detailDescFr',
+      FABRICANDMATERIAL_EN: 'fabricAndMaterialEn',
+      FABRICANDMATERIAL_FR: 'fabricAndMaterialFr',
+      SIZE_DESC_ENG: 'sizeDescEng',
+      SIZE_DESC_FR: 'sizeDescFr',
+      CAREINSTRUCTIONS_EN: 'careInstructionsEn',
+      CAREINSTRUCTIONS_FR: 'careInstructionsFr',
+      ADVICE_EN: 'adviceEn',
+      ADVICE_FR: 'adviceFr',
+      COLOUR_DESC_ENG: 'colourDescEng',
+      COLOUR_DESC_FR: 'colourDescFr',
+      CATEGORY_EN: 'category_en',
+      CATEGORY_FR: 'category_fr',
+      CATEGORY_LEVEL_1A_EN: 'categoryLevel1A_en',
+      CATEGORY_LEVEL_1A_FR: 'categoryLevel1A_fr',
+      CATEGORY_LEVEL_2A_EN: 'categoryLevel2A_en',
+      CATEGORY_LEVEL_2A_FR: 'categoryLevel2A_fr',
+      WEBSTATUS: 'webStatus',
+      SEASON_CD: 'seasonCd',
+      COLORID: 'colorId',
+      UNIT_PRICE: 1.0,
+      VSN: 'vsn',
+      SUBCLASS: 341,
+      UPD_TIMESTAMP: 1000000000000,
+      EFFECTIVE_DATE: 1000000000000,
+      TRUE_COLOURGROUP_EN: 'trueColourGroupEn',
+      TRUE_COLOURGROUP_FR: 'trueColourGroupFr',
+      LAST_MODIFIED_DATE: 1470391439001, // circa 2016,
+      SIZE_CHART: 16
+  }
+};
 
 const validParams = {
   topicName: 'styles-connect-jdbc-CATALOG',
@@ -32,48 +79,7 @@ const validParams = {
   ctpApiUrl: 'apiUrl',
   ctpScopes: 'manage_products:harryrosen-dev',
   productTypeId: 'product-type-reference-id',
-  messages: [{
-      topic: 'styles-connect-jdbc-CATALOG',
-      value: {
-          STYLEID: '20000000',
-          SUBDEPT: 'subDept',
-          BRAND_NAME_ENG: 'brandNameEng',
-          BRAND_NAME_FR: 'brandNameFr',
-          DESC_ENG: 'descEng',
-          DESC_FR: 'descFr',
-          MARKET_DESC_ENG: 'marketDescEng',
-          MARKET_DESC_ENG2: 'marketDescEng2',
-          MARKET_DESC_FR: 'marketDescFr',
-          MARKET_DESC_FR2: 'marketDescFr2',
-          DETAIL_DESC3_ENG: 'detailDescEng',
-          DETAIL_DESC3_FR: 'detailDescFr',
-          FABRICANDMATERIAL_EN: 'fabricAndMaterialEn',
-          FABRICANDMATERIAL_FR: 'fabricAndMaterialFr',
-          SIZE_DESC_ENG: 'sizeDescEng',
-          SIZE_DESC_FR: 'sizeDescFr',
-          CAREINSTRUCTIONS_EN: 'careInstructionsEn',
-          CAREINSTRUCTIONS_FR: 'careInstructionsFr',
-          ADVICE_EN: 'adviceEn',
-          ADVICE_FR: 'adviceFr',
-          COLOUR_DESC_ENG: 'colourDescEng',
-          COLOUR_DESC_FR: 'colourDescFr',
-          CATAGORY: 'catagory',
-          CATAGORY_LEVEL_1A: 'catagoryLevel1A',
-          CATAGORY_LEVEL_2A: 'catagoryLevel2A',
-          WEBSTATUS: 'webStatus',
-          SEASON_CD: 'seasonCd',
-          COLORID: 'colorId',
-          UNIT_PRICE: 0.0,
-          VSN: 'vsn',
-          SUBCLASS: 341,
-          UPD_TIMESTAMP: 1000000000000,
-          EFFECTIVE_DATE: 1000000000000,
-          TRUE_COLOURGROUP_EN: 'trueColourGroupEn',
-          TRUE_COLOURGROUP_FR: 'trueColourGroupFr',
-          LAST_MODIFIED_DATE: 1470391439001, // circa 2016,
-          SIZE_CHART: 16
-      }
-  }]
+  messages: [validMessage]
 };
 
 const message = validParams.messages[0];
@@ -85,42 +91,57 @@ const messageWithoutLastModifiedDate = {
 
 const ctStyleNewer = {
   "masterData": {
-      "staged": {
-          "masterVariant": {
-              "attributes": [
-                  {
-                      "name": "styleLastModifiedInternal",
-                      "value": "2020-03-18T16:53:20.823Z"
-                  }
-              ]
+    [entityStatus]: {
+      "masterVariant": {
+        "prices": [{
+          id: 'originalPrice',
+          custom: {
+            fields: {
+              isOriginalPrice: true
+            }
           }
-      },
-      "current": {
-        "masterVariant": {
-            "attributes": [
-                {
-                    "name": "styleLastModifiedInternal",
-                    "value": "2019-03-18T16:53:20.823Z"
-                }
-            ]
-        }
+        }],
+        "attributes": [
+          {
+            "name": "styleLastModifiedInternal",
+            "value": "2019-03-18T16:53:20.823Z"
+          }
+        ]
+      }
     }
+  }
+};
+
+const ctStyleNewerWithEmptyPrices = {
+  "masterData": {
+    [entityStatus]: {
+      "masterVariant": {
+        "id": "master-variant",
+        "prices": [],
+        "attributes": [
+          {
+            "name": "styleLastModifiedInternal",
+            "value": "2019-03-18T16:53:20.823Z"
+          }
+        ]
+      }
     }
+  }
 };
 
 const ctStyleOlder = {
   "masterData": {
-      "staged": {
-          "masterVariant": {
-              "attributes": [
-                  {
-                      "name": "styleLastModifiedInternal",
-                      "value": "2015-03-18T16:53:20.823Z"
-                  }
-              ]
+    [entityStatus]: {
+      "masterVariant": {
+        "attributes": [
+          {
+            "name": "styleLastModifiedInternal",
+            "value": "2015-03-18T16:53:20.823Z"
           }
+        ]
       }
     }
+  }
 };
 
 const styleActions = [
@@ -186,12 +207,6 @@ const styleActions = [
   },
   {
     action: 'setAttributeInAllVariants',
-    name: 'originalPrice',
-    staged: false,
-    value: 0,
-  },
-  {
-    action: 'setAttributeInAllVariants',
     name: 'vsn',
     staged: false,
     value: 'vsn',
@@ -225,6 +240,26 @@ const styleActions = [
     staged: false,
   },
   {
+    action: 'changePrice',
+    priceId: ctStyleNewer.masterData[entityStatus].masterVariant.prices[0].id,
+    staged: false,
+    price: {
+      country: 'CA',
+      value: {
+        centAmount: validParams.messages[0].value.UNIT_PRICE * 100,
+        currencyCode: 'CAD'
+      },
+      custom: {
+        type: {
+          key: 'priceCustomFields'
+        },
+        fields: {
+          isOriginalPrice: true
+        }
+      }
+    }
+  },
+  {
     action: 'addToCategory',
     category: { id: 'cat1', typeId: 'category' },
     staged: false,
@@ -239,9 +274,16 @@ const styleActions = [
     category: { id: 'cat3', typeId: 'category' },
     staged: false,
   },
+  {
+    action: 'setTaxCategory',
+    taxCategory: {
+      key: 'jesta-tax-descriptions'
+    }
+  }
 ];
 
 const jestaStyle = parseStyleMessageCt(message);
+// See ../../__mocks__
 const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('formatLanguageKeys', () => {
@@ -267,20 +309,14 @@ describe('formatLanguageKeys', () => {
 });
 
 describe('getCtStyleAttributeValue', () => {
-  it('returns the correct staged value for the given style', () => {
+  it('returns the correct value for the given style', () => {
     const actual = getCtStyleAttributeValue(ctStyleNewer, 'styleLastModifiedInternal');
-    const expected = '2020-03-18T16:53:20.823Z';
-    expect(actual).toBe(expected);
-  });
-
-  it('returns the correct current value for the given style', () => {
-    const actual = getCtStyleAttributeValue(ctStyleNewer, 'styleLastModifiedInternal', true);
     const expected = '2019-03-18T16:53:20.823Z';
     expect(actual).toBe(expected);
   });
 
   it('returns `undefined` if the attribute does not exist on the style', () => {
-    expect(getCtStyleAttributeValue(ctStyleNewer, 'attributeThatDoesNotExist', true)).toBeUndefined();
+    expect(getCtStyleAttributeValue(ctStyleNewer, 'attributeThatDoesNotExist')).toBeUndefined();
   });
 });
 
@@ -304,6 +340,38 @@ describe('parseStyleMessageCt', () => {
   it('returns a message that lacks a `styleLastModifiedInternal` date if the JESTA corresponding date is undefined', () => {
     const parsedMessage = parseStyleMessageCt(messageWithoutLastModifiedDate);
     expect(parsedMessage.styleLastModifiedInternal).toBeUndefined();
+  });
+});
+
+describe('categoryKeyFromNames', () => {
+  it('should only allow certain characters to match CT', () => {
+    const actual = categoryKeyFromNames('Aa 123_- !@#');
+    expect(actual).toEqual('Aa123_');
+  });
+
+  it('should handle either name strings or CT localizeString objects', () => {
+    const actual = categoryKeyFromNames({
+      [languageKeys.ENGLISH]: 'name_en',
+      [languageKeys.FRENCH]: 'name_fr',
+    });
+    const actual2 = categoryKeyFromNames('name_en');
+    expect(actual).toEqual('name_en');
+    expect(actual2).toEqual('name_en');
+  });
+
+  it('should handle blank localizedStrings', () => {
+    const actual = categoryKeyFromNames('root', {
+      [languageKeys.ENGLISH]: '',
+      [languageKeys.FRENCH]: '',
+    }, 'name_l2');
+    expect(actual).toEqual('root-l1-l2name_l2');
+  });
+
+  it('should generate different category keys for the same category name at different levels', () => {
+    const actual = categoryKeyFromNames('root', 'leaf');
+    const actual2 = categoryKeyFromNames('root', '', 'leaf');
+    expect(actual).toEqual('root-l1leaf');
+    expect(actual2).toEqual('root-l1-l2leaf');
   });
 });
 
@@ -355,32 +423,80 @@ describe('updateStyle', () => {
 });
 
 describe('getCategory', () => {
-  it('correct message; return mock data', async () => {
-    const categoryName = validParams.messages[0].value.CATAGORY;
+  it('should return the CT category given a valid message', async () => {
+    const categoryName = validParams.messages[0].value.CATEGORY_EN;
     return expect(await getCategory(categoryName, mockedCtHelpers)).toBeInstanceOf(Object);
   });
 });
 
-describe('getCategories', () => {
+describe('createOrUpdateCategoriesFromStyle', () => {
   it('correct message; return mock data', async () => {
-     const result =  
+     const result =
         validParams.messages
         .filter(addErrorHandling(filterStyleMessages))
-        .map(addErrorHandling(parseStyleMessageCt))
-    const response = await getCategories(result[0], mockedCtHelpers);
+        .map(addErrorHandling(parseStyleMessageCt));
+    const response = await createOrUpdateCategoriesFromStyle(result[0], mockedCtHelpers);
     expect(response).toBeInstanceOf(Object);
   });
+
+  it('should update categories if they exist in the style data and don\'t match existing CT categories', async () => {
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+    const validMessageUpdatedCategory = {
+      topic: 'styles-connect-jdbc-CATALOG',
+      value: {
+        ... validParams.messages[0].value,
+        CATEGORY_LEVEL_1A_FR: 'updated_fr_value'
+      }
+    };
+    const style = parseStyleMessageCt(validMessageUpdatedCategory);
+    await createOrUpdateCategoriesFromStyle(style, mockedCtHelpers);
+
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls.length).toEqual(1);
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls[0])
+      .toEqual([
+        'POST',
+        'DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en',
+        '{"version":1,"actions":[{"action":"changeName","name":{"en-CA":"categoryLevel1A_en","fr-CA":"updated_fr_value"}},{"action":"changeParent","parent":{"id":"8f1b6d78-c29d-46cf-88fe-5bd935e49fd9","typeId":"category"}}]}'
+      ]);
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+  });
+
+  it('should create categories if they exist in the style data but not CT', async () => {
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+    const validMessageNewCategory = {
+      topic: 'styles-connect-jdbc-CATALOG',
+      value: {
+        ... validParams.messages[0].value,
+        CATEGORY_LEVEL_2A_EN: 'new_category_en',
+        CATEGORY_LEVEL_2A_FR: 'new_category_fr'
+      }
+    };
+    const style = parseStyleMessageCt(validMessageNewCategory);
+    await createOrUpdateCategoriesFromStyle(style, mockedCtHelpers);
+
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls.length).toEqual(1);
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls[0])
+      .toEqual([
+        'POST',
+        'category',
+        '{"key":"DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3new_category_en","name":{"en-CA":"new_category_en","fr-CA":"new_category_fr"},"slug":{"en-CA":"DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3new_category_en","fr-CA":"DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3new_category_en"},"parent":{"id":"8f1b6d78-c29d-46cf-88fe-5bd935e49fd9","typeId":"category"}}'
+      ]);
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+  });
+
+  // TODO this is not implemented in the code. It's an edge case but ideally we would.
+  it.todo('should remove categories that are removed from the style');
 });
 
 describe('createCategory', () => {
   it('correct message; return mock data', async () => {
-     const result =  
+     const result =
         validParams.messages
         .filter(addErrorHandling(filterStyleMessages))
         .map(addErrorHandling(parseStyleMessageCt))
-    const categories = await getCategories(result[0], mockedCtHelpers);
+    const categories = await createOrUpdateCategoriesFromStyle(result[0], mockedCtHelpers);
     const categoryName = result[0].level2Category;
-    const categoryKey = categoryNameToKey(result[0].level1Category + result[0].level2Category);
+    const categoryKey = categoryKeyFromNames(result[0].level1Category, result[0].level2Category);
 
     const response = await createCategory(categoryKey, categoryName, categories[0], mockedCtHelpers);
 
@@ -398,18 +514,45 @@ describe('createCategory', () => {
   });
 });
 
+describe('updateCategory', () => {
+  it('should return the proper update actions and endpoint URI', async () => {
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+    await updateCategory('categoryKey', 1, {
+      [languageKeys.ENGLISH]: 'new category name en',
+      [languageKeys.FRENCH]: 'new category name fr',
+    }, {
+      id: 'parent_category_id'
+    }, mockedCtHelpers);
+
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls.length).toEqual(1);
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls[0]).toEqual([
+      'POST',
+      'categoryKey',
+      '{"version":1,"actions":[{"action":"changeName","name":{"en-CA":"new category name en","fr-CA":"new category name fr"}},{"action":"changeParent","parent":{"id":"parent_category_id","typeId":"category"}}]}'
+    ]);
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+  });
+});
+
 describe('consumeCatalogueMessageCT', () => {
   it('throws an error if the given parameters are invalid', () => {
     const invalidParams = {};
     return expect(consumeCatalogueMessageCT(invalidParams)).rejects.toThrow();
   });
 
-  it('returns `undefined` if given valid params', async () => {
+  it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeCatalogueMessageCT(validParams);
-    expect(response).toBeUndefined();
+    expect(response).toEqual({ successCount: 1, ok: true });
+  });
+
+  it('returns one success result if given valid params and two valid messages for the same style', async () => {
+    const response = await consumeCatalogueMessageCT({
+      ...validParams,
+      messages: [validMessage, validMessage]
+    });
+    expect(response).toEqual({ successCount: 1, ok: true });
   });
 });
-
 
 describe('getUniqueCategoryIdsFromCategories', () => {
   it('returns an array of all category IDs when there are no duplicate IDs', () => {
@@ -433,8 +576,40 @@ describe('getUniqueCategoryIdsFromCategories', () => {
 });
 
 describe('getActionsFromStyle', () => {
-  const mockCtStyleWithoutCategories = {...ctStyleNewer, masterData: { current: { ...ctStyleNewer.current, categories: [] }}};
-  const mockCtStyleWithCategories = {...ctStyleNewer, masterData: { current: { ...ctStyleNewer.current, categories: [{ typeId: 'category', id: 'cat4'}] } } };
+  const mockCtStyleWithoutCategories = {
+    ...ctStyleNewer,
+    masterData: {
+      [entityStatus]: {
+        variants: [],
+        ...ctStyleNewer.masterData[entityStatus],
+        categories: []
+      }
+    }
+  };
+  const mockCtStyleWithCategories = {
+    ...ctStyleNewer,
+    masterData: {
+      [entityStatus]: {
+        variants: [],
+        ...ctStyleNewer.masterData[entityStatus],
+        categories: [{
+          typeId: 'category',
+          id: 'cat4'
+        }]
+      }
+    },
+    staged: isStaged
+  };
+  const mockCtStyleWithoutOriginalPrice = {
+    ...ctStyleNewerWithEmptyPrices,
+    masterData: {
+      [entityStatus]: {
+        variants: [],
+        ...ctStyleNewerWithEmptyPrices.masterData[entityStatus],
+        categories: []
+      }
+    }
+  };
   const mockProductType = { attributes: [] };
   const mockCategories = [{ id: 'cat1' }, { id: 'cat2' }, { id: 'cat3' }];
 
@@ -444,13 +619,58 @@ describe('getActionsFromStyle', () => {
   });
 
   it('returns the correct actions when given a style from which categories should be removed', () => {
-    const expected = [...styleActions, {
+    const removeAction = {
         action: 'removeFromCategory',
         category: { id: 'cat4', typeId: 'category' },
         staged: false,
-      },
+    }
+
+    expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithCategories)).toEqual(expect.arrayContaining([removeAction]));
+  });
+
+  it('includes the correct actions when given a style that initially didnt have its original price set', () => {
+    const expected = [
+      {
+        action: 'addPrice',
+        variantId: 'master-variant',
+        price: {
+          country: 'CA',
+          value: {
+            centAmount: validParams.messages[0].value.UNIT_PRICE * 100,
+            currencyCode: 'CAD'
+          },
+          custom: {
+            type: {
+              key: 'priceCustomFields'
+            },
+            fields: {
+              isOriginalPrice: true
+            }
+          }
+        },
+        staged: isStaged
+      }
     ];
 
-    expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithCategories)).toEqual(expected);
+    expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithoutOriginalPrice)).toEqual(expect.arrayContaining(expected));
   });
+
+  it('does not include an action to set the tax category if it was already set on the style', () => {
+    const mockStyleThatHasATaxCategory = {
+      ...mockCtStyleWithoutCategories,
+      taxCategory: {
+        typeId: 'tax-category',
+        id: 't-1'
+      }
+    };
+
+    const taxCategoryUpdateAction = {
+      action: 'setTaxCategory',
+      taxCategory: {
+        key: 'jesta-tax-descriptions'
+      }
+    };
+
+    expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockStyleThatHasATaxCategory)).toEqual(expect.not.arrayContaining([taxCategoryUpdateAction]));
+  })
 });

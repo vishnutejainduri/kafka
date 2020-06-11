@@ -12,10 +12,9 @@ const {
   getMostUpToDateSku,
   removeDuplicateSkus,
   groupByStyleId,
-  groupByN,
-  passDownErrorsAndFailureIndexes,
-  mapBatchIndexToMessageIndexes
+  groupByN
 } = require('../utils');
+const { isStaged, entityStatus } = require('../../constantsCt');
 
 const validParams = {
   topicName: 'skus-connect-jdbc',
@@ -145,25 +144,13 @@ describe('existingCtSkuIsNewer', () => {
 describe('getCtSkuFromCtStyle', () => {
   const ctStyle = {
     masterData: {
-      current: {
+      [entityStatus]: {
         variants: [{ sku: 'sku-1' }],
         masterVariant: {
           attributes: []
         }
       },
-      hasStagedChanges: false
-    }
-  };
-
-  const ctStyleWithStagedChanges = {
-    masterData: {
-      staged: {
-        variants: [{ sku: 'sku-2' }],
-        masterVariant: {
-          attributes: []
-        }
-      },
-      hasStagedChanges: true
+      hasStagedChanges: isStaged
     }
   };
 
@@ -172,7 +159,7 @@ describe('getCtSkuFromCtStyle', () => {
   });
 
   it('returns `undefined` if no matching SKU exists', () => {
-    expect(getCtSkuFromCtStyle('sku-3', ctStyleWithStagedChanges)).toBeUndefined();
+    expect(getCtSkuFromCtStyle('sku-3', ctStyle)).toBeUndefined();
   });
 });
 
@@ -192,6 +179,24 @@ describe('parseStyleMessageCt', () => {
     expect(parsedMessage.size['en-CA']).toBe(englishSize);
     expect(parseSkuMessageCt(messageThatLacksASize).size['en-CA']).toBe('');
   });
+
+  it('handles localized sizes correctly', () => {
+    const rawMessageWithLocalizedSizes = {
+      ...rawMessage,
+      value: {
+        ...rawMessage.value,
+        SIZE_EN: 'English size',
+        SIZE_FR: 'French size'
+      }
+    }
+    const parsedMessageWithLocalizedSizes = parseSkuMessageCt(rawMessageWithLocalizedSizes);
+
+
+    expect(parsedMessageWithLocalizedSizes.size).toEqual({
+      'en-CA': 'English size',
+      'fr-CA': 'French size'
+    });
+  })
 
   it('handles sizeIds correctly', () => {
     const messageWithANumberForSizeId = { value: { SIZEID: 1 } };
@@ -228,25 +233,14 @@ describe('getCtSkuAttributeValue', () => {
 describe('getCreationAction', () => {
   const sku = { id: 'sku-01', styleId: '1', colorId: 'c1', sizeId: 's1' };
 
-  const ctStyleWithNoStagedChanges = {
+  const ctStyle = {
     masterData: {
-      current: {
+      [entityStatus]: {
         masterVariant: {
           attributes: [{ name: 'brand', value: 'foo' }]
         }
       },
-      hasStagedChanges: false
-    }
-  };
-
-  const ctStyleWithStagedChanges = {
-    masterData: {
-      staged: {
-        masterVariant: {
-          attributes: [{ name: 'brand', value: 'foo' }]
-        }
-      },
-      hasStagedChanges: true
+      hasStagedChanges: isStaged
     }
   };
 
@@ -256,12 +250,8 @@ describe('getCreationAction', () => {
     attributes: [{ name: 'brand', value: 'foo' }],
   };
 
-  it('returns the correct object when given the style has no staged changes', () => {
-    expect(getCreationAction(sku, ctStyleWithNoStagedChanges)).toMatchObject(expected);
-  });
-
-  it('returns the correct object when given style has staged changes', () => {
-    expect(getCreationAction(sku, ctStyleWithStagedChanges)).toMatchObject(expected);
+  it('returns the correct object when given the style with relevant changes', () => {
+    expect(getCreationAction(sku, ctStyle)).toMatchObject(expected);
   });
 });
 
@@ -272,19 +262,29 @@ describe('groupByStyleId', () => {
 
   it('returns correctly grouped SKUs when some have matching style IDs', () => {
     const skusSomeWithMatchingStyleIds = [sku1, sku2, sku3];
-    const expected = [[sku1, sku2], [sku3]];
+    const groupOne = [sku1, sku2]
+    groupOne.originalIndexes = [0, 1]
+    const groupTwo = [sku3]
+    groupTwo.originalIndexes = [2]
+    const expected = [groupOne, groupTwo];
     expect(groupByStyleId(skusSomeWithMatchingStyleIds)).toEqual(expected);
   });
 
   it('returns correctly grouped SKUs when none have matching style IDs', () => {
     const skusAllWithDifferentStyleIds = [sku1, sku3];
-    const expected = [[sku1], [sku3]];
+    const groupOne = [sku1]
+    groupOne.originalIndexes = [0]
+    const groupTwo = [sku3]
+    groupTwo.originalIndexes = [1]
+    const expected = [groupOne, groupTwo];
     expect(groupByStyleId(skusAllWithDifferentStyleIds)).toEqual(expected);
   });
 
   it('returns correctly grouped SKU when given a single SKU', () => {
     const singleSku = [sku1];
-    const expected = [[sku1]];
+    const groupOne = [sku1]
+    groupOne.originalIndexes = [0]
+    const expected = [groupOne];
     expect(groupByStyleId(singleSku)).toEqual(expected);
   });
 
@@ -418,85 +418,6 @@ describe('removeDuplicateSkus', () => {
   it('returns an array with oldest duplicate SKUs removed when given an array that contains duplicate SKUs', () => {
     const skusWithDuplicates = [sku1, sku1Duplicate1, sku1Duplicate2, sku2, sku3];
     expect(removeDuplicateSkus(skusWithDuplicates)).toEqual([sku1Duplicate2, sku2, sku3]);
-  });
-});
-
-describe('passDownErrorsAndFailureIndexes', () => {
-  const skuBatches = [
-    [{ id: 'sku-1', styleId: 'style-1' }, { id: 'sku-2', styleId: 'style-1' }],
-    [{ id: 'sku-3', styleId: 'style-2' }]
-  ];
-
-  const messages = [
-    {
-      value: {
-        ID: 'sku-1',
-        STYLEID: 'style-1'
-      }
-    },
-    {
-      value: {
-        ID: 'sku-3',
-        STYLEID: 'style-2'
-      }
-    },
-    {
-      value: {
-        ID: 'sku-2',
-        STYLEID: 'style-1'
-      }
-    }
-  ];
-
-
-  it('it returns a success count when there were no errors', () => {
-    const onlySuccessfulResults = [{}, {}, {}, {}];
-    const expected = {
-      ok: true,
-      successCount: 4
-    };
-
-    expect(passDownErrorsAndFailureIndexes(skuBatches, messages)(onlySuccessfulResults)).toEqual(expected);
-  })
-
-  it('it returns an array of error indexes indicating which messages failed when there are errors', () => {
-    const resultsIncludingFailures = [new Error(), {}];
-    const expected = [0, 2];
-
-    expect(passDownErrorsAndFailureIndexes(skuBatches, messages)(resultsIncludingFailures).failureIndexes).toEqual(expected);
-  })
-});
-
-describe('mapBatchIndexToMessageIndexes', () => {
-  const skuBatches = [
-    [{ id: 'sku-1', styleId: 'style-1' }, { id: 'sku-2', styleId: 'style-1' }],
-    [{ id: 'sku-3', styleId: 'style-2' }]
-  ];
-
-  const messages = [
-    {
-      value: {
-        ID: 'sku-1',
-        STYLEID: 'style-1'
-      }
-    },
-    {
-      value: {
-        ID: 'sku-3',
-        STYLEID: 'style-2'
-      }
-    },
-    {
-      value: {
-        ID: 'sku-2',
-        STYLEID: 'style-1'
-      }
-    }
-  ];
-
-  it('returns the indexes that correspond to the messages in the batch of the given index', () => {
-    expect(mapBatchIndexToMessageIndexes({ skuBatches, batchIndex: 0, messages})).toEqual([0, 2]);
-    expect(mapBatchIndexToMessageIndexes({ skuBatches, batchIndex: 1, messages})).toEqual([1]);
   });
 });
 

@@ -43,9 +43,9 @@ describe('consumeStylesBasicMessageCT', () => {
     return expect(consumeStylesBasicMessageCT(invalidParams)).rejects.toThrow();
   });
 
-  it('returns `undefined` if given valid params', async () => {
+  it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeStylesBasicMessageCT(validParams);
-    expect(response).toBeUndefined();
+    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
   });
 });
 

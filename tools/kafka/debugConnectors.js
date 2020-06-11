@@ -2,6 +2,7 @@ require('dotenv').config();
 const fs = require('fs');
 
 const getInfo = require('./scripts/getInfo');
+const getConnector = require('./scripts/getConnector');
 const getConnectorNames = require('./scripts/getConnectorNames');
 const deleteConnectors = require('./scripts/deleteConnectors');
 const createConnectors = require('./scripts/createConnectors');
@@ -26,6 +27,10 @@ async function debug({
     switch (command) {
         case 'getInfo': {
           return await getInfo(env);
+        }
+        case 'get': {
+          const connectorNames = options[0] && options[0].split(',');
+          return (await Promise.all(connectorNames.map(name => getConnector(env, name)))).map(info => ({ ...info, tasks: JSON.stringify(info.tasks)}));
         }
         case 'getAll': {
             const connectorNames = await getConnectorNames(env);
@@ -157,8 +162,8 @@ function writeToDebugLog(data) {
 }
 
 const connectionUrls = {
-  'prod': process.env['JESTA_PROD'],
-  'dev': process.env['JESTA_DEV'],
+  'production': process.env['JESTA_PRODUCTION'],
+  'staging': process.env['JESTA_STAGING'],
   'development': process.env['JESTA_DEVELOPMENT']
 };
 

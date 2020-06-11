@@ -5,10 +5,12 @@ const messagesLogs = require('../lib/messagesLogs');
 // and you cannot wrap some methods with addErrorHandling while skipping others,
 // because if one method returns an Error instance, the rest of the methods will simply bypass that Error
 // if wrapped with addErrorHandling, otherwise you might end up with difficult to reason about bugs.
+// Note: if we don't want a message to be processed but it does not warrant an error, we simply can pass null along
 const addErrorHandling = (fn, createError) => {
     if (Promise.resolve(fn) == fn || fn.constructor.name === 'AsyncFunction') {
         return async arg => {
             if (arg instanceof Error) return arg;
+            if (arg === null) return null;
             return fn(arg)
                 .then(response => {
                     if (response && response.error) throw new Error(response.error);
@@ -20,6 +22,7 @@ const addErrorHandling = (fn, createError) => {
 
     return arg => {
         if (arg instanceof Error) return arg;
+        if (arg === null) return null;
         try {
             const result = fn(arg);
             if (result && result.error) throw new Error(result.error);
@@ -86,22 +89,82 @@ const validateParams = params => {
     }
 };
 
+const getErrorsAndFailureIndexes = (messages) => {
+    let failureIndexes = []
+    const errors = messages.filter((result, index) => {
+        if (result instanceof Error) {
+            failureIndexes.push(index)
+            return true
+        }
+    });
+    return {
+        failureIndexes,
+        errors
+    }
+}
+
+const passDownProcessedMessages = rawMessages => processedMessages => {
+    const failureIndexes = getErrorsAndFailureIndexes(processedMessages).failureIndexes
+    return { messages: rawMessages.filter((_, index) => !failureIndexes.includes(index)) }
+}
+
 // Used to handle errors that occurred within particular promises in an array
 // of promises. Should be used together with `addErrorHandling`.
 // Based on the error handling code in `/product-consumers/consumeCatalogMessage/index.js`.
 // Example usage is in `/product-consumers/consumeCatalogMessageCT/index.js`.
-const passDownAnyMessageErrors = messages => {
-    const errors = messages.filter(result => result instanceof Error);
-    const successes = messages.filter(result => !(result instanceof Error));
+const passDownAnyMessageErrors = (messages) => {
+    const { errors, failureIndexes } = getErrorsAndFailureIndexes(messages)
+    const ignoredIndexes = messages.reduce((ignoredIndexes, result, index) => {
+        if (result === null) {
+            ignoredIndexes.push(index)
+        }
+        return ignoredIndexes
+    }, []);
+    
+    const result = {
+        successCount: messages.length - errors.length - ignoredIndexes.length,
+        failureIndexes,
+        errors: errors.map((error, index) => ({ error, failureIndex: failureIndexes[index]}))
+    };
 
-    if (errors.length > 0) {
-        const err = new Error(`${errors.length} of ${errors.length} updates failed. See 'failedUpdatesErrors'.`);
-        err.failedUpdatesErrors = errors;
-        err.successfulUpdatesResults = successes;
-        throw err;
+    if (ignoredIndexes.length) {
+        Object.assign(result, {
+            ignoredIndexes,
+            ignoredCount: ignoredIndexes.length,
+            errorCount: errors.length
+        });
     }
+
+    return result;
 };
 
+
+/**
+ * @param {[][]} batches Each entry in 'batches' is an array of items that has an 'originalIndexes' property. Specifically, each entry will have that property if 'batches' is created by groupByAttribute
+ */
+const passDownBatchedErrorsAndFailureIndexes = batches => results => {
+    const batchesFailureIndexes = []
+    const errors = results.filter((result,index) => {
+        if (result instanceof Error) {
+            batchesFailureIndexes.push(batches[index].originalIndexes)
+            return true
+        }
+    });
+
+    if (errors.length === 0) {
+      return {
+        ok: true,
+        successCount: results.length
+      };
+    }
+
+    return {
+        successCount: results.length - errors.length,
+        failureIndexes: batchesFailureIndexes.reduce((failureIndexes, batchFailureIndex) => [...batchFailureIndex, ...failureIndexes], []),
+        errors: errors.map((error, index) => ({ error, failureIndex: batchesFailureIndexes[index]}))
+    };
+  };
+  
 /**
  * Catches the error returned from the main function and returns it as an instance of Error instead of throwing it
  * @param {function} main
@@ -196,7 +259,9 @@ module.exports = {
     createLog,
     validateParams,
     addLoggingToMain,
+    passDownProcessedMessages,
     passDownAnyMessageErrors,
+    passDownBatchedErrorsAndFailureIndexes,
     addRetries,
     truncateErrorsIfNecessary
 }

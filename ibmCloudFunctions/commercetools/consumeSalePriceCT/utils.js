@@ -1,106 +1,144 @@
-const { getExistingCtStyle, getCtStyleAttribute, updateStyle, getProductType } = require('../styleUtils');
-const { styleAttributeNames } = require('../constantsCt');
-const { generateUpdateFromParsedMessage } = require('../../lib/parsePriceMessage');
-
+const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
+const { priceAttributeNames, isStaged, currencyCodes, entityStatus } = require('../constantsCt');
+const { priceChangeActivityTypes } = require('../../constants');
 const convertToCents = (amount) => Math.round(amount * 100)
 
 const getAllVariantPrices = (existingCtStyle) => {
   const variantPrices = [];
 
-  //current/staged price for master variant
-  const priceObjMaster = existingCtStyle.masterData.hasStagedChanges
-    ? existingCtStyle.masterData.staged.masterVariant
-    : existingCtStyle.masterData.current.masterVariant
-  const relevantPriceObjMaster = {
-    variantId: priceObjMaster.id,
-    price: priceObjMaster.prices[0]
+  const masterVariant = existingCtStyle.masterData[entityStatus].masterVariant
+  const masterVariantPrices = {
+    variantId: masterVariant.id,
+    prices: masterVariant.prices
   };
-  variantPrices.push(relevantPriceObjMaster);
+  variantPrices.push(masterVariantPrices);
 
-  //current/staged price for all variants
-  const ctStyleVariants = existingCtStyle.masterData.hasStagedChanges
-    ? existingCtStyle.masterData.staged.variants
-    : existingCtStyle.masterData.current.variants
-  ctStyleVariants.forEach((variant) => {
-    const relevantPriceObj = {
+  const otherVariants = existingCtStyle.masterData[entityStatus].variants
+  otherVariants.forEach((variant) => {
+    const variantPrice = {
       variantId: variant.id,
-      price: variant.prices[0]
+      prices: variant.prices
     };
-    variantPrices.push(relevantPriceObj);
+    variantPrices.push(variantPrice);
   });
 
   return variantPrices;
 };
 
-const generateUpdateFromParsedMessages = (priceUpdate, priceData, styleData, variantPrices) => {
-    variantPrices = variantPrices.map ((variantPrice) => {
-      priceData.currentPrice = variantPrice.price ? variantPrice.price.value.centAmount : null
-      const updatedPrice = generateUpdateFromParsedMessage (priceUpdate, priceData, styleData);
-      const priceHasNotChanged = (updatedPrice.onlineSalePrice === priceData.onlineSalePrice
-                                  && updatedPrice.currentPrice === priceData.currentPrice)
+const getTime = processDateCreated => processDateCreated.getTime
+  ? processDateCreated.getTime()
+  : (new Date(processDateCreated)).getTime()
 
-      if (priceHasNotChanged) return null;
-    
-      variantPrice.updatedPrice = updatedPrice;  
+const existingCtPriceIsNewer = (existingCtPrice, parsedPriceMessage) => {
+  const existingCtPriceCustomAttributes = existingCtPrice.custom;
+  const existingProcessDateCreated = existingCtPriceCustomAttributes && existingCtPriceCustomAttributes.fields && existingCtPriceCustomAttributes.fields[priceAttributeNames.PROCESS_DATE_CREATED]
 
-      return variantPrice;
-    }).filter(variantPrice => variantPrice)
-
-    return { variantPrices };
+  if (!existingProcessDateCreated) return false;
+  
+  return getTime(existingProcessDateCreated) > getTime(parsedPriceMessage[priceAttributeNames.PROCESS_DATE_CREATED]);
 };
 
-const preparePriceUpdate = async (ctHelpers, productTypeId, priceUpdate) => {
-    const existingCtStyle = await getExistingCtStyle(priceUpdate.styleId, ctHelpers);
+const getExistingCtOriginalPrice = (variantPrice) => {
+  const existingCtOriginalPrice = variantPrice.prices.find((price) => price.custom && price.custom.fields[priceAttributeNames.IS_ORIGINAL_PRICE]);
+  return existingCtOriginalPrice;
+};
+
+const getExistingCtPrice = (variantPrice, parsedPriceMessage) => {
+  const existingCtPrice = variantPrice.prices.find((price) => price.custom && price.custom.fields[priceAttributeNames.PRICE_CHANGE_ID] === parsedPriceMessage[priceAttributeNames.PRICE_CHANGE_ID]);
+  return existingCtPrice;
+};
+
+const getCustomFieldsForSalePrice = (parsedPriceMessage) => {
+  return Object.values(priceAttributeNames).reduce((fields, attribute) => {
+    fields[attribute] = parsedPriceMessage[attribute];
+    return fields
+  }, {})
+};
+
+/**
+ * @param {object} parsedPriceMessage
+ * @param {{ variantId: string, prices: object[] }} variantPrice
+ */
+const getActionsForVariantPrice = (parsedPriceMessage, variantPrice) => {
+  const existingCtPrice = getExistingCtPrice(variantPrice, parsedPriceMessage);
+  if (existingCtPrice && existingCtPriceIsNewer(existingCtPrice, parsedPriceMessage)) {
+    return [];
+  }
+  if (parsedPriceMessage.activityType === priceChangeActivityTypes.APPROVED || parsedPriceMessage.activityType === priceChangeActivityTypes.CREATED) {
+    const priceUpdate = {
+      price: {
+        country: 'CA',
+        validFrom: parsedPriceMessage.startDate,
+        validUntil: parsedPriceMessage.endDate,
+        value: {
+          currencyCode: currencyCodes.CAD,
+          centAmount: convertToCents(parsedPriceMessage.newRetailPrice) 
+        },
+        custom: {
+          type: {
+            key: 'priceCustomFields'
+          },
+          fields: getCustomFieldsForSalePrice(parsedPriceMessage)
+        }
+      },
+      staged: isStaged
+    };
+    if (existingCtPrice) {
+      priceUpdate.action = 'changePrice';
+      priceUpdate.priceId = existingCtPrice.id;
+    } else {
+      priceUpdate.action = 'addPrice';
+      priceUpdate.variantId = variantPrice.variantId;
+    }
+    return [priceUpdate]
+  } else if (parsedPriceMessage.activityType === priceChangeActivityTypes.DELETED) {
+    if (existingCtPrice) {
+      const priceUpdate = {
+        action: 'removePrice',
+        priceId: existingCtPrice.id,
+        staged: isStaged
+      }
+      return [priceUpdate]
+    } else {
+      throw new Error ('Price does not exist');
+    }
+  } else {
+    throw new Error (`Activity type ${parsedPriceMessage.activityType} is not recognized!`);
+  }
+}
+
+const getActionsForSalePrice = (parsedPriceMessage, allVariantPrices) => allVariantPrices
+  .reduce((allActions, variantPrice) => [
+    ...allActions,
+    ...getActionsForVariantPrice(parsedPriceMessage, variantPrice)
+  ], []);
+
+const updateStyleSalePrice = async (ctHelpers, productTypeId, parsedPriceMessage) => {
+    const { client, requestBuilder } = ctHelpers;
+
+    let existingCtStyle = await getExistingCtStyle(parsedPriceMessage.styleId, ctHelpers);
 
     if (!existingCtStyle) {
-      // the given style isn't currently stored in CT; can't update price right now
-      return null;
+      // create dummy style where none exists
+      existingCtStyle = (await createAndPublishStyle ({ id: parsedPriceMessage.styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
     }
+    
+    const allVariantPrices = getAllVariantPrices(existingCtStyle);
+    const actions = getActionsForSalePrice(parsedPriceMessage, allVariantPrices);
 
-    const variantPrices = getAllVariantPrices(existingCtStyle);
-
-    const onlineSalePriceCurrent = getCtStyleAttribute(existingCtStyle, styleAttributeNames.ONLINE_SALE_PRICE);
-    const priceData = {
-      onlineSalePrice: onlineSalePriceCurrent ? onlineSalePriceCurrent.centAmount : null,
-    };
-    const originalPriceCurrent = getCtStyleAttribute(existingCtStyle, styleAttributeNames.ORIGINAL_PRICE);
-    const styleData = {
-      originalPrice: originalPriceCurrent ? originalPriceCurrent.centAmount : null
-    };
-
-    priceUpdate.newRetailPrice = priceUpdate.newRetailPrice
-                                  ? convertToCents(priceUpdate.newRetailPrice)
-                                  : null
-    priceUpdate.originalPrice = styleData.originalPrice
-                                  ? convertToCents(styleData.originalPrice)
-                                  : null
-
-    const updatedPrices = generateUpdateFromParsedMessages (priceUpdate, priceData, styleData, variantPrices)
-
-    if (updatedPrices.variantPrices.length === 0) {
-        return null;
-    }
-
-    updatedPrices.version = existingCtStyle.version;
-    updatedPrices.id = priceUpdate.styleId;
-
-    //the following three values come from index 0, they should be identical at all times at anywhere in the index
-    //since all variants should have the same pricing
-    updatedPrices.onlineSalePrice =  updatedPrices.variantPrices[0].updatedPrice.onlineSalePrice;
-    updatedPrices.isOnlineSale =  updatedPrices.variantPrices[0].updatedPrice.isOnlineSale;
-    updatedPrices.onlineDiscount =  updatedPrices.variantPrices[0].updatedPrice.onlineDiscount;
-
-
-    return updatedPrices;
-};
-
-const updateStylePrice = async (ctHelpers, productTypeId, updatedPrice) => {
-    const productType = await getProductType(productTypeId, ctHelpers);
-
-    return updateStyle({ style: updatedPrice, existingCtStyle: updatedPrice, productType, ctHelpers });
+    return client.execute({
+      method: 'POST',
+      uri: requestBuilder.products.byKey(parsedPriceMessage.styleId).build(),
+      body: JSON.stringify({ version: existingCtStyle.version, actions })
+    });
 };
 
 module.exports = {
-  preparePriceUpdate,
-  updateStylePrice,
+  updateStyleSalePrice,
+  getAllVariantPrices,
+  convertToCents,
+  getExistingCtOriginalPrice,
+  // internal functions exported for tests follows:
+  getActionsForVariantPrice,
+  getActionsForSalePrice
 };

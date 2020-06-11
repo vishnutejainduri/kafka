@@ -5,6 +5,7 @@ const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const {
   addErrorHandling,
 } = require('../../../product-consumers/utils');
+const { languageKeys } = require('../../../commercetools/constantsCt');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -48,9 +49,9 @@ describe('consumeFacetsMessageCT', () => {
     return expect(consumeFacetsMessageCT(invalidParams)).rejects.toThrow();
   });
 
-  it('returns `undefined` if given valid params', async () => {
+  it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeFacetsMessageCT(validParams);
-    expect(response).toBeUndefined();
+    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
   });
 });
 
@@ -59,11 +60,39 @@ describe('parseFacetMessageCt', () => {
     const response = parseFacetMessageCt(validParams.messages[0]);
     expect(response).toEqual({ _id: 'styleId', id: 'styleId', promotionalSticker: { 'en-CA': 'descEng', 'fr-CA': 'descFr' } });
   });
+
+  it('should return a null result if the facet is marked for deletion', () => {
+    const validDeletionMessage = {
+      topic: 'facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA',
+      value: {
+        'STYLEID': 'styleId',
+        'CATEGORY': 'category',
+        'DESC_ENG': 'descEng',
+        'DESC_FR': 'descFr',
+        'UPD_FLG': 'F',
+        'FKORGANIZATIONNO': '1',
+        'CHAR_TY_SUB_TYPE': null,
+        'CHARACTERISTIC_TYPE_ID': '15',
+        'CHARACTERISTIC_VALUE_ID': null
+      }
+    };
+
+    const actual = parseFacetMessageCt(validDeletionMessage);
+
+    expect(actual).toEqual({
+      _id: 'styleId',
+      id: 'styleId',
+      promotionalSticker: {
+        [languageKeys.ENGLISH]: null,
+        [languageKeys.FRENCH]: null
+      }
+    });
+  });
 });
 
 describe('updateStyleFacets', () => {
   it('correct message; promo stickers', async () => {
-     const result =  
+     const result =
         validParams.messages
         .filter(addErrorHandling(filterFacetMessageCt))
         .map(addErrorHandling(parseFacetMessageCt))

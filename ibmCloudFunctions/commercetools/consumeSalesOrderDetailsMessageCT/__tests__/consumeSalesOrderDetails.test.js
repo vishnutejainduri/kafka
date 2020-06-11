@@ -57,9 +57,9 @@ describe('consumeSalesOrderDetailsMessageCT', () => {
     return expect(consumeSalesOrderDetailsMessageCT(invalidParams)).rejects.toThrow();
   });
 
-  it('returns `undefined` if given valid params', async () => {
+  it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeSalesOrderDetailsMessageCT(validParams);
-    expect(response).toBeUndefined();
+    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
   });
 });
 
@@ -149,19 +149,29 @@ describe('groupByOrderNumber', () => {
 
   it('returns correctly grouped line items when some have matching order numbers', () => {
     const orderDetailsSomeWithMatchingOrderNumbers = [orderDetail1, orderDetail2, orderDetail3];
-    const expected = [[orderDetail1, orderDetail2], [orderDetail3]];
+    const groupOne = [orderDetail1, orderDetail2]
+    groupOne.originalIndexes = [0,1]
+    const groupTwo = [orderDetail3]
+    groupTwo.originalIndexes = [2]
+    const expected = [groupOne, groupTwo];
     expect(groupByOrderNumber(orderDetailsSomeWithMatchingOrderNumbers)).toEqual(expected);
   });
 
   it('returns correctly grouped line items when none have matching order numbers', () => {
     const orderDetailsAllWithDifferentOrderNumbers = [orderDetail1, orderDetail3];
-    const expected = [[orderDetail1], [orderDetail3]];
+    const groupOne = [orderDetail1]
+    groupOne.originalIndexes = [0]
+    const groupTwo = [orderDetail3]
+    groupTwo.originalIndexes = [1]
+    const expected = [groupOne, groupTwo];
     expect(groupByOrderNumber(orderDetailsAllWithDifferentOrderNumbers)).toEqual(expected);
   });
 
   it('returns correctly grouped line items when given a single line item', () => {
     const singleOrderDetails = [orderDetail1];
-    const expected = [[orderDetail1]];
+    const groupOne = [orderDetail1]
+    groupOne.originalIndexes = [0]
+    const expected = [groupOne];
     expect(groupByOrderNumber(singleOrderDetails)).toEqual(expected);
   });
 

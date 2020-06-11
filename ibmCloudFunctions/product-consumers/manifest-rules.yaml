@@ -1,6 +1,6 @@
     rules:
       catalog-rule:
-        action: /${ORG}_${SPACE}/product-consumers/consume-catalog-message-with-retry
+        action: /${ORG}_${SPACE}/product-consumers/update-catalog-sequence
         trigger: catalog-trigger
       styles-basic-rule:
         action: /${ORG}_${SPACE}/product-consumers/consume-styles-basic-message-with-retry
@@ -64,4 +64,7 @@
         trigger: every-midnight
       remove-quantity-reserved-rule:
         action: /${ORG}_${SPACE}/product-consumers/remove-quantity-reserved
+        trigger: every-minute
+      update-future-sale-price-changes-rule:
+        action: /${ORG}_${SPACE}/product-consumers/update-algolia-price
         trigger: every-minute

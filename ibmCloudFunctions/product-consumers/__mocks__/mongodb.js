@@ -97,8 +97,14 @@ const getCollection = (collectionName) => {
             }; 
         case 'prices':
             return {
+                update: async () => {}, 
                 updateOne: async ({ _id }) => ({ _id }),
-                findOne: async () => ({ _id: 'success', styleId: 'styleId', onlineSalePrice: 'onlineSalePrice', inStoreSalePrice: 'inStoreSalePrice' }),
+                findOne: async (query) => {
+                    if (query && query.styleId && query.styleId.includes('with-priceChange')) {
+                        return ({ styleId: query.styleId, priceChanges: [{ priceChangeId: 'some-id', startDate: new Date(), newRetailPrice: 10, activityType: 'A', siteId: '00011' }] });
+                    }
+                    return ({ _id: 'success', styleId: 'styleId', onlineSalePrice: 'onlineSalePrice', inStoreSalePrice: 'inStoreSalePrice', processDateCreated: new Date() });
+                }
             }; 
         default:
             return {

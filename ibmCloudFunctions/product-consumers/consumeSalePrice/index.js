@@ -3,12 +3,12 @@
  */
 const getCollection = require('../../lib/getCollection');
 const {
-    filterPriceMessages,
-    parsePriceMessage,
-    generateUpdateFromParsedMessage
-} = require('../../lib/parsePriceMessage');
+    validateSalePriceMessages,
+    parseSalePriceMessage,
+} = require('../../lib/parseSalePriceMessage');
 const createError = require('../../lib/createError');
-const { log, createLog, addErrorHandling, addLoggingToMain } = require('../utils');
+const { log, createLog, addErrorHandling, addLoggingToMain, passDownProcessedMessages } = require('../utils');
+const { priceChangeProcessStatus } = require('../constants')
 
 const main = async function (params) {
     log(createLog.params("consumeSalePrice", params));
@@ -21,56 +21,36 @@ const main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    let prices;
-    let styles;
+    let pricesCollection;
     try {
-        styles = await getCollection(params);
-        prices = await getCollection(params, params.pricesCollectionName);
+        pricesCollection = await getCollection(params);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
 
     return Promise.all(params.messages
-        .filter(addErrorHandling(filterPriceMessages))
-        .map(addErrorHandling(parsePriceMessage))
-        .map(addErrorHandling(async (update) => styles.findOne({ _id: update.styleId })
-                .then(async (styleData) => {
-                  const priceData = await prices.findOne({ _id: update.styleId });
-
-                  if (!styleData) {
-                    return null;
-                  }
-
-                  const updatedPrice = generateUpdateFromParsedMessage (update, priceData, styleData);
-                  updatedPrice._id = styleData._id;
-                  updatedPrice.id = styleData._id;
-
-                  return prices
-                    .updateOne(
-                        { _id: updatedPrice._id },
-                        { $currentDate: { lastModifiedInternalSalePrice: { $type:"timestamp" } }, $set: updatedPrice },
-                        { upsert: true }
-                    )
-                    .catch((originalError) => {
-                        throw createError(originalError,updatedPrice)
-                    });
-            })
-        )
-    )).then((results) => {
-        const errors = results.filter((res) => res instanceof Error);
-        if (errors.length > 0) {
-            const error = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
-            error.failedUpdatesErrors = errors;
-            error.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            throw error;
-        }
-    })
-    .catch(error => ({
-        error
-    }));
+        .map(addErrorHandling(validateSalePriceMessages))
+        .map(addErrorHandling(parseSalePriceMessage))
+        .map(addErrorHandling(async (update) => {
+            const { styleId, ...priceChangeUpdate } = update
+            // The same price change entry might exist if the same messages is requeued for whatever reason e.g. a resync to add a new field to price data,
+            // in that case we first delete the currently existing entry; will be no op if it doesn't exist
+            const findDuplicatePriceChangeQuery = Object.entries(priceChangeUpdate).reduce((query, [key, value]) => {
+                query.$and.push({
+                    $or: [{ [key]: { $exists: false } }, { [key]: value}]
+                })
+                return query
+            }, { $and: [] })
+            await pricesCollection.updateOne({ styleId: styleId }, { $pull: { priceChanges: findDuplicatePriceChangeQuery } })
+            const priceChangeUpdateWithProcessFlagSet = { ...priceChangeUpdate, startDateProcessed: priceChangeProcessStatus.false, endDateProcessed: priceChangeProcessStatus.false }
+            await pricesCollection.updateOne({ styleId: styleId }, { $push: { priceChanges: priceChangeUpdateWithProcessFlagSet } }, { upsert: true })
+        })))
+        .then(passDownProcessedMessages(params.messages))
+        .catch(error => ({
+            error
+        }));
 };
 
 global.main = addLoggingToMain(main);
-
 
 module.exports = global.main;

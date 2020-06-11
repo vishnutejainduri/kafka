@@ -1,5 +1,5 @@
 const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
-const { skuAttributeNames, isStaged, CT_ACTION_LIMIT } = require('../constantsCt');
+const { skuAttributeNames, isStaged, entityStatus, CT_ACTION_LIMIT } = require('../constantsCt');
 const { groupByAttribute } = require('../../lib/utils');
 
 const groupByStyleId = groupByAttribute('styleId');
@@ -58,9 +58,7 @@ const getActionsFromSku = (sku, existingSku = null) => {
 // those in the staged version of the variant if there are staged changes.
 const getCreationAction = (sku, style) => {
   const attributes = (
-    style.masterData.hasStagedChanges
-      ? style.masterData.staged.masterVariant.attributes
-      : style.masterData.current.masterVariant.attributes
+    style.masterData[entityStatus].masterVariant.attributes
   );
 
   return {
@@ -103,7 +101,7 @@ const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
   if (!givenSku[skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL]) throw new Error('JESTA SKU lacks last modified date');
 
   const ctSkuLastModifiedDate = new Date(ctSkuLastModifiedString);
-  return ctSkuLastModifiedDate.getTime() >= givenSku[skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL].getTime();
+  return ctSkuLastModifiedDate.getTime() > givenSku[skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL].getTime();
 };
 
 const getCtSkusFromCtStyle = (skus, ctStyle) => (
@@ -185,34 +183,6 @@ const removeDuplicateSkus = skus => {
   }, []);
 };
 
-const mapBatchIndexToMessageIndexes = ({ skuBatches, batchIndex, messages }) => {
-  const skus = skuBatches[batchIndex];
-  return skus.map(sku =>
-      messages.findIndex((message => message.value.ID === sku.id))
-  )
-};
-
-const passDownErrorsAndFailureIndexes = (skuBatches, messages) => results => {
-  const errors = results.filter(result => result instanceof Error);
-  if (errors.length === 0) {
-    return {
-      ok: true,
-      successCount: results.length
-    };
-  }
-
-  const failureIndexes = results.reduce((indexes, result, batchIndex) => {
-    if (!(result instanceof Error)) return indexes;
-    return [...indexes, ...mapBatchIndexToMessageIndexes({ skuBatches, batchIndex, messages })]
-  }, []);
-
-  return {
-      errors,
-      failureIndexes
-  };
-};
-
-
 module.exports = {
   formatSkuRequestBody,
   getActionsFromSku,
@@ -229,7 +199,5 @@ module.exports = {
   groupByN,
   removeDuplicateSkus,
   createAndPublishStyle,
-  createOrUpdateSkus,
-  passDownErrorsAndFailureIndexes,
-  mapBatchIndexToMessageIndexes
+  createOrUpdateSkus
 };

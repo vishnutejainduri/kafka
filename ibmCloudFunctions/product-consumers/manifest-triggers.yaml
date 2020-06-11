@@ -43,7 +43,7 @@
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:
           isJSONData: true
-          topic: prices-connect-jdbc
+          topic: sale-prices-connect-jdbc
       sku-inventory-trigger:
         feed: /${ORG}_${SPACE}/${FEED_BASE}/messageHubFeed
         inputs:

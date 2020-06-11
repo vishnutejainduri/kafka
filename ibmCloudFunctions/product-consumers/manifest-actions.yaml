@@ -59,7 +59,7 @@
           timeout: 600000
         inputs:
           collectionName: $PRICES_COLLECTION_NAME
-          topicName: prices-connect-jdbc
+          topicName: sale-prices-connect-jdbc
       consume-stores-message:
         location: ./product-consumers/consumeStoresMessage/dist/bundle.js
         runtime: nodejs:10
@@ -199,7 +199,6 @@
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
-          topicName: prices-connect-jdbc
       bulk-calculate-available-to-sell:
         location: ./product-consumers/bulkCalculateAvailableToSell/dist/bundle.js
         runtime: nodejs:10
@@ -337,6 +336,8 @@
           timeout: 600000
     sequences:
       update-pricing-sequence:
-        actions: update-algolia-price,consume-sale-price
+        actions: consume-sale-price,update-algolia-price
+      update-catalog-sequence:
+        actions: consume-catalog-message-with-retry,update-algolia-price
       update-inventory-sequence:
         actions: consume-sku-inventory-message-with-retry,calculate-available-to-sell-with-retry

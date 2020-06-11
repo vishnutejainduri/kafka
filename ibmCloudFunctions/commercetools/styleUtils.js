@@ -4,10 +4,31 @@ const {
   languageKeys,
   isStaged,
   TAX_CATEGORY,
-  PRODUCT_SHOULD_BE_PUBLISHED
+  PRODUCT_SHOULD_BE_PUBLISHED,
+  entityStatus
 } = require('./constantsCt');
+const { getAllVariantPrices, getExistingCtOriginalPrice } = require('./consumeSalePriceCT/utils');
 
-const categoryNameToKey = (categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, '')
+/**
+ * Generates a category key based on the names of the category and all it's ancestors.
+ * @param {Array<string|LocalizedString>} categoryNames
+ * @return {string}
+ */
+const categoryKeyFromNames = (...categoryNames) => {
+  return categoryNames
+    .map((categoryName) => {
+      return categoryName instanceof Object && Object.prototype.hasOwnProperty.call(categoryName, languageKeys.ENGLISH)
+        ? categoryName[languageKeys.ENGLISH]
+        : categoryName;
+    })
+    .map((categoryName) => categoryName.replace(/[^a-zA-Z0-9_]/g, ''))
+    .reduce((categoryKey, categoryName, index) => {
+      return index > 0
+        ? categoryKey + `-l${index}` + categoryName
+        : categoryName;
+    }, '');
+};
+
 const DPM_ROOT_CATEGORY = 'DPM ROOT CATEGORY';
 
 const createCategory = async (categoryKey, categoryName, parentCategory, { client, requestBuilder }) => {
@@ -37,6 +58,35 @@ const createCategory = async (categoryKey, categoryName, parentCategory, { clien
   return response.body;
 };
 
+const updateCategory = async (categoryKey, categoryVersion, categoryName, parentCategory, { client, requestBuilder }) => {
+  if (!categoryKey || !categoryName) return null;
+  const method = 'POST';
+  const uri = requestBuilder.categories.byKey(categoryKey).build();
+
+  const body = {
+    version: categoryVersion,
+    actions: [{
+      action: 'changeName',
+      name: categoryName
+    }]
+  };
+
+  if (parentCategory) {
+    body.actions.push({
+      action: 'changeParent',
+      parent: {
+        id: parentCategory.id,
+        typeId: 'category'
+      }
+    })
+  }
+
+  const requestBody = JSON.stringify(body);
+
+  const response = await client.execute({ method, uri, body: requestBody });
+  return response.body;
+};
+
 const getCategory = async (category, { client, requestBuilder }) => {
   if (!category) return null;
   const method = 'GET';
@@ -47,31 +97,67 @@ const getCategory = async (category, { client, requestBuilder }) => {
     const response = await client.execute({ method, uri });
     return response.body;
   } catch (err) {
-      if (err.code === 404) return null; 
+      if (err.code === 404) return null;
       throw err;
   }
 };
 
-const getCategories = async (style, ctHelpers) => {
-  const level0CategoryKey = categoryNameToKey(DPM_ROOT_CATEGORY);
-  const level1CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[languageKeys.ENGLISH]);
-  const level2CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[languageKeys.ENGLISH] + style.level2Category[languageKeys.ENGLISH]);
-  const level3CategoryKey = categoryNameToKey(level0CategoryKey + style.level1Category[languageKeys.ENGLISH] + style.level2Category[languageKeys.ENGLISH] + style.level3Category[languageKeys.ENGLISH]);
+const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
+  const enCA = languageKeys.ENGLISH;
+  const frCA = languageKeys.FRENCH;
 
-  const categories = await Promise.all([
-    getCategory(level0CategoryKey, ctHelpers),
-    getCategory(level1CategoryKey, ctHelpers),
-    getCategory(level2CategoryKey, ctHelpers),
-    getCategory(level3CategoryKey, ctHelpers)
-  ]);
+  const categoryNeedsUpdating = (fetchedCategory, categoryName) => {
+    return fetchedCategory.name[enCA] !== categoryName[enCA]
+      || fetchedCategory.name[frCA] !== categoryName[frCA];
+  };
 
-  if (!categories[0]) categories[0] = await createCategory(level0CategoryKey, { 'en-CA': DPM_ROOT_CATEGORY, 'fr-CA': DPM_ROOT_CATEGORY }, null, ctHelpers);
-  if (!categories[1]) categories[1] = await createCategory(level1CategoryKey, style.level1Category, categories[0], ctHelpers);
-  if (!categories[2]) categories[2] = await createCategory(level2CategoryKey, style.level2Category, categories[1], ctHelpers);
-  if (!categories[3]) categories[3] = await createCategory(level3CategoryKey, style.level3Category, categories[2], ctHelpers);
+  // TODO
+  // bug 1: this uses the en-CA label for the category name and not the category code from the dictionaryitem
+  //  table. this means that changing the label will change the key for the category.
+  const categoryKeys = [
+    categoryKeyFromNames(DPM_ROOT_CATEGORY),
+    categoryKeyFromNames(DPM_ROOT_CATEGORY, style.level1Category),
+    categoryKeyFromNames(DPM_ROOT_CATEGORY, style.level1Category, style.level2Category),
+    categoryKeyFromNames(DPM_ROOT_CATEGORY, style.level1Category, style.level2Category, style.level3Category),
+  ];
+
+  const categories = await Promise.all(categoryKeys.map(key => getCategory(key, ctHelpers)));
+
+  if (!categories[0]) {
+    categories[0] = await createCategory(categoryKeys[0], {
+      [enCA]: DPM_ROOT_CATEGORY,
+      [frCA]: DPM_ROOT_CATEGORY
+    }, null, ctHelpers);
+  }
+
+  for (let i = 1; i < categories.length; i++) {
+    if (!categories[i]) {
+      categories[i] = await createCategory(categoryKeys[i], style[`level${i}Category`], categories[i - 1], ctHelpers);
+    } else if (categoryNeedsUpdating(categories[i], style[`level${i}Category`])) {
+      categories[i] = await updateCategory(categoryKeys[i], categories[i].version, style[`level${i}Category`], categories[i - 1], ctHelpers);
+    }
+  }
 
   return categories.slice(1, categories.length).filter(Boolean);
 };
+
+function createOriginalPriceUpdate (originalPrice) {
+  return {
+    country: 'CA',
+    value: {
+      currencyCode: currencyCodes.CAD,
+      centAmount: originalPrice
+    },
+    custom: {
+      type: {
+        key: 'priceCustomFields'
+      },
+      fields: {
+        isOriginalPrice: true
+      }
+    }
+  }
+}
 
 const getProductType = async (productTypeId, { client, requestBuilder }) => {
   const method = 'GET';
@@ -82,7 +168,7 @@ const getProductType = async (productTypeId, { client, requestBuilder }) => {
     const response = await client.execute({ method, uri });
     return response.body;
   } catch (err) {
-      if (err.code === 404) return null; 
+      if (err.code === 404) return null;
       throw err;
   }
 };
@@ -141,7 +227,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
         value: style[attribute],
         staged: isStaged
       };
-    
+
       actionObj = formatAttributeValue(style, actionObj, attribute, attributeType);
 
       return actionObj;
@@ -152,15 +238,13 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   const nameUpdateAction = style.name
     ? { action: 'changeName', name: style.name, staged: isStaged }
     : null;
-  
+
   const descriptionUpdateAction = style.marketingDescription
     ? { action: 'setDescription', description: style.marketingDescription, staged: isStaged }
     : null;
 
   // handle categories
-  const existingCtStyleData = existingCtStyle.masterData && (existingCtStyle.masterData.hasStagedChanges
-    ? existingCtStyle.masterData.staged
-    : existingCtStyle.masterData.current)
+  const existingCtStyleData = existingCtStyle.masterData && (existingCtStyle.masterData[entityStatus])
   const existingCategoryIds = existingCtStyleData && existingCtStyleData.categories
     ? existingCtStyleData.categories.map(category => category.id)
     : null
@@ -178,36 +262,40 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
       .map(categoryId => ({ action: 'addToCategory', category: { id: categoryId, typeId: 'category' }, staged: isStaged }))
     : [];
 
-  const currentPriceActions = style.variantPrices
-      ? style.variantPrices.map((variantPrice) => {
-        const priceUpdate = {
-          price: {
-            value: {
-              currencyCode: currencyCodes.CAD,
-              centAmount: variantPrice.updatedPrice.currentPrice
-            }
-          },
+  const allVariantPrices = getAllVariantPrices(existingCtStyle);
+  let priceUpdateActions = allVariantPrices.map((variantPrice) => {
+    const existingCtOriginalPrice = getExistingCtOriginalPrice(variantPrice);
+    const priceUpdate = existingCtOriginalPrice
+        ? {
+          action: 'changePrice',
+          priceId: existingCtOriginalPrice.id,
+          price: createOriginalPriceUpdate(style.originalPrice),
           staged: isStaged
-        };
-        if (!variantPrice.price && variantPrice.updatedPrice.currentPrice) {
-          priceUpdate.action = 'addPrice';
-          priceUpdate.variantId = variantPrice.variantId;
-        } else if (variantPrice.price && variantPrice.updatedPrice.currentPrice) {
-          priceUpdate.action = 'changePrice';
-          priceUpdate.priceId = variantPrice.price.id;
-        } else if (variantPrice.price && !variantPrice.updatedPrice.currentPrice) {
-          priceUpdate.action = 'removePrice';
-          priceUpdate.priceId = variantPrice.price.id;
-          delete priceUpdate.price;
-        } else {
-          return null;
         }
-        return priceUpdate;
-    }).filter(priceUpdate => priceUpdate)
-      : [];
+        : {
+          action: 'addPrice',
+          variantId: variantPrice.variantId,
+          price: createOriginalPriceUpdate(style.originalPrice),
+          staged: isStaged
+        }
+      return [priceUpdate];
+  });
+  priceUpdateActions = priceUpdateActions.reduce((finalActions, currentActions) => [...finalActions, ...currentActions], []);
 
-  const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...currentPriceActions, 
-    ...categoriesAddAction, ...categoriesRemoveAction].filter(Boolean);
+  // Tax category is currently set on product creation, but it wasn't always.
+  // This is to set the tax categories of any products that were created before
+  // we made that change.
+  // There should be only one tax category in CT, and all products should fall
+  // under it.
+  const taxCategoryUpdateAction = existingCtStyle.taxCategory ? null : {
+    action: 'setTaxCategory',
+    taxCategory: {
+      key: TAX_CATEGORY
+    }
+  }
+
+  const allUpdateActions = [...customAttributeUpdateActions, nameUpdateAction, descriptionUpdateAction, ...priceUpdateActions,
+    ...categoriesAddAction, ...categoriesRemoveAction, taxCategoryUpdateAction].filter(Boolean);
 
   return allUpdateActions;
 };
@@ -227,7 +315,7 @@ const updateStyle = async ({ style, existingCtStyle, productType, categories, ct
 
 const getAttributesFromStyle = (style, productType) => {
   const customAttributesToCreate = Object.keys(style).filter(isCustomAttribute);
-  
+
   return customAttributesToCreate.map(attribute => {
       const attributeType = productType.attributes.find((attributeType) => attributeType.name === attribute).type.name;
       if (style[attribute]) {
@@ -280,12 +368,7 @@ const createStyle = async (style, productType, categories, { client, requestBuil
   };
 
   if (style.originalPrice) {
-    body.masterVariant.prices = [{
-        value: {
-          currencyCode: currencyCodes.CAD,
-          centAmount: style.originalPrice
-        } 
-      }];
+    body.masterVariant.prices = [createOriginalPriceUpdate(style.originalPrice)];
   }
   if (categories) {
     body.categories = categories.map(category => ({
@@ -318,12 +401,11 @@ const createAndPublishStyle = async (styleToCreate, productType, categories, ctH
  * from the master variant. Returns `undefined` if the attribute does not exist.
  * @param {Object} ctStyle The product as stored in CT.
  * @param {String} attributeName Name of the attribute whose value should be returned.
- * @param {Boolean} current Indicates whether to return the value from the current product or the staged product.
  */
-const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
+const getCtStyleAttributeValue = (ctStyle, attributeName) => {
   const foundAttribute =  (
     ctStyle
-    .masterData[current ? 'current' : 'staged']
+    .masterData[entityStatus]
     .masterVariant
     .attributes
     .find(attribute => attribute.name === attributeName)
@@ -334,9 +416,7 @@ const getCtStyleAttributeValue = (ctStyle, attributeName, current = false) => {
 };
 
 const getCtStyleAttribute = (ctStyle, attributeName) => {
-  const stagedAttribute = ctStyle.masterData.staged ? getCtStyleAttributeValue(ctStyle, attributeName, false) : null;
-  const currentAttribute = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, attributeName, true) : null;
-  const attribute = stagedAttribute || currentAttribute;
+  const attribute = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, attributeName) : null;
 
   if (!attribute) return null;
   return attribute;
@@ -351,7 +431,7 @@ const existingCtStyleIsNewer = (existingCtStyle, givenStyle, dateAttribute) => {
 
   const existingCtStyleDate = new Date(existingCtStyleDateAttributeValue);
 
-  return existingCtStyleDate.getTime() >= givenStyle[dateAttribute].getTime()
+  return existingCtStyleDate.getTime() > givenStyle[dateAttribute].getTime()
 };
 
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
@@ -360,7 +440,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
 
     if (!existingCtStyle) {
       // the given style isn't currently stored in CT, so we create a new one
-      const categories = await getCategories(style, ctHelpers);
+      const categories = await createOrUpdateCategoriesFromStyle(style, ctHelpers);
       return createAndPublishStyle(style, productType, categories, ctHelpers);
     }
 
@@ -377,7 +457,7 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     }
     // the given style is up-to-date and an earlier version of it is already
     // stored in CT, so we just need to update its attributes
-    const categories = await getCategories(style, ctHelpers);
+    const categories = await createOrUpdateCategoriesFromStyle(style, ctHelpers);
     return updateStyle({ style, existingCtStyle, productType, categories, ctHelpers });
 };
 
@@ -385,6 +465,7 @@ module.exports = {
   createStyle,
   createAndPublishStyle,
   updateStyle,
+  updateCategory,
   createOrUpdateStyle,
   existingCtStyleIsNewer,
   getActionsFromStyle,
@@ -393,8 +474,8 @@ module.exports = {
   getProductType,
   getExistingCtStyle,
   getCategory,
-  getCategories,
+  createOrUpdateCategoriesFromStyle,
   getUniqueCategoryIdsFromCategories,
   createCategory,
-  categoryNameToKey
+  categoryKeyFromNames
 };

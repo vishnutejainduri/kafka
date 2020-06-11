@@ -401,6 +401,13 @@ module.exports = {
             `Failed to get current ats data for styles: ${stylesToCheck}`
         )
     },
+    updateAlgoliaFacets: {
+        failedTransforms: (failures) => new CustomError(
+          null,
+          'failed-to-fetch-or-transform-styles',
+          `Failed to prepare fetch or transform some facets or styles: ${failures}`
+        )
+    },
     consumeThresholdMessage: {
         failed: (originalError, paramsExcludingMessages) => new CustomError(
             originalError,
@@ -494,7 +501,17 @@ module.exports = {
             {
                 updatedPrice
             }
-        )
+        ),
+        failedToDelete: (originalError, update) => new CustomError(
+            originalError,
+            'failed-consume-sale-price-failed-to-delete',
+            `Failure in run of consume sale price. Could not delete a price for the update: ${update}.`
+        ),
+        activityTypeNotRecognized: (originalError, update) => new CustomError(
+            originalError,
+            'failed-consume-sale-price-activityType-not-recognized',
+            `Failure in run of consume sale price. Could not recognize acvitity type of the update: ${update}.`
+        ),
     },
     parsePriceMessage: {
         noStyleId: () => new CustomError(

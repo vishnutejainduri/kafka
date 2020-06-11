@@ -1,39 +1,299 @@
 {
-  "key": "orderCustomFields",
-  "name": {
-    "en-CA": "Order Custom Fields",
-    "fr-CA": ""
-  },
-  "resourceTypeIds": [ "order" ],
-  "fieldDefinitions": [{
-    "type": {
-      "name": "DateTime"
+    "key": "orderCustomFields",
+    "name": {
+        "fr-CA": "",
+        "en-CA": "Order Custom Fields"
     },
-    "name": "orderLastModifiedDate",
-    "label":{
-      "en-CA": "Order Last Modified Date",
-      "fr-CA": ""
-    },
-    "required": false
-  },{
-    "type": {
-      "name": "Boolean"
-    },
-    "name": "sentToOMS",
-    "label":{
-      "en-CA": "Sent to OMS",
-      "fr-CA": ""
-    },
-    "required": false
-  },{
-    "type": {
-      "name": "Boolean"
-    },
-    "name": "isStorePickup",
-    "label":{
-      "en-CA": "Is Store Pickup",
-      "fr-CA": ""
-    },
-    "required": false
-  }]
+    "resourceTypeIds": [
+        "order"
+    ],
+    "fieldDefinitions": [
+        {
+            "name": "orderLastModifiedDate",
+            "label": {
+                "en-CA": "Order last modified date"
+            },
+            "required": false,
+            "type": {
+                "name": "DateTime"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "isStorePickup",
+            "label": {
+                "en-CA": "Is store pickup"
+            },
+            "required": false,
+            "type": {
+                "name": "Boolean"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "shipments",
+            "label": {
+                "fr-CA": "",
+                "en-CA": "Shipments"
+            },
+            "required": false,
+            "type": {
+                "name": "Set",
+                "elementType": {
+                    "name": "Reference",
+                    "referenceTypeId": "key-value-document"
+                }
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "errorMessage",
+            "label": {
+                "en-CA": "Error message set by `hr-orders-service`"
+            },
+            "required": false,
+            "type": {
+                "name": "String"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "signatureIsRequired",
+            "label": {
+                "en-CA": "Signature is required"
+            },
+            "required": false,
+            "type": {
+                "name": "Boolean"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "paymentIsReleased",
+            "label": {
+                "en-CA": "Payment is required"
+            },
+            "required": false,
+            "type": {
+                "name": "Boolean"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "returnsAreFree",
+            "label": {
+                "en-CA": "Returns are free"
+            },
+            "required": false,
+            "type": {
+                "name": "Boolean"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "shippingIsRush",
+            "label": {
+                "en-CA": "Shipping is rush"
+            },
+            "required": false,
+            "type": {
+                "name": "Boolean"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "carrierId",
+            "label": {
+                "en-CA": "Carrier ID"
+            },
+            "required": false,
+            "type": {
+                "name": "Enum",
+                "values": [
+                    {
+                        "key": "CP",
+                        "label": "Canada Post"
+                    },
+                    {
+                        "key": "FDX",
+                        "label": "FedEx"
+                    },
+                    {
+                        "key": "PRL",
+                        "label": "Purolator"
+                    },
+                    {
+                        "key": "DHL",
+                        "label": "DHL"
+                    },
+                    {
+                        "key": "USPS",
+                        "label": "USPS"
+                    },
+                    {
+                        "key": "UPS",
+                        "label": "UPS"
+                    }
+                ]
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "shippingServiceType",
+            "label": {
+                "en-CA": "Shipping service type"
+            },
+            "required": false,
+            "type": {
+                "name": "Enum",
+                "values": [
+                    {
+                        "key": "EXPRESS",
+                        "label": "Express"
+                    },
+                    {
+                        "key": "SHIPMENT",
+                        "label": "Shipment"
+                    },
+                    {
+                        "key": "GROUND",
+                        "label": "Ground"
+                    },
+                    {
+                        "key": "EXPEDITED PARCEL",
+                        "label": "Expedited parcel"
+                    },
+                    {
+                        "key": "XPRESSPOST",
+                        "label": "Xpresspost"
+                    }
+                ]
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "totalOrderTax",
+            "label": {
+                "en-CA": "Total order tax"
+            },
+            "required": false,
+            "type": {
+                "name": "Money"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "shippingTax",
+            "label": {
+                "en-CA": "Shipping tax"
+            },
+            "required": false,
+            "type": {
+                "name": "Money"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "shippingCost",
+            "label": {
+                "en-CA": "Shipping cost (not including tax)"
+            },
+            "required": false,
+            "type": {
+                "name": "Money"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "transactionTotal",
+            "label": {
+                "en-CA": "Total amount paid (including tax)"
+            },
+            "required": false,
+            "type": {
+                "name": "Money"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "shippingTaxDescription",
+            "label": {
+                "en-CA": "Shipping tax description"
+            },
+            "required": false,
+            "type": {
+                "name": "String"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "destinationSiteId",
+            "label": {
+                "en-CA": "Destination site ID"
+            },
+            "required": false,
+            "type": {
+                "name": "String"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "retryCount",
+            "label": {
+                "en-CA": "Number of times the `hr-order-service` has retried sending the order to the OMS"
+            },
+            "required": false,
+            "type": {
+                "name": "Number"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "nextRetryAt",
+            "label": {
+                "en-CA": "The earliest date and time at which the `hr-orders-service` will try to send the order to the OMS"
+            },
+            "required": false,
+            "type": {
+                "name": "DateTime"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "sentToOmsStatus",
+            "label": {
+                "en-CA": "Indicates whether the `hr-orders-service` has successfully sent the order to the OMS, will try to send the order to the OMS, or has given up trying to send the order to the OMS"
+            },
+            "required": false,
+            "type": {
+                "name": "Enum",
+                "values": [
+                    {
+                        "key": "PENDING",
+                        "label": "Pending"
+                    },
+                    {
+                        "key": "SUCCESS",
+                        "label": "Success"
+                    },
+                    {
+                        "key": "FAILURE",
+                        "label": "Failure"
+                    }
+                ]
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "loginRadiusUid",
+            "label": {
+                "en-CA": "LoginRadius UID"
+            },
+            "required": false,
+            "type": {
+                "name": "String"
+            },
+            "inputHint": "SingleLine"
+        }
+    ]
 }

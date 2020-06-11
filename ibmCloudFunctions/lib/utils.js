@@ -7,19 +7,27 @@ function camelCase(str) {
 }
 
 const getUniqueAttributeValues = attributeName => items => {
-    const uniqueAttributeValues = items.reduce((previousUniqueValues, item) => (
+    const uniqueAttributeValues = items.filter(item => item).reduce((previousUniqueValues, item) => (
       previousUniqueValues.add(item[attributeName])
     ), new Set());
   
     return Array.from(uniqueAttributeValues);
   };
-  
+
 const groupByAttribute = attributeName => items => {
     const uniqueAttributeValues = getUniqueAttributeValues(attributeName)(items);
 
-    return uniqueAttributeValues.map(value => (
-        items.filter(item => item[attributeName] === value)
-    ));
+    return uniqueAttributeValues.map(value => {
+        const originalIndexes = [];
+        const matchedItems = items.filter((item, index) => {
+            if (item[attributeName] === value) {
+                originalIndexes.push(index)
+                return true
+            }
+        });
+        matchedItems.originalIndexes = originalIndexes;
+        return matchedItems;
+    });
 };
 
 const getMostUpToDateObject = dateName => objects => {

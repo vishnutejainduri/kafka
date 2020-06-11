@@ -10,15 +10,15 @@ const {
   getCtSkusFromCtStyle,
   getOutOfDateSkuIds,
   removeDuplicateSkus,
-  createOrUpdateSkus,
-  passDownErrorsAndFailureIndexes
+  createOrUpdateSkus
 } = require('./utils');
 const {
   addErrorHandling,
   addLoggingToMain,
   createLog,
   log,
-  validateParams
+  validateParams,
+  passDownBatchedErrorsAndFailureIndexes
 } = require('../../product-consumers/utils');
 
 // Takes an array of SKUs, all of which have the same style ID. Since they all
@@ -75,7 +75,7 @@ const main = params => {
   );
  
   return Promise.all(skuBatchPromises)
-    .then(passDownErrorsAndFailureIndexes(skusGroupedByStyleId, params.messages))
+    .then(passDownBatchedErrorsAndFailureIndexes(skusGroupedByStyleId, params.messages))
     .catch(handleErrors)
 };
 
