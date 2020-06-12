@@ -552,6 +552,14 @@ describe('consumeCatalogueMessageCT', () => {
     });
     expect(response).toEqual({ successCount: 1, ok: true });
   });
+
+  it('returns two success results if given valid params and two valid messages for different styles', async () => {
+    const response = await consumeCatalogueMessageCT({
+      ...validParams,
+      messages: [validMessage, { ...validMessage, value: { ...validMessage.value, STYLEID: '20000001' } }]
+    });
+    expect(response).toEqual({ successCount: 2, ok: true });
+  });
 });
 
 describe('getUniqueCategoryIdsFromCategories', () => {
