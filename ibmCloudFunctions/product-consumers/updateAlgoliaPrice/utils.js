@@ -167,23 +167,16 @@ function updateChangesQuery ({ isEndDate, isFailure, processingDate, styleIds })
           styleId: { $in: styleIds }
         },
         {
-          priceChanges: {
-            $elemMatch: {
-              [isEndDate ? 'endDate' : 'startDate']: {
-                $lt: processingDate
-              }
-            }
-          }
+          [`priceChanges.${isEndDate ? 'endDate' : 'startDate'}`]: { $lt: processingDate }
         }
       ]
     },
     {
-      $set: {
-          [`priceChanges.$[].${isEndDate ? 'endDateProcessed' : 'startDateProcessed'}`]: isFailure ? priceChangeProcessStatus.failure : priceChangeProcessStatus.true
-      }
+      $set: { [`priceChanges.$[elem].${isEndDate ? 'endDateProcessed' : 'startDateProcessed'}`]: isFailure ? priceChangeProcessStatus.failure : priceChangeProcessStatus.true }
     },
     {
-      multi: true
+      multi: true,
+      arrayFilters: [ { [`elem.${isEndDate ? 'endDate' : 'startDate'}`]: { $lt: processingDate } } ]
     }
   ]
 }
