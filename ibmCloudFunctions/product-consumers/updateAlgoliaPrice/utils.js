@@ -162,14 +162,8 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate) {
 function updateChangesQuery ({ isEndDate, isFailure, processingDate, styleIds }) {
   return [
     {
-      $and: [
-        {
-          styleId: { $in: styleIds }
-        },
-        {
-          [`priceChanges.${isEndDate ? 'endDate' : 'startDate'}`]: { $lt: processingDate }
-        }
-      ]
+      styleId: { $in: styleIds },
+      [`priceChanges.${isEndDate ? 'endDate' : 'startDate'}`]: { $lt: processingDate }
     },
     {
       $set: { [`priceChanges.$[elem].${isEndDate ? 'endDateProcessed' : 'startDateProcessed'}`]: isFailure ? priceChangeProcessStatus.failure : priceChangeProcessStatus.true }
