@@ -1,6 +1,5 @@
 const consumeStylesBasicMessageCT = require('..');
 const { updateStyleOutlet } = require('../utils');
-const { filterStyleBasicMessage } = require('../../../lib/parseStyleBasicMessage');
 const { parseStyleBasicMessageCt } = require('../../../lib/parseStyleBasicMessageCt');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const {
@@ -60,7 +59,6 @@ describe('updateStyleOutlet', () => {
   it('correct message; date in the future', async () => {
      const result =  
         validParams.messages
-        .filter(addErrorHandling(filterStyleBasicMessage))
         .map(addErrorHandling(parseStyleBasicMessageCt))
     const response = await updateStyleOutlet(mockedCtHelpers, validParams.productTypeId, result[0]);
     expect(response).toBeTruthy();
