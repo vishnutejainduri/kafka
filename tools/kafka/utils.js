@@ -1,7 +1,9 @@
 const NoResponse = Symbol.for("no-response");
 
-async function asleep (sleepTime = 120000) {
-  return Promise(function (resolve) {
+async function sleep (tries) {
+  const sleepTime = tries * 60000
+  console.log(`Call failed. Waiting for ${sleepTime/1000}s before next retry...`)
+  return new Promise(function (resolve) {
     setTimeout(function () {
       resolve()
     }, sleepTime)
@@ -18,7 +20,9 @@ function retry(fn, retries = 5) {
             error = null;
             response = NoResponse;
             try {
-                await asleep()
+                if (tries > 1) {
+                  await sleep(tries)
+                }
                 response = await fn(...args);
             } catch (err) {
                 error = err;
