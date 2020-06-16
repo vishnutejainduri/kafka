@@ -37,7 +37,7 @@ const main = params => {
       .map(addErrorHandling(parseStyleMessageCt))
   );
 
-  const batchedStylesToCreateOrUpdate = groupByAttribute('styleId')(stylesToCreateOrUpdate)
+  const batchedStylesToCreateOrUpdate = groupByAttribute('id')(stylesToCreateOrUpdate)
   const stylePromises = (
     batchedStylesToCreateOrUpdate
       .map(addErrorHandling(batchedParsedMessages => {
