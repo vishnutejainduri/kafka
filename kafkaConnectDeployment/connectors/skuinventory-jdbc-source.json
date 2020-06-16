@@ -7,7 +7,7 @@
     "schema.pattern": "VSTORE",
     "table.poll.interval.ms": 3600000,
     "mode": "timestamp",
-    "batch.max.rows": 500,
+    "batch.max.rows": 100,
     "timestamp.column.name": "LASTMODIFIEDDATE",
     "query": "SELECT i.FKSKU as SKU_ID, sc.IMAGE_STYLEID as STYLE_ID, i.FKSTORENO as STORE_ID, i.QOH, i.QOHSELLABLE, i.QOHNOTSELLABLE, i.QOO, i.QBO, i.QIT, i.QIP, i.LASTMODIFIEDDATE, i.INV_FKORGANIZATIONNO FROM VSTORE.SKUINVENTORY i INNER JOIN (SELECT SKUCOLOR, PKSKU FROM VSTORE.SKU) s ON i.FKSKU = s.PKSKU INNER JOIN ELCAT.STYLE_COLOURS sc ON SUBSTR(sc.STYLEID,1,8) = i.INV_FKSTYLENO AND sc.COLOUR_ID = s.SKUCOLOR",
     "numeric.mapping": "best_fit",

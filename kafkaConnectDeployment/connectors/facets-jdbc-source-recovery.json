@@ -6,7 +6,7 @@
     "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
     "mode": "timestamp",
     "timestamp.column.name": "LAST_MODIFIED",
-    "batch.max.rows": 200,
+    "batch.max.rows": 100,
     "errors.log.enable": true,
     "numeric.mapping": "best_fit",
     "topic.prefix": "facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA",

@@ -5,7 +5,7 @@
     "tasks.max": 1,
     "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
     "mode": "bulk",
-    "batch.max.rows": 500,
+    "batch.max.rows": 100,
     "errors.log.enable": true,
     "numeric.mapping": "best_fit",
     "query": "SELECT i.FKSKU as SKU_ID, sc.IMAGE_STYLEID as STYLE_ID, i.FKSTORENO as STORE_ID, i.QOH, i.QOHSELLABLE, i.QOHNOTSELLABLE, i.QOO, i.QBO, i.QIT, i.QIP, i.LASTMODIFIEDDATE, i.INV_FKORGANIZATIONNO FROM VSTORE.SKUINVENTORY i INNER JOIN (SELECT SKUCOLOR, PKSKU FROM VSTORE.SKU) s ON i.FKSKU = s.PKSKU INNER JOIN ELCAT.STYLE_COLOURS sc ON SUBSTR(sc.STYLEID,1,8) = i.INV_FKSTYLENO AND sc.COLOUR_ID = s.SKUCOLOR WHERE QOHSELLABLE > 0",
