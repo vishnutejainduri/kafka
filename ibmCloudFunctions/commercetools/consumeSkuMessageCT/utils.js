@@ -3,6 +3,7 @@ const { skuAttributeNames, isStaged, entityStatus, CT_ACTION_LIMIT } = require('
 const { groupByAttribute } = require('../../lib/utils');
 
 const groupByStyleId = groupByAttribute('styleId');
+const skuImage = (styleId) => ( { url: `https://i1.adis.ws/i/harryrosen/${styleId}?$prp-4col-xl$`,  dimensions: { w: 242, h: 288 } } )
 
 const getCtSkuAttributeValue = (ctSku, attributeName) => {
   if (!ctSku.attributes) return undefined;
@@ -47,8 +48,26 @@ const getActionsFromSku = (sku, existingSku = null) => {
     staged: isStaged
   }));
 
-  if (existingSku) return actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
-  return actions.filter(hasNonNullishValue);
+  const addImageAction = {
+    action: 'addExternalImage',
+    sku: sku.id,
+    images: [skuImage(sku.styleId)],
+    staged: isStaged
+  };
+
+  if (existingSku) {
+    const removeImageActions = existingSku.images.map(image => ({
+      action: 'removeImage',
+      sku: existingSku.sku,
+      imageUrl: image.url,
+      staged: isStaged
+    }));
+
+    const validActions = actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
+    return [...validActions, ...removeImageActions, addImageAction];
+  }
+  const validActions = actions.filter(hasNonNullishValue);
+  return [...validActions, addImageAction];
 };
 
 // Returns a CT action which tells CT to create a new SKU with the style-level
@@ -65,6 +84,7 @@ const getCreationAction = (sku, style) => {
     action: 'addVariant',
     sku: sku.id,
     attributes,
+    images: [skuImage(style.key)],
     staged: isStaged
   };
 };
@@ -150,6 +170,8 @@ const createOrUpdateSkus = async (skusToCreateOrUpdate, existingCtSkus, ctStyle,
   const uri = requestBuilder.products.byKey(styleId).build();
 
   const actionsGroupedByActionLimit = groupByN(CT_ACTION_LIMIT)(getActionsFromSkus(skusToCreateOrUpdate, existingCtSkus, ctStyle));
+
+  console.log('actionsGroupedByActionLimit', actionsGroupedByActionLimit);
 
   let workingStyle = ctStyle;
   for (const actions of actionsGroupedByActionLimit) {
