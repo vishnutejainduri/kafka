@@ -23,7 +23,7 @@ function parseFacetMessageCt(msg) {
     };
     // If the facet is marked for deletion, set the value to null
     facetObj[facetName] = msg.value.UPD_FLG === 'F'
-        ? { [languageKeys.ENGLISH]: null, [languageKeys.FRENCH]: null }
+        ? { [languageKeys.ENGLISH]: '', [languageKeys.FRENCH]: '' }
         : { [languageKeys.ENGLISH]: msg.value.DESC_ENG, [languageKeys.FRENCH]: msg.value.DESC_FR };
     return facetObj;
 }
