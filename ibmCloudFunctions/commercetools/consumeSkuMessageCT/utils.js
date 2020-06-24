@@ -51,7 +51,7 @@ const getActionsFromSku = (sku, existingSku = null) => {
   const addImageAction = {
     action: 'addExternalImage',
     sku: sku.id,
-    images: [skuImage(sku.styleId)],
+    image: skuImage(sku.styleId),
     staged: isStaged
   };
 
@@ -170,8 +170,6 @@ const createOrUpdateSkus = async (skusToCreateOrUpdate, existingCtSkus, ctStyle,
   const uri = requestBuilder.products.byKey(styleId).build();
 
   const actionsGroupedByActionLimit = groupByN(CT_ACTION_LIMIT)(getActionsFromSkus(skusToCreateOrUpdate, existingCtSkus, ctStyle));
-
-  console.log('actionsGroupedByActionLimit', actionsGroupedByActionLimit);
 
   let workingStyle = ctStyle;
   for (const actions of actionsGroupedByActionLimit) {
