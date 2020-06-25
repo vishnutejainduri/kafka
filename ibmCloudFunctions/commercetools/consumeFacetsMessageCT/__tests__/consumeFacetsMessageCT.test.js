@@ -83,8 +83,8 @@ describe('parseFacetMessageCt', () => {
       _id: 'styleId',
       id: 'styleId',
       promotionalSticker: {
-        [languageKeys.ENGLISH]: null,
-        [languageKeys.FRENCH]: null
+        [languageKeys.ENGLISH]: '',
+        [languageKeys.FRENCH]: ''
       }
     });
   });
