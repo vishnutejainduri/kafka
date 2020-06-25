@@ -48,26 +48,11 @@ const getActionsFromSku = (sku, existingSku = null) => {
     staged: isStaged
   }));
 
-  const addImageAction = {
-    action: 'addExternalImage',
-    sku: sku.id,
-    image: skuImage(sku.styleId),
-    staged: isStaged
-  };
-
   if (existingSku) {
-    const removeImageActions = existingSku.images.map(image => ({
-      action: 'removeImage',
-      sku: existingSku.sku,
-      imageUrl: image.url,
-      staged: isStaged
-    }));
-
-    const validActions = actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
-    return [...validActions, ...removeImageActions, addImageAction];
+    return actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
   }
-  const validActions = actions.filter(hasNonNullishValue);
-  return [...validActions, addImageAction];
+
+  return actions.filter(hasNonNullishValue);
 };
 
 // Returns a CT action which tells CT to create a new SKU with the style-level
