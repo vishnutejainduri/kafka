@@ -21,7 +21,11 @@ const mockPrice = {
 const mockSku = {
   sku: '1',
   attributes: [],
-  prices: [mockPrice]
+  prices: [mockPrice],
+  images: [{
+    url: 'url',
+    dimensions: { 'w':0, 'h':0 }
+  }]
 };
 
 const mockOrder = {

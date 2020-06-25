@@ -3,6 +3,7 @@ const { skuAttributeNames, isStaged, entityStatus, CT_ACTION_LIMIT } = require('
 const { groupByAttribute } = require('../../lib/utils');
 
 const groupByStyleId = groupByAttribute('styleId');
+const skuImage = (styleId) => ( { url: `https://i1.adis.ws/i/harryrosen/${styleId}?$prp-4col-xl$`,  dimensions: { w: 242, h: 288 } } )
 
 const getCtSkuAttributeValue = (ctSku, attributeName) => {
   if (!ctSku.attributes) return undefined;
@@ -47,7 +48,10 @@ const getActionsFromSku = (sku, existingSku = null) => {
     staged: isStaged
   }));
 
-  if (existingSku) return actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
+  if (existingSku) {
+    return actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
+  }
+
   return actions.filter(hasNonNullishValue);
 };
 
@@ -65,6 +69,7 @@ const getCreationAction = (sku, style) => {
     action: 'addVariant',
     sku: sku.id,
     attributes,
+    images: [skuImage(style.key)],
     staged: isStaged
   };
 };
