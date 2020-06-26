@@ -43,6 +43,67 @@ const validParams = {
   ctpScopes: 'manage_products:harryrosen-dev'
 };
 
+describe('getActionsFromSku; image tests', () => {
+  const sku = { id: 'sku-01', styleId: '1' };
+
+  it('sku doesnt have image; add an image', () => {
+    const existingSku = { id: 'sku-01', images: [] }
+    const expectedActions = [
+      {
+        action: 'addExternalImage',
+        sku: sku.id,
+        image: {
+          url: 'https://i1.adis.ws/i/harryrosen/1?$prp-4col-xl$',
+          dimensions: {
+            w: 242,
+            h: 288
+          }
+        }
+      }
+    ];
+    const actualActions = getActionsFromSku(sku, existingSku);
+
+    expect(actualActions.length).toBe(expectedActions.length);
+    expect(actualActions[0]).toMatchObject(expectedActions[0]);
+  });
+
+  it('sku has an image; same image so no updates', () => {
+    const existingSku = { id: 'sku-01', images: [{ url: 'https://i1.adis.ws/i/harryrosen/1?$prp-4col-xl$',  dimensions: { w: 242, h: 288 } }] };
+    const expectedActions = [];
+    const actualActions = getActionsFromSku(sku, existingSku);
+
+    expect(actualActions.length).toBe(expectedActions.length);
+    expect(actualActions).toMatchObject(expectedActions);
+  });
+
+  it('sku has an image; different image so remove and insert new image', () => {
+    const existingSku = { id: 'sku-01', images: [{ url: 'oldImageUrl',  dimensions: { w: 242, h: 288 } }] };
+    const expectedActions = [
+      {
+        action: 'removeImage',
+        sku: existingSku.sku,
+        imageUrl: 'oldImageUrl'
+      },
+      {
+        action: 'addExternalImage',
+        sku: sku.id,
+        image: {
+          url: 'https://i1.adis.ws/i/harryrosen/1?$prp-4col-xl$',
+          dimensions: {
+            w: 242,
+            h: 288
+          }
+        }
+      }
+    ];
+    const actualActions = getActionsFromSku(sku, existingSku);
+
+    expect(actualActions.length).toBe(expectedActions.length);
+    expect(actualActions[0]).toMatchObject(expectedActions[0]);
+    expect(actualActions[1]).toMatchObject(expectedActions[1]);
+  });
+});
+
 describe('getActionsFromSku', () => {
   const sku = { id: 'sku-01', styleId: '1', colorId: 'c1', sizeId: 's1' };
 
