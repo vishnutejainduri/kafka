@@ -230,6 +230,11 @@ describe('consumeCatalogMessage', () => {
         };
         const response = await consumeCatalogMessage(params);
         // returns messages
-        expect(response).toEqual({ messages: params.messages });
+        expect(response).toEqual({
+            errors: [],
+            failureIndexes: [],
+            successCount: 1,
+            messages: params.messages
+        });
     });
 });

@@ -103,15 +103,6 @@ const getErrorsAndFailureIndexes = (results) => {
     }
 }
 
-const passDownProcessedMessages = messages => results => {
-    const result = passDownAnyMessageErrors(results)
-    const failureIndexes = result.failureIndexes
-    return {
-        ...result,
-        messages: messages.filter((_, index) => !failureIndexes.includes(index))
-    }
-}
-
 // Used to handle errors that occurred within particular promises in an array
 // of promises. Should be used together with `addErrorHandling`.
 // Based on the error handling code in `/product-consumers/consumeCatalogMessage/index.js`.
@@ -142,6 +133,14 @@ const passDownAnyMessageErrors = (results) => {
     return result;
 };
 
+const passDownProcessedMessages = messages => results => {
+    const result = passDownAnyMessageErrors(results)
+    const failureIndexes = result.failureIndexes
+    return {
+        ...result,
+        messages: messages.filter((_, index) => !failureIndexes.includes(index))
+    }
+}
 
 /**
  * @param {[][]} batches Each entry in 'batches' is an array of items that has an 'originalIndexes' property. Specifically, each entry will have that property if 'batches' is created by groupByAttribute

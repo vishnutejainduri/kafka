@@ -5,7 +5,7 @@ const { MAX_RETRIES } = require('../utils');
 function mockModules({
     mockBatch,
     mockActivationInfo,
-    mockMessage
+    mockMessages
 }) {
     jest.mock('../../../lib/getCollection', function() {
         async function getCollection() {
@@ -25,7 +25,7 @@ function mockModules({
                 // used in findMessages
                 async findOne() {
                     return {
-                        messages: [mockMessage]
+                        messages: mockMessages
                     };
                 },
                 // used in storeDlqMessages/storeRetryMessages
@@ -112,7 +112,7 @@ describe('resolveMessagesLogs', function() {
                 id: 'some-id'
             }
         };
-        mockModules({ mockBatch, mockActivationInfo, mockMessage });
+        mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage] });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
             counts: {
@@ -152,7 +152,7 @@ describe('resolveMessagesLogs', function() {
                 }
             }
         };
-        mockModules({ mockBatch, mockActivationInfo, mockMessage });
+        mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage] });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
             counts: {
@@ -194,7 +194,7 @@ describe('resolveMessagesLogs', function() {
                 }
             }
         };
-        mockModules({ mockBatch, mockActivationInfo, mockMessage });
+        mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage] });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
             counts: {
@@ -204,6 +204,49 @@ describe('resolveMessagesLogs', function() {
             resolveBatchesResult: [{
                 batch: mockBatch,
                 retried: 1,
+                dlqed: 0,
+                resolved: true
+            }]
+        });
+    });
+
+    it('returns all of the messages for a batch with partial failure, ignoring partial failure info', async function() {
+        const mockBatch = {
+            activationId: 'some-activationId',
+            failureIndexes: [0]
+        };
+        const mockActivationInfo = {
+            annotations: [{
+                key: 'timeout',
+                value: false
+            }],
+            response: {
+                success: false
+            },
+            end: 0
+        };
+        const mockMessage = {
+            id: 'some-message',
+            value: {
+                id: 'some-id',
+                metadata: {
+                    lastRetry: 0,
+                    nextRetry: 0,
+                    retries: 0
+                }
+            }
+        };
+        mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage, mockMessage] });
+        const resolveMessagesLogs = require('../index');
+        expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                // Note: this is batch count not message count; a batch is either completely handled or it fails
+                successfullyResolved: 1,
+                failedToResolve: 0
+            },
+            resolveBatchesResult: [{
+                batch: mockBatch,
+                retried: 2,
                 dlqed: 0,
                 resolved: true
             }]
@@ -236,7 +279,7 @@ describe('resolveMessagesLogs', function() {
                 }
             }
         };
-        mockModules({ mockBatch, mockActivationInfo, mockMessage });
+        mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage] });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
             counts: {
