@@ -49,7 +49,28 @@ const getActionsFromSku = (sku, existingSku = null) => {
   }));
 
   if (existingSku) {
-    return actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
+    const removeImageActions = existingSku.images.map(image => (
+      image.url === skuImage(sku.styleId).url 
+        ? null
+        : {
+          action: 'removeImage',
+          sku: existingSku.sku,
+          imageUrl: image.url,
+          staged: isStaged
+        }
+    )).filter(Boolean);
+
+    const addImageAction = removeImageActions.length === 0 && existingSku.images.length > 0
+      ? null
+      : {
+        action: 'addExternalImage',
+        sku: sku.id,
+        image: skuImage(sku.styleId),
+        staged: isStaged
+      };
+
+    const validActions = actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
+    return [...validActions, ...removeImageActions, addImageAction].filter(Boolean);
   }
 
   return actions.filter(hasNonNullishValue);
