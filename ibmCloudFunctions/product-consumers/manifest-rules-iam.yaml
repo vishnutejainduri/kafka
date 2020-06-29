@@ -3,28 +3,28 @@
         action: update-catalog-sequence
         trigger: catalog-trigger
       styles-basic-rule:
-        action: consume-styles-basic-message-with-retry
+        action: consume-styles-basic-message
         trigger: styles-basic-trigger
       threshold-rule:
-        action: consume-threshold-message-with-retry
+        action: consume-threshold-message
         trigger: threshold-trigger
       sku-rule:
-        action: consume-sku-message-with-retry
+        action: consume-sku-message
         trigger: sku-trigger
       barcode-rule:
-        action: consume-barcode-message-with-retry
+        action: consume-barcode-message
         trigger: barcode-trigger
       medias-rule:
-        action: consume-medias-message-with-retry
+        action: consume-medias-message
         trigger: medias-trigger
       stores-rule:
-        action: consume-stores-message-with-retry
+        action: consume-stores-message
         trigger: stores-trigger
       media-containers-rule:
-        action: consume-media-containers-message-with-retry
+        action: consume-media-containers-message
         trigger: media-containers-trigger
       add-media-container-to-queue-message-rule:
-        action: add-media-container-to-queue-message-with-retry
+        action: add-media-container-to-queue-message
         trigger: media-containers-trigger
       sale-price-sequence-rule:
         action: update-pricing-sequence
@@ -42,13 +42,13 @@
         action: delete-create-algolia-styles
         trigger: every-minute
       algolia-catalog-rule:
-        action: update-algolia-style-with-retry
+        action: update-algolia-style
         trigger: catalog-trigger
       update-inventory-sequence-rule:
         action: update-inventory-sequence
         trigger: sku-inventory-trigger
       add-facets-to-queue-rule:
-        action: add-facets-to-bulk-import-queue-with-retry
+        action: add-facets-to-bulk-import-queue
         trigger: facets-trigger
       algolia-facets-rule:
         action: update-algolia-facets
