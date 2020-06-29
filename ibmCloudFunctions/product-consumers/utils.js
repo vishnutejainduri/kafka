@@ -89,9 +89,9 @@ const validateParams = params => {
     }
 };
 
-const getErrorsAndFailureIndexes = (messages) => {
+const getErrorsAndFailureIndexes = (results) => {
     let failureIndexes = []
-    const errors = messages.filter((result, index) => {
+    const errors = results.filter((result, index) => {
         if (result instanceof Error) {
             failureIndexes.push(index)
             return true
@@ -103,18 +103,22 @@ const getErrorsAndFailureIndexes = (messages) => {
     }
 }
 
-const passDownProcessedMessages = rawMessages => processedMessages => {
-    const failureIndexes = getErrorsAndFailureIndexes(processedMessages).failureIndexes
-    return { messages: rawMessages.filter((_, index) => !failureIndexes.includes(index)) }
+const passDownProcessedMessages = messages => results => {
+    const result = passDownAnyMessageErrors(results)
+    const failureIndexes = result.failureIndexes
+    return {
+        ...result,
+        messages: messages.filter((_, index) => !failureIndexes.includes(index))
+    }
 }
 
 // Used to handle errors that occurred within particular promises in an array
 // of promises. Should be used together with `addErrorHandling`.
 // Based on the error handling code in `/product-consumers/consumeCatalogMessage/index.js`.
 // Example usage is in `/product-consumers/consumeCatalogMessageCT/index.js`.
-const passDownAnyMessageErrors = (messages) => {
-    const { errors, failureIndexes } = getErrorsAndFailureIndexes(messages)
-    const ignoredIndexes = messages.reduce((ignoredIndexes, result, index) => {
+const passDownAnyMessageErrors = (results) => {
+    const { errors, failureIndexes } = getErrorsAndFailureIndexes(results)
+    const ignoredIndexes = results.reduce((ignoredIndexes, result, index) => {
         if (result === null) {
             ignoredIndexes.push(index)
         }
@@ -122,7 +126,7 @@ const passDownAnyMessageErrors = (messages) => {
     }, []);
     
     const result = {
-        successCount: messages.length - errors.length - ignoredIndexes.length,
+        successCount: results.length - errors.length - ignoredIndexes.length,
         failureIndexes,
         errors: errors.map((error, index) => ({ error, failureIndex: failureIndexes[index]}))
     };
