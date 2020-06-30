@@ -17,6 +17,7 @@ const main = async function (params) {
     let inventory;
     try {
         inventory = await getCollection(params);
+        console.log(inventory.find)
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }

@@ -57,7 +57,9 @@ const getCollection = (collectionName) => {
                 }),
                 aggregate: () => ({
                   toArray: async () => ([{ _id: 'success' }])
-                })
+                }),
+                findOne: () => ({}),
+                updateOne: async () => ({})
             }; 
         case 'styleAvailabilityCheckQueue':
             return {
