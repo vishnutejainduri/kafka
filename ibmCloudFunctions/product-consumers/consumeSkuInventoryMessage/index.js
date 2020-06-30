@@ -40,7 +40,7 @@ const main = async function (params) {
             })
         )
     )
-    .then(passDownProcessedMessages)
+    .then(passDownProcessedMessages(params.messages))
     .catch(originalError => {
         throw createError.consumeInventoryMessage.failed(originalError, params);
     });
