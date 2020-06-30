@@ -33,6 +33,11 @@ describe('consumeSkuInventoryMessage', () => {
         };
         const response = await consumeSkuInventoryMessage(params);
         // returns nothing/undefined if successfully run
-        expect(response).toBeInstanceOf(Object);
+        expect(response).toEqual({
+            successCount: 1,
+            failureIndexes: [],
+            errors: [],
+            messages: params.messages
+        });
     });
 });

@@ -5,22 +5,40 @@ const { handleSkuAtsUpdate } = require('../utils');
 jest.mock("mongodb");
 
 const increaseAtsTestData = {
-   'lastModifiedDate': 1000000000000,
-   'quantityBackOrder':0,
-   'quantityInTransit':0,
-   'quantityInPicking':0,
-   'quantityOnHand':1,
-   'availableToSell':1,
-   'quantityOnHandNotSellable':0,
-   'quantityOnHandSellable':1,
-   'quantityOnOrder':0,
-   'skuId': 'skuId',
-   'storeId': 34,
-   'styleId': 'styleId' 
+    'lastModifiedDate': 1000000000000,
+    'quantityBackOrder':0,
+    'quantityInTransit':0,
+    'quantityInPicking':0,
+    'quantityOnHand':1,
+    'availableToSell':1,
+    'quantityOnHandNotSellable':0,
+    'quantityOnHandSellable':1,
+    'quantityOnOrder':0,
+    'skuId': 'skuId',
+    'storeId': 34,
+    'styleId': 'styleId' 
+ };
+ 
+const validMessage = {
+    topic: 'inventory-connect-jdbc-SKUINVENTORY',
+    value: {
+      STYLE_ID:'styleId',
+      SKU_ID:'skuId',
+      STORE_ID:'storeId',
+      QBO:0,
+      QIT:0,
+      QIP:0,
+      QOH:0,
+      QOHNOTSELLABLE:0,
+      QOHSELLABLE:1,
+      QOO:0,
+      LASTMODIFIEDDATE:1000000000,
+      INV_FKORGANIZATIONNO: '1'
+    }
 };
 
 const params = {
-    messages: [increaseAtsTestData],
+    messages: [validMessage],
     mongoUri: 'mongo-uri',
     dbName: 'db-name',
     mongoCertificateBase64: 'mong-certificate',
@@ -35,7 +53,8 @@ const params = {
 describe('calculateAvailableToSell', () => {
     const resultWithNoErrors = {
         errors: [],
-        failureIndexes: []
+        failureIndexes: [],
+        successCount: 1
     }
     it('missing all parameters; should fail', async () => {
         const result = await expect(calculateAvailableToSell({}));
@@ -50,7 +69,7 @@ describe('calculateAvailableToSell', () => {
         const invalidMessage = {};
         const response = await calculateAvailableToSell({
             ...params,
-            messages: [increaseAtsTestData, invalidMessage, increaseAtsTestData]
+            messages: [validMessage, invalidMessage, validMessage]
         });
         // returns nothing/undefined if successfully run
         expect(response.failureIndexes.includes(1)).toEqual(true);

@@ -128,14 +128,15 @@ global.main = async function (params) {
     }
 
     return {
+        styleIds,
         counts: {
             styleIds: styleIds.length,
             successes: styleIds.length - failureIndexes.length,
             failures: failureIndexes.length
         },
-        error,
-        styleIds,
-        failureIndexes
+        failureIndexes,
+        messageFailures,
+        algoliaUpdateError
     };
 };
 

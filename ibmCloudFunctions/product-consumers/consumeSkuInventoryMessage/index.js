@@ -1,14 +1,10 @@
 const getCollection = require('../../lib/getCollection');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 const createError = require('../../lib/createError');
-const { createLog, addErrorHandling, log, addLoggingToMain } = require('../utils');
+const { createLog, addErrorHandling, log, addLoggingToMain, passDownProcessedMessages } = require('../utils');
 
 const main = async function (params) {
     log(createLog.params('consumeSkuInventoryMessage', params));
-
-    // messages is not used, but paramsExcludingMessages is used
-    // eslint-disable-next-line no-unused-vars
-    const { messages, ...paramsExcludingMessages } = params;
 
     if (!params.topicName) {
         throw new Error('Requires an Event Streams topic.');
@@ -21,12 +17,13 @@ const main = async function (params) {
     let inventory;
     try {
         inventory = await getCollection(params);
+        console.log(inventory.find)
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
 
     return Promise.all(params.messages
-        .filter(addErrorHandling(filterSkuInventoryMessage))
+        .map(addErrorHandling(msg => filterSkuInventoryMessage(msg) ? msg : null))
         .map(addErrorHandling(parseSkuInventoryMessage))
         .map(addErrorHandling(async (inventoryData) => {
             const inventoryLastModifiedDate = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1 } );
@@ -44,31 +41,7 @@ const main = async function (params) {
             })
         )
     )
-    .then((results) => {
-        const failureIndexes = [];
-        const errors = results.filter((res, index) => {
-            if (res instanceof Error) {
-                failureIndexes.push(index);
-                return true;
-            }
-        });
-        const successes = results.filter((res) => !(res instanceof Error) && res);
-
-        if (errors.length > 0) {
-            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
-            e.failedUpdatesErrors = errors;
-            e.successfulUpdatesResults = successes;
-
-            log('Failed to update some inventory records', "ERROR");
-            log(e, "ERROR");
-        }
-
-        return {
-            ...paramsExcludingMessages,
-            messages: successes,
-            failureIndexes
-        };
-    })
+    .then(passDownProcessedMessages(params.messages))
     .catch(originalError => {
         throw createError.consumeInventoryMessage.failed(originalError, params);
     });
