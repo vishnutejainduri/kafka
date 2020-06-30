@@ -133,6 +133,8 @@ const passDownAnyMessageErrors = (results) => {
     return result;
 };
 
+// This function is useful if we want to send the same messages that were successfully processed by one step in a functions sequence to the next step
+// Excluding messages that were not successfully processed ensures we won't cause an incosistency; not that messages that are ignored e.g. because they required no operation, will be passed on as well.
 const passDownProcessedMessages = messages => results => {
     const result = passDownAnyMessageErrors(results)
     const failureIndexes = result.failureIndexes
