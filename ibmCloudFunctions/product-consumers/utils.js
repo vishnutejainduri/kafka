@@ -171,14 +171,14 @@ const passDownBatchedErrorsAndFailureIndexes = batches => results => {
   };
   
 /**
- * Catches the error returned from the main function and returns it as an instance of Error instead of throwing it
- * @param {function} main
+ * Catches the error returned from the function and returns it as an instance of Error instead of throwing it
+ * @param {function} fn
  * @return {object|Error}
  */
-function addErrorHandlingToMain (main) {
-    return async function mainWithErrorHandling (params) {
+function addErrorHandlingToFn (fn) {
+    return async function fnWithErrorHandling (params) {
         try {
-            const result = await main(params);
+            const result = await fn(params);
             return result
         } catch (error) {
             return error instanceof Error ? error : new Error(error);
@@ -214,14 +214,35 @@ const truncateErrorsIfNecessary = result => {
 const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
     Promise.all([
         // Promise.all will prematurely return if any of the promises is rejected, but we want storeBatch to finish even if  main function fails 
-        addErrorHandlingToMain(main)(params),
-        logger.storeBatch(params)
-    ]).then(async ([result]) => {
-        if (result && result.failureIndexes && result.failureIndexes.length > 0) {
-            await logger.updateBatchWithFailureIndexes(params, result.failureIndexes);
+        addErrorHandlingToFn(main)(params),
+        addErrorHandlingToFn(logger.storeBatch)(params)
+    ]).then(async ([mainResult, storeBatchResult]) => {
+        const storeBatchFailed = storeBatchResult instanceof Error
+
+        let updateBatchWithFailureIndexesFailed = false
+        if (!storeBatchFailed && mainResult && mainResult.failureIndexes && mainResult.failureIndexes.length > 0) {
+            try {
+                await logger.updateBatchWithFailureIndexes(params, mainResult.failureIndexes);
+            } catch (_) {
+                updateBatchWithFailureIndexesFailed = true
+            }
         }
-        if (result instanceof Error) throw result;
-        return truncateErrorsIfNecessary(result);
+
+        const retryBatchAvailable = (storeBatchFailed || updateBatchWithFailureIndexesFailed) ? 0 : 1
+
+        if (mainResult instanceof Error) {
+            return {
+                retryBatchAvailable,
+                storeBatchResult,
+                error: mainResult
+            }
+        }
+
+        return truncateErrorsIfNecessary({
+            retryBatchAvailable,
+            storeBatchResult,
+            ...mainResult
+        });
     })
   )
 );
