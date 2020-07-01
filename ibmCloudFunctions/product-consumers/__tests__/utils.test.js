@@ -6,21 +6,39 @@ describe('addLoggingToMain', function() {
   it('finishes storing messages even if main is rejected and still throws the error', async function() {
     const failedMainError = 'failed main';
     const main = async () => Promise.reject(failedMainError);
-    let storedBatches = false;
     const logger = {
       async storeBatch () {
         return new Promise(function(resolve) {
           setTimeout(function() {
-            storedBatches = true
             resolve();
           }, 100);
         })
       }
     }
     const mainWithLogging = addLoggingToMain(main, logger);
-    expect((await mainWithLogging()).error).toEqual(new Error(failedMainError));
-    expect(storedBatches).toEqual(true);
+    const result = await mainWithLogging()
+    expect(result.error).toEqual(new Error(failedMainError));
+    expect(result.retryBatchAvailable).toEqual(1);
   });
+
+  it('return error as well as 0 for retryBatchAvailable if both storing the batch and the main fail', async function() {
+    const failedMainError = 'failed main';
+    const main = async () => Promise.reject(failedMainError);
+    const logger = {
+      async storeBatch () {
+        return new Promise(function(_, reject) {
+          setTimeout(function() {
+            reject();
+          }, 100);
+        })
+      }
+    }
+    const mainWithLogging = addLoggingToMain(main, logger);
+    const result = await mainWithLogging()
+    expect(result.error).toEqual(new Error(failedMainError));
+    expect(result.retryBatchAvailable).toEqual(0);
+  });
+
   it('finishes storing messages if main does not throw an error', async function() {
     const successfulMain = 'successful main';
     const main = async () => successfulMain;
