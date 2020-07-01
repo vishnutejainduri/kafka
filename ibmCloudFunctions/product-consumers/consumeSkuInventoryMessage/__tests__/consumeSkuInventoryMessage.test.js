@@ -4,7 +4,7 @@ jest.mock("mongodb");
 
 describe('consumeSkuInventoryMessage', () => {
     it('missing all parameters; should fail', async () => {
-        await expect(consumeSkuInventoryMessage({})).rejects.toThrow();
+        await expect((await consumeSkuInventoryMessage({})).error).toBeTruthy()
     });
     it('correct message to update inventory', async () => {
         const params = {

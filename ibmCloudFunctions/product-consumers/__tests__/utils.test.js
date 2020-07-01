@@ -18,7 +18,7 @@ describe('addLoggingToMain', function() {
       }
     }
     const mainWithLogging = addLoggingToMain(main, logger);
-    await expect(mainWithLogging()).rejects.toThrow(failedMainError);
+    expect((await mainWithLogging()).error).toEqual(new Error(failedMainError));
     expect(storedBatches).toEqual(true);
   });
   it('finishes storing messages if main does not throw an error', async function() {

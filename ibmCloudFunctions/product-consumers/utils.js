@@ -238,11 +238,7 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
             }
         }
 
-        return truncateErrorsIfNecessary({
-            retryBatchAvailable,
-            storeBatchResult,
-            ...mainResult
-        });
+        return mainResult
     })
   )
 );
