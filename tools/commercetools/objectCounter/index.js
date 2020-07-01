@@ -15,7 +15,7 @@ const ctHelpers = getCtHelpers (environment);
 switch (dataType) {
   case 'variants':
     getAllVariantsCount(ctHelpers)
-      .then(result => console.log(result))
+      .then(result => console.log('Total variants: ', result))
       .catch(e => console.log(e));
     break;
   default:
