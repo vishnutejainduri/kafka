@@ -19,7 +19,7 @@ describe('addLoggingToMain', function() {
     expect(await mainWithLogging()).toEqual(new Error(failedMainError));
   });
 
-  it('it returns a error field in the response and 1 for retryBatchAvailable if main has partial failure and we store the batch but we fail to update the batch with partial failures', async function() {
+  it('it returns a error field in the response and 0 for storeBatchFailed if main has partial failure and we store the batch but we fail to update the batch with partial failures', async function() {
     const main = async () => Promise.resolve({ failureIndexes: [1] });
     const logger = {
       async storeBatch () {
@@ -36,7 +36,7 @@ describe('addLoggingToMain', function() {
     expect(result.storeBatchFailed).toEqual(0);
   });
 
-  it('return error field in the response and 0 for retryBatchAvailable if both storing the batch and the main fail', async function() {
+  it('return error field in the response and 1 for storeBatchFailed if both storing the batch and the main fail', async function() {
     const failedMainError = 'failed main';
     const main = async () => Promise.reject(failedMainError);
     const logger = {

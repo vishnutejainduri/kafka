@@ -535,7 +535,7 @@ describe('updateCategory', () => {
 });
 
 describe('consumeCatalogueMessageCT', () => {
-  it('throws an error if the given parameters are invalid', async () => {
+  it('Returns an error if the given parameters are invalid', async () => {
     const invalidParams = {};
     return expect((await consumeCatalogueMessageCT(invalidParams)).error).toBeTruthy();
   });

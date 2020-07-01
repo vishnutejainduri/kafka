@@ -209,7 +209,7 @@ const truncateErrorsIfNecessary = result => {
  * Stores the messages of the params passed to the `main` function of a CF in a database, so that we can retry the failed messaegs later.
  * If the main result is not an instance of error, the main result will be passed as it was.
  * If the main result is an instance of error, the main result will be passed as 'error' field of the response.
- * If the main result is an instance of error, and we succeed in storing the batch to be retried later, retryBatchAvailable will 1, but will be 0 if we don't succeed to store it.
+ * If the main result is an instance of error, and we succeed in storing the batch to be retried later, storeBatchFailed will 0, but will be 1 if we don't succeed to store it.
  * If there is partial failure and we fail to update the batch with partial failures result, we treat this as if the main has failed and all of its messages has to be retried.
  * Note: OpenWhisk treats existene of an 'error' field in the response as failure; the main purpose of this utility function is not to affect how OpenWhisk behaves, but to provde the necessary info for the binding service and retry logic implemented via handle message logs and resolve message logs functions.
  * @param main {function}
@@ -226,9 +226,10 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
         
         const hasPartialFailure = mainResult && mainResult.failureIndexes && mainResult.failureIndexes.length > 0
         let updateBatchWithFailureIndexesFailed = 0
+        let updateBatchWithFailureIndexesResult
         if (!storeBatchFailed && hasPartialFailure) {
             try {
-                await logger.updateBatchWithFailureIndexes(params, mainResult.failureIndexes);
+                updateBatchWithFailureIndexesResult = await logger.updateBatchWithFailureIndexes(params, mainResult.failureIndexes);
             } catch (_) {
                 updateBatchWithFailureIndexesFailed = 1
             }
@@ -239,6 +240,7 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
             const retryInfo = {
                 storeBatchFailed,
                 updateBatchWithFailureIndexesFailed,
+                updateBatchWithFailureIndexesResult,
                 storeBatchResult,
                 error: mainResult instanceof Error ? mainResult : new Error('updateBatchWithFailureIndexesFailed')
             }

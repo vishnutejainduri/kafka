@@ -52,7 +52,7 @@ const orderDetails =
   .map(addErrorHandling(parseSalesOrderDetailsMessage))
 
 describe('consumeSalesOrderDetailsMessageCT', () => {
-  it('throws an error if given params are invalid', async () => {
+  it('Returns an error if given params are invalid', async () => {
     const invalidParams = {};
     return expect((await consumeSalesOrderDetailsMessageCT(invalidParams)).error).toBeTruthy();
   });

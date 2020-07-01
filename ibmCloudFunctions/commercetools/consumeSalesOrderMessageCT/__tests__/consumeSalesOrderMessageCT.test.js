@@ -36,7 +36,7 @@ const validParams = {
 const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('consumeSalesOrderMessageCT', () => {
-  it('throws an error if given params are invalid', async () => {
+  it('Returns an error if given params are invalid', async () => {
     const invalidParams = {};
     return expect((await consumeSalesOrderMessageCT(invalidParams)).error).toBeTruthy();
   });
