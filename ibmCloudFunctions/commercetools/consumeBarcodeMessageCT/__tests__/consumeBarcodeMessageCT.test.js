@@ -26,13 +26,13 @@ describe('consumeBarcodeMessageCT', () => {
     ctpScopes: 'manage_products:harryrosen-dev'
   };
 
-  it('throws an error if the given parameters are invalid', () => {
+  it('returns an error if the given parameters are invalid', async () => {
     const invalidParams = {};
-    return expect(consumeBarcodeMessageCT(invalidParams)).rejects.toThrow();
+    return expect((await consumeBarcodeMessageCT(invalidParams)).error).toBeTruthy()
   });
 
   it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeBarcodeMessageCT(validParams);
-    expect(response).toEqual({ ok: true, successCount: 1 });
+    expect(response).toMatchObject({ ok: true, successCount: 1 });
   });
 });

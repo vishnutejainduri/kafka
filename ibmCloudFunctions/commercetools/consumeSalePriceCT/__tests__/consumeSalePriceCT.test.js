@@ -52,8 +52,8 @@ const mockProduct = createClient().execute().body;
 const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('consumeSalePriceCT', () => {
-  it('missing params; throw error', () => {
-    return expect(consumeSalePriceCT({})).rejects.toThrow();
+  it('missing params; throw error', async () => {
+    return expect((await consumeSalePriceCT({})).error).toBeTruthy();
   });
 
   it('returns expected success result for correct params and a valid message', async () => {

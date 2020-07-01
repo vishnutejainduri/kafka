@@ -173,7 +173,7 @@ describe('filterStyleMessages', () => {
 
 describe('consumeCatalogMessage', () => {
     it('missing all parameters; should fail', async () => {
-        await expect(consumeCatalogMessage({})).rejects.toThrow();
+        expect((await consumeCatalogMessage({})).error).toBeTruthy();
     });
     it('correct message to update style', async () => {
         const params = {

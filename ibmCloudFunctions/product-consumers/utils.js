@@ -171,14 +171,14 @@ const passDownBatchedErrorsAndFailureIndexes = batches => results => {
   };
   
 /**
- * Catches the error returned from the main function and returns it as an instance of Error instead of throwing it
- * @param {function} main
+ * Catches the error returned from the function and returns it as an instance of Error instead of throwing it
+ * @param {function} fn
  * @return {object|Error}
  */
-function addErrorHandlingToMain (main) {
-    return async function mainWithErrorHandling (params) {
+function addErrorHandlingToFn (fn) {
+    return async function fnWithErrorHandling (params) {
         try {
-            const result = await main(params);
+            const result = await fn(params);
             return result
         } catch (error) {
             return error instanceof Error ? error : new Error(error);
@@ -206,22 +206,48 @@ const truncateErrorsIfNecessary = result => {
 };
 
 /**
- * Stores the messages of the params passed to the `main` function of a CF in a database,
- * so that we can retry the failed messaegs later.
+ * Stores the messages of the params passed to the `main` function of a CF in a database, so that we can retry the failed messaegs later.
+ * If the main result is not an instance of error, the main result will be passed as it was.
+ * If the main result is an instance of error, the main result will be passed as 'error' field of the response.
+ * If the main result is an instance of error, and we succeed in storing the batch to be retried later, storeBatchFailed will 0, but will be 1 if we don't succeed to store it.
+ * If there is partial failure and we fail to update the batch with partial failures result, we treat this as if the main has failed and all of its messages has to be retried.
+ * Note: OpenWhisk treats existene of an 'error' field in the response as failure; the main purpose of this utility function is not to affect how OpenWhisk behaves, but to provde the necessary info for the binding service and retry logic implemented via handle message logs and resolve message logs functions.
  * @param main {function}
  * @param logger {{ storeBatch: function, updateBatchWithFailureIndexes: function }}
  */
 const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
     Promise.all([
         // Promise.all will prematurely return if any of the promises is rejected, but we want storeBatch to finish even if  main function fails 
-        addErrorHandlingToMain(main)(params),
-        logger.storeBatch(params)
-    ]).then(async ([result]) => {
-        if (result && result.failureIndexes && result.failureIndexes.length > 0) {
-            await logger.updateBatchWithFailureIndexes(params, result.failureIndexes);
+        addErrorHandlingToFn(main)(params),
+        addErrorHandlingToFn(logger.storeBatch)(params)
+    ]).then(async ([mainResult, storeBatchResult]) => {
+        // returning 0 and 1 instead of true and false, since it's easier to infer result in case they are converted to string by OpenWhisk
+        const storeBatchFailed = storeBatchResult instanceof Error ? 1 : 0
+        
+        const hasPartialFailure = mainResult && mainResult.failureIndexes && mainResult.failureIndexes.length > 0
+        let updateBatchWithFailureIndexesFailed = 0
+        let updateBatchWithFailureIndexesResult
+        if (!storeBatchFailed && hasPartialFailure) {
+            try {
+                updateBatchWithFailureIndexesResult = await logger.updateBatchWithFailureIndexes(params, mainResult.failureIndexes);
+            } catch (_) {
+                updateBatchWithFailureIndexesFailed = 1
+            }
         }
-        if (result instanceof Error) throw result;
-        return truncateErrorsIfNecessary(result);
+
+        // if there is some failure but we cannot retry, then kafka / cloud functions binding service has to deal with the failure  
+        if ((mainResult instanceof Error || hasPartialFailure) && (storeBatchFailed || updateBatchWithFailureIndexesFailed)) {
+            const retryInfo = {
+                storeBatchFailed,
+                updateBatchWithFailureIndexesFailed,
+                updateBatchWithFailureIndexesResult,
+                storeBatchResult,
+                error: mainResult instanceof Error ? mainResult : new Error('updateBatchWithFailureIndexesFailed')
+            }
+            return hasPartialFailure ? { ...retryInfo, ...mainResult } : retryInfo
+        }
+
+        return mainResult
     })
   )
 );

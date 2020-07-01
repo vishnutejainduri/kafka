@@ -26,6 +26,6 @@ describe("consumeSalePrice", function() {
       expect(await consumeSalePrice(validParams)).toEqual({ errors: [], failureIndexes: [], successCount: 1, messages: validParams.messages });
     });
     it("invalid params -> failure", async function() {
-      return expect(consumeSalePrice({})).rejects.toThrow();
+      return expect((await consumeSalePrice({})).error).toBeTruthy();
     });
 });
