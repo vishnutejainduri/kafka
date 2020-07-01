@@ -1,17 +1,16 @@
 const updateAlgoliaStyle = require('../');
 
 const styleId = "10"; // id fo a style that does not match any existing document
-const result = { id: "success"} // result of a success insert for 'updateAlgoliaStyleCount' collection
 
 jest.mock("mongodb");
 jest.mock("algoliasearch");
 
 describe('updateAlgoliaStyle', () => {
     it('returns an error if params argument is empty', async () => {
-        await expect(updateAlgoliaStyle({})).rejects.toThrow();
+        expect((await updateAlgoliaStyle({})).error).toBeTruthy();
     });
 
-    it('does not throw if all of the parmaeters are provided, regardless of their value', async () => {
+    it('Returns an error if invalid parmaeters are providede', async () => {
         const params = {
             topicName: 'some-topic',
             algoliaIndexName: 'index-name',
@@ -25,7 +24,7 @@ describe('updateAlgoliaStyle', () => {
                 values: [{}]
             }]
         };
-        expect(await updateAlgoliaStyle(params)).toBe(undefined);
+        expect((await updateAlgoliaStyle(params)).error).toBeTruthy();
     });
 
     it('Successfully returns the results if all of the parmaeters and messages are provided', async () => {
@@ -46,6 +45,6 @@ describe('updateAlgoliaStyle', () => {
                 }
             }]
         };
-        expect(await updateAlgoliaStyle(params)).toEqual(Object.assign({}, params, result));
+        expect(await updateAlgoliaStyle(params)).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
     });
 });

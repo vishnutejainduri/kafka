@@ -1,7 +1,7 @@
 const { parseMediaMessage } = require('../../lib/parseMediaMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { addLoggingToMain } = require('../utils');
+const { addErrorHandling, addLoggingToMain, passDownAnyMessageErrors } = require('../utils');
 
 const main = async function (params) {
     console.log(JSON.stringify({
@@ -25,9 +25,8 @@ const main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter((msg) => msg.topic === params.topicName)
-        .map(parseMediaMessage)
-        .map(async (mediaData) => {
+        .map(addErrorHandling(parseMediaMessage))
+        .map(addErrorHandling(async (mediaData) => {
             await medias.deleteMany({ containerId: mediaData.containerId, qualifier: mediaData.qualifier });
             return medias.updateOne({ _id: mediaData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: mediaData }, { upsert: true })
               .then(() => console.log('Updated/inserted media ' + mediaData._id))
@@ -44,18 +43,10 @@ const main = async function (params) {
                   err.attemptedDocument = mediaData;
                   return err;
               })
-        })
-    ).then((results) => {
-        const errors = results.filter((res) => res instanceof Error);
-        if (errors.length > 0) {
-            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
-            e.failedUpdatesErrors = errors;
-            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            throw e;
-        }
-    });
+        }))
+    )
+    .then(passDownAnyMessageErrors);
 }
 
 global.main = addLoggingToMain(main);
-
 module.exports = global.main;

@@ -31,7 +31,7 @@ const main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter(addErrorHandling(filterStoreMessage))
+        .map(addErrorHandling(msg => filterStoreMessage(msg) ? msg : null))
         .map(addErrorHandling(parseStoreMessage))
         .map(addErrorHandling(async (storeData) => {
             const storeOperations = [];
@@ -77,5 +77,4 @@ const main = async function (params) {
 }
 
 global.main = addLoggingToMain(main);
-
 module.exports = global.main;

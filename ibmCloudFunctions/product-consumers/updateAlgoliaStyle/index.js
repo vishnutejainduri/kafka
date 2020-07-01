@@ -1,6 +1,6 @@
 const algoliasearch = require('algoliasearch');
 
-const { createLog, addErrorHandling, log } = require('../utils');
+const { createLog, addErrorHandling, log, addLoggingToMain, passDownAnyMessageErrors } = require('../utils');
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
@@ -8,7 +8,7 @@ const createError = require('../../lib/createError');
 let client = null;
 let index = null;
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('updateAlgoliaStyle', params));
 
     if (!params.algoliaIndexName) {
@@ -52,7 +52,7 @@ global.main = async function (params) {
     }
 
     let records = await Promise.all(params.messages
-        .filter(addErrorHandling(filterStyleMessages))
+        .map(addErrorHandling(msg => filterStyleMessages(msg) ? msg : null))
         .map(addErrorHandling(parseStyleMessage))
         // Add Algolia object ID
         .map(addErrorHandling((styleData) => {
@@ -68,28 +68,20 @@ global.main = async function (params) {
         }))
     );
 
-    const recordsWithError = records.filter(rec => rec instanceof Error);
-    if (recordsWithError.length > 0) {
-        log(createError.updateAlgoliaStyle.failedRecords(null, recordsWithError.length, records.length), "ERROR");
-        recordsWithError.forEach(originalError => {
-            log(createError.updateAlgoliaStyle.failedRecord(originalError), "ERROR");
-        });
-    }
-
     const recordsToUpdate = records.filter((record) => record && !(record instanceof Error));
 
     if (recordsToUpdate.length) {
-        return index.partialUpdateObjects(recordsToUpdate, true)
-            .then(async () => {
-                const result = await updateAlgoliaStyleCount.insert({ batchSize: recordsToUpdate.length });
-                return Object.assign({}, params, result);
-            })
-            .catch((error) => {
-                log('Failed to send styles to Algolia.', "ERROR");
-                error.params = params;
-                return { error };
-            });
+        try {
+            await index.partialUpdateObjects(recordsToUpdate, true);
+            await updateAlgoliaStyleCount.insert({ batchSize: recordsToUpdate.length }).catch(() => { log('Failed to update batch count.') })
+        } catch (error) {
+            log('Failed to send styles to Algolia.', error);
+            throw error
+        }
     }
+
+    return passDownAnyMessageErrors(records)
 }
 
+global.main = addLoggingToMain(main)
 module.exports = global.main;

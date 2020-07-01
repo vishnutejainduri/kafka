@@ -50,7 +50,7 @@ const main = params => {
   
   const barcodesToCreateOrUpdate = (
     params.messages
-      .filter(addErrorHandling(filterBarcodeMessage))
+      .map(addErrorHandling(msg => filterBarcodeMessage(msg) ? msg : null))
       .map(addErrorHandling(parseBarcodeMessage))
   );
 
