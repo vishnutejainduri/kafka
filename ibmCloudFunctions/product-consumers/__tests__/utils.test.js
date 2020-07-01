@@ -3,7 +3,7 @@ const { groupByStyleId } = require('../../commercetools/consumeSkuMessageCT/util
 const parseSkuMessageCt = require('../../lib/parseSkuMessageCt');
 
 describe('addLoggingToMain', function() {
-  it('finishes storing messages even if main is rejected and still returns the error field in response', async function() {
+  it('finishes storing messages even if main is rejected and does not return an error', async function() {
     const failedMainError = 'failed main';
     const main = async () => Promise.reject(failedMainError);
     const logger = {
@@ -16,9 +16,7 @@ describe('addLoggingToMain', function() {
       }
     }
     const mainWithLogging = addLoggingToMain(main, logger);
-    const result = await mainWithLogging()
-    expect(result.error).toEqual(new Error(failedMainError));
-    expect(result.retryBatchAvailable).toEqual(1);
+    expect(await mainWithLogging()).toEqual(new Error(failedMainError));
   });
 
   it('it returns a error field in the response and 1 for retryBatchAvailable if main has partial failure and we store the batch but we fail to update the batch with partial failures', async function() {
@@ -35,7 +33,7 @@ describe('addLoggingToMain', function() {
     const mainWithLogging = addLoggingToMain(main, logger);
     const result = await mainWithLogging()
     expect(result.error).toEqual(new Error('updateBatchWithFailureIndexesFailed'));
-    expect(result.retryBatchAvailable).toEqual(1);
+    expect(result.storeBatchFailed).toEqual(0);
   });
 
   it('return error field in the response and 0 for retryBatchAvailable if both storing the batch and the main fail', async function() {
@@ -53,7 +51,7 @@ describe('addLoggingToMain', function() {
     const mainWithLogging = addLoggingToMain(main, logger);
     const result = await mainWithLogging()
     expect(result.error).toEqual(new Error(failedMainError));
-    expect(result.retryBatchAvailable).toEqual(0);
+    expect(result.storeBatchFailed).toEqual(1);
   });
 
   it('finishes storing messages if main does not return an error field in the response', async function() {

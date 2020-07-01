@@ -207,10 +207,11 @@ const truncateErrorsIfNecessary = result => {
 
 /**
  * Stores the messages of the params passed to the `main` function of a CF in a database, so that we can retry the failed messaegs later.
- * If the main function is not an instance of error, the main result will be passed as it was.
- * If the main function is an instance of error, the main result will be passed as 'error' field of the response.
- * If the main function is an instance of error, and we succeed in storing the batch to be retried later, retryBatchAvailable will 1 or 0 otherwise.
+ * If the main result is not an instance of error, the main result will be passed as it was.
+ * If the main result is an instance of error, the main result will be passed as 'error' field of the response.
+ * If the main result is an instance of error, and we succeed in storing the batch to be retried later, retryBatchAvailable will 1, but will be 0 if we don't succeed to store it.
  * If there is partial failure and we fail to update the batch with partial failures result, we treat this as if the main has failed and all of its messages has to be retried.
+ * Note: OpenWhisk treats existene of an 'error' field in the response as failure; the main purpose of this utility function is not to affect how OpenWhisk behaves, but to provde the necessary info for the binding service and retry logic implemented via handle message logs and resolve message logs functions.
  * @param main {function}
  * @param logger {{ storeBatch: function, updateBatchWithFailureIndexes: function }}
  */
@@ -220,26 +221,28 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
         addErrorHandlingToFn(main)(params),
         addErrorHandlingToFn(logger.storeBatch)(params)
     ]).then(async ([mainResult, storeBatchResult]) => {
-        const storeBatchFailed = storeBatchResult instanceof Error
-
-        let updateBatchWithFailureIndexesFailed = false
-        if (!storeBatchFailed && mainResult && mainResult.failureIndexes && mainResult.failureIndexes.length > 0) {
+        // returning 0 and 1 instead of true and false, since it's easier to infer result in case they are converted to string by OpenWhisk
+        const storeBatchFailed = storeBatchResult instanceof Error ? 1 : 0
+        
+        const hasPartialFailure = mainResult && mainResult.failureIndexes && mainResult.failureIndexes.length > 0
+        let updateBatchWithFailureIndexesFailed = 0
+        if (!storeBatchFailed && hasPartialFailure) {
             try {
                 await logger.updateBatchWithFailureIndexes(params, mainResult.failureIndexes);
             } catch (_) {
-                updateBatchWithFailureIndexesFailed = true
+                updateBatchWithFailureIndexesFailed = 1
             }
         }
 
-        const retryBatchAvailable = storeBatchFailed ? 0 : 1
-
-        if (mainResult instanceof Error || updateBatchWithFailureIndexesFailed) {
-            return {
-                retryBatchAvailable,
-                storeBatchResult,
+        // if there is some failure but we cannot retry, then kafka / cloud functions binding service has to deal with the failure  
+        if ((mainResult instanceof Error || hasPartialFailure) && (storeBatchFailed || updateBatchWithFailureIndexesFailed)) {
+            const retryInfo = {
+                storeBatchFailed,
                 updateBatchWithFailureIndexesFailed,
+                storeBatchResult,
                 error: mainResult instanceof Error ? mainResult : new Error('updateBatchWithFailureIndexesFailed')
             }
+            return hasPartialFailure ? { ...retryInfo, ...mainResult } : retryInfo
         }
 
         return mainResult
