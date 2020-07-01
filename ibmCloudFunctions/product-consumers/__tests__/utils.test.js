@@ -3,7 +3,7 @@ const { groupByStyleId } = require('../../commercetools/consumeSkuMessageCT/util
 const parseSkuMessageCt = require('../../lib/parseSkuMessageCt');
 
 describe('addLoggingToMain', function() {
-  it('finishes storing messages even if main is rejected and still throws the error', async function() {
+  it('finishes storing messages even if main is rejected and still returns the error field in response', async function() {
     const failedMainError = 'failed main';
     const main = async () => Promise.reject(failedMainError);
     const logger = {
@@ -21,7 +21,24 @@ describe('addLoggingToMain', function() {
     expect(result.retryBatchAvailable).toEqual(1);
   });
 
-  it('return error as well as 0 for retryBatchAvailable if both storing the batch and the main fail', async function() {
+  it('it returns a error field in the response and 1 for retryBatchAvailable if main has partial failure and we store the batch but we fail to update the batch with partial failures', async function() {
+    const main = async () => Promise.resolve({ failureIndexes: [1] });
+    const logger = {
+      async storeBatch () {
+        return new Promise(function(resolve) {
+          setTimeout(function() {
+            resolve();
+          }, 100);
+        })
+      }
+    }
+    const mainWithLogging = addLoggingToMain(main, logger);
+    const result = await mainWithLogging()
+    expect(result.error).toEqual(new Error('updateBatchWithFailureIndexesFailed'));
+    expect(result.retryBatchAvailable).toEqual(1);
+  });
+
+  it('return error field in the response and 0 for retryBatchAvailable if both storing the batch and the main fail', async function() {
     const failedMainError = 'failed main';
     const main = async () => Promise.reject(failedMainError);
     const logger = {
@@ -39,7 +56,7 @@ describe('addLoggingToMain', function() {
     expect(result.retryBatchAvailable).toEqual(0);
   });
 
-  it('finishes storing messages if main does not throw an error', async function() {
+  it('finishes storing messages if main does not return an error field in the response', async function() {
     const successfulMain = 'successful main';
     const main = async () => successfulMain;
     let storedBatches = false;

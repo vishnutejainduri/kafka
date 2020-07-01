@@ -206,8 +206,11 @@ const truncateErrorsIfNecessary = result => {
 };
 
 /**
- * Stores the messages of the params passed to the `main` function of a CF in a database,
- * so that we can retry the failed messaegs later.
+ * Stores the messages of the params passed to the `main` function of a CF in a database, so that we can retry the failed messaegs later.
+ * If the main function is not an instance of error, the main result will be passed as it was.
+ * If the main function is an instance of error, the main result will be passed as 'error' field of the response.
+ * If the main function is an instance of error, and we succeed in storing the batch to be retried later, retryBatchAvailable will 1 or 0 otherwise.
+ * If there is partial failure and we fail to update the batch with partial failures result, we treat this as if the main has failed and all of its messages has to be retried.
  * @param main {function}
  * @param logger {{ storeBatch: function, updateBatchWithFailureIndexes: function }}
  */
@@ -228,13 +231,14 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
             }
         }
 
-        const retryBatchAvailable = (storeBatchFailed || updateBatchWithFailureIndexesFailed) ? 0 : 1
+        const retryBatchAvailable = storeBatchFailed ? 0 : 1
 
-        if (mainResult instanceof Error) {
+        if (mainResult instanceof Error || updateBatchWithFailureIndexesFailed) {
             return {
                 retryBatchAvailable,
                 storeBatchResult,
-                error: mainResult
+                updateBatchWithFailureIndexesFailed,
+                error: mainResult instanceof Error ? mainResult : new Error('updateBatchWithFailureIndexesFailed')
             }
         }
 
