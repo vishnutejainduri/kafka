@@ -1,7 +1,10 @@
-const getAllVariantsCount = async ({ client, requestBuilder }) => {
+const countImage = (result) => result.masterData.current.variants.reduce((totalImages, currentVariant) => (totalImages += currentVariant.images.length), 0 )
+const countVariants = (result) => result.masterData.current.variants.length
+
+const getAllVariantAttributeCount = async ({ client, requestBuilder }, counterFunction) => {
   const method = 'GET';
 
-  let variantTotal = 0;
+  let total = 0;
   let productTotal = 0;
   let lastId = null;
   let resultCount = 500;
@@ -22,15 +25,19 @@ const getAllVariantsCount = async ({ client, requestBuilder }) => {
       console.log('Total products: ', productTotal);
 
       const results = response.body.results;
-      results.forEach ((result) => variantTotal += result.masterData.current.variants.length )
-      console.log('Total variants: ', variantTotal);
+      results.forEach ((result) => total += counterFunction(result))
+      console.log('Total : ', total);
       lastId = results[results.length-1].id;
     } catch (err) {
         if (err.code === 404) return null;
         throw err;
     }
   }
-  return variantTotal;
+  return total;
 }
 
+const getAllVariantsCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, countVariants)
+const getAllImagesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, countImage)
+
 module.exports.getAllVariantsCount = getAllVariantsCount;
+module.exports.getAllImagesCount = getAllImagesCount;
