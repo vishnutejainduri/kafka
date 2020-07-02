@@ -238,16 +238,21 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
         // if there is some failure but we cannot retry, then kafka / cloud functions binding service has to deal with the failure
         const mainFailed = mainResult instanceof Error || (mainResult && mainResult.error)
         if ((mainFailed || hasPartialFailure) && (storeBatchFailed || updateBatchWithFailureIndexesFailed)) {
+            const error = function () {
+                if (mainResult instanceof Error) {
+                    return mainResult
+                } else if (mainResult && mainResult.error) {
+                    return mainResult.error
+                } else {
+                    return new Error('updateBatchWithFailureIndexesFailed')
+                }
+            }()
             const retryInfo = {
                 storeBatchFailed,
                 updateBatchWithFailureIndexesFailed,
                 updateBatchWithFailureIndexesResult,
                 storeBatchResult,
-                error: mainResult instanceof Error
-                ? mainResult
-                : mainResult && mainResult.error
-                    ? mainResult.error
-                    : new Error('updateBatchWithFailureIndexesFailed')
+                error
             }
             return hasPartialFailure ? { ...retryInfo, ...mainResult } : retryInfo
         }

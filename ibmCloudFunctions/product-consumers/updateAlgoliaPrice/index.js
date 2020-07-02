@@ -95,15 +95,9 @@ const main = async function (params) {
     });
 
     if (applicableUpdates.length > 0) {
-        try {
-            await index.partialUpdateObjects(applicableUpdates)
-            // This is not critical enough to fail the batch for
-            await updateAlgoliaPriceCount.insert({ batchSize: applicableUpdates.length }).catch(() => { log('Failed to update batch count.') })
-        } catch (error) {
-            log.error('Failed to send prices to Algolia: ', error);
-            // if we fail to update algolia, we have to fail the whole batch and retry it
-            throw error
-        }
+        await index.partialUpdateObjects(applicableUpdates)
+        // This is not critical enough to fail the batch for
+        await updateAlgoliaPriceCount.insert({ batchSize: applicableUpdates.length }).catch(() => { log('Failed to update batch count.') })
     }
 
     // We mark the price changes that were successfully processed as well as those that failed to process,

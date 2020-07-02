@@ -25,6 +25,7 @@ const main = async function (params) {
     }
 
     return Promise.all(params.messages
+        .map(addErrorHandling(msg => msg.topic === params.topicName ? msg : new Error('Topic mismatch')))
         .map(addErrorHandling(parseMediaMessage))
         .map(addErrorHandling(async (mediaData) => {
             await medias.deleteMany({ containerId: mediaData.containerId, qualifier: mediaData.qualifier });

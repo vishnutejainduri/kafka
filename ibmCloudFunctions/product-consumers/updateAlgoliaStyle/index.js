@@ -71,13 +71,9 @@ const main = async function (params) {
     const recordsToUpdate = records.filter((record) => record && !(record instanceof Error));
 
     if (recordsToUpdate.length) {
-        try {
-            await index.partialUpdateObjects(recordsToUpdate, true);
-            await updateAlgoliaStyleCount.insert({ batchSize: recordsToUpdate.length }).catch(() => { log('Failed to update batch count.') })
-        } catch (error) {
-            log('Failed to send styles to Algolia.', error);
-            throw error
-        }
+        // if we fail to update algolia, the whole batch has to be retried
+        await index.partialUpdateObjects(recordsToUpdate, true);
+        await updateAlgoliaStyleCount.insert({ batchSize: recordsToUpdate.length }).catch(() => { log('Failed to update batch count.') })
     }
 
     return passDownAnyMessageErrors(records)
