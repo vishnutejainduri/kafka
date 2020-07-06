@@ -74,10 +74,8 @@ function findApplicablePriceChange (siteIdPriceChanges) {
   const activePriceChangesGroupedById = groupPriceChangesById(activePriceChanges)
   const latestActivePriceChanges = getLatestPriceChanges(activePriceChangesGroupedById)
   let latestActivePriceChange = latestActivePriceChanges[0];
-  console.log('latestActivePriceChanges', latestActivePriceChanges);
   if (latestActivePriceChanges.length > 1) {
     latestActivePriceChange = findCurrentPriceFromOverlappingPrices(latestActivePriceChanges);
-    console.log('latestActivePriceChange', latestActivePriceChange);
     if (!latestActivePriceChange) {
       throw new Error(`Cannot process overlapping price changes for the same site ID for price changes: ${siteIdPriceChanges.map(({ priceChangeId }) => priceChangeId)}`)
     }
@@ -160,7 +158,7 @@ function extractStyleId ({ topic, value }) {
   return styleId
 }
 
-async function findUnprocessedStyleIds (pricesCollection, processingDate) {
+async function findUnprocessedStyleIds (pricesCollection, processingDate, searchKey = '') {
   const documents = await pricesCollection.find({
     priceChanges: {
         $elemMatch: {
@@ -169,7 +167,7 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate) {
                     startDate: {
                         $lt: processingDate
                     },
-                    startDateProcessed: priceChangeProcessStatus.false
+                    [`startDateProcessed${searchKey}`]: priceChangeProcessStatus.false
                 }]
             }, {
                 $and: [{
@@ -177,7 +175,7 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate) {
                         $lt: processingDate
                     }
                 }, {
-                    endDateProcessed: priceChangeProcessStatus.false
+                    [`endDateProcessed${searchKey}`]: priceChangeProcessStatus.false
                 }]
             }]
         }
