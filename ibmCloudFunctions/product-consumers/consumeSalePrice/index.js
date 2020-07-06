@@ -42,7 +42,13 @@ const main = async function (params) {
                 return query
             }, { $and: [] })
             await pricesCollection.updateOne({ styleId: styleId }, { $pull: { priceChanges: findDuplicatePriceChangeQuery } })
-            const priceChangeUpdateWithProcessFlagSet = { ...priceChangeUpdate, startDateProcessed: priceChangeProcessStatus.false, endDateProcessed: priceChangeProcessStatus.false }
+            const priceProcessedFlags =  {
+              startDateProcessed: priceChangeProcessStatus.false,
+              endDateProcessed: priceChangeProcessStatus.false,
+              startDateProcessedCT: priceChangeProcessStatus.false, 
+              endDateProcessedCT: priceChangeProcessStatus.false
+            };
+            const priceChangeUpdateWithProcessFlagSet = { ...priceChangeUpdate, ...priceProcessedFlags }
             await pricesCollection.updateOne({ styleId: styleId }, { $push: { priceChanges: priceChangeUpdateWithProcessFlagSet } }, { upsert: true })
         })))
         .then(passDownProcessedMessages(params.messages))
