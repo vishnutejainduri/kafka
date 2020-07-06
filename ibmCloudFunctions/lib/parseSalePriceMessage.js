@@ -31,6 +31,13 @@ function passOnlinePriceMessages(msg) {
         : msg
 }
 
+function passPermanentMarkdownPrices(msg) {
+    // any price message with a null end date is a 'permanent markdown', and is handled differently then any other price (we exclude them in this CF)
+    return !msg.value.END_DATE
+        ? null
+        : msg
+}
+
 // Parse a message from the MERCH.IRO_POS_PRICES table and return a new object with filtered and re-mapped attributes.
 function parseSalePriceMessage(msg) {
     // Re-map attributes
@@ -66,5 +73,6 @@ module.exports = {
     styleIdKey,
     parseSalePriceMessage,
     validateSalePriceMessages,
-    passOnlinePriceMessages
+    passOnlinePriceMessages,
+    passPermanentMarkdownPrices
 };
