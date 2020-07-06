@@ -27,7 +27,7 @@ const main = params => {
   
   const salesOrdersToUpdate = (
     params.messages
-      .filter(addErrorHandling(filterSalesOrderMessages))
+      .map(addErrorHandling(msg => filterSalesOrderMessages(msg) ? msg : null))
       .map(addErrorHandling(parseSalesOrderMessage))
   );
 

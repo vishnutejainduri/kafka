@@ -25,7 +25,7 @@ const main = async function (params) {
     } 
 
     return Promise.all(params.messages
-        .filter(filterMediaContainerMessage)
+        .map(msg => filterMediaContainerMessage(msg) ? msg : null)
         .map(parseMediaContainerMessage)
         .map((mediaContainerDatas) => Promise.all(mediaContainerDatas
             // TODO handle updated main image containers by unsetting existing ones

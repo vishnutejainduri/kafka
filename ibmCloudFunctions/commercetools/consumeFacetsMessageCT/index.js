@@ -28,7 +28,7 @@ const main = params => {
   
   const stylesToUpdate = (
     params.messages
-      .filter(addErrorHandling(filterFacetMessageCt))
+      .map(addErrorHandling(msg => filterFacetMessageCt(msg) ? msg : null))
       .map(addErrorHandling(parseFacetMessageCt))
   );
 

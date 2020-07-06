@@ -9,9 +9,17 @@ describe('addFacetsToBulkImportQueue', function() {
         mongoCertificateBase64: 'mongo-certificate-64',
         collectionName: 'collection-name',
         dbName: 'db-name',
-        messages: []
+        messages: [{
+            value: {
+                CATEGORY: ''
+            }
+        }]
     };
-    it('Returns result if all required params are passed', async function() {
-        expect((await addFacetsToBulkImportQueue(params)).results.length).toBe(0);
+    it('Returns success if all required params are passed', async function() {
+        expect((await addFacetsToBulkImportQueue(params))).toEqual({
+            successCount: 1,
+            failureIndexes: [],
+            errors: []
+        });
     });
 });
