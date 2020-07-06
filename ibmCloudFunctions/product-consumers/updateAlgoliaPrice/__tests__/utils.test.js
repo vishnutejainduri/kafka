@@ -176,7 +176,119 @@ describe('findApplicablePriceChanges', () => {
   })
 })
 
-describe('findApplicablePriceChanges', () => {
+describe('findApplicablePriceChanges + findCurrentPriceFromOverlappingPrices', () => {
+  it('overlapping permanent markdowns', () => {
+    const mockPriceChanges = [{
+      priceChangeId: '1',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2019')
+    },{
+      priceChangeId: '2',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      activityType: priceChangeActivityTypes.CREATED,
+      processDateCreated: new Date('2020')
+    }]
+    const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
+    expect(applicablePriceChanges).toEqual({
+      [siteIds.ONLINE]: mockPriceChanges[1]
+    })
+  })
+  it('overlapping permanent markdowns; unfixable overlap', () => {
+    const mockPriceChanges = [{
+      priceChangeId: '1',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2020')
+    },{
+      priceChangeId: '2',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      activityType: priceChangeActivityTypes.CREATED,
+      processDateCreated: new Date('2020')
+    }]
+    expect(() => findApplicablePriceChanges(mockPriceChanges)).toThrow(new Error(`Cannot process overlapping price changes for the same site ID for price changes: ${[mockPriceChanges[0].priceChangeId, mockPriceChanges[1].priceChangeId,]}`))
+  })
+  it('overlapping permanent markdowns; overlap but across sites so both are valid and used', () => {
+    const mockPriceChanges = [{
+      priceChangeId: '1',
+      siteId: siteIds.IN_STORE,
+      startDate: new Date('2020'),
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2020')
+    },{
+      priceChangeId: '2',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      activityType: priceChangeActivityTypes.CREATED,
+      processDateCreated: new Date('2020')
+    }]
+    const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
+    expect(applicablePriceChanges).toEqual({
+      [siteIds.IN_STORE]: mockPriceChanges[0],
+      [siteIds.ONLINE]: mockPriceChanges[1]
+    })
+  })
+  it('overlapping permanent and temporary markdowns', () => {
+    const mockPriceChanges = [{
+      priceChangeId: '1',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2020')
+    },{
+      priceChangeId: '2',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      endDate: new Date('2021'),
+      activityType: priceChangeActivityTypes.CREATED,
+      processDateCreated: new Date('2020')
+    }]
+    const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
+    expect(applicablePriceChanges).toEqual({
+      [siteIds.ONLINE]: mockPriceChanges[1]
+    })
+  })
+  it('overlapping permanent and temporary markdowns across two sites', () => {
+    const mockPriceChanges = [{
+      priceChangeId: '1',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2020')
+    },{
+      priceChangeId: '2',
+      siteId: siteIds.IN_STORE,
+      startDate: new Date('2020'),
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2020')
+    },{
+      priceChangeId: '2',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      endDate: new Date('2021'),
+      activityType: priceChangeActivityTypes.CREATED,
+      processDateCreated: new Date('2020')
+    },{
+      priceChangeId: '1',
+      siteId: siteIds.IN_STORE,
+      startDate: new Date('2020'),
+      endDate: new Date('2021'),
+      activityType: priceChangeActivityTypes.CREATED,
+      processDateCreated: new Date('2020')
+    }]
+    const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
+    expect(applicablePriceChanges).toEqual({
+      [siteIds.IN_STORE]: mockPriceChanges[3],
+      [siteIds.ONLINE]: mockPriceChanges[2]
+    })
+  })
+})
+
+describe('getPriceInfo', () => {
   const originalPrice = 10
   describe('original price is applicable as the lowest price', () => {
     it('returns original price if no price change exists and sale flags will be false', () => {
