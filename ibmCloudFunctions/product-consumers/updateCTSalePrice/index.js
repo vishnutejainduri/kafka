@@ -51,8 +51,9 @@ global.main = async function (params) {
             return styleUpdate;
         }))
     );
+    console.log('updates', updates);
 
-    /*const messageFailures = [];
+    const messageFailures = [];
     const failureIndexes = []
     updates = updates.filter((update, index) => {
         if (!update) {
@@ -66,17 +67,17 @@ global.main = async function (params) {
         return true
     });
 
-    let algoliaUpdateResult
+    let CTUpdateResult
     if (updates.length > 0) {
-        algoliaUpdateResult = await index.partialUpdateObjects(updates)
-            .then(() => updateAlgoliaPriceCount.insert({ batchSize: updates.length }))
+        CTUpdateResult = await Promise.all(updates)
             .catch((error) => {
-                log.error('Failed to send prices to Algolia.');
+                log.error('Failed to send prices to CT');
                 return { error };
         });
     }
+    console.log('CTUpdateResult', CTUpdateResult);
 
-    const algoliaUpdateError = algoliaUpdateResult ? algoliaUpdateResult.error : undefined
+    /*const algoliaUpdateError = algoliaUpdateResult ? algoliaUpdateResult.error : undefined
 
     if (!algoliaUpdateError) {
         // We mark the price changes that were successfully processed as well as those that failed to process,
@@ -88,7 +89,7 @@ global.main = async function (params) {
     }
 
 
-    const error = (algoliaUpdateError || messageFailures.length)
+    /*const error = (algoliaUpdateError || messageFailures.length)
         ? {
             messageFailures,
             algoliaUpdateError
