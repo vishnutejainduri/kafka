@@ -9,7 +9,7 @@ const {
   markFailedChanges
 } = require('../updateAlgoliaPrice/utils.js');
 
-// CT
+// CT related requires
 const { updateStylePermanentMarkdown } = require('./utils');
 const messagesLogs = require('../../lib/messagesLogs');
 const getCtHelpers = require('../../lib/commercetoolsSdk');

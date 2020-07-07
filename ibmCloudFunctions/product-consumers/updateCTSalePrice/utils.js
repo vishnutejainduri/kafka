@@ -1,7 +1,7 @@
 const { siteIds } = require('../../constants')
 const { isStaged } = require('../../commercetools/constantsCt');
 const { getExistingCtStyle, createAndPublishStyle, createOriginalPriceUpdate } = require('../../commercetools/styleUtils');
-const { getAllVariantPrices, getExistingCtOriginalPrice } = require('../../commercetools/consumeSalePriceCT/utils');
+const { getAllVariantPrices, getExistingCtOriginalPrice, convertToCents } = require('../../commercetools/consumeSalePriceCT/utils');
 
 const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicablePriceChanges) => {
     const applicablePriceChange = applicablePriceChanges[siteIds.ONLINE];
@@ -24,13 +24,13 @@ const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicable
             ? {
               action: 'changePrice',
               priceId: existingCtOriginalPrice.id,
-              price: createOriginalPriceUpdate(applicablePriceChange.newRetailPrice),
+              price: createOriginalPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice)),
               staged: isStaged
             }
             : {
               action: 'addPrice',
               variantId: variantPrice.variantId,
-              price: createOriginalPriceUpdate(applicablePriceChange.newRetailPrice),
+              price: createOriginalPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice)),
               staged: isStaged
             }
           return [priceUpdate];
