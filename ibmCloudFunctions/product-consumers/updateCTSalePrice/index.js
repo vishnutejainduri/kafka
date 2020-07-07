@@ -2,7 +2,6 @@ const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { createLog, addErrorHandling, log } = require('../utils');
 const {
-  extractStyleId,
   findApplicablePriceChanges,
   findUnprocessedStyleIds,
   markProcessedChanges,
@@ -38,7 +37,7 @@ global.main = async function (params) {
     const processingDate = new Date()
     const styleIds = await findUnprocessedStyleIds(pricesCollection, processingDate, 'CT')
 
-    let updates = await Promise.all(styleIds
+    let CTUpdateResult = await Promise.all(styleIds
         .map(addErrorHandling(async (styleId) => {
             const [prices, style] = await Promise.all([
                 pricesCollection.findOne({ styleId }),
@@ -51,42 +50,30 @@ global.main = async function (params) {
             return styleUpdate;
         }))
     );
-    console.log('updates', updates);
 
-    const messageFailures = [];
+    console.log('CTUpdateResult', CTUpdateResult);
+    console.log('CTUpdateResult.body.errors', CTUpdateResult[0].body.errors);
+
     const failureIndexes = []
-    updates = updates.filter((update, index) => {
+    CTUpdateResult = CTUpdateResult.filter((update, index) => {
         if (!update) {
             return false
         }
-        if ((update instanceof Error)) {
-            messageFailures.push(update)
+        if ((update instanceof Error) || update.statusCode !== 200) {
             failureIndexes.push(index)
             return false
         }
         return true
     });
 
-    let CTUpdateResult
-    if (updates.length > 0) {
-        CTUpdateResult = await Promise.all(updates)
-            .catch((error) => {
-                log.error('Failed to send prices to CT');
-                return { error };
-        });
-    }
-    console.log('CTUpdateResult', CTUpdateResult);
+    //const algoliaUpdateError = algoliaUpdateResult ? algoliaUpdateResult.error : undefined
 
-    /*const algoliaUpdateError = algoliaUpdateResult ? algoliaUpdateResult.error : undefined
-
-    if (!algoliaUpdateError) {
-        // We mark the price changes that were successfully processed as well as those that failed to process,
-        // so that in the next run we don't reprocess them
-        await Promise.all([
-            markProcessedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => !failureIndexes.includes(index))),
-            markFailedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => failureIndexes.includes(index))),
-        ])
-    }
+    // We mark the price changes that were successfully processed as well as those that failed to process,
+    // so that in the next run we don't reprocess them
+    await Promise.all([
+        markProcessedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => !failureIndexes.includes(index)), 'CT'),
+        markFailedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => failureIndexes.includes(index)), 'CT'),
+    ])
 
 
     /*const error = (algoliaUpdateError || messageFailures.length)
@@ -98,7 +85,7 @@ global.main = async function (params) {
 
     if (error) {
         log.error(error)
-    }
+    }*/
 
     return {
         styleIds,
@@ -107,10 +94,8 @@ global.main = async function (params) {
             successes: styleIds.length - failureIndexes.length,
             failures: failureIndexes.length
         },
-        failureIndexes,
-        messageFailures,
-        algoliaUpdateError
-    };*/
+        failureIndexes
+    };
 };
 
 module.exports = global.main;

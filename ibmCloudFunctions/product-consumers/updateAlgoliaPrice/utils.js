@@ -195,14 +195,14 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate, search
   return documents.map(({ styleId }) => styleId)
 }
 
-function updateChangesQuery ({ isEndDate, isFailure, processingDate, styleIds }) {
+function updateChangesQuery ({ isEndDate, isFailure, processingDate, styleIds }, processFlagKey) {
   return [
     {
       styleId: { $in: styleIds },
       [`priceChanges.${isEndDate ? 'endDate' : 'startDate'}`]: { $lt: processingDate }
     },
     {
-      $set: { [`priceChanges.$[elem].${isEndDate ? 'endDateProcessed' : 'startDateProcessed'}`]: isFailure ? priceChangeProcessStatus.failure : priceChangeProcessStatus.true }
+      $set: { [`priceChanges.$[elem].${isEndDate ? `endDateProcessed${processFlagKey}` : `startDateProcessed${processFlagKey}`}`]: isFailure ? priceChangeProcessStatus.failure : priceChangeProcessStatus.true }
     },
     {
       multi: true,
@@ -211,19 +211,19 @@ function updateChangesQuery ({ isEndDate, isFailure, processingDate, styleIds })
   ]
 }
 
-async function markProcessedChanges (pricesCollection, processingDate, processedStyleIds) {
+async function markProcessedChanges (pricesCollection, processingDate, processedStyleIds, processFlagKey = '') {
   const isFailure = false
   return Promise.all([
-    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, styleIds: processedStyleIds })),
-    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, styleIds: processedStyleIds }))
+    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, styleIds: processedStyleIds }, processFlagKey)),
+    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, styleIds: processedStyleIds }, processFlagKey))
   ])
 }
 
-async function markFailedChanges (pricesCollection, processingDate, failedStyleIds) {
+async function markFailedChanges (pricesCollection, processingDate, failedStyleIds, processFlagKey = '') {
   const isFailure = true
   return Promise.all([
-    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, styleIds: failedStyleIds })),
-    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, styleIds: failedStyleIds }))
+    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, styleIds: failedStyleIds }, processFlagKey)),
+    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, styleIds: failedStyleIds }, processFlagKey))
   ])
 }
 
