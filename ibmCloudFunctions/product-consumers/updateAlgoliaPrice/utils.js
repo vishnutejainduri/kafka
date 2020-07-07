@@ -46,7 +46,7 @@ function findCurrentPriceFromOverlappingPrices (overlappingPrices) {
           break;
         }
         currentPrice = currentPrice.processDateCreated > overlappingPrice.processDateCreated ? currentPrice : overlappingPrice 
-      } else if (!currentPrice.endate && overlappingPrice.endDate) {
+      } else if (!currentPrice.endDate && overlappingPrice.endDate) {
         // one of the overlapping prices is a permanent markdown the other is temporary, always pick temporary over permanent
         currentPrice = overlappingPrice;
       } else if (currentPrice.endDate && !overlappingPrice.endDate) {

@@ -10,7 +10,6 @@ const {
 
 // CT related requires
 const { updateStylePermanentMarkdown } = require('./utils');
-const messagesLogs = require('../../lib/messagesLogs');
 const getCtHelpers = require('../../lib/commercetoolsSdk');
 
 // Holds two CT helpers, including the CT client. It's declared outside of
@@ -25,11 +24,9 @@ global.main = async function (params) {
       ctHelpers = getCtHelpers(params);
     }
 
-    let stylesCollection;
     let pricesCollection;
     try {
-        stylesCollection = await getCollection(params);
-        pricesCollection = await getCollection(params, params.pricesCollectionName);
+        pricesCollection = await getCollection(params);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError); 
     }
@@ -39,34 +36,20 @@ global.main = async function (params) {
 
     let CTUpdateResult = await Promise.all(styleIds
         .map(addErrorHandling(async (styleId) => {
-            const [prices, style] = await Promise.all([
-                pricesCollection.findOne({ styleId }),
-                stylesCollection.findOne({ _id: styleId })
-            ])
+            const prices = await pricesCollection.findOne({ styleId });
             const priceChanges = prices && prices.priceChanges || []
-            const originalPrice = style && style.originalPrice || 0
             const applicablePriceChanges = findApplicablePriceChanges(priceChanges)
             const styleUpdate = updateStylePermanentMarkdown(ctHelpers, productTypeId, applicablePriceChanges)
             return styleUpdate;
         }))
     );
 
-    console.log('CTUpdateResult', CTUpdateResult);
-    console.log('CTUpdateResult.body.errors', CTUpdateResult[0].body.errors);
-
     const failureIndexes = []
-    CTUpdateResult = CTUpdateResult.filter((update, index) => {
-        if (!update) {
-            return false
-        }
-        if ((update instanceof Error) || update.statusCode !== 200) {
+    CTUpdateResult.forEach((update, index) => {
+        if ((update instanceof Error) || (update && update.statusCode !== 200)) {
             failureIndexes.push(index)
-            return false
         }
-        return true
     });
-
-    //const algoliaUpdateError = algoliaUpdateResult ? algoliaUpdateResult.error : undefined
 
     // We mark the price changes that were successfully processed as well as those that failed to process,
     // so that in the next run we don't reprocess them
@@ -74,18 +57,6 @@ global.main = async function (params) {
         markProcessedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => !failureIndexes.includes(index)), 'CT'),
         markFailedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => failureIndexes.includes(index)), 'CT'),
     ])
-
-
-    /*const error = (algoliaUpdateError || messageFailures.length)
-        ? {
-            messageFailures,
-            algoliaUpdateError
-        }
-        : undefined
-
-    if (error) {
-        log.error(error)
-    }*/
 
     return {
         styleIds,
