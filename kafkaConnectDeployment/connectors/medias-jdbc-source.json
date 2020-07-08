@@ -5,7 +5,7 @@
     "tasks.max": 1,
     "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
     "mode": "timestamp",
-    "batch.max.rows": 200,
+    "batch.max.rows": 100,
     "timestamp.column.name": "MODIFIEDTS",
     "topic.prefix": "medias-connect-jdbc",
     "validate.non.null": "false",

@@ -3,6 +3,7 @@ const { skuAttributeNames, isStaged, entityStatus, CT_ACTION_LIMIT } = require('
 const { groupByAttribute } = require('../../lib/utils');
 
 const groupByStyleId = groupByAttribute('styleId');
+const skuImage = (styleId) => ( { url: `https://i1.adis.ws/i/harryrosen/${styleId}?$prp-4col-xl$`,  dimensions: { w: 242, h: 288 } } )
 
 const getCtSkuAttributeValue = (ctSku, attributeName) => {
   if (!ctSku.attributes) return undefined;
@@ -47,7 +48,31 @@ const getActionsFromSku = (sku, existingSku = null) => {
     staged: isStaged
   }));
 
-  if (existingSku) return actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
+  if (existingSku) {
+    const removeImageActions = existingSku.images.map(image => (
+      image.url === skuImage(sku.styleId).url 
+        ? null
+        : {
+          action: 'removeImage',
+          sku: existingSku.sku,
+          imageUrl: image.url,
+          staged: isStaged
+        }
+    )).filter(Boolean);
+
+    const addImageAction = removeImageActions.length === 0 && existingSku.images.length > 0
+      ? null
+      : {
+        action: 'addExternalImage',
+        sku: sku.id,
+        image: skuImage(sku.styleId),
+        staged: isStaged
+      };
+
+    const validActions = actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
+    return [...validActions, ...removeImageActions, addImageAction].filter(Boolean);
+  }
+
   return actions.filter(hasNonNullishValue);
 };
 
@@ -65,6 +90,7 @@ const getCreationAction = (sku, style) => {
     action: 'addVariant',
     sku: sku.id,
     attributes,
+    images: [skuImage(style.key)],
     staged: isStaged
   };
 };

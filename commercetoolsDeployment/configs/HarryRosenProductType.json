@@ -274,44 +274,6 @@
             "displayGroup": "Other"
         },
         {
-            "name": "originalPrice",
-            "label": {
-                "en-CA": "Original Price",
-                "fr-CA": ""
-            },
-            "inputTip": {
-                "en-CA": "",
-                "fr-CA": ""
-            },
-            "isRequired": false,
-            "type": {
-                "name": "money"
-            },
-            "attributeConstraint": "SameForAll",
-            "isSearchable": false,
-            "inputHint": "SingleLine",
-            "displayGroup": "Other"
-        },
-        {
-            "name": "onlineSalePrice",
-            "label": {
-                "en-CA": "Online Sale Price",
-                "fr-CA": ""
-            },
-            "inputTip": {
-                "en-CA": "",
-                "fr-CA": ""
-            },
-            "isRequired": false,
-            "type": {
-                "name": "money"
-            },
-            "attributeConstraint": "SameForAll",
-            "isSearchable": false,
-            "inputHint": "SingleLine",
-            "displayGroup": "Other"
-        },
-        {
             "name": "styleLastModifiedInternal",
             "label": {
                 "en-CA": "Style last modified (internal)",
@@ -324,44 +286,6 @@
             "isRequired": false,
             "type": {
                 "name": "datetime"
-            },
-            "attributeConstraint": "SameForAll",
-            "isSearchable": false,
-            "inputHint": "SingleLine",
-            "displayGroup": "Other"
-        },
-        {
-            "name": "isOnlineSale",
-            "label": {
-                "en-CA": "Is Online Sale",
-                "fr-CA": ""
-            },
-            "inputTip": {
-                "en-CA": "",
-                "fr-CA": ""
-            },
-            "isRequired": false,
-            "type": {
-                "name": "boolean"
-            },
-            "attributeConstraint": "SameForAll",
-            "isSearchable": false,
-            "inputHint": "SingleLine",
-            "displayGroup": "Other"
-        },
-        {
-            "name": "onlineDiscount",
-            "label": {
-                "en-CA": "Online Discount",
-                "fr-CA": ""
-            },
-            "inputTip": {
-                "en-CA": "",
-                "fr-CA": ""
-            },
-            "isRequired": false,
-            "type": {
-                "name": "number"
             },
             "attributeConstraint": "SameForAll",
             "isSearchable": false,
@@ -508,7 +432,7 @@
                 "fr-CA": ""
             },
             "inputTip": {
-                "en-CA": "",
+                "en-CA": "ID of the size chart for this product",
                 "fr-CA": ""
             },
             "isRequired": false,

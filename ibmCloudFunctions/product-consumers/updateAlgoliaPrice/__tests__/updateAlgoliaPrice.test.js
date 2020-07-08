@@ -54,14 +54,9 @@ describe('updateAlgoliaPrice', () => {
         
         const response = await updateAlgoliaPrice(params);
         expect(response).toEqual({
-            counts: {
-                styleIds: 1,
-                successes: 1,
-                failures: 0
-            },
-            error: undefined,
-            styleIds: ['styleId-with-priceChange'],
-            failureIndexes: []
+            failureIndexes: [],
+            errors: [],
+            successCount: 1
         });
     });
 
@@ -77,7 +72,7 @@ describe('updateAlgoliaPrice', () => {
         };
 
         const response = await updateAlgoliaPrice(params)
-        expect(response.error.messageFailures.length).toEqual(1);
+        expect(response.failureIndexes.length).toEqual(1);
         expect(response.failureIndexes[0]).toEqual(0);
     });
 
@@ -94,7 +89,7 @@ describe('updateAlgoliaPrice', () => {
 
         const response = await updateAlgoliaPrice(params)
 
-        expect(response.error.messageFailures.length).toBe(1);
+        expect(response.failureIndexes.length).toBe(1);
         expect(response.failureIndexes[0]).toEqual(1)
     });
 
@@ -110,8 +105,7 @@ describe('updateAlgoliaPrice', () => {
         };
 
         const response = await updateAlgoliaPrice(params)
-
-        expect(response.error.messageFailures.length).toBe(1);
+        expect(response.failureIndexes.length).toBe(1);
         expect(response.failureIndexes[0]).toEqual(1)
     });
 });

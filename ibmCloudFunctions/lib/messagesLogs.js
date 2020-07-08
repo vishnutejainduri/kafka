@@ -120,50 +120,44 @@ async function getValuesCollection({
 // db.getCollection('messagesByActivationIds').find({ _id: { $lt: objectIdWithTimestamp('2020/04/24') } })
 
 async function storeBatch(params) {
-    try {
-        const collection = await getMessagesCollection(params);
-        const transactionId = process.env.__OW_TRANSACTION_ID;
-        let messages = params.messages;
-        if (params.messages === null) {
-            // for messages in a sequence, only the first step has the messages as stored in Kafka topics
-            // for the subsequent steps we copy the messages e.g. see calculateAvailableToSell/index.js
-            messages = (await collection.findOne({ transactionId }, { projection: { messages: 1 }})).messages;
-        }
-        const result = await collection
-            .insertOne({
-                activationId: process.env.__OW_ACTIVATION_ID,
-                transactionId,
-                messages,
-                resolved: false,
-                recordTime: (new Date()).getTime(),
-                isIam: Boolean(params.cloudFunctionsIsIam)
-            });
-        return result;
-    } catch (error) {
-        log.failedToStoreBatch(error);
-        return error;
+    const collection = await getMessagesCollection(params);
+    const transactionId = process.env.__OW_TRANSACTION_ID;
+    let messages = params.messages;
+    if (params.messages === null) {
+        // for messages in a sequence, only the first step has the messages as stored in Kafka topics
+        // for the subsequent steps we copy the messages e.g. see calculateAvailableToSell/index.js
+        messages = (await collection.findOne({ transactionId }, { projection: { messages: 1 }})).messages;
     }
+    const batchInfo = {
+        activationId: process.env.__OW_ACTIVATION_ID,
+        transactionId,
+        resolved: false,
+        recordTime: (new Date()).getTime(),
+        isIam: Boolean(params.cloudFunctionsIsIam)
+    }
+    await collection
+        .insertOne({
+            messages,
+            ...batchInfo
+        });
+    // NOTE: The result returned by this function is used by addLoggingToMain in utils.js
+    return batchInfo;
 }
 
 async function updateBatchWithFailureIndexes(params, failureIndexes) {
-    try {
-        const collection = await getMessagesCollection(params);
-        const transactionId = process.env.__OW_TRANSACTION_ID;
-        const result = await collection
-            .updateOne({
-                activationId: process.env.__OW_ACTIVATION_ID,
-                transactionId,
-            }, {
-              $set: {
+    const collection = await getMessagesCollection(params);
+    const transactionId = process.env.__OW_TRANSACTION_ID;
+    const result = await collection
+        .updateOne({
+            activationId: process.env.__OW_ACTIVATION_ID,
+            transactionId,
+        }, {
+            $set: {
                 resolved: 'partial',
                 failureIndexes
-              }
-            });
-        return result;
-    } catch (error) {
-        log.failedToUpdateBatchWithFailureIndexes(error);
-        return error;
-    }
+            }
+        });
+    return result;
 }
 
 async function getStoreDlqMessages(params) {

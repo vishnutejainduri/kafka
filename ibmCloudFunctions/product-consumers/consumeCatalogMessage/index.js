@@ -26,8 +26,7 @@ const main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter(addErrorHandling((msg) => msg.topic === params.topicName))
-        .filter(addErrorHandling(filterStyleMessages))
+        .map(addErrorHandling(msg => filterStyleMessages(msg) ? msg : null))
         .map(addErrorHandling(parseStyleMessage))
         .map(addErrorHandling((styleData) => styles.findOne({ _id: styleData._id })
             .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)

@@ -31,6 +31,13 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
             ? algoliaUpdate[facetData.name].filter((currentMongoFacet) =>
               !(currentMongoFacet.en === facetData.value.en && currentMongoFacet.fr === facetData.value.fr))
             : algoliaUpdate[facetData.name].concat([facetData.value]);
+
+          // removes duplicate facet values; not an ideal solution but without some sort of unique key for each microsite we don't know whether to insert a dupe or not 
+          // (for now we are assuming dupes are not going to happen until we get an update from HR)
+          algoliaUpdate[facetData.name] = algoliaUpdate[facetData.name].filter((facetValue, pos) =>  
+           algoliaUpdate[facetData.name].map(facet => facet.en).indexOf(facetValue.en) === pos &&
+           algoliaUpdate[facetData.name].map(facet => facet.fr).indexOf(facetValue.fr) === pos)
+
           return;
         }
 
@@ -125,10 +132,11 @@ global.main = async function (params) {
     const styleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
 
     await index.partialUpdateObjects(algoliaUpdatesWithoutOutlet, true)
-        .then(() => styles.bulkWrite(styleUpdates, { ordered : false })
+        // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't delete from the queue and it gets stuck
+        .then(() => styleUpdates.length > 0 ? styles.bulkWrite(styleUpdates, { ordered : false }) : null) 
         .then(() => algoliaFacetBulkImportQueue.deleteMany({ styleId: { $in: styleIds } }))
         .then(() => updateAlgoliaFacetsCount.insert({ batchSize: algoliaUpdatesWithoutOutlet.length }))
-        .then(() => log('updated styles', styleIds)));
+        .then(() => log('updated styles', styleIds));
 
     if (failures.length) {
       throw createError.updateAlgoliaFacets.failedTransforms(failures);

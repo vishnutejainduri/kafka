@@ -61,7 +61,7 @@ const main = params => {
   
   const skusToCreateOrUpdate = (
     params.messages
-      .filter(addErrorHandling(filterSkuMessage))
+      .map(addErrorHandling(msg => filterSkuMessage(msg) ? msg : null))
       .map(addErrorHandling(parseSkuMessageCt))
   );
 

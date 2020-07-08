@@ -37,9 +37,9 @@ const validParams = {
 const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('consumeStylesBasicMessageCT', () => {
-  it('throws an error if given params are invalid', () => {
+  it('Returns an error if given params are invalid', async () => {
     const invalidParams = {};
-    return expect(consumeStylesBasicMessageCT(invalidParams)).rejects.toThrow();
+    return expect((await consumeStylesBasicMessageCT(invalidParams)).error).toBeTruthy();
   });
 
   it('returns success result if given valid params and a valid message', async () => {

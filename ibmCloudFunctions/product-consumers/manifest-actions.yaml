@@ -9,13 +9,6 @@
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
-      consume-catalog-message-with-retry:
-        location: ./product-consumers/consumeCatalogMessageWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        limits:
-          memorySize: 512
-          timeout: 600000
       consume-styles-basic-message:
         location: ./product-consumers/consumeStylesBasicMessage/dist/bundle.js
         runtime: nodejs:10
@@ -26,13 +19,6 @@
           collectionName: $STYLES_COLLECTION_NAME
           algoliaDeleteCreateQueue: $ALGOLIA_DELETE_CREATE_QUEUE
           topicName: styles-basic-connect-jdbc
-      consume-styles-basic-message-with-retry:
-        location: ./product-consumers/consumeStylesBasicMessageWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        limits:
-          memorySize: 512
-          timeout: 600000
       consume-threshold-message:
         location: ./product-consumers/consumeThresholdMessage/dist/bundle.js
         runtime: nodejs:10
@@ -44,13 +30,6 @@
           stylesCollectionName: $STYLES_COLLECTION_NAME
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: thresholds-connect-jdbc
-      consume-threshold-message-with-retry:
-        location: ./product-consumers/consumeThresholdMessageWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        limits:
-          memorySize: 512
-          timeout: 600000
       consume-sale-price:
         location: ./product-consumers/consumeSalePrice/dist/bundle.js
         runtime: nodejs:10
@@ -71,13 +50,6 @@
           inventoryCollectionName: $INVENTORY_COLLECTION_NAME
           bulkAtsRecalculateQueue: $BULK_ATS_RECALCULATE_QUEUE
           topicName: stores-connect-jdbc
-      consume-stores-message-with-retry:
-        location: ./product-consumers/consumeStoresMessageWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        limits:
-          memorySize: 512
-          timeout: 600000
       consume-sku-message:
         location: ./product-consumers/consumeSkuMessage/dist/bundle.js
         runtime: nodejs:10
@@ -88,13 +60,6 @@
           collectionName: $SKUS_COLLECTION_NAME
           stylesCollectionName: $STYLES_COLLECTION_NAME
           topicName: skus-connect-jdbc
-      consume-sku-message-with-retry:
-        location: ./product-consumers/consumeSkuMessageWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        limits:
-          memorySize: 512
-          timeout: 600000
       consume-barcode-message:
         location: ./product-consumers/consumeBarcodeMessage/dist/bundle.js
         runtime: nodejs:10
@@ -104,13 +69,6 @@
         inputs:
           collectionName: $BARCODES_COLLECTION_NAME
           topicName: barcodes-connect-jdbc
-      consume-barcode-message-with-retry:
-        location: ./product-consumers/consumeBarcodeMessageWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        limits:
-          memorySize: 512
-          timeout: 600000
       consume-sku-inventory-message:
         location: ./product-consumers/consumeSkuInventoryMessage/dist/bundle.js
         runtime: nodejs:10
@@ -124,13 +82,6 @@
           storesCollectionName: $STORES_COLLECTION_NAME
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: inventory-connect-jdbc-SKUINVENTORY
-      consume-sku-inventory-message-with-retry:
-        location: ./product-consumers/consumeSkuInventoryMessageWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        limits:
-          memorySize: 512
-          timeout: 600000
       calculate-available-to-sell:
         location: ./product-consumers/calculateAvailableToSell/dist/bundle.js
         runtime: nodejs:10
@@ -148,13 +99,6 @@
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           bulkAtsRecalculateQueue: $BULK_ATS_RECALCULATE_QUEUE
           topicName: inventory-connect-jdbc-SKUINVENTORY
-      calculate-available-to-sell-with-retry:
-        location: ./product-consumers/calculateAvailableToSellWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        limits:
-          memorySize: 512
-          timeout: 600000
       update-algolia-style:
         location: ./product-consumers/updateAlgoliaStyle/dist/bundle.js
         runtime: nodejs:10
@@ -164,13 +108,6 @@
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
-      update-algolia-style-with-retry:
-        location: ./product-consumers/updateAlgoliaStyleWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        limits:
-          memorySize: 512
-          timeout: 600000
       delete-create-algolia-styles:
         location: ./product-consumers/deleteCreateAlgoliaStyles/dist/bundle.js
         runtime: nodejs:10
@@ -247,13 +184,6 @@
         inputs:
           collectionName: $MEDIAS_COLLECTION_NAME
           topicName: medias-connect-jdbc
-      consume-medias-message-with-retry:
-        location: ./product-consumers/consumeMediasMessageWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        limits:
-          memorySize: 512
-          timeout: 600000
       consume-media-containers-message:
         location: ./product-consumers/consumeMediaContainersMessage/dist/bundle.js
         runtime: nodejs:10
@@ -263,13 +193,6 @@
         inputs:
           collectionName: $MEDIA_CONTAINERS_COLLECTION_NAME
           topicName: media-containers-connect-jdbc
-      consume-media-containers-message-with-retry:
-        location: ./product-consumers/consumeMediaContainersMessageWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        limits:
-          memorySize: 512
-          timeout: 600000
       add-media-container-to-queue-message:
         location: ./product-consumers/addMediaContainerToQueue/dist/bundle.js
         runtime: nodejs:10
@@ -279,15 +202,6 @@
         inputs:
           collectionName: $ALGOLIA_IMAGE_PROCESSING_QUEUE
           topicName: media-containers-connect-jdbc
-      add-media-container-to-queue-message-with-retry:
-        location: ./product-consumers/addMediaContainerToQueueWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        inputs:
-          cfName: addMediaContainerToQueue
-        limits:
-          memorySize: 512
-          timeout: 600000
       add-facets-to-bulk-import-queue:
         location: ./product-consumers/addFacetsToBulkImportQueue/dist/bundle.js
         runtime: nodejs:10
@@ -297,15 +211,6 @@
         inputs:
           collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
           topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
-      add-facets-to-bulk-import-queue-with-retry:
-        location: ./product-consumers/addFacetsToBulkImportQueueWithRetry/dist/bundle.js
-        conductor: true
-        runtime: nodejs:10
-        inputs:
-          cfName: addFacetsToBulkImportQueue
-        limits:
-          memorySize: 512
-          timeout: 600000
       schema-validation:
         location: ./product-consumers/schemaValidation/dist/bundle.js
       resolve-messages-logs:
@@ -338,6 +243,6 @@
       update-pricing-sequence:
         actions: consume-sale-price,update-algolia-price
       update-catalog-sequence:
-        actions: consume-catalog-message-with-retry,update-algolia-price
+        actions: consume-catalog-message,update-algolia-price
       update-inventory-sequence:
-        actions: consume-sku-inventory-message-with-retry,calculate-available-to-sell-with-retry
+        actions: consume-sku-inventory-message,calculate-available-to-sell

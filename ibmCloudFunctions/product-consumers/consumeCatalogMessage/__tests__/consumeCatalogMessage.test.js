@@ -173,7 +173,7 @@ describe('filterStyleMessages', () => {
 
 describe('consumeCatalogMessage', () => {
     it('missing all parameters; should fail', async () => {
-        await expect(consumeCatalogMessage({})).rejects.toThrow();
+        expect((await consumeCatalogMessage({})).error).toBeTruthy();
     });
     it('correct message to update style', async () => {
         const params = {
@@ -230,6 +230,11 @@ describe('consumeCatalogMessage', () => {
         };
         const response = await consumeCatalogMessage(params);
         // returns messages
-        expect(response).toEqual({ messages: params.messages });
+        expect(response).toEqual({
+            errors: [],
+            failureIndexes: [],
+            successCount: 1,
+            messages: params.messages
+        });
     });
 });

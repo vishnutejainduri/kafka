@@ -22,7 +22,7 @@ const main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter(addErrorHandling(filterSkuMessage))
+        .map(addErrorHandling(msg => filterSkuMessage(msg) ? msg : null))
         .map(addErrorHandling(parseSkuMessage))
         .map(addErrorHandling(async (skuData) => {
                   const existingDocument = await skus.findOne({ _id: skuData._id })
@@ -53,5 +53,4 @@ const main = async function (params) {
 }
 
 global.main = addLoggingToMain(main);
-
 module.exports = global.main;

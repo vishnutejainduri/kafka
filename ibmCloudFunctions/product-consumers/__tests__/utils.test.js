@@ -3,25 +3,58 @@ const { groupByStyleId } = require('../../commercetools/consumeSkuMessageCT/util
 const parseSkuMessageCt = require('../../lib/parseSkuMessageCt');
 
 describe('addLoggingToMain', function() {
-  it('finishes storing messages even if main is rejected and still throws the error', async function() {
+  it('finishes storing messages even if main is rejected and does not return an error', async function() {
     const failedMainError = 'failed main';
     const main = async () => Promise.reject(failedMainError);
-    let storedBatches = false;
     const logger = {
       async storeBatch () {
         return new Promise(function(resolve) {
           setTimeout(function() {
-            storedBatches = true
             resolve();
           }, 100);
         })
       }
     }
     const mainWithLogging = addLoggingToMain(main, logger);
-    await expect(mainWithLogging()).rejects.toThrow(failedMainError);
-    expect(storedBatches).toEqual(true);
+    expect(await mainWithLogging()).toEqual(new Error(failedMainError));
   });
-  it('finishes storing messages if main does not throw an error', async function() {
+
+  it('it returns a error field in the response and 0 for storeBatchFailed if main has partial failure and we store the batch but we fail to update the batch with partial failures', async function() {
+    const main = async () => Promise.resolve({ failureIndexes: [1] });
+    const logger = {
+      async storeBatch () {
+        return new Promise(function(resolve) {
+          setTimeout(function() {
+            resolve();
+          }, 100);
+        })
+      }
+    }
+    const mainWithLogging = addLoggingToMain(main, logger);
+    const result = await mainWithLogging()
+    expect(result.error).toEqual(new Error('updateBatchWithFailureIndexesFailed'));
+    expect(result.storeBatchFailed).toEqual(0);
+  });
+
+  it('return error field in the response and 1 for storeBatchFailed if both storing the batch and the main fail', async function() {
+    const failedMainError = 'failed main';
+    const main = async () => Promise.reject(failedMainError);
+    const logger = {
+      async storeBatch () {
+        return new Promise(function(_, reject) {
+          setTimeout(function() {
+            reject();
+          }, 100);
+        })
+      }
+    }
+    const mainWithLogging = addLoggingToMain(main, logger);
+    const result = await mainWithLogging()
+    expect(result.error).toEqual(new Error(failedMainError));
+    expect(result.storeBatchFailed).toEqual(1);
+  });
+
+  it('finishes storing messages if main does not return an error field in the response', async function() {
     const successfulMain = 'successful main';
     const main = async () => successfulMain;
     let storedBatches = false;

@@ -58,7 +58,6 @@ global.main = async function(params) {
             const error = createError.resolveMessageLogs.batchFailure(originalError,{ activationId, failureIndexes })
             throw error
         }
-        // if an activation has failed or has partial failures, the messages in the batch should be either DLQed or retried
         let messagesByNextAction = {
             dlq: [],
             retry: []
@@ -67,6 +66,7 @@ global.main = async function(params) {
             dlq: null,
             retry: null
         };
+        // if an activation has failed or has partial failures, the messages in the batch should be either DLQed or retried
         const hasFailed = !activationInfo.response.success;
         const hasFailedMessages = failureIndexes && failureIndexes.length > 0;
         if (hasFailed || hasFailedMessages) {

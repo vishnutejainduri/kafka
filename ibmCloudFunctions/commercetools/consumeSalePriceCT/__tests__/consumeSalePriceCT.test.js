@@ -52,13 +52,16 @@ const mockProduct = createClient().execute().body;
 const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('consumeSalePriceCT', () => {
-  it('missing params; throw error', () => {
-    return expect(consumeSalePriceCT({})).rejects.toThrow();
+  it('missing params; throw error', async () => {
+    return expect((await consumeSalePriceCT({})).error).toBeTruthy();
   });
 
   it('returns expected success result for correct params and a valid message', async () => {
     const response = await consumeSalePriceCT(validParams);
     return expect(response).toEqual({
+      errors: [],
+      failureIndexes: [],
+      successCount: 1,
       messages: validParams.messages
     });
   });
@@ -76,9 +79,7 @@ describe('consumeSalePriceCT', () => {
       ...validParams,
       messages: [messageToBeIgnored]
     });
-    return expect(response).toEqual({
-      messages: [messageToBeIgnored]
-    });
+    return expect(response.messages).toEqual([messageToBeIgnored]);
   });
 
   it('messages that resulted in an error are not passed down to the next action in the sequence', async () => {
@@ -91,9 +92,10 @@ describe('consumeSalePriceCT', () => {
         invalidMessage
       ]
     });
-    return expect(response).toEqual({
-      messages: [validMessage]
-    });
+    expect(response.messages).toEqual([validMessage]);
+    expect(response.errors.length).toEqual(1);
+    expect(response.failureIndexes).toEqual([1]);
+
   });
 });
 

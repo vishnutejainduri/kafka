@@ -4,13 +4,13 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { createLog, addErrorHandling, log } = require('../utils');
+const { createLog, addErrorHandling, log, addLoggingToMain, passDownAnyMessageErrors } = require('../utils');
 const { extractStyleId, getPriceInfo, findApplicablePriceChanges, findUnprocessedStyleIds, markProcessedChanges, markFailedChanges } = require('./utils.js');
 
 let client = null;
 let index = null;
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('updateAlgoliaPrice', params));
 
     if (!params.algoliaIndexName) {
@@ -82,7 +82,7 @@ global.main = async function (params) {
 
     const messageFailures = [];
     const failureIndexes = []
-    updates = updates.filter((update, index) => {
+    const applicableUpdates = updates.filter((update, index) => {
         if (!update) {
             return false
         }
@@ -94,49 +94,21 @@ global.main = async function (params) {
         return true
     });
 
-    let algoliaUpdateResult
-    if (updates.length > 0) {
-        algoliaUpdateResult = await index.partialUpdateObjects(updates)
-            .then(() => updateAlgoliaPriceCount.insert({ batchSize: updates.length }))
-            .catch((error) => {
-                log.error('Failed to send prices to Algolia.');
-                return { error };
-        });
+    if (applicableUpdates.length > 0) {
+        await index.partialUpdateObjects(applicableUpdates)
+        // This is not critical enough to fail the batch for
+        await updateAlgoliaPriceCount.insert({ batchSize: applicableUpdates.length }).catch(() => { log('Failed to update batch count.') })
     }
 
-    const algoliaUpdateError = algoliaUpdateResult ? algoliaUpdateResult.error : undefined
+    // We mark the price changes that were successfully processed as well as those that failed to process,
+    // so that in the next run we don't reprocess them
+    await Promise.all([
+        markProcessedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => !failureIndexes.includes(index))),
+        markFailedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => failureIndexes.includes(index))),
+    ])
 
-    if (!algoliaUpdateError) {
-        // We mark the price changes that were successfully processed as well as those that failed to process,
-        // so that in the next run we don't reprocess them
-        await Promise.all([
-            markProcessedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => !failureIndexes.includes(index))),
-            markFailedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => failureIndexes.includes(index))),
-        ])
-    }
-
-
-    const error = (algoliaUpdateError || messageFailures.length)
-        ? {
-            messageFailures,
-            algoliaUpdateError
-        }
-        : undefined
-
-    if (error) {
-        log.error(error)
-    }
-
-    return {
-        counts: {
-            styleIds: styleIds.length,
-            successes: styleIds.length - failureIndexes.length,
-            failures: failureIndexes.length
-        },
-        error,
-        styleIds,
-        failureIndexes
-    };
+    return passDownAnyMessageErrors(updates)
 };
 
+global.main = addLoggingToMain(main)
 module.exports = global.main;

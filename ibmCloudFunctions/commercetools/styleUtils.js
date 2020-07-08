@@ -263,23 +263,25 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
     : [];
 
   const allVariantPrices = getAllVariantPrices(existingCtStyle);
-  let priceUpdateActions = allVariantPrices.map((variantPrice) => {
-    const existingCtOriginalPrice = getExistingCtOriginalPrice(variantPrice);
-    const priceUpdate = existingCtOriginalPrice
-        ? {
-          action: 'changePrice',
-          priceId: existingCtOriginalPrice.id,
-          price: createOriginalPriceUpdate(style.originalPrice),
-          staged: isStaged
-        }
-        : {
-          action: 'addPrice',
-          variantId: variantPrice.variantId,
-          price: createOriginalPriceUpdate(style.originalPrice),
-          staged: isStaged
-        }
-      return [priceUpdate];
-  });
+  let priceUpdateActions = style.originalPrice
+    ? allVariantPrices.map((variantPrice) => {
+      const existingCtOriginalPrice = getExistingCtOriginalPrice(variantPrice);
+      const priceUpdate = existingCtOriginalPrice
+          ? {
+            action: 'changePrice',
+            priceId: existingCtOriginalPrice.id,
+            price: createOriginalPriceUpdate(style.originalPrice),
+            staged: isStaged
+          }
+          : {
+            action: 'addPrice',
+            variantId: variantPrice.variantId,
+            price: createOriginalPriceUpdate(style.originalPrice),
+            staged: isStaged
+          }
+        return [priceUpdate];
+    })
+    : []
   priceUpdateActions = priceUpdateActions.reduce((finalActions, currentActions) => [...finalActions, ...currentActions], []);
 
   // Tax category is currently set on product creation, but it wasn't always.
