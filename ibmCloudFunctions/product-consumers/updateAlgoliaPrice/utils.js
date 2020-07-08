@@ -42,6 +42,7 @@ function findCurrentPriceFromOverlappingPrices (overlappingPrices) {
         if ((!currentPrice.processDateCreated || !overlappingPrice.processDateCreated) ||
           currentPrice.processDateCreated.getTime() === overlappingPrice.processDateCreated.getTime()) {
           // if two permanent markdowns activate at the exact same time we can't decide which one to pick, results in unfixable overlap
+          console.error('Unfixable price overlap:', 'Two permanent markdowns overlap', currentPrice, overlappingPrice);
           currentPrice = null;
           break;
         }
@@ -54,6 +55,7 @@ function findCurrentPriceFromOverlappingPrices (overlappingPrices) {
         continue;  
       } else {
         // unfixable overlap between two temporary prices
+        console.error('Unfixable price overlap:', 'Two temporary markdowns overlap', currentPrice, overlappingPrice);
         currentPrice = null;
         break;
       }
@@ -196,6 +198,7 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate, search
 }
 
 function updateChangesQuery ({ isEndDate, isFailure, processingDate, styleIds }, processFlagKey) {
+  // processFlagKey can be either '' for algolia updates, or 'CT' for commercetools related pricing updates
   return [
     {
       styleId: { $in: styleIds },
