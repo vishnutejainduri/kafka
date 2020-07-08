@@ -39,6 +39,7 @@ async function callGetConnectorNames(kubeHost, token) {
 async function getConnectorNames(platformEnv) {
     const kubeParams = getKubeEnv(platformEnv);
     const token = await retry(getSessionToken)(kubeParams);
+    console.log('token: ', token)
     const { body, statusCode } = await retry(callGetConnectorNames)(kubeParams.host, token);
     //here we have the full response, html or json object
     let connectorNames = null;
