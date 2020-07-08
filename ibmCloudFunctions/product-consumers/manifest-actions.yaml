@@ -136,6 +136,14 @@
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
+      update-ct-sale-price:
+        location: ./product-consumers/updateCTSalePrice/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 512
+          timeout: 600000
+        inputs:
+          collectionName: $PRICES_COLLECTION_NAME
       bulk-calculate-available-to-sell:
         location: ./product-consumers/bulkCalculateAvailableToSell/dist/bundle.js
         runtime: nodejs:10
