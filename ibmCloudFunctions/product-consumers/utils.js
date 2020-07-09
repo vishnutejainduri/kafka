@@ -119,7 +119,12 @@ const passDownAnyMessageErrors = (results) => {
     const result = {
         successCount: results.length - errors.length - ignoredIndexes.length,
         failureIndexes,
-        errors: errors.map((error, index) => ({ error, failureIndex: failureIndexes[index]}))
+        errors: errors.map((error, index) => ({
+            // expanding error to be visible in console logs e.g. logDNA
+            errorMessage: JSON.stringify(error),
+            errorStack: error.stack ? JSON.stringify(error.stack) : '',
+            failureIndex: failureIndexes[index]
+        }))
     };
 
     if (ignoredIndexes.length) {
@@ -166,7 +171,12 @@ const passDownBatchedErrorsAndFailureIndexes = batches => results => {
     return {
         successCount: results.length - errors.length,
         failureIndexes: batchesFailureIndexes.reduce((failureIndexes, batchFailureIndex) => [...batchFailureIndex, ...failureIndexes], []),
-        errors: errors.map((error, index) => ({ error: JSON.stringify(error), failureIndex: batchesFailureIndexes[index]}))
+        errors: errors.map((error, index) => ({
+            // expanding error to be visible in console logs e.g. logDNA
+            errorMessage: JSON.stringify(error),
+            errorStack: error.stack ? JSON.stringify(error.stack) : '',
+            failureIndex: batchesFailureIndexes[index]
+        }))
     };
   };
   
@@ -255,10 +265,10 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
                 storeBatchResult,
                 error
             }
-            return hasPartialFailure ? { ...retryInfo, ...mainResult } : retryInfo
+            return truncateErrorsIfNecessary(hasPartialFailure ? { ...retryInfo, ...mainResult } : retryInfo)
         }
 
-        return mainResult
+        return truncateErrorsIfNecessary(mainResult)
     })
   )
 );
