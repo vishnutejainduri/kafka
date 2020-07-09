@@ -121,7 +121,7 @@ const passDownAnyMessageErrors = (results) => {
         failureIndexes,
         errors: errors.map((error, index) => ({
             // expanding error to be visible in console logs e.g. logDNA
-            errorMessage: JSON.stringify(error),
+            errorMessage: error.message,
             errorStack: error.stack ? JSON.stringify(error.stack) : '',
             failureIndex: failureIndexes[index]
         }))
@@ -152,7 +152,7 @@ const passDownProcessedMessages = messages => results => {
 /**
  * @param {[][]} batches Each entry in 'batches' is an array of items that has an 'originalIndexes' property. Specifically, each entry will have that property if 'batches' is created by groupByAttribute
  */
-const passDownBatchedErrorsAndFailureIndexes = batches => results => {
+const passDownBatchedErrorsAndFailureIndexes = (batches, messages) => results => {
     const batchesFailureIndexes = []
     const errors = results.filter((result,index) => {
         if (result instanceof Error) {
@@ -163,19 +163,21 @@ const passDownBatchedErrorsAndFailureIndexes = batches => results => {
 
     if (errors.length === 0) {
       return {
+        messagesCount: messages.length,
         ok: true,
         successCount: results.length
       };
     }
 
     return {
+        messagesCount: messages.length,
         successCount: results.length - errors.length,
         failureIndexes: batchesFailureIndexes.reduce((failureIndexes, batchFailureIndex) => [...batchFailureIndex, ...failureIndexes], []),
         errors: errors.map((error, index) => ({
             // expanding error to be visible in console logs e.g. logDNA
-            errorMessage: JSON.stringify(error),
+            errorMessage: error.message,
             errorStack: error.stack ? JSON.stringify(error.stack) : '',
-            failureIndex: batchesFailureIndexes[index]
+            failureIndexes: batchesFailureIndexes[index]
         }))
     };
   };

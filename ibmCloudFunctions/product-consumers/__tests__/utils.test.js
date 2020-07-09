@@ -99,19 +99,33 @@ describe('passDownBatchedErrorsAndFailureIndexes', () => {
   const skuBatches = groupByStyleId(messages.map(parseSkuMessageCt))
 
   it('it returns a success count when there were no errors', () => {
-    const onlySuccessfulResults = [{}, {}, {}, {}];
+    const onlySuccessfulResults = skuBatches.map(() => {});
     const expected = {
+      messagesCount: messages.length,
       ok: true,
-      successCount: 4
+      successCount: skuBatches.length
     };
 
-    expect(passDownBatchedErrorsAndFailureIndexes(skuBatches)(onlySuccessfulResults)).toEqual(expected);
+    expect(passDownBatchedErrorsAndFailureIndexes(skuBatches, messages)(onlySuccessfulResults)).toEqual(expected);
   })
 
   it('it returns an array of error indexes indicating which messages failed when there are errors', () => {
-    const resultsIncludingFailures = [new Error(), {}];
-    const expected = [0, 2];
-
-    expect(passDownBatchedErrorsAndFailureIndexes(skuBatches)(resultsIncludingFailures).failureIndexes).toEqual(expected);
+    const resultsIncludingFailures = skuBatches.map(() => new Error('results including failure'));
+    const expected = {
+      messagesCount: messages.length,
+      successCount: 0,
+      failureIndexes: [1, 0, 2],
+      errors: [{
+        errorMessage: 'results including failure',
+        errorStack: expect.any(String),
+        failureIndexes: [0, 2]
+      }, {
+        errorMessage: 'results including failure',
+        errorStack: expect.any(String),
+        failureIndexes: [1]
+      }]
+    }
+    const result = passDownBatchedErrorsAndFailureIndexes(skuBatches, messages)(resultsIncludingFailures)
+    expect(result).toEqual(expected);
   })
 });
