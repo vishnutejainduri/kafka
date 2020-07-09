@@ -25,3 +25,10 @@ packages:
       identityTokenRestEndpoint: $IDENTITY_TOKEN_REST_ENDPOINT
       cloudFunctionsNamespaceGuid: $CLOUD_FUNCTIONS_NAMESPACE_GUID
       messagesLogsPersistenceDays: $MESSAGES_LOGS_PERSISTENCE_DAYS
+      ctpProjectKey: $CTP_PROJECT_KEY
+      ctpClientId: $CTP_CLIENT_ID
+      ctpClientSecret: $CTP_CLIENT_SECRET
+      ctpAuthUrl: $CTP_AUTH_URL
+      ctpApiUrl: $CTP_API_URL
+      ctpScopes: $CTP_SCOPES # see https://docs.commercetools.com/http-api-scopes
+      productTypeId: $PRODUCT_TYPE_ID # reference to the Product Type on CT
