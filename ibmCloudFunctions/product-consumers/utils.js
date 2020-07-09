@@ -166,7 +166,7 @@ const passDownBatchedErrorsAndFailureIndexes = batches => results => {
     return {
         successCount: results.length - errors.length,
         failureIndexes: batchesFailureIndexes.reduce((failureIndexes, batchFailureIndex) => [...batchFailureIndex, ...failureIndexes], []),
-        errors: errors.map((error, index) => ({ error, failureIndex: batchesFailureIndexes[index]}))
+        errors: errors.map((error, index) => ({ error: JSON.stringify(error), failureIndex: batchesFailureIndexes[index]}))
     };
   };
   
