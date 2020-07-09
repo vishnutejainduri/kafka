@@ -19,7 +19,8 @@ const styleAttributeNames = {
   PROMOTIONAL_STICKER: 'promotionalSticker',
   COLOUR: 'colour',
   COLOUR_GROUP: 'colourGroup',
-  SIZE_CHART: 'sizeChart'
+  SIZE_CHART: 'sizeChart',
+  ORIGINAL_PRICE: 'originalPrice'
 };
 
 /**

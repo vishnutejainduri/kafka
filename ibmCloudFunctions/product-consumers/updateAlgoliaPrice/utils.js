@@ -33,6 +33,40 @@ function groupPriceChangesById (parsedPriceChanges) {
   }, {})
 }
 
+function findCurrentPriceFromOverlappingPrices (overlappingPrices) {
+  let currentPrice;
+  for (let overlappingPrice of overlappingPrices) {
+    if (currentPrice) {
+      if (!currentPrice.endDate && !overlappingPrice.endDate) {
+        // both overlapping prices are permanent markdowns, pick the one with the most recent process date created
+        if ((!currentPrice.processDateCreated || !overlappingPrice.processDateCreated) ||
+          currentPrice.processDateCreated.getTime() === overlappingPrice.processDateCreated.getTime()) {
+          // if two permanent markdowns activate at the exact same time we can't decide which one to pick, results in unfixable overlap
+          console.error('Unfixable price overlap:', 'Two permanent markdowns overlap', currentPrice, overlappingPrice);
+          currentPrice = null;
+          break;
+        }
+        currentPrice = currentPrice.processDateCreated > overlappingPrice.processDateCreated ? currentPrice : overlappingPrice 
+      } else if (!currentPrice.endDate && overlappingPrice.endDate) {
+        // one of the overlapping prices is a permanent markdown the other is temporary, always pick temporary over permanent
+        currentPrice = overlappingPrice;
+      } else if (currentPrice.endDate && !overlappingPrice.endDate) {
+        // current price is temporary, new one to check is permanent, do nothing as we should always use temporary as current
+        continue;  
+      } else {
+        // unfixable overlap between two temporary prices
+        console.error('Unfixable price overlap:', 'Two temporary markdowns overlap', currentPrice, overlappingPrice);
+        currentPrice = null;
+        break;
+      }
+    } else {
+      currentPrice = overlappingPrice;
+    }
+  }
+
+  return currentPrice;
+}
+
 function findApplicablePriceChange (siteIdPriceChanges) {
   const addedPriceChanges = siteIdPriceChanges.filter(priceChange =>  [priceChangeActivityTypes.APPROVED, priceChangeActivityTypes.CREATED].includes(priceChange.activityType))
   const deletedPriceChanges = siteIdPriceChanges.filter(priceChange => priceChange.activityType === priceChangeActivityTypes.DELETED)
@@ -41,10 +75,14 @@ function findApplicablePriceChange (siteIdPriceChanges) {
   const activePriceChanges = availablePriceChanges.filter(({ startDate, endDate }) => startDate.getTime() <= currentTime && (!endDate || endDate.getTime() >= currentTime))
   const activePriceChangesGroupedById = groupPriceChangesById(activePriceChanges)
   const latestActivePriceChanges = getLatestPriceChanges(activePriceChangesGroupedById)
+  let latestActivePriceChange = latestActivePriceChanges[0];
   if (latestActivePriceChanges.length > 1) {
-    throw new Error(`Cannot process overlapping price changes for the same site ID for price changes: ${siteIdPriceChanges.map(({ priceChangeId }) => priceChangeId)}`)
+    latestActivePriceChange = findCurrentPriceFromOverlappingPrices(latestActivePriceChanges);
+    if (!latestActivePriceChange) {
+      throw new Error(`Cannot process overlapping price changes for the same site ID for price changes: ${siteIdPriceChanges.map(({ priceChangeId }) => priceChangeId)}`)
+    }
   }
-  return latestActivePriceChanges[0]
+  return latestActivePriceChange;
 }
 
 // standard price change: a price change that has an start date but no end date
@@ -122,7 +160,7 @@ function extractStyleId ({ topic, value }) {
   return styleId
 }
 
-async function findUnprocessedStyleIds (pricesCollection, processingDate) {
+async function findUnprocessedStyleIds (pricesCollection, processingDate, searchKey = '') {
   const documents = await pricesCollection.find({
     priceChanges: {
         $elemMatch: {
@@ -131,7 +169,7 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate) {
                     startDate: {
                         $lt: processingDate
                     },
-                    startDateProcessed: priceChangeProcessStatus.false
+                    [`startDateProcessed${searchKey}`]: priceChangeProcessStatus.false
                 }]
             }, {
                 $and: [{
@@ -139,7 +177,7 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate) {
                         $lt: processingDate
                     }
                 }, {
-                    endDateProcessed: priceChangeProcessStatus.false
+                    [`endDateProcessed${searchKey}`]: priceChangeProcessStatus.false
                 }]
             }]
         }
@@ -159,14 +197,15 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate) {
   return documents.map(({ styleId }) => styleId)
 }
 
-function updateChangesQuery ({ isEndDate, isFailure, processingDate, styleIds }) {
+function updateChangesQuery ({ isEndDate, isFailure, processingDate, styleIds }, processFlagKey) {
+  // processFlagKey can be either '' for algolia updates, or 'CT' for commercetools related pricing updates
   return [
     {
       styleId: { $in: styleIds },
       [`priceChanges.${isEndDate ? 'endDate' : 'startDate'}`]: { $lt: processingDate }
     },
     {
-      $set: { [`priceChanges.$[elem].${isEndDate ? 'endDateProcessed' : 'startDateProcessed'}`]: isFailure ? priceChangeProcessStatus.failure : priceChangeProcessStatus.true }
+      $set: { [`priceChanges.$[elem].${isEndDate ? `endDateProcessed${processFlagKey}` : `startDateProcessed${processFlagKey}`}`]: isFailure ? priceChangeProcessStatus.failure : priceChangeProcessStatus.true }
     },
     {
       multi: true,
@@ -175,19 +214,19 @@ function updateChangesQuery ({ isEndDate, isFailure, processingDate, styleIds })
   ]
 }
 
-async function markProcessedChanges (pricesCollection, processingDate, processedStyleIds) {
+async function markProcessedChanges (pricesCollection, processingDate, processedStyleIds, processFlagKey = '') {
   const isFailure = false
   return Promise.all([
-    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, styleIds: processedStyleIds })),
-    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, styleIds: processedStyleIds }))
+    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, styleIds: processedStyleIds }, processFlagKey)),
+    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, styleIds: processedStyleIds }, processFlagKey))
   ])
 }
 
-async function markFailedChanges (pricesCollection, processingDate, failedStyleIds) {
+async function markFailedChanges (pricesCollection, processingDate, failedStyleIds, processFlagKey = '') {
   const isFailure = true
   return Promise.all([
-    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, styleIds: failedStyleIds })),
-    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, styleIds: failedStyleIds }))
+    pricesCollection.update(...updateChangesQuery({ isEndDate: false, isFailure, processingDate, styleIds: failedStyleIds }, processFlagKey)),
+    pricesCollection.update(...updateChangesQuery({ isEndDate: true, isFailure, processingDate, styleIds: failedStyleIds }, processFlagKey))
   ])
 }
 

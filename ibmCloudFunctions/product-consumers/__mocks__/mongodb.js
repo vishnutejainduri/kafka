@@ -99,6 +99,13 @@ const getCollection = (collectionName) => {
             }; 
         case 'prices':
             return {
+                find: () => ({
+                    project: () => ({
+                      limit: () => ({
+                        toArray: async () => ([{ _id: 'success', styleId: 'success', priceChanges: [] }]) 
+                      })
+                    })
+                }),
                 update: async () => {}, 
                 updateOne: async ({ _id }) => ({ _id }),
                 findOne: async (query) => {

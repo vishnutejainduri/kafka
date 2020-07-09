@@ -75,7 +75,7 @@ const main = params => {
   );
  
   return Promise.all(skuBatchPromises)
-    .then(passDownBatchedErrorsAndFailureIndexes(skusGroupedByStyleId, params.messages))
+    .then(passDownBatchedErrorsAndFailureIndexes(skusGroupedByStyleId))
     .catch(handleErrors)
 };
 
