@@ -144,6 +144,13 @@
           timeout: 600000
         inputs:
           collectionName: $PRICES_COLLECTION_NAME
+          ctpProjectKey: $CTP_PROJECT_KEY
+          ctpClientId: $CTP_CLIENT_ID
+          ctpClientSecret: $CTP_CLIENT_SECRET
+          ctpAuthUrl: $CTP_AUTH_URL
+          ctpApiUrl: $CTP_API_URL
+          ctpScopes: $CTP_SCOPES
+          productTypeId: $PRODUCT_TYPE_ID
       bulk-calculate-available-to-sell:
         location: ./product-consumers/bulkCalculateAvailableToSell/dist/bundle.js
         runtime: nodejs:10
