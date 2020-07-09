@@ -230,6 +230,7 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
         if (!storeBatchFailed && hasPartialFailure) {
             try {
                 updateBatchWithFailureIndexesResult = await logger.updateBatchWithFailureIndexes(params, mainResult.failureIndexes);
+                console.warn('Partial failure: ', mainResult.failureIndexes)
             } catch (_) {
                 updateBatchWithFailureIndexesFailed = 1
             }
