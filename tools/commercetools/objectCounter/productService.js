@@ -1,4 +1,5 @@
 const countImage = (result) => result.masterData.current.variants.reduce((totalImages, currentVariant) => (totalImages += currentVariant.images.length), 0 )
+const countBarcodes = (result) => result.masterData.current.variants.reduce((totalBarcodes, currentVariant) => (totalBarcodes += currentVariant.barcodes ? currentVariant.attributes.barcodes.value.length : 0), 0 )
 const countVariants = (result) => result.masterData.current.variants.length
 
 const getAllVariantAttributeCount = async ({ client, requestBuilder }, counterFunction) => {
@@ -38,6 +39,10 @@ const getAllVariantAttributeCount = async ({ client, requestBuilder }, counterFu
 
 const getAllVariantsCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, countVariants)
 const getAllImagesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, countImage)
+const getAllBarcodesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, countBarcodes)
 
-module.exports.getAllVariantsCount = getAllVariantsCount;
-module.exports.getAllImagesCount = getAllImagesCount;
+module.exports = {
+  getAllVariantsCount,
+  getAllImagesCount,
+  getAllBarcodesCount
+}

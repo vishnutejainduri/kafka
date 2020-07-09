@@ -1,5 +1,5 @@
 const { getCtHelpers } = require('./client.js');
-const { getAllVariantsCount, getAllImagesCount } = require('./productService.js');
+const { getAllVariantsCount, getAllImagesCount, getAllBarcodesCount } = require('./productService.js');
 
 const userInput = process.argv.slice(2);
 const environment = userInput[0];
@@ -21,6 +21,11 @@ switch (dataType) {
   case 'images':
     getAllImagesCount(ctHelpers)
       .then(result => console.log('Total images FINAL: ', result))
+      .catch(e => console.log(e));
+    break;
+  case 'barcodes':
+    getAllBarcodesCount(ctHelpers)
+      .then(result => console.log('Total barcodes FINAL: ', result))
       .catch(e => console.log(e));
     break;
   default:
