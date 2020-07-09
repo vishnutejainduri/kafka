@@ -66,5 +66,5 @@
         action: remove-quantity-reserved
         trigger: every-minute
       update-future-sale-price-changes-rule:
-        action: update-algolia-price
+        action: update-algolia-price,update-ct-sale-price
         trigger: every-minute

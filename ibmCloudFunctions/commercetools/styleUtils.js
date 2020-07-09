@@ -479,5 +479,6 @@ module.exports = {
   createOrUpdateCategoriesFromStyle,
   getUniqueCategoryIdsFromCategories,
   createCategory,
-  categoryKeyFromNames
+  categoryKeyFromNames,
+  createOriginalPriceUpdate
 };

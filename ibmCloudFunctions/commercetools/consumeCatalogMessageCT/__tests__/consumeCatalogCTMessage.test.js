@@ -207,6 +207,12 @@ const styleActions = [
   },
   {
     action: 'setAttributeInAllVariants',
+    name: 'originalPrice',
+    staged: false,
+    value: 100
+  },
+  {
+    action: 'setAttributeInAllVariants',
     name: 'vsn',
     staged: false,
     value: 'vsn',

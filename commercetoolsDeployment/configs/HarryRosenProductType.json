@@ -443,6 +443,25 @@
             "isSearchable": false,
             "inputHint": "SingleLine",
             "displayGroup": "Other"
+        },
+        {
+            "name": "originalPrice",
+            "label": {
+                "en-CA": "Original Price",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "money"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
         }
     ]
 }
