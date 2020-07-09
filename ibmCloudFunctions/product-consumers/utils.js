@@ -119,7 +119,12 @@ const passDownAnyMessageErrors = (results) => {
     const result = {
         successCount: results.length - errors.length - ignoredIndexes.length,
         failureIndexes,
-        errors: errors.map((error, index) => ({ error, failureIndex: failureIndexes[index]}))
+        errors: errors.map((error, index) => ({
+            // expanding error to be visible in console logs e.g. logDNA
+            errorMessage: error.message,
+            errorStack: error.stack ? JSON.stringify(error.stack) : '',
+            failureIndex: failureIndexes[index]
+        }))
     };
 
     if (ignoredIndexes.length) {
@@ -147,7 +152,7 @@ const passDownProcessedMessages = messages => results => {
 /**
  * @param {[][]} batches Each entry in 'batches' is an array of items that has an 'originalIndexes' property. Specifically, each entry will have that property if 'batches' is created by groupByAttribute
  */
-const passDownBatchedErrorsAndFailureIndexes = batches => results => {
+const passDownBatchedErrorsAndFailureIndexes = (batches, messages) => results => {
     const batchesFailureIndexes = []
     const errors = results.filter((result,index) => {
         if (result instanceof Error) {
@@ -158,15 +163,22 @@ const passDownBatchedErrorsAndFailureIndexes = batches => results => {
 
     if (errors.length === 0) {
       return {
+        messagesCount: messages.length,
         ok: true,
         successCount: results.length
       };
     }
 
     return {
+        messagesCount: messages.length,
         successCount: results.length - errors.length,
         failureIndexes: batchesFailureIndexes.reduce((failureIndexes, batchFailureIndex) => [...batchFailureIndex, ...failureIndexes], []),
-        errors: errors.map((error, index) => ({ error: JSON.stringify(error), failureIndex: batchesFailureIndexes[index]}))
+        errors: errors.map((error, index) => ({
+            // expanding error to be visible in console logs e.g. logDNA
+            errorMessage: error.message,
+            errorStack: error.stack ? JSON.stringify(error.stack) : '',
+            failureIndexes: batchesFailureIndexes[index]
+        }))
     };
   };
   
@@ -255,10 +267,10 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
                 storeBatchResult,
                 error
             }
-            return hasPartialFailure ? { ...retryInfo, ...mainResult } : retryInfo
+            return truncateErrorsIfNecessary(hasPartialFailure ? { ...retryInfo, ...mainResult } : retryInfo)
         }
 
-        return mainResult
+        return truncateErrorsIfNecessary(mainResult)
     })
   )
 );

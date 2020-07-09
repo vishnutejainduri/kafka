@@ -48,7 +48,7 @@ const main = params => {
 
   
   return Promise.all(stylePromises)
-    .then(passDownBatchedErrorsAndFailureIndexes(batchedStylesToCreateOrUpdate))
+    .then(passDownBatchedErrorsAndFailureIndexes(batchedStylesToCreateOrUpdate, params.messages))
     .catch(handleErrors);
 };
 
