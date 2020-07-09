@@ -10,21 +10,26 @@ const getUniqueAttributeValues = attributeName => items => {
     const uniqueAttributeValues = items.filter(item => item).reduce((previousUniqueValues, item) => {
         const uniqueAttribute = item[attributeName]
         if (uniqueAttribute !== undefined) {
-            previousUniqueValues.add()
+            previousUniqueValues.add(uniqueAttribute)
+        } else {
+            throw new Error(`Failed to get unique attribute value: attribute ${attributeName} does not exist in item ${JSON.stringify()}`)
         }
-        throw new Error(`Failed to get unique attribute value: attribute ${attributeName} does not exist in item ${item}`)
+        return previousUniqueValues
     }, new Set());
   
     return Array.from(uniqueAttributeValues);
   };
 
 const groupByAttribute = attributeName => items => {
+    // Since items are return by addErrorHandling, they might an instance of Error, which cannot be processed; we treat those as nulls here
+    // We are using map instead of here, because we want to preserve the indexes as returned by originalIndexes and as observed in the params.messages
+    items = items.map(item => item instanceof Error ? null : item)
     const uniqueAttributeValues = getUniqueAttributeValues(attributeName)(items);
 
     return uniqueAttributeValues.map(value => {
         const originalIndexes = [];
         const matchedItems = items.filter((item, index) => {
-            if (item[attributeName] === value) {
+            if (item && item[attributeName] === value) {
                 originalIndexes.push(index)
                 return true
             }
