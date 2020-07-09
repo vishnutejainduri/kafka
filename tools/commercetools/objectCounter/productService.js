@@ -7,11 +7,14 @@ const countBarcodes = (result) => {
 }
 const countVariants = (result) => result.masterData.current.variants.length
 
-const getAllVariantAttributeCount = async ({ client, requestBuilder }, counterFunction) => {
+const getAllVariantAttributeCount = async ({ client, requestBuilder }, { variantCounter, imageCounter, barcodeCounter }) => {
   const method = 'GET';
 
-  let total = 0;
+  let variantTotal = 0;
+  let imageTotal = 0;
+  let barcodeTotal = 0;
   let productTotal = 0;
+
   let lastId = null;
   let resultCount = 500;
   
@@ -31,23 +34,38 @@ const getAllVariantAttributeCount = async ({ client, requestBuilder }, counterFu
       console.log('Total products: ', productTotal);
 
       const results = response.body.results;
-      results.forEach ((result) => total += counterFunction(result))
-      console.log('Total : ', total);
+      results.forEach ((result) => {
+        if (variantCounter) variantTotal += variantCounter(result)
+        if (imageCounter) imageTotal += imageCounter(result);
+        if (barcodeCounter) barcodeTotal += barcodeCounter(result);
+      });
+
+      if (variantCounter) console.log('Total Variants : ', variantTotal);
+      if (imageCounter) console.log('Total Images : ', imageTotal);
+      if (barcodeCounter) console.log('Total Barcodes : ', barcodeTotal);
+
       lastId = results[results.length-1].id;
     } catch (err) {
         if (err.code === 404) return null;
         throw err;
     }
   }
-  return total;
+  return {
+    productTotal,
+    variantTotal,
+    imageTotal,
+    barcodeTotal
+  };
 }
 
-const getAllVariantsCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, countVariants)
-const getAllImagesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, countImage)
-const getAllBarcodesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, countBarcodes)
+const getAllVariantsCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { variantCounter: countVariants })
+const getAllImagesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { imageCounter: countImage })
+const getAllBarcodesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { barcodeCounter: countBarcodes })
+const getAllCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { variantCounter: countVariants, imageCounter: countImage, barcodeCounter: countBarcodes })
 
 module.exports = {
   getAllVariantsCount,
   getAllImagesCount,
-  getAllBarcodesCount
+  getAllBarcodesCount,
+  getAllCount
 }
