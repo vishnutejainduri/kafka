@@ -7,9 +7,13 @@ function camelCase(str) {
 }
 
 const getUniqueAttributeValues = attributeName => items => {
-    const uniqueAttributeValues = items.filter(item => item).reduce((previousUniqueValues, item) => (
-      previousUniqueValues.add(item[attributeName])
-    ), new Set());
+    const uniqueAttributeValues = items.filter(item => item).reduce((previousUniqueValues, item) => {
+        const uniqueAttribute = item[attributeName]
+        if (uniqueAttribute !== undefined) {
+            previousUniqueValues.add()
+        }
+        throw new Error(`Failed to get unique attribute value: attribute ${attributeName} does not exist in item ${item}`)
+    }, new Set());
   
     return Array.from(uniqueAttributeValues);
   };
