@@ -153,7 +153,7 @@ function createOriginalPriceUpdate (originalPrice) {
         key: 'priceCustomFields'
       },
       fields: {
-        isOriginalPrice: true
+        priceType: 'originalPrice'
       }
     }
   }

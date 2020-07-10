@@ -52,8 +52,14 @@ const orderDetailAttributeNames = {
 const priceAttributeNames = {
   PROCESS_DATE_CREATED: 'processDateCreated',
   PRICE_CHANGE_ID: 'priceChangeId',
-  IS_ORIGINAL_PRICE: 'isOriginalPrice'
+  PRICE_TYPE: 'priceType' 
 };
+
+const priceTypes = {
+  ORIGINAL_PRICE: 'originalPrice',
+  PERMANENT_MARKDOWN: 'permanentMarkdown',
+  TEMPORARY_MARKDOWN: 'temporaryMarkdown'
+}
 
 const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
 const KEY_VALUE_DOCUMENT = 'key-value-document'; // reference-type of custom objects in CT
@@ -97,5 +103,6 @@ module.exports = {
   entityStatus,
   TAX_CATEGORY,
   PRODUCT_SHOULD_BE_PUBLISHED,
-  CT_ACTION_LIMIT
+  CT_ACTION_LIMIT,
+  priceTypes
 };
