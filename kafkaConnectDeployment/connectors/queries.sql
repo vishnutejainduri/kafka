@@ -200,7 +200,7 @@ FROM
 
 -- elcat-catalog-jdbc-source-recovery
 SELECT
-	count(*)
+	*
 FROM
 	(
 	SELECT
