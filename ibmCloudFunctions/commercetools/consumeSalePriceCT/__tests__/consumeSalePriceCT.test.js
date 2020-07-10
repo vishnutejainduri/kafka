@@ -228,7 +228,7 @@ describe('action generation', () => {
     processDateCreated: new Date('2020-01-01'),
     startDate: new Date('2020-01-01'),
     endDate: new Date('2020-02-02'),
-    isOriginalPrice: false
+    priceType: 'temporaryMarkdown'
   };
   
   describe('getActionsForVariantPrice', () => {
@@ -242,7 +242,7 @@ describe('action generation', () => {
           type: { key: 'priceCustomFields' },
           fields: {
             processDateCreated: baseParsedPriceMessage.processDateCreated,
-            priceType: undefined
+            priceType: 'temporaryMarkdown'
           }
         }
       },
