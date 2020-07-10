@@ -1,3 +1,5 @@
+-- Formatted using DBEAVER v7
+
 -- barcodes-jdbc-source
 SELECT
 	sx.LASTMODIFIEDDATE,
@@ -12,12 +14,13 @@ INNER JOIN (
 	SELECT
 		PKSKU, SKUCOLOR, FKSTYLENO
 	FROM
-		VSTORE.SKU ) s ON
+		VSTORE.SKU) s ON
 	sx.FKSKU = s.PKSKU
 INNER JOIN ELCAT.STYLE_COLOURS sc ON
 	SUBSTR(sc.STYLEID, 1, 8) = s.fkstyleno
 	AND sc.COLOUR_ID = s.skucolor
 	AND styleId IS NOT NULL
+	AND sx.FKORGANIZATIONNO = 1
 
 -- barcodes-jdbc-source-recovery
 SELECT
@@ -33,12 +36,13 @@ INNER JOIN (
 	SELECT
 		PKSKU, SKUCOLOR, FKSTYLENO
 	FROM
-		VSTORE.SKU ) s ON
+		VSTORE.SKU) s ON
 	sx.FKSKU = s.PKSKU
 INNER JOIN ELCAT.STYLE_COLOURS sc ON
 	SUBSTR(sc.STYLEID, 1, 8) = s.fkstyleno
 	AND sc.COLOUR_ID = s.skucolor
 	AND styleId IS NOT NULL
+	AND sx.FKORGANIZATIONNO = 1
 WHERE
 	sx.LASTMODIFIEDDATE >= sysdate - INTERVAL '300' MINUTE
 
