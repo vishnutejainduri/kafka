@@ -97,7 +97,7 @@ const ctStyleNewer = {
           id: 'originalPrice',
           custom: {
             fields: {
-              isOriginalPrice: true
+              priceType: 'originalPrice'
             }
           }
         }],
@@ -260,7 +260,7 @@ const styleActions = [
           key: 'priceCustomFields'
         },
         fields: {
-          isOriginalPrice: true
+          priceType: 'originalPrice'
         }
       }
     }
@@ -658,7 +658,7 @@ describe('getActionsFromStyle', () => {
               key: 'priceCustomFields'
             },
             fields: {
-              isOriginalPrice: true
+              priceType: 'originalPrice'
             }
           }
         },
