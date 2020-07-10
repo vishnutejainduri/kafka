@@ -1,3 +1,4 @@
+const countPrices = (result) => result.masterData.current.variants.reduce((totalPrices, currentVariant) => (totalPrices += currentVariant.prices.length), 0 )
 const countImage = (result) => result.masterData.current.variants.reduce((totalImages, currentVariant) => (totalImages += currentVariant.images.length), 0 )
 const countBarcodes = (result) => {
   return result.masterData.current.variants.reduce((totalBarcodes, currentVariant) => {
@@ -7,13 +8,14 @@ const countBarcodes = (result) => {
 }
 const countVariants = (result) => result.masterData.current.variants.length
 
-const getAllVariantAttributeCount = async ({ client, requestBuilder }, { variantCounter, imageCounter, barcodeCounter }) => {
+const getAllVariantAttributeCount = async ({ client, requestBuilder }, { variantCounter, imageCounter, barcodeCounter, pricesCounter }) => {
   const method = 'GET';
 
   let variantTotal = 0;
   let imageTotal = 0;
   let barcodeTotal = 0;
   let productTotal = 0;
+  let pricesTotal = 0;
 
   let lastId = null;
   let resultCount = 500;
@@ -31,18 +33,20 @@ const getAllVariantAttributeCount = async ({ client, requestBuilder }, { variant
 
       resultCount = response.body.count;
       productTotal += resultCount;
-      console.log('Total products: ', productTotal);
+      console.log('Total Products: ', productTotal);
 
       const results = response.body.results;
       results.forEach ((result) => {
         if (variantCounter) variantTotal += variantCounter(result)
         if (imageCounter) imageTotal += imageCounter(result);
         if (barcodeCounter) barcodeTotal += barcodeCounter(result);
+        if (pricesCounter) pricesTotal += pricesCounter(result);
       });
 
       if (variantCounter) console.log('Total Variants : ', variantTotal);
       if (imageCounter) console.log('Total Images : ', imageTotal);
       if (barcodeCounter) console.log('Total Barcodes : ', barcodeTotal);
+      if (pricesCounter) console.log('Total Prices : ', pricesTotal);
 
       lastId = results[results.length-1].id;
     } catch (err) {
@@ -54,18 +58,21 @@ const getAllVariantAttributeCount = async ({ client, requestBuilder }, { variant
     productTotal,
     variantTotal,
     imageTotal,
-    barcodeTotal
+    barcodeTotal,
+    pricesTotal
   };
 }
 
 const getAllVariantsCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { variantCounter: countVariants })
 const getAllImagesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { imageCounter: countImage })
 const getAllBarcodesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { barcodeCounter: countBarcodes })
-const getAllCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { variantCounter: countVariants, imageCounter: countImage, barcodeCounter: countBarcodes })
+const getAllPricesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { pricesCounter: countPrices })
+const getAllCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { variantCounter: countVariants, imageCounter: countImage, barcodeCounter: countBarcodes, pricesCounter: countPrices })
 
 module.exports = {
   getAllVariantsCount,
   getAllImagesCount,
   getAllBarcodesCount,
+  getAllPricesCount,
   getAllCount
 }
