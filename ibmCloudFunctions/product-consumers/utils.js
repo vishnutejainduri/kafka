@@ -154,24 +154,33 @@ const passDownProcessedMessages = messages => results => {
  */
 const passDownBatchedErrorsAndFailureIndexes = (batches, messages) => results => {
     const batchesFailureIndexes = []
+    let messagesSuccessCount = 0
     const errors = results.filter((result,index) => {
         if (result instanceof Error) {
             batchesFailureIndexes.push(batches[index].originalIndexes)
             return true
+        } else {
+            messagesSuccessCount += batches[index].originalIndexes.length
         }
     });
 
+    const batchSuccessCount = results.length - errors.length
+    const messagesCount = messages.length
+
     if (errors.length === 0) {
       return {
-        messagesCount: messages.length,
+        messagesCount,
         ok: true,
-        successCount: results.length
+        batchSuccessCount 
       };
     }
 
     return {
-        messagesCount: messages.length,
-        successCount: results.length - errors.length,
+        messagesCount,
+        messagesSuccessCount,
+        batches: batches.length,
+        batchSuccessCount,
+        batchesFailureIndexes,
         failureIndexes: batchesFailureIndexes.reduce((failureIndexes, batchFailureIndex) => [...batchFailureIndex, ...failureIndexes], []),
         errors: errors.map((error, index) => ({
             // expanding error to be visible in console logs e.g. logDNA
