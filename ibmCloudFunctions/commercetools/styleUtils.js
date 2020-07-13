@@ -8,7 +8,7 @@ const {
   entityStatus,
   priceTypes
 } = require('./constantsCt');
-const { getAllVariantPrices, getExistingCtOriginalPrice } = require('./consumeSalePriceCT/utils');
+const { getAllVariantPrices, getExistingCtOriginalPrice, getExistingCtPermanentMarkdown } = require('./consumeSalePriceCT/utils');
 
 /**
  * Generates a category key based on the names of the category and all it's ancestors.
@@ -267,6 +267,8 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
   let priceUpdateActions = style.originalPrice
     ? allVariantPrices.map((variantPrice) => {
       const existingCtOriginalPrice = getExistingCtOriginalPrice(variantPrice);
+      const existingCtPermanentMarkdown = getExistingCtPermanentMarkdown(variantPrice);
+      if (!existingCtOriginalPrice && existingCtPermanentMarkdown) return [];
       const priceUpdate = existingCtOriginalPrice
           ? {
             action: 'changePrice',
