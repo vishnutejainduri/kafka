@@ -1,5 +1,10 @@
 const { getCtHelpers } = require('./client.js');
-const { getAllVariantsCount, getAllImagesCount } = require('./productService.js');
+const { 
+  getAllVariantsCount,
+  getAllImagesCount,
+  getAllBarcodesCount,
+  getAllCount
+} = require('./productService.js');
 
 const userInput = process.argv.slice(2);
 const environment = userInput[0];
@@ -15,12 +20,22 @@ const ctHelpers = getCtHelpers (environment);
 switch (dataType) {
   case 'variants':
     getAllVariantsCount(ctHelpers)
-      .then(result => console.log('Total variants FINAL: ', result))
+      .then(result => console.log('Total variants FINAL: ', result.variantTotal))
       .catch(e => console.log(e));
     break;
   case 'images':
     getAllImagesCount(ctHelpers)
-      .then(result => console.log('Total images FINAL: ', result))
+      .then(result => console.log('Total images FINAL: ', result.imageTotal))
+      .catch(e => console.log(e));
+    break;
+  case 'barcodes':
+    getAllBarcodesCount(ctHelpers)
+      .then(result => console.log('Total barcodes FINAL: ', result.barcodeTotal))
+      .catch(e => console.log(e));
+    break;
+  case 'all':
+    getAllCount(ctHelpers)
+      .then(result => console.log('Total FINAL: ', result))
       .catch(e => console.log(e));
     break;
   default:

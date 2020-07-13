@@ -103,7 +103,7 @@ describe('passDownBatchedErrorsAndFailureIndexes', () => {
     const expected = {
       messagesCount: messages.length,
       ok: true,
-      successCount: skuBatches.length
+      batchSuccessCount: skuBatches.length
     };
 
     expect(passDownBatchedErrorsAndFailureIndexes(skuBatches, messages)(onlySuccessfulResults)).toEqual(expected);
@@ -112,8 +112,11 @@ describe('passDownBatchedErrorsAndFailureIndexes', () => {
   it('it returns an array of error indexes indicating which messages failed when there are errors', () => {
     const resultsIncludingFailures = skuBatches.map(() => new Error('results including failure'));
     const expected = {
-      messagesCount: messages.length,
-      successCount: 0,
+      messagesCount: 3,
+      messagesSuccessCount: 0,
+      batches: 2,
+      batchSuccessCount: 0,
+      batchesFailureIndexes: [[0, 2], [1]],
       failureIndexes: [1, 0, 2],
       errors: [{
         errorMessage: 'results including failure',

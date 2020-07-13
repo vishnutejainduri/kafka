@@ -13,7 +13,7 @@ const authMiddleware = ({ projectKey, clientId, clientSecret }) => createAuthMid
     clientId,
     clientSecret,
   },
-  scopes: [`manage_products:${projectKey}`],
+  scopes: [`manage_project:${projectKey}`],
   fetch,
 })
 

@@ -33,6 +33,8 @@ const main = async function (params) {
         .map(addErrorHandling(parseSalePriceMessage))
         .map(addErrorHandling(async (update) => {
             const { styleId, ...priceChangeUpdate } = update
+            // delete price type as that's only relevant for CT and just makes our mongo messier if we have it there with no gain
+            delete priceChangeUpdate.priceType
             // The same price change entry might exist if the same messages is requeued for whatever reason e.g. a resync to add a new field to price data,
             // in that case we first delete the currently existing entry; will be no op if it doesn't exist
             const findDuplicatePriceChangeQuery = Object.entries(priceChangeUpdate).reduce((query, [key, value]) => {

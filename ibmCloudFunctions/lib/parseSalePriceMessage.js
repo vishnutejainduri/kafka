@@ -1,6 +1,7 @@
 'use strict';
 const createError = require('./createError');
 const { siteIds } = require('../constants');
+const { priceTypes } = require('../commercetools/constantsCt');
 
 const TOPIC_NAME = 'sale-prices-connect-jdbc';
 const styleIdKey = 'STYLE_ID';
@@ -63,7 +64,7 @@ function parseSalePriceMessage(msg) {
     priceData.id = priceData.styleId;
     priceData.priceChangeId = priceData.priceChangeId.toString();
     priceData.processDateCreated = new Date(priceData.processDateCreated);
-    priceData.isOriginalPrice = false;
+    priceData.priceType = priceTypes.TEMPORARY_MARKDOWN;
 
     return priceData;
 }

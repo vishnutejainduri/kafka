@@ -1,7 +1,7 @@
 const { siteIds } = require('../../constants')
-const { isStaged } = require('../../commercetools/constantsCt');
-const { getExistingCtStyle, createAndPublishStyle, createOriginalPriceUpdate } = require('../../commercetools/styleUtils');
-const { getAllVariantPrices, getExistingCtOriginalPrice, convertToCents } = require('../../commercetools/consumeSalePriceCT/utils');
+const { isStaged, priceTypes } = require('../../commercetools/constantsCt');
+const { getExistingCtStyle, createAndPublishStyle, createPriceUpdate } = require('../../commercetools/styleUtils');
+const { getAllVariantPrices, getExistingCtOriginalPrice, getExistingCtPermanentMarkdown, convertToCents } = require('../../commercetools/consumeSalePriceCT/utils');
 
 const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicablePriceChanges) => {
     const applicablePriceChange = applicablePriceChanges[siteIds.ONLINE];
@@ -19,18 +19,18 @@ const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicable
 
     const allVariantPrices = getAllVariantPrices(existingCtStyle);
     let priceUpdateActions = allVariantPrices.map((variantPrice) => {
-        const existingCtOriginalPrice = getExistingCtOriginalPrice(variantPrice);
-        const priceUpdate = existingCtOriginalPrice
+        const existingCtPrice = getExistingCtOriginalPrice(variantPrice) || getExistingCtPermanentMarkdown(variantPrice)
+        const priceUpdate = existingCtPrice
             ? {
               action: 'changePrice',
-              priceId: existingCtOriginalPrice.id,
-              price: createOriginalPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice)),
+              priceId: existingCtPrice.id,
+              price: createPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice), priceTypes.PERMANENT_MARKDOWN),
               staged: isStaged
             }
             : {
               action: 'addPrice',
               variantId: variantPrice.variantId,
-              price: createOriginalPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice)),
+              price: createPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice), priceTypes.PERMANENT_MARKDOWN),
               staged: isStaged
             }
           return [priceUpdate];
