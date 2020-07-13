@@ -3,7 +3,7 @@
         location: ./commercetools/consumeCatalogMessageCT/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 512
+          memorySize: 2048
           timeout: 600000
         inputs:
           topicName: styles-connect-jdbc-CATALOG
@@ -11,7 +11,7 @@
         location: ./commercetools/consumeBarcodeMessageCT/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 512
+          memorySize: 2048
           timeout: 600000
         inputs:
           topicName: barcodes-connect-jdbc
@@ -19,7 +19,7 @@
         location: ./commercetools/consumeSalePriceCT/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 512
+          memorySize: 2048
           timeout: 600000
         inputs:
           topicName: sale-prices-connect-jdbc
@@ -27,7 +27,7 @@
         location: ./commercetools/consumeSkuMessageCT/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 512
+          memorySize: 2048
           timeout: 600000
         inputs:
           topicName: skus-connect-jdbc
@@ -35,7 +35,7 @@
         location: ./commercetools/consumeStylesBasicMessageCT/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 512
+          memorySize: 2048
           timeout: 600000
         inputs:
           topicName: styles-basic-connect-jdbc
@@ -43,7 +43,7 @@
         location: ./commercetools/consumeFacetsMessageCT/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 512
+          memorySize: 2048
           timeout: 600000
         inputs:
           topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
@@ -51,7 +51,7 @@
         location: ./commercetools/consumeSalesOrderMessageCT/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 512
+          memorySize: 2048
           timeout: 600000
         inputs:
           topicName: sales-orders-connect-jdbc
@@ -59,7 +59,7 @@
         location: ./commercetools/consumeSalesOrderDetailsMessageCT/dist/bundle.js
         runtime: nodejs:10
         limits:
-          memorySize: 512
+          memorySize: 2048
           timeout: 600000
         inputs:
           topicName: sales-order-details-connect-jdbc
