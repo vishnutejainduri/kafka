@@ -5,7 +5,8 @@ const {
   isStaged,
   TAX_CATEGORY,
   PRODUCT_SHOULD_BE_PUBLISHED,
-  entityStatus
+  entityStatus,
+  priceTypes
 } = require('./constantsCt');
 const { getAllVariantPrices, getExistingCtOriginalPrice } = require('./consumeSalePriceCT/utils');
 
@@ -141,7 +142,7 @@ const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
   return categories.slice(1, categories.length).filter(Boolean);
 };
 
-function createOriginalPriceUpdate (originalPrice) {
+function createPriceUpdate (originalPrice, priceTypeValue = priceTypes.ORIGINAL_PRICE) {
   return {
     country: 'CA',
     value: {
@@ -153,7 +154,7 @@ function createOriginalPriceUpdate (originalPrice) {
         key: 'priceCustomFields'
       },
       fields: {
-        isOriginalPrice: true
+        priceType: priceTypeValue
       }
     }
   }
@@ -270,13 +271,13 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
           ? {
             action: 'changePrice',
             priceId: existingCtOriginalPrice.id,
-            price: createOriginalPriceUpdate(style.originalPrice),
+            price: createPriceUpdate(style.originalPrice, priceTypes.ORIGINAL_PRICE),
             staged: isStaged
           }
           : {
             action: 'addPrice',
             variantId: variantPrice.variantId,
-            price: createOriginalPriceUpdate(style.originalPrice),
+            price: createPriceUpdate(style.originalPrice, priceTypes.ORIGINAL_PRICE),
             staged: isStaged
           }
         return [priceUpdate];
@@ -370,7 +371,7 @@ const createStyle = async (style, productType, categories, { client, requestBuil
   };
 
   if (style.originalPrice) {
-    body.masterVariant.prices = [createOriginalPriceUpdate(style.originalPrice)];
+    body.masterVariant.prices = [createPriceUpdate(style.originalPrice, priceTypes.ORIGINAL_PRICE)];
   }
   if (categories) {
     body.categories = categories.map(category => ({
@@ -480,5 +481,5 @@ module.exports = {
   getUniqueCategoryIdsFromCategories,
   createCategory,
   categoryKeyFromNames,
-  createOriginalPriceUpdate
+  createPriceUpdate
 };

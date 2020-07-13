@@ -139,7 +139,7 @@ describe('getAllVariantPrices', () => {
         "country": "CA",
         "custom": {
           "fields": {
-            "isOriginalPrice": true
+            "priceType": "originalPrice"
           },
           "type": {
             "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
@@ -160,7 +160,7 @@ describe('getAllVariantPrices', () => {
         "country": "CA",
         "custom": {
           "fields": {
-            "isOriginalPrice": true
+            "priceType": "originalPrice"
           },
           "type": {
             "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
@@ -183,13 +183,13 @@ describe('getAllVariantPrices', () => {
 });
 
 describe('getExistingCtOriginalPrice', () => {
-  it('gets existing ct price with isOriginalPrice flag as true', async () => {
+  it('gets existing ct price with priceType equal to originalPrice', async () => {
     const response = await getExistingCtOriginalPrice(mockProduct.masterData.current.masterVariant);
     const expectedResponse = {
       "country": "CA",
       "custom": {
         "fields": {
-          "isOriginalPrice": true
+          "priceType": "originalPrice"
         },
         "type": {
           "id": "af9c14ac-6b56-48d4-b152-2b751d2c9c24",
@@ -228,7 +228,7 @@ describe('action generation', () => {
     processDateCreated: new Date('2020-01-01'),
     startDate: new Date('2020-01-01'),
     endDate: new Date('2020-02-02'),
-    isOriginalPrice: false
+    priceType: 'temporaryMarkdown'
   };
   
   describe('getActionsForVariantPrice', () => {
@@ -242,7 +242,7 @@ describe('action generation', () => {
           type: { key: 'priceCustomFields' },
           fields: {
             processDateCreated: baseParsedPriceMessage.processDateCreated,
-            isOriginalPrice: false
+            priceType: 'temporaryMarkdown'
           }
         }
       },

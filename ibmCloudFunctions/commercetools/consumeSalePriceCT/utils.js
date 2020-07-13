@@ -1,5 +1,5 @@
 const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
-const { priceAttributeNames, isStaged, currencyCodes, entityStatus } = require('../constantsCt');
+const { priceAttributeNames, isStaged, currencyCodes, entityStatus, priceTypes } = require('../constantsCt');
 const { priceChangeActivityTypes } = require('../../constants');
 const convertToCents = (amount) => Math.round(amount * 100)
 
@@ -39,8 +39,13 @@ const existingCtPriceIsNewer = (existingCtPrice, parsedPriceMessage) => {
 };
 
 const getExistingCtOriginalPrice = (variantPrice) => {
-  const existingCtOriginalPrice = variantPrice.prices.find((price) => price.custom && price.custom.fields[priceAttributeNames.IS_ORIGINAL_PRICE]);
+  const existingCtOriginalPrice = variantPrice.prices.find((price) => price.custom && price.custom.fields[priceAttributeNames.PRICE_TYPE] === priceTypes.ORIGINAL_PRICE);
   return existingCtOriginalPrice;
+};
+
+const getExistingCtPermanentMarkdown = (variantPrice) => {
+  const existingCtPermanentMarkdown = variantPrice.prices.find((price) => price.custom && price.custom.fields[priceAttributeNames.PRICE_TYPE] === priceTypes.PERMANENT_MARKDOWN);
+  return existingCtPermanentMarkdown;
 };
 
 const getExistingCtPrice = (variantPrice, parsedPriceMessage) => {
@@ -138,6 +143,7 @@ module.exports = {
   getAllVariantPrices,
   convertToCents,
   getExistingCtOriginalPrice,
+  getExistingCtPermanentMarkdown,
   // internal functions exported for tests follows:
   getActionsForVariantPrice,
   getActionsForSalePrice

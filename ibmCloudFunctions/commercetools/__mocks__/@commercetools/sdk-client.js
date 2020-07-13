@@ -13,7 +13,7 @@ const mockPrice = {
           id: 'af9c14ac-6b56-48d4-b152-2b751d2c9c24'
       },
       fields: {
-          isOriginalPrice: true
+          priceType: 'originalPrice'
       }
   }
 };
