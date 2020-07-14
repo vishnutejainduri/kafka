@@ -173,22 +173,6 @@ const getProductType = async (productTypeId, { client, requestBuilder }) => {
   }
 };
 
-const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
-  const method = 'GET';
-
-  // HR style IDs correspond to CT product keys, not CT product IDs, so we get
-  // the product by key, not by ID
-  const uri = requestBuilder.products.byKey(styleId).build();
-
-  try {
-    const response = await client.execute({ method, uri });
-    return response.body;
-  } catch (err) {
-      if (err.code === 404) return null; // indicates that style doesn't exist in CT
-      throw err;
-  }
-};
-
 const formatAttributeValue = (style, actionObj, attribute, attributeType) => {
   if (attributeType === 'money') {
     actionObj.value = {
@@ -383,6 +367,11 @@ const createStyle = async (style, productType, categories, { client, requestBuil
   return client.execute({ method, uri, body: requestBody });
 };
 
+/**
+ * Publishes a style
+ * @param {any} style 
+ * @param {{ requestBuilder: any, client: any}} ctHelpers 
+ */
 const publishStyle = async (style, { requestBuilder, client}) => {
   const method = 'POST';
   const uri = requestBuilder.products.byKey(style.key).build();
@@ -436,6 +425,31 @@ const existingCtStyleIsNewer = (existingCtStyle, givenStyle, dateAttribute) => {
   return existingCtStyleDate.getTime() > givenStyle[dateAttribute].getTime()
 };
 
+/**
+ * Checks if a style exists or not. If the style exists but is not published, will publish it.
+ * @param {string} styleId 
+ * @param {{ client: any, requestBuilder: any }} ctHelpers
+ */
+const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
+  const method = 'GET';
+
+  // HR style IDs correspond to CT product keys, not CT product IDs, so we get
+  // the product by key, not by ID
+  const uri = requestBuilder.products.byKey(styleId).build();
+
+  try {
+    const response = await client.execute({ method, uri });
+    let existingCtStyle = response.body
+    if (!existingCtStyle.masterData.published && PRODUCT_SHOULD_BE_PUBLISHED) {
+      existingCtStyle = await publishStyle(existingCtStyle, { client, requestBuilder })
+    }
+    return existingCtStyle;
+  } catch (err) {
+      if (err.code === 404) return null; // indicates that style doesn't exist in CT
+      throw err;
+  }
+};
+
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     const productType = await getProductType(productTypeId, ctHelpers);
     let existingCtStyle = await getExistingCtStyle(style.id, ctHelpers);
@@ -446,13 +460,6 @@ const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
       return createAndPublishStyle(style, productType, categories, ctHelpers);
     }
 
-    if (!existingCtStyle.masterData.published && PRODUCT_SHOULD_BE_PUBLISHED) {
-      // when we create any style we publish it immediately, but it's possible
-      // for CT to respond to the publish request with a 503 error, so we
-      // publish it here in the (rare) event that the original publish attempt
-      // failed
-      existingCtStyle = await publishStyle(existingCtStyle, ctHelpers)
-    }
     if (existingCtStyleIsNewer(existingCtStyle, style, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)) {
       // the given style is out of date, so we don't add it to CT
       return null;
