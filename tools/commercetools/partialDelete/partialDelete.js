@@ -1,7 +1,7 @@
 const { getCtHelpers } = require('./client.js');
 const { 
   deleteAllPrices
-} = require('./productService.js');
+} = require('./deletionService.js');
 
 const userInput = process.argv.slice(2);
 const environment = userInput[0];

@@ -1,5 +1,8 @@
+const fs = require('fs');
 const { createSyncProducts } = require('@commercetools/sync-actions');
 const syncProducts = createSyncProducts()
+
+const wstreamError = fs.createWriteStream('errors.csv');
 
 const deletePrices = (product) => {
   product.masterData.current.masterVariant.prices = [];
@@ -10,7 +13,9 @@ const deletePrices = (product) => {
   return product;
 }
 
-const deleteProductData = async ({ client, requestBuilder }, { priceDeleter }) => {
+const whereHasPrice = `masterData(current(masterVariant(prices is not empty))) or masterData(current(variants(prices is not empty)))`
+
+const deleteProductData = async ({ client, requestBuilder }, { priceDeleter }, { whereQuery }) => {
   const method = 'GET';
 
   let productTotal = 0;
@@ -23,9 +28,9 @@ const deleteProductData = async ({ client, requestBuilder }, { priceDeleter }) =
   while (resultCount === 500) {
     let uri;
     if (!lastId) {
-      uri = requestBuilder.products.withTotal(false).perPage(500).sort('id').build();
+      uri = requestBuilder.products.withTotal(false).perPage(500).sort('id').where(whereQuery).build();
     } else {
-      uri = requestBuilder.products.withTotal(false).perPage(500).sort('id').where(`id > "${lastId}"`).build();
+      uri = requestBuilder.products.withTotal(false).perPage(500).sort('id').where(`id > "${lastId}" and ` + whereQuery).build();
       //break;
     }
 
@@ -65,11 +70,13 @@ const deleteProductData = async ({ client, requestBuilder }, { priceDeleter }) =
               .then(publishResult => totalSuccess += 1)
               .catch(error => {
                 console.error(error.message);
+                wstreamError.write(result.body.key + ',' + error.message + '\n');
                 totalFailures += 1;
               })
           })
           .catch(error => {
             console.error(error.message);
+            wstreamError.write(productBefore.key + ',' + error.message + '\n');
             totalFailures += 1;
           })
       }));
@@ -87,7 +94,7 @@ const deleteProductData = async ({ client, requestBuilder }, { priceDeleter }) =
   };
 }
 
-const deleteAllPrices = (ctHelpers) => deleteProductData(ctHelpers, { priceDeleter: deletePrices })
+const deleteAllPrices = (ctHelpers) => deleteProductData(ctHelpers, { priceDeleter: deletePrices }, { whereQuery: whereHasPrice })
 
 module.exports = {
   deleteAllPrices
