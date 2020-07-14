@@ -3,6 +3,7 @@ const {
   getAllVariantsCount,
   getAllImagesCount,
   getAllBarcodesCount,
+  getAllPricesCount,
   getAllCount
 } = require('./productService.js');
 
@@ -31,6 +32,11 @@ switch (dataType) {
   case 'barcodes':
     getAllBarcodesCount(ctHelpers)
       .then(result => console.log('Total barcodes FINAL: ', result.barcodeTotal))
+      .catch(e => console.log(e));
+    break;
+  case 'prices':
+    getAllPricesCount(ctHelpers)
+      .then(result => console.log('Total prices FINAL: ', result.pricesTotal))
       .catch(e => console.log(e));
     break;
   case 'all':
