@@ -59,7 +59,6 @@ const deleteProductData = async (ctHelpers, { priceDeleter }, whereQuery) => {
       uri = requestBuilder.products.withTotal(false).perPage(500).sort('id').where(whereQuery).build();
     } else {
       uri = requestBuilder.products.withTotal(false).perPage(500).sort('id').where(`id > "${lastId}" and ` + whereQuery).build();
-      //break;
     }
 
     try {
