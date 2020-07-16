@@ -141,8 +141,8 @@ global.main = async function (params) {
         .then(() => algoliaFacetBulkImportQueue.deleteMany({ styleId: { $in:  [...updatedStyleIds, ...ignoredStyleIds] } }))
         .then(() => updateAlgoliaFacetsCount.insert({ batchSize: algoliaUpdatesWithoutOutlet.length }))
         .then(() => {
-          log('updated styles', updatedStyleIds)
-          log('ignored styles', ignoredStyleIds)
+          log(`updated styles: ${updatedStyleIds}`)
+          log(`ignored styles: ${ignoredStyleIds}`)
         });
 
     if (failures.length) {
