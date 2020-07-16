@@ -2,7 +2,6 @@ const https = require('https');
 
 module.exports = function(kubeEnv) {
     const { tenant, username, password } = kubeEnv;
-
     const options = {
         hostname: 'us-south.appid.cloud.ibm.com',
         port: 443,
