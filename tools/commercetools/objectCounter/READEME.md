@@ -1,10 +1,12 @@
+# Object Counter
+## Setup
 To use the object counter script start by installing node modules (the usual way):
 
 ```
 npm install
 ```
 
-Setup your `.env` file, make sure it contains the following (for each environment you want, example is for development):
+Setup your `.env` file and make sure it contains the following (there should be a set for each environment you want, example is for development where keys should end with DEVELOPMENT):
 
 ```
 PROJECT_KEY_DEVELOPMENT='harryrosen-development'
@@ -12,23 +14,18 @@ CLIENT_ID_DEVELOPMENT='clientIdDevelopment'
 CLIENT_SECRET_DEVELOPMENT='clientSecretDevelopment'
 ```
 
-Run the script. Start with `node objectCounter.js` then pass in two arguments, first environment name like `development` then data type to delete like `variants`.
-The `all` data type will count everything in one command.
-Currently supported commands:
-- `node partialDelete.js development variants`
-- `node partialDelete.js development images`
-- `node partialDelete.js development barcodes`
-- `node partialDelete.js development prices`
-- `node partialDelete.js development all`
+## Execution
+Start with `node ./index.js` and pass in two arguments, the first is the environment name e.g. `development` and the second argument is the entity type e.g. `variants`. Passing `all` as the data type will count everything in one command.
 
 The script will take a while to run (on roughly 150k products, about 10mins), but will log out the current product count it's at as it goes (to help you know how far along it is, compare with total products in Merchant Center).
 When finished it will log out the following (varies based on data type): 
-- `productTotal`: total number of products counted
+- `productTotal`: total number of products found
 - `variantTotal`: total number of variants found
 - `imageTotal`: total number of images found
 - `barcodeTotal`: total number of barcodes found
 - `priceTotal`: total number of price rows found
 
+### Validation
 Each of these numbers should be compared with a total count in Jesta (DEV or PROD depending on corresponding commercetools environment). Below are some sample queries to run for each type, and a currently running kafka connector that sends this data.
 
 #### Variants
