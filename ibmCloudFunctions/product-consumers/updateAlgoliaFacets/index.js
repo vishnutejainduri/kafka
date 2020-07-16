@@ -17,7 +17,9 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
   let algoliaUpdatesWithoutOutlet = await Promise.all(facetUpdatesByStyle.map(addErrorHandling((styleFacetUpdateData) => styles.findOne({ _id: styleFacetUpdateData._id })
     .then((currentMongoStyleData) => {
       if ((currentMongoStyleData && currentMongoStyleData.isOutlet) || !currentMongoStyleData || !styleFacetUpdateData._id) {
-        ignoredStyleIds.push(styleFacetUpdateData._id)
+        if (styleFacetUpdateData._id) {
+          ignoredStyleIds.push(styleFacetUpdateData._id)
+        }
         return null;
       }
 
@@ -138,7 +140,10 @@ global.main = async function (params) {
         .then(() => styleUpdates.length > 0 ? styles.bulkWrite(styleUpdates, { ordered : false }) : null) 
         .then(() => algoliaFacetBulkImportQueue.deleteMany({ styleId: { $in:  [...updatedStyleIds, ...ignoredStyleIds] } }))
         .then(() => updateAlgoliaFacetsCount.insert({ batchSize: algoliaUpdatesWithoutOutlet.length }))
-        .then(() => log('updated styles', updatedStyleIds));
+        .then(() => {
+          log('updated styles', updatedStyleIds)
+          log('ignored styles', ignoredStyleIds)
+        });
 
     if (failures.length) {
       throw createError.updateAlgoliaFacets.failedTransforms(failures);
