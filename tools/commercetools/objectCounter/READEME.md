@@ -15,7 +15,7 @@ CLIENT_SECRET_DEVELOPMENT='clientSecretDevelopment'
 ```
 
 ## Execution
-Start with `node ./objectCounter.js` and pass in two arguments, the first is the environment name e.g. `development` and the second argument is the entity type e.g. `variants`. Passing `all` as the data type will count everything in one command.
+Start with `node ./objectCounter.js` and pass in two arguments, the first is the environment name e.g. `development` and the second argument is the entity type e.g. `variants`, `images`, `barcodes`, `prices` or `all`. Passing `all` as the data type will count everything in one command.
 
 The script will take a while to run (on roughly 150k products, about 10mins), but will log out the current product count it's at as it goes (to help you know how far along it is, compare with total products in Merchant Center).
 When finished it will log out the following (varies based on data type): 
