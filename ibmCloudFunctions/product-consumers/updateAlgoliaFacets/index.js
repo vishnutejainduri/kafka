@@ -13,9 +13,11 @@ let index = null;
  * @return {Promise<Array>>} - array where the first element is failures and second is succesful transforms
  */
 const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, styles) => {
+  let ignoredStyleIds = []
   let algoliaUpdatesWithoutOutlet = await Promise.all(facetUpdatesByStyle.map(addErrorHandling((styleFacetUpdateData) => styles.findOne({ _id: styleFacetUpdateData._id })
     .then((currentMongoStyleData) => {
       if ((currentMongoStyleData && currentMongoStyleData.isOutlet) || !currentMongoStyleData || !styleFacetUpdateData._id) {
+        ignoredStyleIds.push(styleFacetUpdateData._id)
         return null;
       }
 
@@ -57,7 +59,7 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
     .filter((result) => !(result instanceof Error))
     .filter((result) => result);
 
-  return [failedTransforms, successfulTransforms];
+  return [failedTransforms, successfulTransforms, ignoredStyleIds];
 };
 
 /**
@@ -125,18 +127,18 @@ global.main = async function (params) {
         return;
     }
 
-    const [failures, algoliaUpdatesWithoutOutlet] = await transformUpdateQueueRequestToAlgoliaUpdates(facetUpdatesByStyle, styles);
+    const [failures, algoliaUpdatesWithoutOutlet, ignoredStyleIds] = await transformUpdateQueueRequestToAlgoliaUpdates(facetUpdatesByStyle, styles);
 
     const styleUpdates = generateStyleUpdatesFromAlgoliaUpdates(algoliaUpdatesWithoutOutlet);
 
-    const styleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
+    const updatedStyleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
 
     await index.partialUpdateObjects(algoliaUpdatesWithoutOutlet, true)
         // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't delete from the queue and it gets stuck
         .then(() => styleUpdates.length > 0 ? styles.bulkWrite(styleUpdates, { ordered : false }) : null) 
-        .then(() => algoliaFacetBulkImportQueue.deleteMany({ styleId: { $in: styleIds } }))
+        .then(() => algoliaFacetBulkImportQueue.deleteMany({ styleId: { $in:  [...updatedStyleIds, ...ignoredStyleIds] } }))
         .then(() => updateAlgoliaFacetsCount.insert({ batchSize: algoliaUpdatesWithoutOutlet.length }))
-        .then(() => log('updated styles', styleIds));
+        .then(() => log('updated styles', updatedStyleIds));
 
     if (failures.length) {
       throw createError.updateAlgoliaFacets.failedTransforms(failures);
