@@ -4,7 +4,6 @@ const { getExistingCtStyle, createAndPublishStyle, createPriceUpdate, getCtStyle
 const { getAllVariantPrices, getExistingCtOriginalPrice, getExistingCtPermanentMarkdown, convertToCents } = require('../../commercetools/consumeSalePriceCT/utils');
 
 const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicablePriceChanges, styleId) => {
-    console.log('updateStylePermanentMarkdown', applicablePriceChanges);
     // only handle online site id prices
     if (!Object.keys(applicablePriceChanges).includes(siteIds.ONLINE)) return null;
 
@@ -56,7 +55,6 @@ const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicable
         return [priceUpdate];
       })
     priceUpdateActions = priceUpdateActions.reduce((finalActions, currentActions) => [...finalActions, ...currentActions], []);
-    console.log('priceUpdateActions', JSON.stringify(priceUpdateActions));
 
     const { client, requestBuilder } = ctHelpers;
     return client.execute({

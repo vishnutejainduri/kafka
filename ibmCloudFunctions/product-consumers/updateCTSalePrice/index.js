@@ -33,7 +33,6 @@ global.main = async function (params) {
     
     const processingDate = new Date()
     const styleIds = await findUnprocessedStyleIds(pricesCollection, processingDate, 'CT')
-    console.log('findUnprocessedStyleIds', styleIds);
 
     let CTUpdateResult = await Promise.all(styleIds
         .map(addErrorHandling(async (styleId) => {

@@ -48,15 +48,6 @@ const getMostUpToDateObject = dateName => objects => {
     return objectsSortedByDate[0];
 };
 
-const getLeastUpToDateObject = dateName => objects => {
-    if (objects.length === 0) return null;
-    const objectsSortedByDate = objects.sort((object1, object2) => (
-        object2[dateName] - object1[dateName]
-      ));
-
-    return objectsSortedByDate[objectsSortedByDate.length-1];
-};
-
 module.exports = {
     camelCase,
     groupByAttribute,
