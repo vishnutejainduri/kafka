@@ -2,7 +2,7 @@ const { priceChangeActivityTypes, siteIds } = require('../../constants')
 const { priceChangeProcessStatus } = require('../constants')
 const parseSalePriceMessage = require('../../lib/parseSalePriceMessage')
 const parseStyleMessage = require('../../lib/parseStyleMessage')
-const { getMostUpToDateObject } = require('../../lib/utils')
+const { getMostUpToDateObject, getLeastUpToDateObject } = require('../../lib/utils')
 
 function groupPriceChangesBySiteId (parsedPriceChanges) {
   return parsedPriceChanges.reduce((groupedPriceChanges, priceChange) => {
@@ -42,20 +42,26 @@ function findCurrentPriceFromOverlappingPrices (overlappingPrices) {
         if ((!currentPrice.processDateCreated || !overlappingPrice.processDateCreated) ||
           currentPrice.processDateCreated.getTime() === overlappingPrice.processDateCreated.getTime()) {
           // if two permanent markdowns activate at the exact same time we can't decide which one to pick, results in unfixable overlap
-          console.error('Unfixable price overlap:', 'Two permanent markdowns overlap', currentPrice, overlappingPrice);
+          console.log('1');
+          console.error('Unfixable price overlap:', 'Two permanent markdowns overlap', currentPrice.priceChangeId, overlappingPrice.priceChangeId);
           currentPrice = null;
           break;
         }
+        console.log('2');
         currentPrice = currentPrice.processDateCreated > overlappingPrice.processDateCreated ? currentPrice : overlappingPrice 
       } else if (!currentPrice.endDate && overlappingPrice.endDate) {
         // one of the overlapping prices is a permanent markdown the other is temporary, always pick temporary over permanent
+        console.log('3');
         currentPrice = overlappingPrice;
       } else if (currentPrice.endDate && !overlappingPrice.endDate) {
         // current price is temporary, new one to check is permanent, do nothing as we should always use temporary as current
+        console.log('4');
         continue;  
       } else {
         // unfixable overlap between two temporary prices
-        console.error('Unfixable price overlap:', 'Two temporary markdowns overlap', currentPrice, overlappingPrice);
+        console.log('5');
+        console.error('Unfixable price overlap:', 'Two temporary markdowns overlap', currentPrice.priceChangeId, overlappingPrice.priceChangeId);
+        //currentPrice = getOldestOverlappingTemporaryMarkdown(overlappingPrices); //this is for when there's an overlap, but the currently active temporary markdown has a price update
         currentPrice = null;
         break;
       }
@@ -67,17 +73,26 @@ function findCurrentPriceFromOverlappingPrices (overlappingPrices) {
   return currentPrice;
 }
 
+function getOldestOverlappingTemporaryMarkdown (overlappingPrices) {
+  overlappingPrices = overlappingPrices.filter(overlappingPrice => overlappingPrice.endDate);
+  return getLeastUpToDateObject('processDateCreated')(overlappingPrices);
+}
+
 function findApplicablePriceChange (siteIdPriceChanges) {
   const addedPriceChanges = siteIdPriceChanges.filter(priceChange =>  [priceChangeActivityTypes.APPROVED, priceChangeActivityTypes.CREATED].includes(priceChange.activityType))
   const deletedPriceChanges = siteIdPriceChanges.filter(priceChange => priceChange.activityType === priceChangeActivityTypes.DELETED)
   const availablePriceChanges = addedPriceChanges.filter(({ priceChangeId, processDateCreated }) => !deletedPriceChanges.find(deletedPriceChange => (deletedPriceChange.priceChangeId === priceChangeId && deletedPriceChange.processDateCreated >= processDateCreated)))
   const currentTime = new Date().getTime()
+  console.log('availablePriceChanges', availablePriceChanges);
   const activePriceChanges = availablePriceChanges.filter(({ startDate, endDate }) => startDate.getTime() <= currentTime && (!endDate || endDate.getTime() >= currentTime))
+  console.log('activePriceChanges', activePriceChanges);
   const activePriceChangesGroupedById = groupPriceChangesById(activePriceChanges)
   const latestActivePriceChanges = getLatestPriceChanges(activePriceChangesGroupedById)
   let latestActivePriceChange = latestActivePriceChanges[0];
+  console.log('latestActivePriceChanges', latestActivePriceChanges);
   if (latestActivePriceChanges.length > 1) {
     latestActivePriceChange = findCurrentPriceFromOverlappingPrices(latestActivePriceChanges);
+    console.log('latestActivePriceChange', latestActivePriceChange);
     if (!latestActivePriceChange) {
       throw new Error(`Cannot process overlapping price changes for the same site ID for price changes: ${siteIdPriceChanges.map(({ priceChangeId }) => priceChangeId)}`)
     }
