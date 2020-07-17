@@ -51,6 +51,5 @@ const getMostUpToDateObject = dateName => objects => {
 module.exports = {
     camelCase,
     groupByAttribute,
-    getMostUpToDateObject,
-    getLeastUpToDateObject
+    getMostUpToDateObject
 };
