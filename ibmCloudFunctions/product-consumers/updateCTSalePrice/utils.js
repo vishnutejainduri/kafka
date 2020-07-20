@@ -8,9 +8,8 @@ const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicable
     if (!Object.keys(applicablePriceChanges).includes(siteIds.ONLINE)) return null;
 
     const applicablePriceChange = applicablePriceChanges[siteIds.ONLINE];
-    //if (!applicablePriceChange) return null;
 
-    // only handle null end date (permanent markdowns)
+    // only handle null end date (permanent markdowns), return null if valid end date (temporary markdown)
     if (applicablePriceChange && applicablePriceChange.endDate) return null;
 
     let existingCtStyle = await getExistingCtStyle(styleId, ctHelpers);
