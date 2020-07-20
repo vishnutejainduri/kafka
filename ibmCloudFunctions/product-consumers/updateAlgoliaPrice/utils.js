@@ -42,7 +42,7 @@ function findCurrentPriceFromOverlappingPrices (overlappingPrices) {
         if ((!currentPrice.processDateCreated || !overlappingPrice.processDateCreated) ||
           currentPrice.processDateCreated.getTime() === overlappingPrice.processDateCreated.getTime()) {
           // if two permanent markdowns activate at the exact same time we can't decide which one to pick, results in unfixable overlap
-          console.error('Unfixable price overlap:', 'Two permanent markdowns overlap', currentPrice, overlappingPrice);
+          console.error('Unfixable price overlap:', 'Two permanent markdowns overlap', currentPrice.priceChangeId, overlappingPrice.priceChangeId);
           currentPrice = null;
           break;
         }
@@ -55,7 +55,7 @@ function findCurrentPriceFromOverlappingPrices (overlappingPrices) {
         continue;  
       } else {
         // unfixable overlap between two temporary prices
-        console.error('Unfixable price overlap:', 'Two temporary markdowns overlap', currentPrice, overlappingPrice);
+        console.error('Unfixable price overlap:', 'Two temporary markdowns overlap', currentPrice.priceChangeId, overlappingPrice.priceChangeId);
         currentPrice = null;
         break;
       }

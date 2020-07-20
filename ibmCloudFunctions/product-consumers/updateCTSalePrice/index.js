@@ -39,7 +39,7 @@ global.main = async function (params) {
             const prices = await pricesCollection.findOne({ styleId });
             const priceChanges = prices && prices.priceChanges || []
             const applicablePriceChanges = findApplicablePriceChanges(priceChanges)
-            const styleUpdate = updateStylePermanentMarkdown(ctHelpers, productTypeId, applicablePriceChanges)
+            const styleUpdate = updateStylePermanentMarkdown(ctHelpers, productTypeId, applicablePriceChanges, styleId)
             return styleUpdate;
         }))
     );
