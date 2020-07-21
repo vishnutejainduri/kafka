@@ -84,4 +84,12 @@ describe('updateStylePermanentMarkdown', () => {
       const result = await updateStylePermanentMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
       expect(result).toEqual(null);
     })
+    it('no markdown of any kind; should cause a revert to original price', async () => {
+      const applicablePriceChanges = {
+        '00990': undefined,
+        '00011': undefined
+      }
+      const result = await updateStylePermanentMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
+      expect(result).toBeInstanceOf(Object);
+    })
 });

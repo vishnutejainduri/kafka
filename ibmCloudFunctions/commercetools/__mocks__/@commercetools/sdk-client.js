@@ -61,7 +61,12 @@ const ctMockResponse = {
     current: {
       variants: [mockSku],
       masterVariant: {
-        attributes: [],
+        attributes: [{
+          name: 'originalPrice',
+          value: {
+            centAmount: 5000
+          }
+        }],
         prices: [mockPrice]
       }
     },

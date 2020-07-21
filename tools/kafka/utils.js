@@ -1,7 +1,7 @@
 const NoResponse = Symbol.for("no-response");
 
 async function sleep (tries) {
-  const sleepTime = tries * 60000
+  const sleepTime = tries * 120000
   console.log(`Call failed. Waiting for ${sleepTime/1000}s before next retry...`)
   return new Promise(function (resolve) {
     setTimeout(function () {
