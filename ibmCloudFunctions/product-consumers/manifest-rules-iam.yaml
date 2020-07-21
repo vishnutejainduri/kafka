@@ -44,9 +44,6 @@
       algolia-catalog-rule:
         action: update-algolia-style
         trigger: catalog-trigger
-      update-inventory-sequence-rule:
-        action: update-inventory-sequence
-        trigger: sku-inventory-trigger
       add-facets-to-queue-rule:
         action: add-facets-to-bulk-import-queue
         trigger: facets-trigger
