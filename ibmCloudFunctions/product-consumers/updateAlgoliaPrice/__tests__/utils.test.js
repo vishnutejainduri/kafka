@@ -172,7 +172,7 @@ describe('findApplicablePriceChanges', () => {
       startDate: new Date('2020'),
       activityType: priceChangeActivityTypes.CREATED
     }]
-    expect(() => findApplicablePriceChanges(mockPriceChanges)).toThrow(new Error(`Cannot process overlapping price changes for the same site ID for price changes: ${[mockPriceChanges[0].priceChangeId, mockPriceChanges[2].priceChangeId,]}`))
+    expect(() => findApplicablePriceChanges(mockPriceChanges)).toThrow(new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${mockPriceChanges[0].id}, Price Change ID: ${mockPriceChanges[0].priceChangeId} overlaps with Price Change ID: ${mockPriceChanges[2].priceChangeId}`))
   })
 })
 
@@ -210,7 +210,7 @@ describe('findApplicablePriceChanges + findCurrentPriceFromOverlappingPrices', (
       activityType: priceChangeActivityTypes.CREATED,
       processDateCreated: new Date('2020')
     }]
-    expect(() => findApplicablePriceChanges(mockPriceChanges)).toThrow(new Error(`Cannot process overlapping price changes for the same site ID for price changes: ${[mockPriceChanges[0].priceChangeId, mockPriceChanges[1].priceChangeId,]}`))
+    expect(() => findApplicablePriceChanges(mockPriceChanges)).toThrow(new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${mockPriceChanges[0].id}, Price Change ID: ${mockPriceChanges[0].priceChangeId} overlaps with Price Change ID: ${mockPriceChanges[1].priceChangeId}`))
   })
   it('overlapping permanent markdowns; overlap but across sites so both are valid and used', () => {
     const mockPriceChanges = [{

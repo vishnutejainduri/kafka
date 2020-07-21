@@ -62,7 +62,9 @@ function findCurrentPriceFromOverlappingPrices (currentPrice, overlappingPrice) 
 function areAvaiblePricesOverlapping (availablePriceChange, availablePriceChanges) {
     let isPriceOverlapping = false;
     for (let availablePriceChangeToCompare of availablePriceChanges) {
-      if (!availablePriceChangeToCompare || !availablePriceChange.endDate || availablePriceChange.priceChangeId === availablePriceChangeToCompare.priceChangeId) continue;
+      if (!availablePriceChangeToCompare || !availablePriceChange 
+        || !availablePriceChange.endDate || !availablePriceChangeToCompare.endDate 
+        || availablePriceChange.priceChangeId === availablePriceChangeToCompare.priceChangeId) continue;
 
       if (
         (availablePriceChange.startDate.getTime() >= availablePriceChangeToCompare.startDate.getTime() && availablePriceChange.endDate.getTime() <= availablePriceChangeToCompare.endDate.getTime()) //one price within another price
@@ -79,7 +81,6 @@ function areAvaiblePricesOverlapping (availablePriceChange, availablePriceChange
 
 function getActivePriceChanges (availablePriceChanges, currentTime) {
   let activePriceChange;
-  let isPriceOverlapping = false;
   availablePriceChanges.forEach((availablePriceChange) => {
     if (availablePriceChange.startDate.getTime() <= currentTime && (!availablePriceChange.endDate || availablePriceChange.endDate.getTime() >= currentTime)) {
       activePriceChange = findCurrentPriceFromOverlappingPrices(activePriceChange, availablePriceChange);
