@@ -82,6 +82,7 @@ const main = async function (params) {
 
     const messageFailures = [];
     const failureIndexes = []
+    console.log('updates', updates);
     const applicableUpdates = updates.filter((update, index) => {
         if (!update) {
             return false

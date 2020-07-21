@@ -42,7 +42,7 @@ function findCurrentPriceFromOverlappingPrices (overlappingPrices) {
         if ((!currentPrice.processDateCreated || !overlappingPrice.processDateCreated) ||
           currentPrice.processDateCreated.getTime() === overlappingPrice.processDateCreated.getTime()) {
           // if two permanent markdowns activate at the exact same time we can't decide which one to pick, results in unfixable overlap
-          console.error('Unfixable price overlap:', 'Two permanent markdowns overlap', currentPrice.priceChangeId, overlappingPrice.priceChangeId);
+          console.error(`Unfixable price overlap: Two permanent markdowns overlap. StyleId: ${currentPrice.id}, Price Change ID: ${currentPrice.priceChangeId} overlaps with Price Change ID: ${overlappingPrice.priceChangeId}`);
           currentPrice = null;
           break;
         }
@@ -55,7 +55,7 @@ function findCurrentPriceFromOverlappingPrices (overlappingPrices) {
         continue;  
       } else {
         // unfixable overlap between two temporary prices
-        console.error('Unfixable price overlap:', 'Two temporary markdowns overlap', currentPrice.priceChangeId, overlappingPrice.priceChangeId);
+        console.error(`Unfixable price overlap: Two temporary markdowns overlap. StyleId: ${currentPrice.id}, Price Change ID: ${currentPrice.priceChangeId} overlaps with Price Change ID: ${overlappingPrice.priceChangeId}`);
         currentPrice = null;
         break;
       }
@@ -67,12 +67,41 @@ function findCurrentPriceFromOverlappingPrices (overlappingPrices) {
   return currentPrice;
 }
 
+function getActivePriceChanges (availablePriceChanges, currentTime) {
+  const activePriceChanges = [];
+
+  availablePriceChanges.forEach((availablePriceChange) => {
+    if (availablePriceChange.startDate.getTime() <= currentTime && (!availablePriceChange.endDate || availablePriceChange.endDate.getTime() >= currentTime)) {
+      activePriceChanges.push(availablePriceChange);
+    }
+
+    for (let availablePriceChangeToCompare of availablePriceChanges) {
+      if (!availablePriceChangeToCompare || !availablePriceChange.endDate || availablePriceChange.priceChangeId === availablePriceChangeToCompare.priceChangeId) continue;
+
+      if (
+        (availablePriceChange.startDate.getTime() >= availablePriceChangeToCompare.startDate.getTime() && availablePriceChange.endDate.getTime() <= availablePriceChangeToCompare.endDate.getTime()) //one price within another price
+        || (availablePriceChange.startDate.getTime() <= availablePriceChangeToCompare.startDate.getTime() && availablePriceChange.endDate.getTime() >= availablePriceChangeToCompare.startDate.getTime()) //one price overlaps via start date (in the past but ends within another)
+        || (availablePriceChange.endDate.getTime() >= availablePriceChangeToCompare.endDate.getTime() && availablePriceChange.startDate.getTime() <= availablePriceChangeToCompare.endDate.getTime()) //one price overlaps via end date (in the future but starts within another)
+        ) { 
+          // unfixable overlap between two temporary prices
+          console.error(`Unfixable price overlap: Two temporary markdowns overlap. StyleId: ${availablePriceChange.id}, Price Change ID: ${availablePriceChange.priceChangeId} overlaps with Price Change ID: ${availablePriceChangeToCompare.priceChangeId}`);
+          throw new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${availablePriceChange.id}, Price Change ID: ${availablePriceChange.priceChangeId} overlaps with Price Change ID: ${availablePriceChangeToCompare.priceChangeId}`);
+      }
+    }
+  });
+  
+  return activePriceChanges;
+}
+
 function findApplicablePriceChange (siteIdPriceChanges) {
   const addedPriceChanges = siteIdPriceChanges.filter(priceChange =>  [priceChangeActivityTypes.APPROVED, priceChangeActivityTypes.CREATED].includes(priceChange.activityType))
   const deletedPriceChanges = siteIdPriceChanges.filter(priceChange => priceChange.activityType === priceChangeActivityTypes.DELETED)
   const availablePriceChanges = addedPriceChanges.filter(({ priceChangeId, processDateCreated }) => !deletedPriceChanges.find(deletedPriceChange => (deletedPriceChange.priceChangeId === priceChangeId && deletedPriceChange.processDateCreated >= processDateCreated)))
   const currentTime = new Date().getTime()
-  const activePriceChanges = availablePriceChanges.filter(({ startDate, endDate }) => startDate.getTime() <= currentTime && (!endDate || endDate.getTime() >= currentTime))
+  console.log('availablePriceChanges', availablePriceChanges);
+  //const activePriceChanges = availablePriceChanges.filter(({ startDate, endDate }) => startDate.getTime() <= currentTime && (!endDate || endDate.getTime() >= currentTime))
+  const activePriceChanges = getActivePriceChanges (availablePriceChanges, currentTime);
+  console.log('activePriceChanges', activePriceChanges);
   const activePriceChangesGroupedById = groupPriceChangesById(activePriceChanges)
   const latestActivePriceChanges = getLatestPriceChanges(activePriceChangesGroupedById)
   let latestActivePriceChange = latestActivePriceChanges[0];
@@ -82,6 +111,7 @@ function findApplicablePriceChange (siteIdPriceChanges) {
       throw new Error(`Cannot process overlapping price changes for the same site ID for price changes: ${siteIdPriceChanges.map(({ priceChangeId }) => priceChangeId)}`)
     }
   }
+  console.log('latestActivePriceChange', latestActivePriceChange);
   return latestActivePriceChange;
 }
 
