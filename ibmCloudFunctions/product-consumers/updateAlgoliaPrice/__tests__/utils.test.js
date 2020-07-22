@@ -288,6 +288,45 @@ describe('findApplicablePriceChanges + findCurrentPriceFromOverlappingPrices', (
   })
 })
 
+describe('findApplicablePriceChanges + areAvailablePricesOverlapping', () => {
+  it('overlapping inactive temporary markdown with active temporary markdown; throws error', () => {
+    const mockPriceChanges = [{
+      priceChangeId: '1',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2018'),
+      endDate: new Date('2019'),
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2018')
+    },{
+      priceChangeId: '2',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2018'),
+      endDate: new Date('2020'),
+      activityType: priceChangeActivityTypes.CREATED,
+      processDateCreated: new Date('2020')
+    }]
+    expect(() => findApplicablePriceChanges(mockPriceChanges)).toThrow(new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${mockPriceChanges[0].id}, Price Change ID: ${mockPriceChanges[0].priceChangeId} has overlaps`))
+  })
+  it('overlapping inactive temporary markdown with inactive temporary markdown; throws error', () => {
+    const mockPriceChanges = [{
+      priceChangeId: '1',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2018'),
+      endDate: new Date('2019'),
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2018')
+    },{
+      priceChangeId: '2',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2018'),
+      endDate: new Date('2019'),
+      activityType: priceChangeActivityTypes.CREATED,
+      processDateCreated: new Date('2018')
+    }]
+    expect(() => findApplicablePriceChanges(mockPriceChanges)).toThrow(new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${mockPriceChanges[0].id}, Price Change ID: ${mockPriceChanges[0].priceChangeId} has overlaps`))
+  })
+})
+
 describe('getPriceInfo', () => {
   const originalPrice = 10
   describe('original price is applicable as the lowest price', () => {

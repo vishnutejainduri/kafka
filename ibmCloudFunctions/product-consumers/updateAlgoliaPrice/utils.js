@@ -64,7 +64,12 @@ function areAvailablePricesOverlapping (availablePriceChange, availablePriceChan
     for (let availablePriceChangeToCompare of availablePriceChanges) {
       if (!availablePriceChangeToCompare || !availablePriceChange 
         || !availablePriceChange.endDate || !availablePriceChangeToCompare.endDate 
+        || !availablePriceChange.startDate || !availablePriceChangeToCompare.startDate 
         || availablePriceChange.priceChangeId === availablePriceChangeToCompare.priceChangeId) continue;
+      
+      console.log('availablePriceChange', availablePriceChange, 'VS', 'availablePriceChangeToCompare', availablePriceChangeToCompare);
+      if (!availablePriceChange.startDate || !availablePriceChange.endDate) console.error ('MISSING DATES', 'availablePriceChange', availablePriceChange);
+      if (!availablePriceChangeToCompare.startDate || !availablePriceChangeToCompare.endDate) console.error ('MISSING DATES', 'availablePriceChangeToCompare', availablePriceChangeToCompare);
 
       if (
         (availablePriceChange.startDate.getTime() >= availablePriceChangeToCompare.startDate.getTime() && availablePriceChange.endDate.getTime() <= availablePriceChangeToCompare.endDate.getTime()) //one price within another price
@@ -81,15 +86,14 @@ function areAvailablePricesOverlapping (availablePriceChange, availablePriceChan
 
 function getActivePriceChanges (availablePriceChanges, currentTime) {
   let activePriceChange;
-  availablePriceChanges.forEach((availablePriceChange) => {
+  for (let availablePriceChange of availablePriceChanges) {
     if (availablePriceChange.startDate.getTime() <= currentTime && (!availablePriceChange.endDate || availablePriceChange.endDate.getTime() >= currentTime)) {
       activePriceChange = findCurrentPriceFromOverlappingPrices(activePriceChange, availablePriceChange);
     }
     if (areAvailablePricesOverlapping(availablePriceChange, availablePriceChanges)) {
       throw new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${availablePriceChange.id}, Price Change ID: ${availablePriceChange.priceChangeId} has overlaps`);
     }
-  });
-  
+  }
   
   return activePriceChange;
 }
