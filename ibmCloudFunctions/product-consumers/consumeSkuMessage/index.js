@@ -29,7 +29,7 @@ const main = async function (params) {
 
                   const skuUpdate = { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: skuData }
                   if (existingDocument && existingDocument.lastModifiedDate) {
-                    return skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, skuUpdate)
+                    return skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lte: skuData.lastModifiedDate } }, skuUpdate)
                                     .catch(originalError => {
                                         throw createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
                                     })
