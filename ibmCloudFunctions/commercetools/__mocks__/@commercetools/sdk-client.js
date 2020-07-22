@@ -168,6 +168,22 @@ const responses = {
     }
   } },
   'GET-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3new_category_en': () => null,
+  'GET-BRANDS': () => { return {
+    ...categoryResponsePrototype,
+    key: 'BRANDS',
+    name: {
+      'en-CA': 'BRANDS',
+      'fr-CA': 'BRANDS' 
+    }
+  } },
+  'GET-BRANDS-l1brandNameEng': () => { return {
+    ...categoryResponsePrototype,
+    key: 'BRANDS-l1brandNameEng',
+    name: {
+      'en-CA': 'brandNameEng',
+      'fr-CA': 'brandNameEng'
+    }
+  } },
   'POST-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en': (...args) => {
     mockUpdateFn(...args);
     return {
