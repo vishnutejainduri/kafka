@@ -31,6 +31,7 @@ const categoryKeyFromNames = (...categoryNames) => {
 };
 
 const DPM_ROOT_CATEGORY = 'DPM ROOT CATEGORY';
+const BRANDS_ROOT_CATEGORY = 'BRANDS';
 
 const createCategory = async (categoryKey, categoryName, parentCategory, { client, requestBuilder }) => {
   if (!categoryKey || !categoryName) return null;
@@ -121,8 +122,13 @@ const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
     categoryKeyFromNames(DPM_ROOT_CATEGORY, style.level1Category, style.level2Category),
     categoryKeyFromNames(DPM_ROOT_CATEGORY, style.level1Category, style.level2Category, style.level3Category),
   ];
+  const brandCategoryKeys = [
+    categoryKeyFromNames(BRANDS_ROOT_CATEGORY),
+    categoryKeyFromNames(BRANDS_ROOT_CATEGORY, style.brandName[enCA])
+  ];
 
   const categories = await Promise.all(categoryKeys.map(key => getCategory(key, ctHelpers)));
+  const brandCategories = await Promise.all(brandCategoryKeys.map(key => getCategory(key, ctHelpers)));
 
   if (!categories[0]) {
     categories[0] = await createCategory(categoryKeys[0], {
@@ -139,7 +145,20 @@ const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
     }
   }
 
-  return categories.slice(1, categories.length).filter(Boolean);
+  if (!brandCategories[0]) {
+    brandCategories[0] = await createCategory(brandCategoryKeys[0], {
+      [enCA]: BRANDS_ROOT_CATEGORY,
+      [frCA]: BRANDS_ROOT_CATEGORY
+    }, null, ctHelpers);
+  }
+
+  if (!brandCategories[1]) {
+    brandCategories[1] = await createCategory(brandCategoryKeys[1], { [enCA]: style.brandName[enCA], [frCA]: style.brandName[enCA] }, brandCategories[0], ctHelpers);
+  } else if (categoryNeedsUpdating(brandCategories[1], { [enCA]: style.brandName[enCA], [frCA]: style.brandName[enCA] })) {
+    brandCategories[1] = await updateCategory(brandCategoryKeys[1], brandCategories[1].version, { [enCA]: style.brandName[enCA], [frCA]: style.brandName[enCA] }, brandCategories[0], ctHelpers);
+  }
+
+  return [...categories.slice(1, categories.length), ...brandCategories.slice(1, brandCategories.length)].filter(Boolean);
 };
 
 function createPriceUpdate (originalPrice, priceTypeValue = priceTypes.ORIGINAL_PRICE) {
