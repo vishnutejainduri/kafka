@@ -143,7 +143,6 @@ const passDownAnyMessageErrors = (results) => {
 const passDownProcessedMessages = messages => results => {
     const result = passDownAnyMessageErrors(results)
     const failureIndexes = result.failureIndexes
-    console.log('result', result);
     return {
         ...result,
         messages: messages.filter((_, index) => !failureIndexes.includes(index))
