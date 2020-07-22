@@ -192,7 +192,7 @@ const mockClient = {
       if (method === 'POST') mockUpdateFn(method, uri, body);
     }
 
-    return ({ body: { ...ctMockResponse, value: { lastModifiedDate: '1970-01-01T00:00:00.050Z' } }});
+    return ({ body: { ...ctMockResponse, value: { lastModifiedDate: '1970-01-01T00:00:00.050Z' } }, catch: () => {} });
   },
   mocks: {
     mockUpdateFn

@@ -129,7 +129,6 @@ const updateStyleSalePrice = async (ctHelpers, productTypeId, parsedPriceMessage
     
     const allVariantPrices = getAllVariantPrices(existingCtStyle);
     const actions = getActionsForSalePrice(parsedPriceMessage, allVariantPrices);
-    console.log('actions', actions);
 
     return client.execute({
       method: 'POST',
@@ -137,7 +136,6 @@ const updateStyleSalePrice = async (ctHelpers, productTypeId, parsedPriceMessage
       body: JSON.stringify({ version: existingCtStyle.version, actions })
     }).catch(error => {
       const overlappingTemporaryMarkdownError = error.body.errors.filter(error => error.code === 'DuplicatePriceScope')[0];
-      console.log('overlappingTemporaryMarkdownError', overlappingTemporaryMarkdownError);
       if (overlappingTemporaryMarkdownError) {
         console.error(overlappingTemporaryMarkdownError.message); //for reporting/logging/searching
         return null;
