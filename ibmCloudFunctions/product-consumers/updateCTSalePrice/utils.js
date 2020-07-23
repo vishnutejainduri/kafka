@@ -3,14 +3,18 @@ const { isStaged, priceTypes, styleAttributeNames } = require('../../commercetoo
 const { getExistingCtStyle, createAndPublishStyle, createPriceUpdate, getCtStyleAttributeValue } = require('../../commercetools/styleUtils');
 const { getAllVariantPrices, getExistingCtOriginalPrice, getExistingCtPermanentMarkdown, convertToCents } = require('../../commercetools/consumeSalePriceCT/utils');
 
+const setOnSaleFlag = (value) => ({
+  action: 'setAttributeInAllVariants',
+  name: 'onSale',
+  value,
+  staged: isStaged
+});
+
 const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicablePriceChanges, styleId) => {
     // only handle online site id prices
     if (!Object.keys(applicablePriceChanges).includes(siteIds.ONLINE)) return null;
 
     const applicablePriceChange = applicablePriceChanges[siteIds.ONLINE];
-
-    // only handle null end date (permanent markdowns), return null if valid end date (temporary markdown)
-    //if (applicablePriceChange && applicablePriceChange.endDate) return null;
 
     let existingCtStyle = await getExistingCtStyle(styleId, ctHelpers);
     if (!existingCtStyle) {
@@ -64,13 +68,6 @@ const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicable
       body: JSON.stringify({ version: existingCtStyle.version, actions: priceUpdateActions })
     });
 };
-
-const setOnSaleFlag = (value) => ({
-  action: 'setAttributeInAllVariants',
-  name: 'onSale',
-  value,
-  staged: isStaged
-});
 
 module.exports = {
   updateStylePermanentMarkdown

@@ -60,7 +60,7 @@ describe('updateStylePermanentMarkdown', () => {
       const result = await updateStylePermanentMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
       expect(result).toBeInstanceOf(Object);
     })
-    it('no permanent markdown; should cause no update', async () => {
+    it('no permanent markdown; should cause no price update but should cause a onSale price flag update', async () => {
       const applicablePriceChanges = {
         '00990': {
           newRetailPrice: 99.99,
@@ -72,7 +72,7 @@ describe('updateStylePermanentMarkdown', () => {
         }
       }
       const result = await updateStylePermanentMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
-      expect(result).toEqual(null);
+      expect(result).toBeInstanceOf(Object);
     })
     it('no online sale; should cause no update', async () => {
       const applicablePriceChanges = {
