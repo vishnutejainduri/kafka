@@ -494,6 +494,30 @@ describe('createOrUpdateCategoriesFromStyle', () => {
   it.todo('should remove categories that are removed from the style');
 });
 
+describe('createOrUpdateCategoriesFromStyle + BRANDS', () => {
+  it('should create brand categories if they exist in the style data but not CT', async () => {
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+    const validMessageNewCategory = {
+      topic: 'styles-connect-jdbc-CATALOG',
+      value: {
+        ... validParams.messages[0].value,
+        BRAND_NAME_ENG: 'updated_brand_name_en',
+      }
+    };
+    const style = parseStyleMessageCt(validMessageNewCategory);
+    await createOrUpdateCategoriesFromStyle(style, mockedCtHelpers);
+
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls.length).toEqual(1);
+    expect(mockedCtHelpers.client.mocks.mockUpdateFn.mock.calls[0])
+      .toEqual([
+        'POST',
+        'category',
+        '{"key":"BRANDS-l1updated_brand_name_en","name":{"en-CA":"updated_brand_name_en","fr-CA":"updated_brand_name_en"},"slug":{"en-CA":"BRANDS-l1updated_brand_name_en","fr-CA":"BRANDS-l1updated_brand_name_en"},"parent":{"id":"8f1b6d78-c29d-46cf-88fe-5bd935e49fd9","typeId":"category"}}'
+      ]);
+    mockedCtHelpers.client.mocks.mockUpdateFn.mockReset();
+  });
+});
+
 describe('createCategory', () => {
   it('correct message; return mock data', async () => {
      const result =
