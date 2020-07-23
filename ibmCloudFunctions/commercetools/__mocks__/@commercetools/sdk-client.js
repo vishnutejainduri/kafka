@@ -184,6 +184,7 @@ const responses = {
       'fr-CA': 'brandNameEng'
     }
   } },
+  'GET-BRANDS-l1updated_brand_name_en': () => null,
   'POST-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en': (...args) => {
     mockUpdateFn(...args);
     return {
@@ -192,6 +193,17 @@ const responses = {
       name: {
         'en-CA': 'categoryLevel1A_en',
         'fr-CA': 'updated_fr_value'
+      }
+    }
+  },
+  'BRANDS-l1updated_brand_name_en': (...args) => {
+    mockUpdateFn(...args);
+    return {
+      ...categoryResponsePrototype,
+      key: 'BRANDS-l1updated_brand_name_en',
+      name: {
+        'en-CA': 'updated_brand_name_en',
+        'fr-CA': 'updated_brand_name_en'
       }
     }
   }
