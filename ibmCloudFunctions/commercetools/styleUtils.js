@@ -104,14 +104,14 @@ const getCategory = async (category, { client, requestBuilder }) => {
   }
 };
 
+const categoryNeedsUpdating = (fetchedCategory, categoryName) => {
+  return fetchedCategory.name[languageKeys.ENGLISH] !== categoryName[languageKeys.ENGLISH]
+    || fetchedCategory.name[languageKeys.FRENCH] !== categoryName[languageKeys.FRENCH];
+};
+
 const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
   const enCA = languageKeys.ENGLISH;
   const frCA = languageKeys.FRENCH;
-
-  const categoryNeedsUpdating = (fetchedCategory, categoryName) => {
-    return fetchedCategory.name[enCA] !== categoryName[enCA]
-      || fetchedCategory.name[frCA] !== categoryName[frCA];
-  };
 
   // TODO
   // bug 1: this uses the en-CA label for the category name and not the category code from the dictionaryitem
@@ -254,6 +254,8 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
     : null
   const categoryIds = getUniqueCategoryIdsFromCategories(categories);
 
+  console.log('categoryIds', categoryIds);
+  console.log('existingCategoryIds', existingCategoryIds);
   // category actions, remove only those not present in coming request
   const categoriesRemoveAction = categoryIds && existingCategoryIds
     ? existingCategoryIds.filter(categoryId => !categoryIds.includes(categoryId))
@@ -316,6 +318,7 @@ const updateStyle = async ({ style, existingCtStyle, productType, categories, ct
   const method = 'POST';
   const uri = requestBuilder.products.byKey(style.id).build();
   const actions = getActionsFromStyle(style, productType, categories, existingCtStyle);
+  console.log('actions', actions);
   const body = JSON.stringify({ version: existingCtStyle.version, actions });
 
   return client.execute({ method, uri, body });
@@ -509,5 +512,6 @@ module.exports = {
   getUniqueCategoryIdsFromCategories,
   createCategory,
   categoryKeyFromNames,
-  createPriceUpdate
+  createPriceUpdate,
+  categoryNeedsUpdating
 };

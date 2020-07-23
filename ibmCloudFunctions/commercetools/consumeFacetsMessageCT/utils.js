@@ -1,9 +1,44 @@
-const { getExistingCtStyle, getProductType, updateStyle, createAndPublishStyle } = require('../styleUtils');
+const { getExistingCtStyle, getProductType, updateStyle, createAndPublishStyle, categoryKeyFromNames, getCategory, createCategory, categoryNeedsUpdating } = require('../styleUtils');
+const { languageKeys, MICROSITE, entityStatus } = require('../constantsCt');
 
-/**
- * There's an assumption in this function that we will never sync microsites to CT (based on
- * filterFacetMessageCt() ).
- */
+const MICROSITES_ROOT_CATEGORY = 'MICROSITES';
+
+const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpers) => {
+  // only microsite facets generate categories
+  if (!facet[MICROSITE]) return null;
+
+  const enCA = languageKeys.ENGLISH;
+  const frCA = languageKeys.FRENCH;
+
+  const categoryKeys = [
+    categoryKeyFromNames(MICROSITES_ROOT_CATEGORY),
+    categoryKeyFromNames(MICROSITES_ROOT_CATEGORY, facet[MICROSITE])
+  ];
+
+  const categories = await Promise.all(categoryKeys.map(key => getCategory(key, ctHelpers)));
+  const existingCtStyleData = existingCtStyle.masterData && (existingCtStyle.masterData[entityStatus])
+  let existingCategories = existingCtStyleData
+    ? existingCtStyleData.categories
+    : null
+
+  if (!categories[0]) {
+    categories[0] = await createCategory(categoryKeys[0], {
+      [enCA]: MICROSITES_ROOT_CATEGORY,
+      [frCA]: MICROSITES_ROOT_CATEGORY
+    }, null, ctHelpers);
+  }
+
+  if (!categories[1] && !facet.isMarkedForDeletion) {
+    categories[1] = await createCategory(categoryKeys[1], facet[MICROSITE], categories[0], ctHelpers);
+  } else if (categories[1] && facet.isMarkedForDeletion) {
+    // marked for deletion, remove from category array to delete on style update
+    existingCategories = existingCategories.filter(existingCategory => existingCategory.id !== categories[1].id);
+    categories[1] = null;
+  }
+
+  return [...categories.slice(1, categories.length), ...existingCategories].filter(Boolean)
+};
+
 const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) => {
     const productType = await getProductType(productTypeId, ctHelpers);
     let existingCtStyle = await getExistingCtStyle(stylesFacetMessage.id, ctHelpers);
@@ -11,7 +46,10 @@ const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) =
     if (!existingCtStyle) {
       existingCtStyle = (await createAndPublishStyle ({ id: stylesFacetMessage.id, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
     }
-    return updateStyle({ style: stylesFacetMessage, existingCtStyle, productType, ctHelpers});
+    
+    const micrositeCategories = await createOrUpdateCategoriesFromFacet(stylesFacetMessage, existingCtStyle, ctHelpers);
+    console.log('micrositeCategories', micrositeCategories);
+    return updateStyle({ style: stylesFacetMessage, existingCtStyle, productType, categories: micrositeCategories, ctHelpers});
 };
 
 module.exports = {
