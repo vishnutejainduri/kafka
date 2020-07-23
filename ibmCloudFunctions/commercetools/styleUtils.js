@@ -380,7 +380,7 @@ const publishStyle = async (style, { requestBuilder, client}) => {
   const uri = requestBuilder.products.byKey(style.key).build();
   const body = JSON.stringify({ version: style.version, actions: [{ action: 'publish', scope: 'All' }] });
 
-  return (await client.execute({ method, uri, body })).body;
+  return (await client.execute({ method, uri, body }));
 }
 
 // When you create a style in CT, it starts out unpublished. You need to make
@@ -444,7 +444,7 @@ const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
     const response = await client.execute({ method, uri });
     let existingCtStyle = response.body
     if (!existingCtStyle.masterData.published && PRODUCT_SHOULD_BE_PUBLISHED) {
-      existingCtStyle = await publishStyle(existingCtStyle, { client, requestBuilder })
+      existingCtStyle = (await publishStyle(existingCtStyle, { client, requestBuilder })).body
     }
     return existingCtStyle;
   } catch (err) {
