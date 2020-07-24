@@ -462,6 +462,25 @@
             "isSearchable": false,
             "inputHint": "SingleLine",
             "displayGroup": "Other"
+        },
+        {
+            "name": "onSale",
+            "label": {
+                "en-CA": "On Sale",
+                "fr-CA": ""
+            },
+            "inputTip": {
+                "en-CA": "",
+                "fr-CA": ""
+            },
+            "isRequired": false,
+            "type": {
+                "name": "boolean"
+            },
+            "attributeConstraint": "SameForAll",
+            "isSearchable": false,
+            "inputHint": "SingleLine",
+            "displayGroup": "Other"
         }
     ]
 }
