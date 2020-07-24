@@ -26,7 +26,7 @@ const main = async function (params) {
         .map(addErrorHandling(parseBarcodeMessage))
         .map(addErrorHandling((barcodeData) => barcodes.findOne({ _id: barcodeData._id })
             .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
-                ? barcodes.updateOne({ _id: barcodeData._id, lastModifiedDate: { $lt: barcodeData.lastModifiedDate } }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: barcodeData })
+                ? barcodes.updateOne({ _id: barcodeData._id, lastModifiedDate: { $lte: barcodeData.lastModifiedDate } }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: barcodeData })
                 : barcodes.updateOne({ _id: barcodeData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: barcodeData }, { upsert: true })
             )
             .catch((err) => {

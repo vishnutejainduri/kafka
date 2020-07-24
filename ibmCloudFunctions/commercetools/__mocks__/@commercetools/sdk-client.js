@@ -168,6 +168,23 @@ const responses = {
     }
   } },
   'GET-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en-l3new_category_en': () => null,
+  'GET-BRANDS': () => { return {
+    ...categoryResponsePrototype,
+    key: 'BRANDS',
+    name: {
+      'en-CA': 'BRANDS',
+      'fr-CA': 'BRANDS' 
+    }
+  } },
+  'GET-BRANDS-l1brandNameEng': () => { return {
+    ...categoryResponsePrototype,
+    key: 'BRANDS-l1brandNameEng',
+    name: {
+      'en-CA': 'brandNameEng',
+      'fr-CA': 'brandNameEng'
+    }
+  } },
+  'GET-BRANDS-l1updated_brand_name_en': () => null,
   'POST-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en': (...args) => {
     mockUpdateFn(...args);
     return {
@@ -176,6 +193,17 @@ const responses = {
       name: {
         'en-CA': 'categoryLevel1A_en',
         'fr-CA': 'updated_fr_value'
+      }
+    }
+  },
+  'BRANDS-l1updated_brand_name_en': (...args) => {
+    mockUpdateFn(...args);
+    return {
+      ...categoryResponsePrototype,
+      key: 'BRANDS-l1updated_brand_name_en',
+      name: {
+        'en-CA': 'updated_brand_name_en',
+        'fr-CA': 'updated_brand_name_en'
       }
     }
   }
@@ -192,7 +220,7 @@ const mockClient = {
       if (method === 'POST') mockUpdateFn(method, uri, body);
     }
 
-    return ({ body: { ...ctMockResponse, value: { lastModifiedDate: '1970-01-01T00:00:00.050Z' } }});
+    return ({ body: { ...ctMockResponse, value: { lastModifiedDate: '1970-01-01T00:00:00.050Z' } }, catch: () => {} });
   },
   mocks: {
     mockUpdateFn

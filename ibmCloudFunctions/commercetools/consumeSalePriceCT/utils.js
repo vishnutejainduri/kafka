@@ -5,7 +5,6 @@ const convertToCents = (amount) => Math.round(amount * 100)
 
 const getAllVariantPrices = (existingCtStyle) => {
   const variantPrices = [];
-
   const masterVariant = existingCtStyle.masterData[entityStatus].masterVariant
   const masterVariantPrices = {
     variantId: masterVariant.id,
@@ -125,7 +124,7 @@ const updateStyleSalePrice = async (ctHelpers, productTypeId, parsedPriceMessage
 
     if (!existingCtStyle) {
       // create dummy style where none exists
-      existingCtStyle = (await createAndPublishStyle ({ id: parsedPriceMessage.styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
+      existingCtStyle = (await createAndPublishStyle ({ id: parsedPriceMessage.styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body
     }
     
     const allVariantPrices = getAllVariantPrices(existingCtStyle);
@@ -135,7 +134,16 @@ const updateStyleSalePrice = async (ctHelpers, productTypeId, parsedPriceMessage
       method: 'POST',
       uri: requestBuilder.products.byKey(parsedPriceMessage.styleId).build(),
       body: JSON.stringify({ version: existingCtStyle.version, actions })
-    });
+    }).catch(error => {
+      if (!error.body || !error.body.errors) throw error;
+      const overlappingTemporaryMarkdownError = error.body.errors.filter(error => error.code === 'DuplicatePriceScope')[0];
+      if (overlappingTemporaryMarkdownError) {
+        console.error(overlappingTemporaryMarkdownError.message); //for reporting/logging/searching
+        return null;
+      } else {
+        throw error;
+      }
+    })
 };
 
 module.exports = {
