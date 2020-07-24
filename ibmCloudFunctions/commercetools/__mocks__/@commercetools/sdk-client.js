@@ -1,3 +1,8 @@
+const mockCategory = {
+  typeId: 'category',
+  id: '5bb79326-16ea-40f5-8857-31a020800a1c'
+};
+
 const mockPrice = {
   country: 'CA',
   value: {
@@ -59,6 +64,7 @@ const ctMockResponse = {
   version: 1,
   masterData: {
     current: {
+      categories: [mockCategory],
       variants: [mockSku],
       masterVariant: {
         attributes: [{
@@ -71,6 +77,7 @@ const ctMockResponse = {
       }
     },
     staged: {
+      categories: [mockCategory],
       variants: [],
       masterVariant: {
         attributes: [mockSku],
@@ -185,6 +192,24 @@ const responses = {
     }
   } },
   'GET-BRANDS-l1updated_brand_name_en': () => null,
+  'GET-MICROSITES': () => { return {
+    ...categoryResponsePrototype,
+    key: 'MICROSITES',
+    name: {
+      'en-CA': 'MICROSITES',
+      'fr-CA': 'MICROSITES'
+    }
+  } },
+  'GET-MICROSITES-l1microsite_en': () => { return {
+    ...categoryResponsePrototype,
+    id: '5bb79326-16ea-40f5-8857-31a020800a1c',
+    key: 'MICROSITES',
+    name: {
+      'en-CA': 'microsite_en',
+      'fr-CA': 'microsite_fr'
+    }
+  } },
+  'GET-MICROSITES-l1updated_microsite_en': () => null,
   'POST-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en': (...args) => {
     mockUpdateFn(...args);
     return {
@@ -206,6 +231,17 @@ const responses = {
         'fr-CA': 'updated_brand_name_en'
       }
     }
+  },
+  'POST-categoryMICROSITES-l1updated_microsite_en': (...args) => {
+    mockUpdateFn(...args);
+    return {
+      ...categoryResponsePrototype,
+      key: 'MICROSITES-l1updated_microsite_en',
+      name: {
+        'en-CA': 'updated_microsite_en',
+        'fr-CA': 'updated_microsite_fr'
+      }
+    }
   }
 };
 
@@ -214,7 +250,12 @@ const mockClient = {
     if (config) {
       const { method, uri, body } = config;
 
-      if (responses[`${method}-${uri}`]) return { body: responses[`${method}-${uri}`](method, uri, body) };
+      if (body) {
+        const key = JSON.parse(body).key;
+        if (responses[`${method}-${uri}${key}`]) return { body: responses[`${method}-${uri}${key}`](method, uri, body) };
+      } else {
+        if (responses[`${method}-${uri}`]) return { body: responses[`${method}-${uri}`](method, uri, body) };
+      }
 
       // record other update calls
       if (method === 'POST') mockUpdateFn(method, uri, body);

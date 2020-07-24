@@ -1,4 +1,4 @@
-const { getExistingCtStyle, getProductType, updateStyle, createAndPublishStyle, categoryKeyFromNames, getCategory, createCategory, categoryNeedsUpdating } = require('../styleUtils');
+const { getExistingCtStyle, getProductType, updateStyle, createAndPublishStyle, categoryKeyFromNames, getCategory, createCategory } = require('../styleUtils');
 const { languageKeys, MICROSITE, entityStatus } = require('../constantsCt');
 
 const MICROSITES_ROOT_CATEGORY = 'MICROSITES';
@@ -48,10 +48,10 @@ const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) =
     }
     
     const micrositeCategories = await createOrUpdateCategoriesFromFacet(stylesFacetMessage, existingCtStyle, ctHelpers);
-    console.log('micrositeCategories', micrositeCategories);
     return updateStyle({ style: stylesFacetMessage, existingCtStyle, productType, categories: micrositeCategories, ctHelpers});
 };
 
 module.exports = {
-  updateStyleFacets
+  updateStyleFacets,
+  createOrUpdateCategoriesFromFacet
 };

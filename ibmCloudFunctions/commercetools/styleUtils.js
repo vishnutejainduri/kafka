@@ -254,8 +254,6 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
     : null
   const categoryIds = getUniqueCategoryIdsFromCategories(categories);
 
-  console.log('categoryIds', categoryIds);
-  console.log('existingCategoryIds', existingCategoryIds);
   // category actions, remove only those not present in coming request
   const categoriesRemoveAction = categoryIds && existingCategoryIds
     ? existingCategoryIds.filter(categoryId => !categoryIds.includes(categoryId))
@@ -318,7 +316,6 @@ const updateStyle = async ({ style, existingCtStyle, productType, categories, ct
   const method = 'POST';
   const uri = requestBuilder.products.byKey(style.id).build();
   const actions = getActionsFromStyle(style, productType, categories, existingCtStyle);
-  console.log('actions', actions);
   const body = JSON.stringify({ version: existingCtStyle.version, actions });
 
   return client.execute({ method, uri, body });
