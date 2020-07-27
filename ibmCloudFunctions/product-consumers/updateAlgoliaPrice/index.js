@@ -69,6 +69,8 @@ const main = async function (params) {
             ])
             const priceChanges = prices && prices.priceChanges || []
             const originalPrice = style && style.originalPrice || 0
+            if (!originalPrice) return null; //if there's no original price lowestPrice can't be accurately determined; don't apply sale prices yet
+
             const applicablePriceChanges = findApplicablePriceChanges(priceChanges)
             const priceInfo = getPriceInfo(originalPrice, applicablePriceChanges)
             await pricesCollection.update({ styleId }, { $set: priceInfo })
@@ -80,10 +82,13 @@ const main = async function (params) {
         }))
     );
 
+
     const messageFailures = [];
-    const failureIndexes = []
+    const failureIndexes = [];
+    const ignoredIndexes = [];
     const applicableUpdates = updates.filter((update, index) => {
         if (!update) {
+            ignoredIndexes.push(index)
             return false
         }
         if ((update instanceof Error)) {
@@ -103,7 +108,7 @@ const main = async function (params) {
     // We mark the price changes that were successfully processed as well as those that failed to process,
     // so that in the next run we don't reprocess them
     await Promise.all([
-        markProcessedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => !failureIndexes.includes(index))),
+        markProcessedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => !failureIndexes.includes(index) && !ignoredIndexes.includes(index))),
         markFailedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => failureIndexes.includes(index))),
     ])
 
