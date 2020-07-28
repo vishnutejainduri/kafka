@@ -60,7 +60,7 @@ describe('updateAlgoliaPrice', () => {
         });
     });
 
-    it('Returns an array of ignored messages if any of the styles are missing an originalPrice', async () =>{
+    it('Returns a succesful response but no update to algolia if any of the styles are missing an originalPrice', async () =>{
         const messages = [{...validMessage, value: { ...validMessage.value, STYLE_ID: 'style-id-no-original-price' } }];
         const params = {
             ...validParams,
@@ -70,11 +70,8 @@ describe('updateAlgoliaPrice', () => {
         const response = await updateAlgoliaPrice(params);
         expect(response).toEqual({
             failureIndexes: [],
-            errorCount: 0,
             errors: [],
-            successCount: 0,
-            ignoredCount: 1,
-            ignoredIndexes: [ 0 ]
+            successCount: 1
         });
     });
 
