@@ -136,7 +136,7 @@ const updateStyleSalePrice = async (ctHelpers, productTypeId, parsedPriceMessage
       body: JSON.stringify({ version: existingCtStyle.version, actions })
     }).catch(error => {
       if (!error.body || !error.body.errors) throw error;
-      const overlappingTemporaryMarkdownError = error.body.errors.filter(error => error.code === 'DuplicatePriceScope')[0];
+      const overlappingTemporaryMarkdownError = error.body.errors.filter(error => error.code === 'DuplicatePriceScope' || (error.invalidValue && error.invalidValue.overlappingPrices))[0];
       if (overlappingTemporaryMarkdownError) {
         console.error(overlappingTemporaryMarkdownError.message); //for reporting/logging/searching
         return null;
