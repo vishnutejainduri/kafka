@@ -60,7 +60,6 @@ const main = async function (params) {
     const styleIds = params.messages && params.messages.length
         ? params.messages.map(addErrorHandling(extractStyleId))
         : await findUnprocessedStyleIds(pricesCollection, processingDate)
-    console.log('styleIds', styleIds);
 
     let updates = await Promise.all(styleIds
         .map(addErrorHandling(async (styleId) => {
