@@ -474,7 +474,7 @@ describe('getPriceInfo', () => {
       inStoreSalePrice: 0,
       isSale: true,
       isOnlineSale: false,
-      lowestPrice: 0,
+      lowestPrice: null,
       lowestOnlinePrice: null
     })
   })
