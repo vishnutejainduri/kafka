@@ -1,4 +1,5 @@
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
+const { priceChangeProcessStatus } = require('../constants')
 const { addErrorHandling, log, createLog, addLoggingToMain, passDownProcessedMessages } = require('../utils');
 const createError = require('../../lib/createError');
 const getCollection = require('../../lib/getCollection');
@@ -33,7 +34,10 @@ const main = async function (params) {
                 ? styles.updateOne({ _id: styleData._id, lastModifiedDate: { $lte: styleData.lastModifiedDate } }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: styleData })
                     .then((result) => result.modifiedCount > 0
                         ? prices.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOriginalPrice: { $type:"timestamp" } }, $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice } }, { upsert: true })
-                          .then(() => {
+                          .then(async () => {
+                            console.log('set price flags');
+                            await prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessed': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessed': priceChangeProcessStatus.false } }, { upsert: true })
+                            await prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessedCT': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessedCT': priceChangeProcessStatus.false } }, { upsert: true })
                             if (existingDocument.departmentId && existingDocument.departmentId !== styleData.departmentId && (styleData.departmentId === '27' || existingDocument.departmentId === '27')) {
                               bulkAtsRecalculateQueue.insertOne({ _id: styleData._id, insertTimestamp: styleData.effectiveDate })
                               .catch(originalError => {
@@ -42,6 +46,7 @@ const main = async function (params) {
                             }
                           })
                           .catch(originalError => {
+                              console.log('originalError', originalError);
                               throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
                           })
                         : null
@@ -51,9 +56,19 @@ const main = async function (params) {
                     })
                   : styles.updateOne({ _id: styleData._id }, { $set: styleData }, { upsert: true })
                     .then(() => prices.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOriginalPrice: { $type:"timestamp" } }, $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice } }, { upsert: true })
-                                .catch(originalError => {
-                                    throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
-                                })
+                          .then(async () => {
+                            console.log('set price flags');
+                            await prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessed': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessed': priceChangeProcessStatus.false } }, { upsert: true });
+                            await prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessedCT': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessedCT': priceChangeProcessStatus.false } }, { upsert: true })
+                          })
+                          .catch(originalError => {
+                              console.log('originalError', originalError);
+                              throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
+                          })
+                      )
+                      .catch(originalError => {
+                          throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
+                      })
                     )
                     .catch(originalError => {
                         throw createError.consumeCatalogMessage.failedStyleUpdates(originalError, styleData);
@@ -75,7 +90,7 @@ const main = async function (params) {
                 return err;
             })
         ))
-    ).then(passDownProcessedMessages(params.messages))
+    .then(passDownProcessedMessages(params.messages))
     .catch(originalError => {
         throw createError.consumeCatalogMessage.failed(originalError, params);
     });

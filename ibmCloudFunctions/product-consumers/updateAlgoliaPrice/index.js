@@ -10,8 +10,6 @@ const { extractStyleId, getPriceInfo, findApplicablePriceChanges, findUnprocesse
 let client = null;
 let index = null;
 
-const MARKDOWN_IGNORED = 'markdownIndexToBeProcessedLater';
-
 const main = async function (params) {
     log(createLog.params('updateAlgoliaPrice', params));
 
@@ -62,6 +60,7 @@ const main = async function (params) {
     const styleIds = params.messages && params.messages.length
         ? params.messages.map(addErrorHandling(extractStyleId))
         : await findUnprocessedStyleIds(pricesCollection, processingDate)
+    console.log('styleIds', styleIds);
 
     let updates = await Promise.all(styleIds
         .map(addErrorHandling(async (styleId) => {
@@ -70,10 +69,7 @@ const main = async function (params) {
                 stylesCollection.findOne({ _id: styleId })
             ])
             const priceChanges = prices && prices.priceChanges || []
-            const originalPrice = style && style.originalPrice || 0
-            if (!originalPrice) { //if there's no original price lowestPrice can't be accurately determined; don't apply sale prices yet
-              return MARKDOWN_IGNORED;
-            }
+            const originalPrice = style && style.originalPrice || null
 
             const applicablePriceChanges = findApplicablePriceChanges(priceChanges)
             const priceInfo = getPriceInfo(originalPrice, applicablePriceChanges)
@@ -88,14 +84,9 @@ const main = async function (params) {
 
     const messageFailures = [];
     const failureIndexes = [];
-    const markdownIndexesToBeProcessedLater = [];
     const applicableUpdates = updates.filter((update, index) => {
         if (!update) {
             return false
-        }
-        if (update === MARKDOWN_IGNORED) {
-            markdownIndexesToBeProcessedLater.push(index);
-            return false;
         }
         if ((update instanceof Error)) {
             messageFailures.push(update)
@@ -114,7 +105,7 @@ const main = async function (params) {
     // We mark the price changes that were successfully processed as well as those that failed to process,
     // so that in the next run we don't reprocess them
     await Promise.all([
-        markProcessedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => !failureIndexes.includes(index) && !markdownIndexesToBeProcessedLater.includes(index))),
+        markProcessedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => !failureIndexes.includes(index))),
         markFailedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => failureIndexes.includes(index))),
     ])
 
