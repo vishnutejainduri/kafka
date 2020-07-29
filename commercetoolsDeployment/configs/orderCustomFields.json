@@ -1,8 +1,8 @@
 {
     "key": "orderCustomFields",
     "name": {
-        "fr-CA": "",
-        "en-CA": "Order Custom Fields"
+        "en-CA": "Order Custom Fields",
+        "fr-CA": ""
     },
     "resourceTypeIds": [
         "order"
@@ -33,8 +33,8 @@
         {
             "name": "shipments",
             "label": {
-                "fr-CA": "",
-                "en-CA": "Shipments"
+                "en-CA": "Shipments",
+                "fr-CA": ""
             },
             "required": false,
             "type": {
@@ -183,17 +183,6 @@
             "inputHint": "SingleLine"
         },
         {
-            "name": "shippingTax",
-            "label": {
-                "en-CA": "Shipping tax"
-            },
-            "required": false,
-            "type": {
-                "name": "Money"
-            },
-            "inputHint": "SingleLine"
-        },
-        {
             "name": "shippingCost",
             "label": {
                 "en-CA": "Shipping cost (not including tax)"
@@ -212,17 +201,6 @@
             "required": false,
             "type": {
                 "name": "Money"
-            },
-            "inputHint": "SingleLine"
-        },
-        {
-            "name": "shippingTaxDescription",
-            "label": {
-                "en-CA": "Shipping tax description"
-            },
-            "required": false,
-            "type": {
-                "name": "String"
             },
             "inputHint": "SingleLine"
         },
@@ -288,6 +266,18 @@
             "name": "loginRadiusUid",
             "label": {
                 "en-CA": "LoginRadius UID"
+            },
+            "required": false,
+            "type": {
+                "name": "String"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "shippingTaxes",
+            "label": {
+                "en-CA": "Shipping Taxes",
+                "fr-CA": ""
             },
             "required": false,
             "type": {
