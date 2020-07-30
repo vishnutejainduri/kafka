@@ -21,7 +21,8 @@ function parseFacetMessageCt(msg) {
     const facetObj = {
         _id: msg.value.STYLEID,
         id: msg.value.STYLEID,
-        isMarkedForDeletion: msg.value.UPD_FLG === 'F'
+        facetId: msg.value.CHARACTERISTIC_VALUE_ID,
+        isMarkedForDeletion: msg.value.UPD_FLG === 'F',
     };
     // If the facet is marked for deletion, set the value to null (unless it's a microsite)
     facetObj[facetName] = msg.value.UPD_FLG === 'F' && facetName !== MICROSITE 

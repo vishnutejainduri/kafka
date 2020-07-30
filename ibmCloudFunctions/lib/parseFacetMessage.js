@@ -21,6 +21,7 @@ function parseFacetMessage(msg) {
     return {
         styleId: msg.value.STYLEID,
         typeId: msg.value.CHARACTERISTIC_TYPE_ID,
+        facetId: msg.value.CHARACTERISTIC_VALUE_ID,
         facetName,
         facetValue: {
             en: msg.value.DESC_ENG,

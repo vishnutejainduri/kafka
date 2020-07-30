@@ -1,4 +1,14 @@
-const { getExistingCtStyle, getProductType, updateStyle, createAndPublishStyle, categoryKeyFromNames, getCategory, createCategory } = require('../styleUtils');
+const {
+  getExistingCtStyle,
+  getProductType,
+  updateStyle,
+  createAndPublishStyle,
+  categoryKeyFromNames,
+  getCategory,
+  createCategory,
+  updateCategory,
+  categoryNeedsUpdating
+} = require('../styleUtils');
 const { languageKeys, MICROSITE, entityStatus } = require('../constantsCt');
 
 const MICROSITES_ROOT_CATEGORY = 'MICROSITES';
@@ -12,7 +22,7 @@ const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpe
 
   const categoryKeys = [
     categoryKeyFromNames(MICROSITES_ROOT_CATEGORY),
-    categoryKeyFromNames(MICROSITES_ROOT_CATEGORY, facet[MICROSITE])
+    facet.facetId 
   ];
 
   const categories = await Promise.all(categoryKeys.map(key => getCategory(key, ctHelpers)));
@@ -34,6 +44,8 @@ const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpe
     // marked for deletion, remove from category array to delete on style update
     existingCategories = existingCategories.filter(existingCategory => existingCategory.id !== categories[1].id);
     categories[1] = null;
+  } else if (categoryNeedsUpdating(categories[1], facet[MICROSITE])) {
+    categories[1] = await updateCategory(categoryKeys[1], categories[1].version, facet[MICROSITE], categories[0], ctHelpers)
   }
 
   return [...categories.slice(1, categories.length), ...existingCategories].filter(Boolean)

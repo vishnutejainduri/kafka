@@ -85,7 +85,7 @@ const updateCategory = async (categoryKey, categoryVersion, categoryName, parent
 
   const requestBody = JSON.stringify(body);
 
-  const response = await client.execute({ method, uri, body: requestBody });
+  const response = await client.execute({ method, uri, body: requestBody })
   return response.body;
 };
 
