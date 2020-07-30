@@ -3,14 +3,18 @@ const { isStaged, priceTypes, styleAttributeNames } = require('../../commercetoo
 const { getExistingCtStyle, createAndPublishStyle, createPriceUpdate, getCtStyleAttributeValue } = require('../../commercetools/styleUtils');
 const { getAllVariantPrices, getExistingCtOriginalPrice, getExistingCtPermanentMarkdown, convertToCents } = require('../../commercetools/consumeSalePriceCT/utils');
 
+const setOnSaleFlag = (value) => ({
+  action: 'setAttributeInAllVariants',
+  name: 'onSale',
+  value,
+  staged: isStaged
+});
+
 const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicablePriceChanges, styleId) => {
     // only handle online site id prices
     if (!Object.keys(applicablePriceChanges).includes(siteIds.ONLINE)) return null;
 
     const applicablePriceChange = applicablePriceChanges[siteIds.ONLINE];
-
-    // only handle null end date (permanent markdowns), return null if valid end date (temporary markdown)
-    if (applicablePriceChange && applicablePriceChange.endDate) return null;
 
     let existingCtStyle = await getExistingCtStyle(styleId, ctHelpers);
     if (!existingCtStyle) {
@@ -20,38 +24,40 @@ const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicable
 
     const allVariantPrices = getAllVariantPrices(existingCtStyle);
     let priceUpdateActions = allVariantPrices.map((variantPrice) => {
-        let priceUpdate;
+        let priceUpdates;
         const existingCtPrice = getExistingCtOriginalPrice(variantPrice) || getExistingCtPermanentMarkdown(variantPrice)
-        if (!applicablePriceChange) {
-          priceUpdate = existingCtPrice
-              ? {
+        if (applicablePriceChange && applicablePriceChange.endDate) {
+          priceUpdates = [setOnSaleFlag(true)];
+        } else if (!applicablePriceChange) {
+          priceUpdates = existingCtPrice
+              ? [{
                 action: 'changePrice',
                 priceId: existingCtPrice.id,
                 price: createPriceUpdate(getCtStyleAttributeValue(existingCtStyle, styleAttributeNames.ORIGINAL_PRICE).centAmount, priceTypes.ORIGINAL_PRICE),
                 staged: isStaged
-              }
-              : {
+              }, setOnSaleFlag(false)]
+              : [{
                 action: 'addPrice',
                 variantId: variantPrice.variantId,
                 price: createPriceUpdate(getCtStyleAttributeValue(existingCtStyle, styleAttributeNames.ORIGINAL_PRICE).centAmount, priceTypes.ORIGINAL_PRICE),
                 staged: isStaged
-              }
+              }, setOnSaleFlag(false)]
         } else {
-          priceUpdate = existingCtPrice
-              ? {
+          priceUpdates = existingCtPrice
+              ? [{
                 action: 'changePrice',
                 priceId: existingCtPrice.id,
                 price: createPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice), priceTypes.PERMANENT_MARKDOWN),
                 staged: isStaged
-              }
-              : {
+              }, setOnSaleFlag(true)]
+              : [{
                 action: 'addPrice',
                 variantId: variantPrice.variantId,
                 price: createPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice), priceTypes.PERMANENT_MARKDOWN),
                 staged: isStaged
-              }
+              }, setOnSaleFlag(true)]
         }
-        return [priceUpdate];
+        return priceUpdates;
       })
     priceUpdateActions = priceUpdateActions.reduce((finalActions, currentActions) => [...finalActions, ...currentActions], []);
 

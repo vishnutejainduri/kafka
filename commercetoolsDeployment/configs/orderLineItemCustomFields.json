@@ -1,8 +1,8 @@
 {
     "key": "customLineItemFields",
     "name": {
-        "fr-CA": "",
-        "en-CA": "Custom Line Item Fields"
+        "en-CA": "Custom Line Item Fields",
+        "fr-CA": ""
     },
     "resourceTypeIds": [
         "line-item"
@@ -11,8 +11,8 @@
         {
             "name": "barcodeData",
             "label": {
-                "fr-CA": "",
-                "en-CA": "BarcodeData"
+                "en-CA": "BarcodeData",
+                "fr-CA": ""
             },
             "required": false,
             "type": {
@@ -27,8 +27,8 @@
         {
             "name": "isGift",
             "label": {
-                "fr-CA": "",
-                "en-CA": "Is Gift Item"
+                "en-CA": "Is Gift Item",
+                "fr-CA": ""
             },
             "required": false,
             "type": {
@@ -39,8 +39,8 @@
         {
             "name": "orderDetailLastModifiedDate",
             "label": {
-                "fr-CA": "",
-                "en-CA": "Order Detail Last Modified Date"
+                "en-CA": "Order Detail Last Modified Date",
+                "fr-CA": ""
             },
             "required": false,
             "type": {
@@ -71,20 +71,10 @@
             "inputHint": "SingleLine"
         },
         {
-            "name": "lineTotalTax",
+            "name": "itemTaxes",
             "label": {
-                "en-CA": "Line total tax"
-            },
-            "required": false,
-            "type": {
-                "name": "Money"
-            },
-            "inputHint": "SingleLine"
-        },
-        {
-            "name": "lineTaxDescription",
-            "label": {
-                "en-CA": "Line item tax description"
+                "en-CA": "Item Taxes",
+                "fr-CA": ""
             },
             "required": false,
             "type": {

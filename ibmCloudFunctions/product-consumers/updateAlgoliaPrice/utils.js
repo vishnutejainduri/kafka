@@ -158,8 +158,8 @@ function getPriceInfo (originalPrice, applicablePriceChanges) {
       }
     }
   } else {
-    lowestOnlinePrice = onlineSalePrice
-    lowestPrice = inStoreSalePrice
+    lowestOnlinePrice = null
+    lowestPrice = null
   }
 
   return {
@@ -205,6 +205,8 @@ async function findUnprocessedStyleIds (pricesCollection, processingDate, search
                 }, {
                     [`endDateProcessed${searchKey}`]: priceChangeProcessStatus.false
                 }]
+            }, {
+              [`originalPriceProcessed${searchKey}`]: priceChangeProcessStatus.false
             }]
         }
     }
@@ -231,7 +233,7 @@ function updateChangesQuery ({ isEndDate, isFailure, processingDate, styleIds },
       [`priceChanges.${isEndDate ? 'endDate' : 'startDate'}`]: { $lt: processingDate }
     },
     {
-      $set: { [`priceChanges.$[elem].${isEndDate ? `endDateProcessed${processFlagKey}` : `startDateProcessed${processFlagKey}`}`]: isFailure ? priceChangeProcessStatus.failure : priceChangeProcessStatus.true }
+      $set: { [`priceChanges.$[elem].${isEndDate ? `endDateProcessed${processFlagKey}` : `startDateProcessed${processFlagKey}`}`]: isFailure ? priceChangeProcessStatus.failure : priceChangeProcessStatus.true, [`priceChanges.$[elem].originalPriceProcessed${processFlagKey}`]: isFailure ? priceChangeProcessStatus.failure : priceChangeProcessStatus.true }
     },
     {
       multi: true,

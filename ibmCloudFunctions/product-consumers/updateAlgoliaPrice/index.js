@@ -68,7 +68,8 @@ const main = async function (params) {
                 stylesCollection.findOne({ _id: styleId })
             ])
             const priceChanges = prices && prices.priceChanges || []
-            const originalPrice = style && style.originalPrice || 0
+            const originalPrice = style && style.originalPrice || null
+
             const applicablePriceChanges = findApplicablePriceChanges(priceChanges)
             const priceInfo = getPriceInfo(originalPrice, applicablePriceChanges)
             await pricesCollection.update({ styleId }, { $set: priceInfo })
@@ -81,7 +82,7 @@ const main = async function (params) {
     );
 
     const messageFailures = [];
-    const failureIndexes = []
+    const failureIndexes = [];
     const applicableUpdates = updates.filter((update, index) => {
         if (!update) {
             return false

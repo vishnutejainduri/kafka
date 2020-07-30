@@ -52,7 +52,7 @@ const orderDetailAttributeNames = {
 const priceAttributeNames = {
   PROCESS_DATE_CREATED: 'processDateCreated',
   PRICE_CHANGE_ID: 'priceChangeId',
-  PRICE_TYPE: 'priceType' 
+  PRICE_TYPE: 'priceType'
 };
 
 const priceTypes = {

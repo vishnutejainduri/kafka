@@ -35,23 +35,37 @@ const main = async function (params) {
             const { styleId, ...priceChangeUpdate } = update
             // delete price type as that's only relevant for CT and just makes our mongo messier if we have it there with no gain
             delete priceChangeUpdate.priceType
-            // The same price change entry might exist if the same messages is requeued for whatever reason e.g. a resync to add a new field to price data,
-            // in that case we first delete the currently existing entry; will be no op if it doesn't exist
-            const findDuplicatePriceChangeQuery = Object.entries(priceChangeUpdate).reduce((query, [key, value]) => {
-                query.$and.push({
-                    $or: [{ [key]: { $exists: false } }, { [key]: value}]
-                })
-                return query
-            }, { $and: [] })
-            await pricesCollection.updateOne({ styleId: styleId }, { $pull: { priceChanges: findDuplicatePriceChangeQuery } })
             const priceProcessedFlags =  {
               startDateProcessed: priceChangeProcessStatus.false,
               endDateProcessed: priceChangeProcessStatus.false,
+              originalPriceProcessed: priceChangeProcessStatus.false,
               startDateProcessedCT: priceChangeProcessStatus.false,
-              endDateProcessedCT: priceChangeProcessStatus.false
+              endDateProcessedCT: priceChangeProcessStatus.false,
+              originalPriceProcessedCT: priceChangeProcessStatus.false
             };
             const priceChangeUpdateWithProcessFlagSet = { ...priceChangeUpdate, ...priceProcessedFlags }
-            await pricesCollection.updateOne({ styleId: styleId }, { $push: { priceChanges: priceChangeUpdateWithProcessFlagSet } }, { upsert: true })
+
+            let newPriceRecord = {};
+            const currentPriceRecord = await pricesCollection.findOne({ styleId });
+            if (!currentPriceRecord) {
+              newPriceRecord = { _id: styleId, id: styleId, styleId, priceChanges: [priceChangeUpdateWithProcessFlagSet] };
+            } else if (!currentPriceRecord.priceChanges) {
+              newPriceRecord = { ...currentPriceRecord, priceChanges: [priceChangeUpdateWithProcessFlagSet] }
+            } else {
+              // The same price change entry might exist if the same messages is requeued for whatever reason e.g. a resync to add a new field to price data,
+              // in that case we first delete the currently existing entry
+              currentPriceRecord.priceChanges = currentPriceRecord.priceChanges.filter(priceChange => {
+                let isDuplicate = true;
+                for (const key in Object.keys(priceChangeUpdate)) {
+                  isDuplicate = priceChangeUpdate[key] === priceChange[key]
+                  if (!isDuplicate) break;
+                }
+                return !isDuplicate;
+              });
+              newPriceRecord = { ...currentPriceRecord, priceChanges: currentPriceRecord.priceChanges.concat([priceChangeUpdateWithProcessFlagSet]) }
+            }
+
+            await pricesCollection.updateOne({ styleId: styleId }, { $set: newPriceRecord }, { upsert: true })
         })))
         .then(passDownProcessedMessages(params.messages))
         .catch(error => ({
