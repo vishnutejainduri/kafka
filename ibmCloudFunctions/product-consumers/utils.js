@@ -1,5 +1,6 @@
 const { MAX_BYTE_RESPONSE } = require('./constants');
 const messagesLogs = require('../lib/messagesLogs');
+const FAILURE_KEY = 'FAILURE'
  
 // NOTE: addErrorHandling should be used for all of the chained methods on array e.g. map, filter, etc.
 // and you cannot wrap some methods with addErrorHandling while skipping others,
@@ -93,6 +94,7 @@ const getErrorsAndFailureIndexes = (results) => {
     let failureIndexes = []
     const errors = results.filter((result, index) => {
         if (result instanceof Error) {
+            console.error(FAILURE_KEY, JSON.stringify(result))
             failureIndexes.push(index)
             return true
         }
@@ -157,6 +159,7 @@ const passDownBatchedErrorsAndFailureIndexes = (batches, messages) => results =>
     let messagesSuccessCount = 0
     const errors = results.filter((result,index) => {
         if (result instanceof Error) {
+            console.error(FAILURE_KEY, JSON.stringify(result));
             batchesFailureIndexes.push(batches[index].originalIndexes)
             return true
         } else {
