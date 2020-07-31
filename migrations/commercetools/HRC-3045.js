@@ -3,8 +3,7 @@
 // postman request: Types -> Create Type
 const url = '{{host}}/{{projectKey}}/types/key=orderCustomFields'
 
-const payload =
-{
+const payload = {
   "version": 1,
   "actions": [
     {
