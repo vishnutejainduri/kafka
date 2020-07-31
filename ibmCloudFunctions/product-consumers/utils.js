@@ -265,10 +265,13 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
         if ((mainFailed || hasPartialFailure) && (storeBatchFailed || updateBatchWithFailureIndexesFailed)) {
             const error = function () {
                 if (mainResult instanceof Error) {
+                    console.error(FAILURE_KEY, JSON.stringify(mainResult))
                     return mainResult
                 } else if (mainResult && mainResult.error) {
+                    console.error(FAILURE_KEY, JSON.stringify(mainResult))
                     return mainResult.error
                 } else {
+                    console.error(FAILURE_KEY, JSON.stringify(mainResult))
                     return new Error('updateBatchWithFailureIndexesFailed')
                 }
             }()
