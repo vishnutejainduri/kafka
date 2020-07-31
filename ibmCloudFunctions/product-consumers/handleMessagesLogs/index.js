@@ -23,6 +23,7 @@ async function getProducer({ brokers, username, password }){
         const kafka = new Kafka({
             clientId: 'handleMessagesLogsCloudFunction',
             brokers,
+            authenticationTimeout: 30000,
             ssl: true,
             sasl: {
                 mechanism: 'plain', // scram-sha-256 or scram-sha-512
@@ -77,9 +78,13 @@ function getRequeueMessagesAndCleanupRetryBatch(params) {
 }
 
 global.main = async function(params) {
-    const retryBatches = await getRetryBatches(params, 10);
+    const retryBatches = await getRetryBatches(params);
     const requeueMessagesAndCleanupRetryBatch = getRequeueMessagesAndCleanupRetryBatch(params);
-    const results = await Promise.all(retryBatches.map(addErrorHandling(requeueMessagesAndCleanupRetryBatch)));
+    let results = []
+    for (const batch of retryBatches) {
+        const result = await addErrorHandling(requeueMessagesAndCleanupRetryBatch)(batch)
+        results.push(result)
+    }
     return groupResultByStatus(results)
 }
 

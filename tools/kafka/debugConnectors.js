@@ -1,6 +1,8 @@
 require('dotenv').config();
 const fs = require('fs');
 
+const getInfo = require('./scripts/getInfo');
+const getConnector = require('./scripts/getConnector');
 const getConnectorNames = require('./scripts/getConnectorNames');
 const deleteConnectors = require('./scripts/deleteConnectors');
 const createConnectors = require('./scripts/createConnectors');
@@ -23,6 +25,13 @@ async function debug({
   totalDebugs
 }) {
     switch (command) {
+        case 'getInfo': {
+          return await getInfo(env);
+        }
+        case 'get': {
+          const connectorNames = options[0] && options[0].split(',');
+          return (await Promise.all(connectorNames.map(name => getConnector(env, name)))).map(info => ({ ...info, tasks: JSON.stringify(info.tasks)}));
+        }
         case 'getAll': {
             const connectorNames = await getConnectorNames(env);
             const previousHistory = debugHistory.getAll || [];
@@ -43,6 +52,34 @@ async function debug({
                 getAll: previousHistory
             }));
             return connectorNames;
+        }
+        case 'deleteSome': {
+          // TODO add a confirmation with y/N step
+          const connectorNames = options[0] && options[0].split(',');
+          const deletedConnectors = await deleteConnectors(env, connectorNames);
+          const previousHistory = debugHistory.deleteSome || [];
+          const data = deletedConnectors.map((result, index) => ({
+              name: connectorNames[index],
+              success: result instanceof Error ? false : true,
+              error: result instanceof Error ? result.message : null
+          }));
+          const log = {
+              number: totalDebugs,
+              date: new Date().valueOf(),
+              env,
+              data
+          };
+          previousHistory.push(log);
+          writeLog(JSON.stringify({
+            ...debugLog,
+            deleteSome: log
+          }));
+          writeHistory(JSON.stringify({
+              ...debugHistory,
+              totalDebugs,
+              deleteSome: previousHistory
+          }));
+          return deletedConnectors;
         }
         case 'deleteAll': {
             // TODO add a confirmation with y/N step
@@ -125,8 +162,8 @@ function writeToDebugLog(data) {
 }
 
 const connectionUrls = {
-  'prod': process.env['JESTA_PROD'],
-  'dev': process.env['JESTA_DEV'],
+  'production': process.env['JESTA_PRODUCTION'],
+  'staging': process.env['JESTA_STAGING'],
   'development': process.env['JESTA_DEVELOPMENT']
 };
 

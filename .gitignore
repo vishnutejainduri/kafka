@@ -6,3 +6,5 @@
 tools/kafka/.env
 *.env
 **/junit.xml
+.vscode/launch.json
+**/errors.csv

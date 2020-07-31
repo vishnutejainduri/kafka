@@ -1,8 +1,8 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { addErrorHandling, log, createLog } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain, passDownAnyMessageErrors } = require('../utils');
 const { handleSkuAtsUpdate } = require('./utils');
-const messagesLogs = require('../../lib/messagesLogs');
+const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 
 const main = async function (params) {
     log(createLog.params('calculateAvailableToSell', params));
@@ -29,6 +29,8 @@ const main = async function (params) {
     }
 
     return Promise.all(params.messages
+        .map(addErrorHandling(msg => filterSkuInventoryMessage(msg) ? msg : null))
+        .map(addErrorHandling(parseSkuInventoryMessage))
         .map(addErrorHandling(async (atsData) => {
           const styleData = await styles.findOne({ _id: atsData.styleId })
                               .catch(originalError => {
@@ -68,38 +70,12 @@ const main = async function (params) {
                             })
         }))
     )
+    .then(passDownAnyMessageErrors)
     .catch(originalError => {
         throw createError.calculateAvailableToSell.failed(originalError, paramsExcludingMessages);
-    })
-    .then((results) => {
-        const failureIndexes = [];
-        const errors = results.filter((res, index) => {
-            if (res instanceof Error) {
-                failureIndexes.push(index);
-                return true;
-            }
-        });
-
-        if (errors.length > 0) {
-            log.error(createError.calculateAvailableToSell.failedAddToAlgoliaQueue(results, errors))
-        }
-        return {
-            errors,
-            failureIndexes
-        }
     });
 };
 
-global.main = async function (params) {
-    return Promise.all([
-        main(params),
-        messagesLogs.storeBatch(params)
-    ]).then(async ([result]) => {
-        if (result.failureIndexes && result.failureIndexes.length > 0) {
-          await messagesLogs.updateBatchWithFailureIndexes(params, result.failureIndexes);
-        }
-        return result;
-    });
-}
+global.main = addLoggingToMain(main)
 
 module.exports = global.main;

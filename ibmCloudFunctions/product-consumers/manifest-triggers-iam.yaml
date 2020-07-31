@@ -43,12 +43,7 @@
         feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
           isJSONData: true
-          topic: prices-connect-jdbc
-      sku-inventory-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: inventory-connect-jdbc-SKUINVENTORY
+          topic: sale-prices-connect-jdbc
       facets-trigger:
         feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
@@ -58,6 +53,10 @@
         feed: /whisk.system/alarms/alarm
         inputs:
           cron: "*/1 * * * *"
+      every-ten-minutes:
+        feed: /whisk.system/alarms/alarm
+        inputs:
+          cron: "*/10 * * * *"
       every-midnight:
         feed: /whisk.system/alarms/alarm
         inputs:

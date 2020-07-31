@@ -1,0 +1,19 @@
+{
+  "name": "sale-prices-jdbc-source",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "schema.pattern": "IRO_POS_PRICES",
+    "table.poll.interval.ms": 3600000,
+    "mode": "timestamp",
+    "batch.max.rows": 100,
+    "timestamp.column.name": "PROCESS_DATE_CREATED",
+    "query": "SELECT IMAGE_STYLEID AS STYLE_ID, PRICE_CHANGE_ID, START_DATE, END_DATE, NEW_RETAIL_PRICE, ACTIVITY_TYPE, PROCESS_DATE_CREATED, SITE_ID FROM MERCH.IRO_POS_PRICES INNER JOIN ELCAT.STYLE_COLOURS sc ON SUBSTR(sc.STYLEID,1,8) = STYLE_ID AND sc.COLOUR_ID = COLOR_ID AND SITE_ID in ('00990', '00011') AND BUSINESS_UNIT_ID = 1 AND PRICE_CHANGE_ID IS NOT NULL AND START_DATE IS NOT NULL",
+    "numeric.mapping": "best_fit",
+    "topic.prefix": "sale-prices-connect-jdbc",
+    "validate.non.null": "false",
+    "poll.interval.ms": 60000,
+    "offset.flush.timeout.ms": 60000
+  }
+}

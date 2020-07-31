@@ -1,7 +1,6 @@
 const { filterBarcodeMessage, parseBarcodeMessage } = require('../../lib/parseBarcodeMessage');
-const { createLog, addErrorHandling, log } = require('../utils');
+const { createLog, addErrorHandling, log, addLoggingToMain } = require('../utils');
 const getCollection = require('../../lib/getCollection');
-const messagesLogs = require('../../lib/messagesLogs');
 const createError = require('../../lib/createError');
 
 const main = async function (params) {
@@ -23,11 +22,11 @@ const main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter(filterBarcodeMessage)
-        .map(parseBarcodeMessage)
+        .map(addErrorHandling(msg => filterBarcodeMessage(msg) ? msg : null))
+        .map(addErrorHandling(parseBarcodeMessage))
         .map(addErrorHandling((barcodeData) => barcodes.findOne({ _id: barcodeData._id })
             .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
-                ? barcodes.updateOne({ _id: barcodeData._id, lastModifiedDate: { $lt: barcodeData.lastModifiedDate } }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: barcodeData })
+                ? barcodes.updateOne({ _id: barcodeData._id, lastModifiedDate: { $lte: barcodeData.lastModifiedDate } }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: barcodeData })
                 : barcodes.updateOne({ _id: barcodeData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: barcodeData }, { upsert: true })
             )
             .catch((err) => {
@@ -55,11 +54,6 @@ const main = async function (params) {
     });
 }
 
-global.main = async function (params) {
-  return Promise.all([
-      main(params),
-      messagesLogs.storeBatch(params)
-  ]).then(([result]) => result);
-}
+global.main = addLoggingToMain(main);
 
 module.exports = global.main;

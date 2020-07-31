@@ -1,0 +1,96 @@
+{
+    "key": "customLineItemFields",
+    "name": {
+        "fr-CA": "",
+        "en-CA": "Custom Line Item Fields"
+    },
+    "resourceTypeIds": [
+        "line-item"
+    ],
+    "fieldDefinitions": [
+        {
+            "name": "barcodeData",
+            "label": {
+                "fr-CA": "",
+                "en-CA": "BarcodeData"
+            },
+            "required": false,
+            "type": {
+                "name": "Set",
+                "elementType": {
+                    "name": "Reference",
+                    "referenceTypeId": "key-value-document"
+                }
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "isGift",
+            "label": {
+                "fr-CA": "",
+                "en-CA": "Is Gift Item"
+            },
+            "required": false,
+            "type": {
+                "name": "Boolean"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "orderDetailLastModifiedDate",
+            "label": {
+                "fr-CA": "",
+                "en-CA": "Order Detail Last Modified Date"
+            },
+            "required": false,
+            "type": {
+                "name": "DateTime"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "salespersonId",
+            "label": {
+                "en-CA": "Salesperson ID"
+            },
+            "required": false,
+            "type": {
+                "name": "Number"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "lineShippingCharges",
+            "label": {
+                "en-CA": "Line shipping charges"
+            },
+            "required": false,
+            "type": {
+                "name": "Money"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "lineTotalTax",
+            "label": {
+                "en-CA": "Line total tax"
+            },
+            "required": false,
+            "type": {
+                "name": "Money"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "lineTaxDescription",
+            "label": {
+                "en-CA": "Line item tax description"
+            },
+            "required": false,
+            "type": {
+                "name": "String"
+            },
+            "inputHint": "SingleLine"
+        }
+    ]
+}

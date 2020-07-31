@@ -1,0 +1,170 @@
+[
+  {
+      "id": "3a618148-2a21-491d-9cb3-5ef02183189f",
+      "version": 1,
+      "createdAt": "2020-05-05T18:12:11.022Z",
+      "lastModifiedAt": "2020-05-05T18:12:11.022Z",
+      "lastModifiedBy": {
+          "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+          "isPlatformClient": false
+      },
+      "createdBy": {
+          "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+          "isPlatformClient": false
+      },
+      "name": "member",
+      "key": "10",
+      "custom": {
+          "type": {
+              "typeId": "type",
+              "id": "18d440ef-70ec-4066-b4c7-e5267749f309"
+          },
+          "fields": {
+              "tierName": {
+                  "fr-CA": "Membre",
+                  "en-CA": "Member"
+              }
+          }
+      }
+  },
+  {
+      "id": "5eb1da49-1392-4336-8e07-975a22a06d31",
+      "version": 1,
+      "createdAt": "2020-05-05T18:13:11.268Z",
+      "lastModifiedAt": "2020-05-05T18:13:11.268Z",
+      "lastModifiedBy": {
+          "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+          "isPlatformClient": false
+      },
+      "createdBy": {
+          "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+          "isPlatformClient": false
+      },
+      "name": "silver",
+      "key": "20",
+      "custom": {
+          "type": {
+              "typeId": "type",
+              "id": "18d440ef-70ec-4066-b4c7-e5267749f309"
+          },
+          "fields": {
+              "tierName": {
+                  "fr-CA": "Argent",
+                  "en-CA": "Silver"
+              }
+          }
+      }
+  },
+  {
+      "id": "574669e3-6cba-4f4d-9f05-2f6ad91fc5e6",
+      "version": 1,
+      "createdAt": "2020-05-05T18:14:03.575Z",
+      "lastModifiedAt": "2020-05-05T18:14:03.575Z",
+      "lastModifiedBy": {
+          "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+          "isPlatformClient": false
+      },
+      "createdBy": {
+          "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+          "isPlatformClient": false
+      },
+      "name": "gold",
+      "key": "30",
+      "custom": {
+          "type": {
+              "typeId": "type",
+              "id": "18d440ef-70ec-4066-b4c7-e5267749f309"
+          },
+          "fields": {
+              "tierName": {
+                  "fr-CA": "Or",
+                  "en-CA": "Gold"
+              }
+          }
+      }
+  },
+  {
+      "id": "e6d9568a-5477-4680-bb10-a5f5160d53c4",
+      "version": 1,
+      "createdAt": "2020-05-05T18:14:45.157Z",
+      "lastModifiedAt": "2020-05-05T18:14:45.157Z",
+      "lastModifiedBy": {
+          "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+          "isPlatformClient": false
+      },
+      "createdBy": {
+          "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+          "isPlatformClient": false
+      },
+      "name": "platinum",
+      "key": "40",
+      "custom": {
+          "type": {
+              "typeId": "type",
+              "id": "18d440ef-70ec-4066-b4c7-e5267749f309"
+          },
+          "fields": {
+              "tierName": {
+                  "fr-CA": "Platine",
+                  "en-CA": "Platinum"
+              }
+          }
+      }
+  },
+  {
+      "id": "772383a9-8031-4501-8d9f-41ebb980d14b",
+      "version": 1,
+      "createdAt": "2020-05-05T18:15:35.453Z",
+      "lastModifiedAt": "2020-05-05T18:15:35.453Z",
+      "lastModifiedBy": {
+          "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+          "isPlatformClient": false
+      },
+      "createdBy": {
+          "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+          "isPlatformClient": false
+      },
+      "name": "platinumElite",
+      "key": "50",
+      "custom": {
+          "type": {
+              "typeId": "type",
+              "id": "18d440ef-70ec-4066-b4c7-e5267749f309"
+          },
+          "fields": {
+              "tierName": {
+                  "fr-CA": "Platine Élite",
+                  "en-CA": "Platinum Elite"
+              }
+          }
+      }
+  },
+  {
+      "id": "a68534e4-d2aa-48a4-aba1-a05bb72a975f",
+      "version": 1,
+      "createdAt": "2020-05-05T18:16:15.129Z",
+      "lastModifiedAt": "2020-05-05T18:16:15.129Z",
+      "lastModifiedBy": {
+          "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+          "isPlatformClient": false
+      },
+      "createdBy": {
+          "clientId": "fWYPIVCZfSLvWu1GtNWc-Vbb",
+          "isPlatformClient": false
+      },
+      "name": "lifetime",
+      "key": "60",
+      "custom": {
+          "type": {
+              "typeId": "type",
+              "id": "18d440ef-70ec-4066-b4c7-e5267749f309"
+          },
+          "fields": {
+              "tierName": {
+                  "fr-CA": "Illimité",
+                  "en-CA": "Lifetime"
+              }
+          }
+      }
+  }
+]

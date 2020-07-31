@@ -1,0 +1,62 @@
+{
+    "key": "priceCustomFields",
+    "name": {
+        "fr-CA": "",
+        "en-CA": "Price Custom Fields"
+    },
+    "resourceTypeIds": [
+        "product-price"
+    ],
+    "fieldDefinitions": [
+        {
+            "name": "processDateCreated",
+            "label": {
+                "fr-CA": "",
+                "en-CA": "Process Date Created"
+            },
+            "required": false,
+            "type": {
+                "name": "DateTime"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "priceChangeId",
+            "label": {
+                "fr-CA": "",
+                "en-CA": "Price Change ID"
+            },
+            "required": false,
+            "type": {
+                "name": "String"
+            },
+            "inputHint": "SingleLine"
+        },
+        {
+            "name": "priceType",
+            "label": {
+                "en-CA": "Price Type",
+                "fr-CA": ""
+            },
+            "required": false,
+            "type": {
+                "name": "Enum",
+                "values": [
+                    {
+                        "key": "originalPrice",
+                        "label": "Original Price"
+                    },
+                    {
+                        "key": "permanentMarkdown",
+                        "label": "Permanent Markdown"
+                    },
+                    {
+                        "key": "temporaryMarkdown",
+                        "label": "Temporary Markdown"
+                    }
+                ]
+            },
+            "inputHint": "SingleLine"
+        }
+    ]
+}

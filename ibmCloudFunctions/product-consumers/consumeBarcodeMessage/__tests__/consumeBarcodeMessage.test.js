@@ -4,7 +4,7 @@ jest.mock("mongodb");
 
 describe('consumeBarcodeMessage', () => {
     it('missing all parameters; should fail', async () => {
-        await expect(consumeBarcodeMessage({})).rejects.toThrow();
+        await expect((await consumeBarcodeMessage({})).error).toBeTruthy();
     });
     it('correct message to update barcode', async () => {
         const params = {

@@ -1,8 +1,7 @@
 const { filterSkuMessage, parseSkuMessage } = require('../../lib/parseSkuMessage');
-const { addErrorHandling, log, createLog } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain } = require('../utils');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const messagesLogs = require('../../lib/messagesLogs');
 
 const main = async function (params) {
     log(createLog.params('consumeSkuMessage', params));
@@ -23,14 +22,14 @@ const main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter(addErrorHandling(filterSkuMessage))
+        .map(addErrorHandling(msg => filterSkuMessage(msg) ? msg : null))
         .map(addErrorHandling(parseSkuMessage))
         .map(addErrorHandling(async (skuData) => {
                   const existingDocument = await skus.findOne({ _id: skuData._id })
 
                   const skuUpdate = { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: skuData }
                   if (existingDocument && existingDocument.lastModifiedDate) {
-                    return skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lt: skuData.lastModifiedDate } }, skuUpdate)
+                    return skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lte: skuData.lastModifiedDate } }, skuUpdate)
                                     .catch(originalError => {
                                         throw createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
                                     })
@@ -53,11 +52,5 @@ const main = async function (params) {
     });
 }
 
-global.main = async function (params) {
-  return Promise.all([
-      main(params),
-      messagesLogs.storeBatch(params)
-  ]).then(([result]) => result);
-}
-
+global.main = addLoggingToMain(main);
 module.exports = global.main;

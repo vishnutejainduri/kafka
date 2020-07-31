@@ -5,7 +5,7 @@ const { MAX_RETRIES } = require('../utils');
 function mockModules({
     mockBatch,
     mockActivationInfo,
-    mockMessage
+    mockMessages
 }) {
     jest.mock('../../../lib/getCollection', function() {
         async function getCollection() {
@@ -25,7 +25,7 @@ function mockModules({
                 // used in findMessages
                 async findOne() {
                     return {
-                        messages: [mockMessage]
+                        messages: mockMessages
                     };
                 },
                 // used in storeDlqMessages/storeRetryMessages
@@ -60,8 +60,11 @@ describe('resolveMessagesLogs', function() {
         expect(await resolveMessagesLogs({
             collectionName: 'empty'
         })).toEqual({
-            resolveBatchesResult: [],
-            unresolvedBatches: []
+            counts: {
+                failedToResolve: 0,
+                successfullyResolved: 0
+            },
+            resolveBatchesResult: []
         });
     });
 
@@ -77,15 +80,16 @@ describe('resolveMessagesLogs', function() {
         mockModules({ mockBatch, mockActivationInfo });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                failedToResolve: 0,
+                successfullyResolved: 1
+            },
             resolveBatchesResult: [{
-                activationId: mockBatch.activationId,
-                success: true,
-                messagesByNextAction: {
-                    retried: 0,
-                    dlqed: 0
-                }
-            }],
-            unresolvedBatches: [mockBatch]
+                batch: mockBatch,
+                resolved: true,
+                dlqed: 0,
+                retried: 0
+            }]
         });
     });
 
@@ -108,19 +112,18 @@ describe('resolveMessagesLogs', function() {
                 id: 'some-id'
             }
         };
-        mockModules({ mockBatch, mockActivationInfo, mockMessage });
+        mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage] });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                successfullyResolved: 1,
+                failedToResolve: 0
+            },
             resolveBatchesResult: [{
-                activationId: mockBatch.activationId,
-                success: true,
-                messagesByNextAction: {
-                    retried: 1,
-                    dlqed: 0
-                }
-            }],
-            unresolvedBatches: [{
-                ...mockBatch
+                batch: mockBatch,
+                resolved: true,
+                retried: 1,
+                dlqed: 0
             }]
         });
     });
@@ -149,19 +152,18 @@ describe('resolveMessagesLogs', function() {
                 }
             }
         };
-        mockModules({ mockBatch, mockActivationInfo, mockMessage });
+        mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage] });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                successfullyResolved: 1,
+                failedToResolve: 0
+            },
             resolveBatchesResult: [{
-                activationId: mockBatch.activationId,
-                success: true,
-                messagesByNextAction: {
-                    retried: 0,
-                    dlqed: 1
-                }
-            }],
-            unresolvedBatches: [{
-                ...mockBatch
+                batch: mockBatch,
+                resolved: true,
+                retried: 0,
+                dlqed: 1
             }]
         });
     });
@@ -192,19 +194,61 @@ describe('resolveMessagesLogs', function() {
                 }
             }
         };
-        mockModules({ mockBatch, mockActivationInfo, mockMessage });
+        mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage] });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                successfullyResolved: 1,
+                failedToResolve: 0
+            },
             resolveBatchesResult: [{
-                activationId: mockBatch.activationId,
-                success: true,
-                messagesByNextAction: {
-                    retried: 1,
-                    dlqed: 0
-                }
+                batch: mockBatch,
+                retried: 1,
+                dlqed: 0,
+                resolved: true
+            }]
+        });
+    });
+
+    it('returns all of the messages for a batch with partial failure, ignoring partial failure info', async function() {
+        const mockBatch = {
+            activationId: 'some-activationId',
+            failureIndexes: [0]
+        };
+        const mockActivationInfo = {
+            annotations: [{
+                key: 'timeout',
+                value: false
             }],
-            unresolvedBatches: [{
-                ...mockBatch
+            response: {
+                success: false
+            },
+            end: 0
+        };
+        const mockMessage = {
+            id: 'some-message',
+            value: {
+                id: 'some-id',
+                metadata: {
+                    lastRetry: 0,
+                    nextRetry: 0,
+                    retries: 0
+                }
+            }
+        };
+        mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage, mockMessage] });
+        const resolveMessagesLogs = require('../index');
+        expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                // Note: this is batch count not message count; a batch is either completely handled or it fails
+                successfullyResolved: 1,
+                failedToResolve: 0
+            },
+            resolveBatchesResult: [{
+                batch: mockBatch,
+                retried: 2,
+                dlqed: 0,
+                resolved: true
             }]
         });
     });
@@ -235,19 +279,18 @@ describe('resolveMessagesLogs', function() {
                 }
             }
         };
-        mockModules({ mockBatch, mockActivationInfo, mockMessage });
+        mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage] });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                failedToResolve: 0,
+                successfullyResolved: 1
+            },
             resolveBatchesResult: [{
-                activationId: mockBatch.activationId,
-                success: true,
-                messagesByNextAction: {
-                    retried: 0,
-                    dlqed: 1
-                }
-            }],
-            unresolvedBatches: [{
-                ...mockBatch
+                resolved: true,
+                dlqed: 1,
+                retried: 0,
+                batch: mockBatch
             }]
         });
     });

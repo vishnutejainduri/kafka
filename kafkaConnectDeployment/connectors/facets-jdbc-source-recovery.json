@@ -1,0 +1,20 @@
+{
+  "name": "facets-jdbc-source",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "mode": "bulk",
+    "batch.max.rows": 100,
+    "errors.log.enable": true,
+    "numeric.mapping": "best_fit",
+    "topic.prefix": "facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA",
+    "validate.non.null": "false",
+    "query": "SELECT * FROM(SELECT STYLE_COLOURS.IMAGE_STYLEID AS STYLEID, facets.CATEGORY, facets.DESC_ENG, facets.DESC_FR, facets.UPD_FLG, facets.FKORGANIZATIONNO, facets.CHAR_TY_SUB_TYPE, facets.CHARACTERISTIC_TYPE_ID, facets.CHARACTERISTIC_VALUE_ID, facets.LAST_MODIFIED AS LAST_MODIFIED FROM ELCAT.STYLE_ITEM_CHARACTERISTICS_ECA facets INNER JOIN ELCAT.STYLE_COLOURS ON SUBSTR(STYLE_COLOURS.STYLEID, 1, 8) = facets.STYLEID) WHERE LAST_MODIFIED >= sysdate - interval '300' minute",
+    "schema.pattern": "ELCAT",
+    "poll.interval.ms": 60000,
+    "offset.flush.timeout.ms": 120000,
+    "request.timeout.ms": 60000,
+    "table.poll.interval.ms": 3600000
+  }
+}

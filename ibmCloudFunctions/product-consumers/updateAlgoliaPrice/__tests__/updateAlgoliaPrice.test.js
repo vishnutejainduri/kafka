@@ -17,20 +17,31 @@ describe('updateAlgoliaPrice', () => {
     };
 
     const validMessage = {
-        topic: 'prices-connect-jdbc',
+        topic: 'sale-prices-connect-jdbc',
         value: {
-            STYLE_ID: 'STYLE_ID',
-            SITE_ID: 'SITE_ID',
-            NEW_RETAIL_PRICE: 'NEW_RETAIL_PRICE'
+            STYLE_ID: 'styleId-with-priceChange',
+            PRICE_CHANGE_ID: 'priceChangeId',
+            START_DATE: '2020',
+            END_DATE: '2021',
+            ACTIVITY_TYPE: 'a',
+            PROCESS_DATE_CREATED: 2020,
+            NEW_RETAIL_PRICE: 100,
+            SITE_ID: 'siteId'
         }
     };
 
     const invalidMessage = {
-        topic: 'prices-connect-jdbc',
+        topic: 'sale-prices-connect-jdbc',
         value: {
-            // Invalid message, missing STYLE_ID: 'STYLE_ID',
-            SITE_ID: 'SITE_ID',
-            NEW_RETAIL_PRICE: 'NEW_RETAIL_PRICE'
+            // Invalid message, missing STYLE_ID
+            STYLE_ID: undefined,
+            PRICE_CHANGE_ID: 'priceChangeId',
+            START_DATE: '2020',
+            END_DATE: '2021',
+            ACTIVITY_TYPE: 'a',
+            PROCESS_DATE_CREATED: 2020,
+            NEW_RETAIL_PRICE: 'newRetailPrice',
+            SITE_ID: 'siteId'
         }
     };
 
@@ -42,7 +53,42 @@ describe('updateAlgoliaPrice', () => {
         };
         
         const response = await updateAlgoliaPrice(params);
-        expect(response).toEqual(params);
+        expect(response).toEqual({
+            failureIndexes: [],
+            errors: [],
+            successCount: 1
+        });
+    });
+
+    it('Returns a succesful response but no update to algolia if any of the styles are missing an originalPrice', async () =>{
+        const messages = [{...validMessage, value: { ...validMessage.value, STYLE_ID: 'style-id-no-original-price' } }];
+        const params = {
+            ...validParams,
+            messages
+        };
+        
+        const response = await updateAlgoliaPrice(params);
+        expect(response).toEqual({
+            failureIndexes: [],
+            errors: [],
+            successCount: 1
+        });
+    });
+
+    it('Returns an array of failed messages if any of the messages are invalid', async () =>{
+        const messages = [
+            invalidMessage,
+            validMessage
+        ];
+
+        const params = {
+            ...validParams,
+            messages
+        };
+
+        const response = await updateAlgoliaPrice(params)
+        expect(response.failureIndexes.length).toEqual(1);
+        expect(response.failureIndexes[0]).toEqual(0);
     });
 
     it('Returns an array of failed messages if any of the messages are invalid', async () =>{
@@ -56,25 +102,10 @@ describe('updateAlgoliaPrice', () => {
             messages
         };
 
-        const error = await updateAlgoliaPrice(params).catch(error => error)
-        expect(error.debugInfo.messageFailures.length).toBe(1);
-    });
+        const response = await updateAlgoliaPrice(params)
 
-    it('Returns an array of failed messages if any of the messages are invalid', async () =>{
-        const messages = [
-            validMessage,
-            invalidMessage
-        ];
-
-        const params = {
-            ...validParams,
-            messages
-        };
-
-        const error = await updateAlgoliaPrice(params).catch(error => error)
-        expect(error.debugInfo.messageFailures.length).toBe(1);
-        //TODO: Explictly check for valid/invalid message in returned error.debugInfo
-        expect(error.debugInfo.messageFailures[0]).toBeInstanceOf(Error)
+        expect(response.failureIndexes.length).toBe(1);
+        expect(response.failureIndexes[0]).toEqual(1)
     });
 
     it('Filters out invalid messages from response messages property', async () =>{
@@ -88,9 +119,8 @@ describe('updateAlgoliaPrice', () => {
             messages
         };
 
-        const error = await updateAlgoliaPrice(params).catch(error => error)
-        expect(error.debugInfo.messageFailures.length).toBe(1);
-        //TODO: Explictly check for valid/invalid message in returned error.debugInfo
-        expect(error.debugInfo.messageFailures[0]).toBeInstanceOf(Object)
+        const response = await updateAlgoliaPrice(params)
+        expect(response.failureIndexes.length).toBe(1);
+        expect(response.failureIndexes[0]).toEqual(1)
     });
 });

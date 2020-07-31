@@ -1,6 +1,5 @@
 const consumeStylesBasicMessageCT = require('..');
 const { updateStyleOutlet } = require('../utils');
-const { filterStyleBasicMessage } = require('../../../lib/parseStyleBasicMessage');
 const { parseStyleBasicMessageCt } = require('../../../lib/parseStyleBasicMessageCt');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
 const {
@@ -20,7 +19,7 @@ const validParams = {
       value: {
         LAST_MODIFIED_DATE: 1000000000000,
         STYLE_ID: 'styleId',
-        BRAND_ID: 'brandId'
+        BRAND_ID: '1'
       }
   }],
   mongoUri: 'mongo-uri',
@@ -38,14 +37,14 @@ const validParams = {
 const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('consumeStylesBasicMessageCT', () => {
-  it('throws an error if given params are invalid', () => {
+  it('Returns an error if given params are invalid', async () => {
     const invalidParams = {};
-    return expect(consumeStylesBasicMessageCT(invalidParams)).rejects.toThrow();
+    return expect((await consumeStylesBasicMessageCT(invalidParams)).error).toBeTruthy();
   });
 
-  it('returns `undefined` if given valid params', async () => {
+  it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeStylesBasicMessageCT(validParams);
-    expect(response).toBeUndefined();
+    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
   });
 });
 
@@ -60,7 +59,6 @@ describe('updateStyleOutlet', () => {
   it('correct message; date in the future', async () => {
      const result =  
         validParams.messages
-        .filter(addErrorHandling(filterStyleBasicMessage))
         .map(addErrorHandling(parseStyleBasicMessageCt))
     const response = await updateStyleOutlet(mockedCtHelpers, validParams.productTypeId, result[0]);
     expect(response).toBeTruthy();

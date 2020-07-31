@@ -39,6 +39,7 @@ const getCollection = (collectionName) => {
             }; 
         case 'skus':
             return {
+                update: async () => ({ }),
                 updateOne: async ({ _id }) => ({ _id }),
                 findOne: async () => ({ _id: 'success' }),
                 find: () => ({
@@ -56,7 +57,9 @@ const getCollection = (collectionName) => {
                 }),
                 aggregate: () => ({
                   toArray: async () => ([{ _id: 'success' }])
-                })
+                }),
+                findOne: () => ({}),
+                updateOne: async () => ({})
             }; 
         case 'styleAvailabilityCheckQueue':
             return {
@@ -92,12 +95,28 @@ const getCollection = (collectionName) => {
         case 'styles':
             return {
                 updateOne: async ({ _id }) => ({ _id }),
-                findOne: async () => ({ _id: 'success', styleId: 'success', ats: [] }),
+                findOne: async ({ _id }) => {
+                  if (_id === 'style-id-no-original-price') return { _id: 'style-id-no-original-price', styleId: 'style-id-no-original-price' }
+                  return { _id: 'success', styleId: 'success', ats: [], originalPrice: 100 }
+                }
             }; 
         case 'prices':
             return {
+                find: () => ({
+                    project: () => ({
+                      limit: () => ({
+                        toArray: async () => ([{ _id: 'success', styleId: 'success', priceChanges: [] }]) 
+                      })
+                    })
+                }),
+                update: async () => {}, 
                 updateOne: async ({ _id }) => ({ _id }),
-                findOne: async () => ({ _id: 'success', styleId: 'styleId', onlineSalePrice: 'onlineSalePrice', inStoreSalePrice: 'inStoreSalePrice' }),
+                findOne: async (query) => {
+                    if (query && query.styleId && query.styleId.includes('with-priceChange')) {
+                        return ({ styleId: query.styleId, priceChanges: [{ priceChangeId: 'some-id', startDate: new Date(), newRetailPrice: 10, activityType: 'A', siteId: '00011' }] });
+                    }
+                    return ({ _id: 'success', styleId: 'styleId', onlineSalePrice: 'onlineSalePrice', inStoreSalePrice: 'inStoreSalePrice', processDateCreated: new Date() });
+                }
             }; 
         default:
             return {

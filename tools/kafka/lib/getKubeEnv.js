@@ -1,19 +1,19 @@
 module.exports = function (platformEnv) {
-    if (platformEnv === "prod") {
+    if (platformEnv === "production") {
         return {
-            username: process.env.KUBE_PROD_USERNAME,
-            password: process.env.KUBE_PROD_PASSWORD,
-            tenant: process.env.KUBE_PROD_TENANT,
-            host: process.env.KUBE_PROD_HOST
+            username: process.env.KUBE_PRODUCTION_USERNAME,
+            password: process.env.KUBE_PRODUCTION_PASSWORD,
+            tenant: process.env.KUBE_PRODUCTION_TENANT,
+            host: process.env.KUBE_PRODUCTION_HOST
         }
     }
 
-    if (platformEnv === "dev") {
+    if (platformEnv === "staging") {
         return {
-            username: process.env.KUBE_DEV_USERNAME,
-            password: process.env.KUBE_DEV_PASSWORD,
-            tenant: process.env.KUBE_DEV_TENANT,
-            host: process.env.KUBE_DEV_HOST            
+            username: process.env.KUBE_STAGING_USERNAME,
+            password: process.env.KUBE_STAGING_PASSWORD,
+            tenant: process.env.KUBE_STAGING_TENANT,
+            host: process.env.KUBE_STAGING_HOST            
         }
     }
 

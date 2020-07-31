@@ -1,5 +1,4 @@
 const { updateStyleOutlet } = require('./utils');
-const { filterStyleBasicMessage } = require('../../lib/parseStyleBasicMessage');
 const { parseStyleBasicMessageCt } = require('../../lib/parseStyleBasicMessageCt');
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
@@ -29,7 +28,6 @@ const main = params => {
   
   const stylesToUpdate = (
     params.messages
-      .filter(addErrorHandling(filterStyleBasicMessage))
       .map(addErrorHandling(parseStyleBasicMessageCt))
   );
 

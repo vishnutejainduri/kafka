@@ -1,4 +1,4 @@
-const MAX_RETRIES = 7;
+const MAX_RETRIES = 4;
 const INTERVAL_GROWTH_RATE = 15 * 60 * 1000;
 
 function getValueWithUpdatedMetadata(value, activationEndTime) {
@@ -10,7 +10,7 @@ function getValueWithUpdatedMetadata(value, activationEndTime) {
                 ...metadata,
                 retries,
                 lastRetry: activationEndTime,
-                nextRetry: activationEndTime + INTERVAL_GROWTH_RATE * Math.pow(2, retries)
+                nextRetry: activationEndTime + Math.ceil(INTERVAL_GROWTH_RATE * Math.pow(3, retries) * (1 + Math.random()))
                 // Current implementation requires a process job that is invoked regularly in a high frequency e.g. every minute and finds all the messages
                 // that have had a next retry before the process job run.
                 // Alternative implementation: next retry could instead be a bucket e.g. immediately for retries 0 to 2 and next hours for retries 2 to 4, etc.
@@ -20,9 +20,9 @@ function getValueWithUpdatedMetadata(value, activationEndTime) {
     };
 }
 
-function groupMessagesByNextAction(messages, activationEndTime ) {
+function groupMessagesByNextAction(messages, activationEndTime, maxRetries = MAX_RETRIES) {
     return messages.reduce(function ({ retry, dlq }, message) {
-        if (message.value.metadata && message.value.metadata.retries >= MAX_RETRIES) {
+        if (message.value.metadata && message.value.metadata.retries >= maxRetries) {
             dlq.push(message);
         } else {
             retry.push({

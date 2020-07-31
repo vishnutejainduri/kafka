@@ -1,8 +1,9 @@
-const { getExistingCtStyle, createStyle } = require('../styleUtils');
-const { skuAttributeNames } = require('../constantsCt');
+const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
+const { skuAttributeNames, isStaged, entityStatus, CT_ACTION_LIMIT } = require('../constantsCt');
 const { groupByAttribute } = require('../../lib/utils');
 
 const groupByStyleId = groupByAttribute('styleId');
+const skuImage = (styleId) => ( { url: `https://i1.adis.ws/i/harryrosen/${styleId}?$prp-4col-xl$`,  dimensions: { w: 242, h: 288 } } )
 
 const getCtSkuAttributeValue = (ctSku, attributeName) => {
   if (!ctSku.attributes) return undefined;
@@ -43,10 +44,35 @@ const getActionsFromSku = (sku, existingSku = null) => {
     action: 'setAttribute',
     sku: sku.id,
     name: attribute,
-    value: sku[attribute]
+    value: sku[attribute],
+    staged: isStaged
   }));
 
-  if (existingSku) return actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
+  if (existingSku) {
+    const removeImageActions = existingSku.images.map(image => (
+      image.url === skuImage(sku.styleId).url 
+        ? null
+        : {
+          action: 'removeImage',
+          sku: existingSku.sku,
+          imageUrl: image.url,
+          staged: isStaged
+        }
+    )).filter(Boolean);
+
+    const addImageAction = removeImageActions.length === 0 && existingSku.images.length > 0
+      ? null
+      : {
+        action: 'addExternalImage',
+        sku: sku.id,
+        image: skuImage(sku.styleId),
+        staged: isStaged
+      };
+
+    const validActions = actions.filter(isExistingAttributeOrNonNullish.bind(null, existingSku));
+    return [...validActions, ...removeImageActions, addImageAction].filter(Boolean);
+  }
+
   return actions.filter(hasNonNullishValue);
 };
 
@@ -57,15 +83,15 @@ const getActionsFromSku = (sku, existingSku = null) => {
 // those in the staged version of the variant if there are staged changes.
 const getCreationAction = (sku, style) => {
   const attributes = (
-    style.masterData.hasStagedChanges
-      ? style.masterData.staged.masterVariant.attributes
-      : style.masterData.current.masterVariant.attributes
+    style.masterData[entityStatus].masterVariant.attributes
   );
 
   return {
     action: 'addVariant',
     sku: sku.id,
-    attributes
+    attributes,
+    images: [skuImage(style.key)],
+    staged: isStaged
   };
 };
 
@@ -86,10 +112,13 @@ const formatSkuRequestBody = (sku, style, existingSku = null) => {
 // Note: This ignores the master variant, which is a placeholder that doesn't
 // correspond to an actual SKU
 const getCtSkuFromCtStyle = (skuId, ctStyle) => {
-  // We want the SKU with the most recent changes, which we assume is the
-  // staged one, if there are staged changes
-  const skus = ctStyle.masterData[ctStyle.masterData.hasStagedChanges ? 'staged' : 'current'].variants;
-  return skus.find(variant => variant.sku === skuId); // in CT, the SKU ID is simply called 'sku'
+  // The status of the SKU that we find (staged vs. current) should match the
+  // status of the SKU that we will add if the given SKU can't be found. When
+  // adding a missing SKU, we also set it as staged or current according to the
+  // value of `isStaged`.
+  const skuStatus = isStaged ? 'staged' : 'current';
+  const skus = ctStyle.masterData[skuStatus] && ctStyle.masterData[skuStatus].variants;
+  return skus && skus.find(variant => variant.sku === skuId); // in CT, the SKU ID is simply called 'sku'
 };
 
 const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
@@ -98,7 +127,7 @@ const existingCtSkuIsNewer = (existingCtSku, givenSku) => {
   if (!givenSku[skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL]) throw new Error('JESTA SKU lacks last modified date');
 
   const ctSkuLastModifiedDate = new Date(ctSkuLastModifiedString);
-  return ctSkuLastModifiedDate.getTime() >= givenSku[skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL].getTime();
+  return ctSkuLastModifiedDate.getTime() > givenSku[skuAttributeNames.SKU_LAST_MODIFIED_INTERNAL].getTime();
 };
 
 const getCtSkusFromCtStyle = (skus, ctStyle) => (
@@ -131,24 +160,30 @@ const getActionsFromSkus = (skus, existingCtSkus, ctStyle) => (
   }, [])
 );
 
-const formatSkuBatchRequestBody = (skusToCreateOrUpdate, ctStyle, existingCtSkus) => {
-  const actions = getActionsFromSkus(skusToCreateOrUpdate, existingCtSkus, ctStyle);
-
-  return JSON.stringify({
-    version: ctStyle.version,
-    actions
-  });
+const groupByN = n => items => {
+  const groupedItems = [];
+  for (let i = 0; i < items.length; i += n) {
+    groupedItems.push(items.slice(i, i + n));
+  }
+  return groupedItems;
 };
 
-const createOrUpdateSkus = (skusToCreateOrUpdate, existingCtSkus, ctStyle, { client, requestBuilder }) => {
+const createOrUpdateSkus = async (skusToCreateOrUpdate, existingCtSkus, ctStyle, { client, requestBuilder }) => {
   if (skusToCreateOrUpdate.length === 0) return null;
 
   const method = 'POST';
   const styleId = skusToCreateOrUpdate[0].styleId;
   const uri = requestBuilder.products.byKey(styleId).build();
-  const body = formatSkuBatchRequestBody(skusToCreateOrUpdate, ctStyle, existingCtSkus);
 
-  return client.execute({ method, uri, body });
+  const actionsGroupedByActionLimit = groupByN(CT_ACTION_LIMIT)(getActionsFromSkus(skusToCreateOrUpdate, existingCtSkus, ctStyle));
+
+  let workingStyle = ctStyle;
+  for (const actions of actionsGroupedByActionLimit) {
+    const body = JSON.stringify({ version: workingStyle.version, actions });
+    workingStyle = (await client.execute({ method, uri, body })).body
+  }
+
+  return workingStyle;
 };
 
 const groupBySkuId = groupByAttribute('id');
@@ -176,7 +211,6 @@ const removeDuplicateSkus = skus => {
 
 module.exports = {
   formatSkuRequestBody,
-  formatSkuBatchRequestBody,
   getActionsFromSku,
   getActionsFromSkus,
   existingCtSkuIsNewer,
@@ -188,7 +222,8 @@ module.exports = {
   getMostUpToDateSku,
   getExistingCtStyle,
   groupByStyleId,
+  groupByN,
   removeDuplicateSkus,
-  createStyle,
+  createAndPublishStyle,
   createOrUpdateSkus
 };

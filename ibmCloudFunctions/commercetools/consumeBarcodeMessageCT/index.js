@@ -15,7 +15,7 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownAnyMessageErrors,
+  passDownBatchedErrorsAndFailureIndexes,
   validateParams
 } = require('../../product-consumers/utils');
 
@@ -50,7 +50,7 @@ const main = params => {
   
   const barcodesToCreateOrUpdate = (
     params.messages
-      .filter(addErrorHandling(filterBarcodeMessage))
+      .map(addErrorHandling(msg => filterBarcodeMessage(msg) ? msg : null))
       .map(addErrorHandling(parseBarcodeMessage))
   );
 
@@ -62,7 +62,7 @@ const main = params => {
   );
   
   return Promise.all(barcodeBatchPromises)
-    .then(passDownAnyMessageErrors)
+    .then(passDownBatchedErrorsAndFailureIndexes(barcodesGroupedByStyleId, params.messages))
     .catch(handleErrors);
 };
 

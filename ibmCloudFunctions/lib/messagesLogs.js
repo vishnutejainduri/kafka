@@ -1,6 +1,22 @@
 const getCollection = require('./getCollection');
-const { log, createLog } = require('../product-consumers/utils');
 const createError = require('../lib/createError');
+
+const MESSAGES_LOG_ERROR = 'MESSAGES LOG ERROR.';
+
+const log = new Proxy({
+    failedToStoreBatch (error) {
+        console.error(`${MESSAGES_LOG_ERROR} Failed to store batch of messages: ${error}`);
+    },
+    failedToUpdateBatchWithFailureIndexes (error) {
+        console.error(`${MESSAGES_LOG_ERROR} Failed to update batch of messages with failure indexes: ${error}`)
+    }
+}, {
+    get (loggers, logger) {
+        return process.env.NODE_ENV === "test"
+            ? () => {}
+            : loggers[logger]
+    }
+})
 
 // TODO create proper indexes on mongo
 async function getMessagesCollection({
@@ -88,50 +104,60 @@ async function getValuesCollection({
     );
 }
 
+
+// Although ObjectId can be used to find the insertion date of a document,
+// it is somewhat convoluted, so we save recordTime and index it instead.
+// Reference: https://stackoverflow.com/a/8753670/12727551
+
+// function objectIdWithTimestamp(timestamp) {
+//     if (typeof(timestamp) == 'string') {
+//         timestamp = new Date(timestamp);
+//     }
+//     const hexSeconds = Math.floor(timestamp/1000).toString(16);
+//     const constructedObjectId = ObjectId(hexSeconds + "0000000000000000");
+//     return constructedObjectId
+// }
+// db.getCollection('messagesByActivationIds').find({ _id: { $lt: objectIdWithTimestamp('2020/04/24') } })
+
 async function storeBatch(params) {
-    try {
-        const collection = await getMessagesCollection(params);
-        const transactionId = process.env.__OW_TRANSACTION_ID;
-        let messages = params.messages;
-        if (params.messages === null) {
-            // for messages in a sequence, only the first step has the messages as stored in Kafka topics
-            // for the subsequent steps we copy the messages e.g. see calculateAvailableToSell/index.js
-            messages = (await collection.findOne({ transactionId }, { projection: { messages: 1 }})).messages;
-        }
-        const result = await collection
-            .insertOne({
-                activationId: process.env.__OW_ACTIVATION_ID,
-                transactionId,
-                messages,
-                resolved: false,
-                recordTime: (new Date()).getTime()
-            });
-        return result;
-    } catch (error) {
-        log(createLog.messagesLog.failedToStoreBatch(error));
-        return error;
+    const collection = await getMessagesCollection(params);
+    const transactionId = process.env.__OW_TRANSACTION_ID;
+    let messages = params.messages;
+    if (params.messages === null) {
+        // for messages in a sequence, only the first step has the messages as stored in Kafka topics
+        // for the subsequent steps we copy the messages e.g. see calculateAvailableToSell/index.js
+        messages = (await collection.findOne({ transactionId }, { projection: { messages: 1 }})).messages;
     }
+    const batchInfo = {
+        activationId: process.env.__OW_ACTIVATION_ID,
+        transactionId,
+        resolved: false,
+        recordTime: (new Date()).getTime(),
+        isIam: Boolean(params.cloudFunctionsIsIam)
+    }
+    await collection
+        .insertOne({
+            messages,
+            ...batchInfo
+        });
+    // NOTE: The result returned by this function is used by addLoggingToMain in utils.js
+    return batchInfo;
 }
 
 async function updateBatchWithFailureIndexes(params, failureIndexes) {
-    try {
-        const collection = await getMessagesCollection(params);
-        const transactionId = process.env.__OW_TRANSACTION_ID;
-        const result = await collection
-            .updateOne({
-                activationId: process.env.__OW_ACTIVATION_ID,
-                transactionId,
-            }, {
-              $set: {
+    const collection = await getMessagesCollection(params);
+    const transactionId = process.env.__OW_TRANSACTION_ID;
+    const result = await collection
+        .updateOne({
+            activationId: process.env.__OW_ACTIVATION_ID,
+            transactionId,
+        }, {
+            $set: {
                 resolved: 'partial',
                 failureIndexes
-              }
-            });
-        return result;
-    } catch (error) {
-        log(createLog.messagesLog.failedToUpdateBatchWithFailureIndexes(error));
-        return error;
-    }
+            }
+        });
+    return result;
 }
 
 async function getStoreDlqMessages(params) {
@@ -150,11 +176,20 @@ async function getStoreRetryMessages(params) {
     }
 }
 
-async function findBatches(params, limit = 50) {
+async function findUnresolvedBatches(params, limit = 500) {
     const collection = await getMessagesCollection(params);
     let result = [];
+    // maximum runtime of a cloud function is 10 minutes,
+    // so after 15 minutes activation info should definitely be available unless somethings wrong on IBM side
+    const query = {
+        recordTime: { $lt: (new Date()).getTime() - 15 * 60 * 1000 },
+        // this check is needed because we are temporarily using the same messages database for both cloudfoundry and IAM namespaces
+        isIam: Boolean(params.cloudFunctionsIsIam)
+    };
     await collection
-        .find({}, { projection: { activationId: 1, failureIndexes: 1 } })
+        // We are not fetching the messages here because we typically expect the batch to be successfully processed,
+        // in which case we don't need the messages and just delete the batch record
+        .find(query, { projection: { activationId: 1, failureIndexes: 1 } })
         .limit(limit)
         .forEach(document => {
             result.push(document);
@@ -181,12 +216,14 @@ async function findTimedoutBatchesActivationIds(params, limit = 100) {
 async function getFindMessages(params) {
     const collection = await getMessagesCollection(params);
     return async function (activationId) {
-        const { messages } = await collection.findOne({ activationId }, { projection: { messages: 1 } });
-        return messages;
+        const record = await collection.findOne({ activationId });
+        // It is possible for the record not to exist because multiple resolveMessagesLogs can run in parallel
+        // and two of them end up in a race condition trying to process the same activation ID
+        return record ? record.messages : [];
     };
 }
 
-async function getRetryBatches(params, limit = 50) {
+async function getRetryBatches(params, limit = 500) {
     const collection = await getRetryCollection(params);
     const result = [];
     await collection
@@ -257,7 +294,7 @@ async function storeInvalidMessages(params, invalidMessages) {
             });
         return result;
     } catch (error) {
-        log(createLog.messagesLog.failedToStoreBatch(error));
+        log.failedToStoreBatch(error);
         return error;
     }
 }
@@ -292,7 +329,7 @@ module.exports = {
     getMessagesCollection,
     storeBatch,
     updateBatchWithFailureIndexes,
-    findBatches,
+    findUnresolvedBatches,
     findTimedoutBatchesActivationIds,
     getFindMessages,
     getDeleteBatch,

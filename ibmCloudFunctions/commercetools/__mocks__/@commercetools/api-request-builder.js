@@ -1,4 +1,10 @@
 const mockRequestBuilder = {
+  orders: {
+    where: () => mockRequestBuilder.orders,
+    expand: () => mockRequestBuilder.orders,
+    byId: () => mockRequestBuilder.orders,
+    build: () => mockRequestBuilder.orders
+  },
   products: {
     byKey: () => mockRequestBuilder.products,
     build: () => mockRequestBuilder.products
@@ -13,8 +19,8 @@ const mockRequestBuilder = {
     build: () => mockRequestBuilder.productTypes
   },
   categories: {
-    byKey: () => mockRequestBuilder.categories,
-    build: () => mockRequestBuilder.categories
+    byKey: (categoryKey) => { return { build: () => categoryKey  } },
+    build: () => 'category'
   },
 };
 

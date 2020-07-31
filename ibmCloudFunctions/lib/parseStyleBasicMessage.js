@@ -10,17 +10,12 @@ function parseStyleBasicMessage(msg) {
     return {
         _id: msg.value.STYLE_ID,
         id: msg.value.STYLE_ID,
+        brandId: msg.value.BRAND_ID,
         isOutlet: msg.value.BRAND_ID === "1" ? false : true,
         lastModifiedDate: msg.value.LAST_MODIFIED_DATE
     };
 }
 
-function filterStyleBasicMessage(msg) {
-    const validBrandIds = ["1", "2", "3"];
-    return validBrandIds.indexOf(msg.value.BRAND_ID) > -1;
-}
-
 module.exports = {
-    parseStyleBasicMessage,
-    filterStyleBasicMessage
+    parseStyleBasicMessage
 };

@@ -8,7 +8,7 @@
     "table.poll.interval.ms": 3600000,
     "mode": "timestamp",
     "timestamp.column.name": "LASTMODIFIEDDATE",
-    "query": "SELECT s.LASTMODIFIEDDATE, s.FKORGANIZATIONNO, s.pksku as id, sc.IMAGE_STYLEID as styleId, s.skusize as \"SIZE\", s.fksizeno as sizeId, s.skudimension as dimension, s.skucolor as colorId FROM vstore.sku s INNER JOIN ELCAT.STYLE_COLOURS sc ON SUBSTR(sc.STYLEID,1,8) = s.fkstyleno AND sc.COLOUR_ID = s.skucolor",
+    "query": "SELECT s.LASTMODIFIEDDATE, s.FKORGANIZATIONNO, s.pksku as id, sc.IMAGE_STYLEID as styleId, s.skusize as \"SIZE\", s.fksizeno as sizeId, s.skudimension as dimension, s.skucolor as colorId, st.SIZE_EN, st.SIZE_FR FROM vstore.sku s INNER JOIN ELCAT.STYLE_COLOURS sc ON SUBSTR(sc.STYLEID,1,8) = s.fkstyleno AND sc.COLOUR_ID = s.skucolor INNER JOIN ELCAT.SIZE_TRANSLATION st ON st.SIZE_MERCH = s.SKUSIZE AND s.FKORGANIZATIONNO = 1 AND styleId IS NOT NULL",
     "topic.prefix": "skus-connect-jdbc",
     "validate.non.null": "false",
     "numeric.mapping": "best_fit",

@@ -1,9 +1,8 @@
 const getCollection = require('../../lib/getCollection');
-const { addErrorHandling, log, createLog } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain } = require('../utils');
 const createError = require('../../lib/createError');
 const { filterStoreMessage, parseStoreMessage } = require('../../lib/parseStoreMessage');
 const { getBulkAtsStyles } = require('./utils');
-const messagesLogs = require('../../lib/messagesLogs');
 
 const main = async function (params) {
     log(createLog.params('consumeStoresMessage', params));
@@ -32,7 +31,7 @@ const main = async function (params) {
     }
 
     return Promise.all(params.messages
-        .filter(addErrorHandling(filterStoreMessage))
+        .map(addErrorHandling(msg => filterStoreMessage(msg) ? msg : null))
         .map(addErrorHandling(parseStoreMessage))
         .map(addErrorHandling(async (storeData) => {
             const storeOperations = [];
@@ -77,11 +76,5 @@ const main = async function (params) {
     });
 }
 
-global.main = async function (params) {
-  return Promise.all([
-      main(params),
-      messagesLogs.storeBatch(params)
-  ]).then(([result]) => result);
-}
-
+global.main = addLoggingToMain(main);
 module.exports = global.main;

@@ -6,7 +6,7 @@ const getCtHelpers = require('../../lib/commercetoolsSdk');
 const {
   groupByStyleId,
   getExistingCtStyle,
-  createStyle,
+  createAndPublishStyle,
   getCtSkusFromCtStyle,
   getOutOfDateSkuIds,
   removeDuplicateSkus,
@@ -17,8 +17,8 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownAnyMessageErrors,
-  validateParams
+  validateParams,
+  passDownBatchedErrorsAndFailureIndexes
 } = require('../../product-consumers/utils');
 
 // Takes an array of SKUs, all of which have the same style ID. Since they all
@@ -30,7 +30,7 @@ const syncSkuBatchToCt = async (ctHelpers, productTypeId, skus) => {
   let existingCtStyle = await getExistingCtStyle(styleId, ctHelpers);
   if (!existingCtStyle) {
     // create dummy style where none exists
-    existingCtStyle = (await createStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
+    existingCtStyle = (await createAndPublishStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
   }
 
   const existingCtSkus = getCtSkusFromCtStyle(skus, existingCtStyle);
@@ -61,7 +61,7 @@ const main = params => {
   
   const skusToCreateOrUpdate = (
     params.messages
-      .filter(addErrorHandling(filterSkuMessage))
+      .map(addErrorHandling(msg => filterSkuMessage(msg) ? msg : null))
       .map(addErrorHandling(parseSkuMessageCt))
   );
 
@@ -73,10 +73,10 @@ const main = params => {
     skusGroupedByStyleId
       .map(addErrorHandling(syncSkuBatchToCt.bind(null, ctHelpers, productTypeId)))
   );
-  
+ 
   return Promise.all(skuBatchPromises)
-    .then(passDownAnyMessageErrors)
-    .catch(handleErrors);
+    .then(passDownBatchedErrorsAndFailureIndexes(skusGroupedByStyleId, params.messages))
+    .catch(handleErrors)
 };
 
 global.main = addLoggingToMain(main, messagesLogs);

@@ -3,13 +3,12 @@
  */
 const getCollection = require('../../lib/getCollection');
 const {
-    filterPriceMessages,
-    parsePriceMessage,
-    generateUpdateFromParsedMessage
-} = require('../../lib/parsePriceMessage');
+    validateSalePriceMessages,
+    parseSalePriceMessage,
+} = require('../../lib/parseSalePriceMessage');
 const createError = require('../../lib/createError');
-const { log, createLog, addErrorHandling } = require('../utils');
-const messagesLogs = require('../../lib/messagesLogs');
+const { log, createLog, addErrorHandling, addLoggingToMain, passDownProcessedMessages } = require('../utils');
+const { priceChangeProcessStatus } = require('../constants')
 
 const main = async function (params) {
     log(createLog.params("consumeSalePrice", params));
@@ -22,61 +21,58 @@ const main = async function (params) {
         throw new Error("Invalid arguments. Must include 'messages' JSON array with 'value' field");
     }
 
-    let prices;
-    let styles;
+    let pricesCollection;
     try {
-        styles = await getCollection(params);
-        prices = await getCollection(params, params.pricesCollectionName);
+        pricesCollection = await getCollection(params);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
 
     return Promise.all(params.messages
-        .filter(addErrorHandling(filterPriceMessages))
-        .map(addErrorHandling(parsePriceMessage))
-        .map(addErrorHandling(async (update) => styles.findOne({ _id: update.styleId })
-                .then(async (styleData) => {
-                  const priceData = await prices.findOne({ _id: update.styleId });
+        .map(addErrorHandling(validateSalePriceMessages))
+        .map(addErrorHandling(parseSalePriceMessage))
+        .map(addErrorHandling(async (update) => {
+            const { styleId, ...priceChangeUpdate } = update
+            // delete price type as that's only relevant for CT and just makes our mongo messier if we have it there with no gain
+            delete priceChangeUpdate.priceType
+            const priceProcessedFlags =  {
+              startDateProcessed: priceChangeProcessStatus.false,
+              endDateProcessed: priceChangeProcessStatus.false,
+              originalPriceProcessed: priceChangeProcessStatus.false,
+              startDateProcessedCT: priceChangeProcessStatus.false,
+              endDateProcessedCT: priceChangeProcessStatus.false,
+              originalPriceProcessedCT: priceChangeProcessStatus.false
+            };
+            const priceChangeUpdateWithProcessFlagSet = { ...priceChangeUpdate, ...priceProcessedFlags }
 
-                  if (!styleData) {
-                    return null;
-                  }
+            let newPriceRecord = {};
+            const currentPriceRecord = await pricesCollection.findOne({ styleId });
+            if (!currentPriceRecord) {
+              newPriceRecord = { _id: styleId, id: styleId, styleId, priceChanges: [priceChangeUpdateWithProcessFlagSet] };
+            } else if (!currentPriceRecord.priceChanges) {
+              newPriceRecord = { ...currentPriceRecord, priceChanges: [priceChangeUpdateWithProcessFlagSet] }
+            } else {
+              // The same price change entry might exist if the same messages is requeued for whatever reason e.g. a resync to add a new field to price data,
+              // in that case we first delete the currently existing entry
+              currentPriceRecord.priceChanges = currentPriceRecord.priceChanges.filter(priceChange => {
+                let isDuplicate = true;
+                for (const key in Object.keys(priceChangeUpdate)) {
+                  isDuplicate = priceChangeUpdate[key] === priceChange[key]
+                  if (!isDuplicate) break;
+                }
+                return !isDuplicate;
+              });
+              newPriceRecord = { ...currentPriceRecord, priceChanges: currentPriceRecord.priceChanges.concat([priceChangeUpdateWithProcessFlagSet]) }
+            }
 
-                  const updatedPrice = generateUpdateFromParsedMessage (update, priceData, styleData);
-                  updatedPrice._id = styleData._id;
-                  updatedPrice.id = styleData._id;
-
-                  return prices
-                    .updateOne(
-                        { _id: updatedPrice._id },
-                        { $currentDate: { lastModifiedInternalSalePrice: { $type:"timestamp" } }, $set: updatedPrice },
-                        { upsert: true }
-                    )
-                    .catch((originalError) => {
-                        throw createError(originalError,updatedPrice)
-                    });
-            })
-        )
-    )).then((results) => {
-        const errors = results.filter((res) => res instanceof Error);
-        if (errors.length > 0) {
-            const error = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
-            error.failedUpdatesErrors = errors;
-            error.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            throw error;
-        }
-    })
-    .catch(error => ({
-        error
-    }));
+            await pricesCollection.updateOne({ styleId: styleId }, { $set: newPriceRecord }, { upsert: true })
+        })))
+        .then(passDownProcessedMessages(params.messages))
+        .catch(error => ({
+            error
+        }));
 };
 
-global.main = async function (params) {
-  return Promise.all([
-      main(params),
-      messagesLogs.storeBatch(params)
-  ]).then(([result]) => result);
-}
-
+global.main = addLoggingToMain(main);
 
 module.exports = global.main;

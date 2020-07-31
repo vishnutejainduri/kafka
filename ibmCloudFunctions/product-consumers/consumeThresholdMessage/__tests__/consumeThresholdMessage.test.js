@@ -40,7 +40,7 @@ const params = {
 
 describe('consumeThresholdMessage', () => {
     it('missing all parameters; should fail', async () => {
-        await expect(consumeThresholdMessage({})).rejects.toThrow();
+        expect((await consumeThresholdMessage({})).error).toBeTruthy();
     });
     const resultWithNoErrors = {
         errors: [],

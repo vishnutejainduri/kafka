@@ -34,14 +34,14 @@ const validParams = {
 };
 
 describe('consumeSkuMessageCT', () => {
-  it('throws an error if given params are invalid', () => {
+  it('Returns an error if given params are invalid', async () => {
     const invalidParams = {};
-    return expect(consumeSkuMessageCT(invalidParams)).rejects.toThrow();
+    return expect((await consumeSkuMessageCT(invalidParams)).error).toBeTruthy();
   });
 
-  it('returns `undefined` if given valid params', async () => {
+  it('returns an object that has `ok` set to `true` if given valid params', async () => {
     const response = await consumeSkuMessageCT(validParams);
-    expect(response).toBeUndefined();
+    expect(response.ok).toBe(true);
   });
 });
 
