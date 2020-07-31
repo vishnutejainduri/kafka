@@ -12,7 +12,8 @@ const payload =
       "fieldDefinition": {
         "name": "sentToCrmStatus",
         "label": {
-          "en-CA": "Indicates whether `hr-orders-service` has successfully sent the order to the CRM service, which in turn will send the appropriate notifications to the customer."
+          "en-CA": "Status of sending order to CRM service",
+          "fr-CA": ""
         },
         "required": false,
         "type": {
