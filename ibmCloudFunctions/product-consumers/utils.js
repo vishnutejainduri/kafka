@@ -94,7 +94,6 @@ const getErrorsAndFailureIndexes = (results) => {
     let failureIndexes = []
     const errors = results.filter((result, index) => {
         if (result instanceof Error) {
-            console.error(FAILURE_KEY, JSON.stringify(result))
             failureIndexes.push(index)
             return true
         }
@@ -159,7 +158,6 @@ const passDownBatchedErrorsAndFailureIndexes = (batches, messages) => results =>
     let messagesSuccessCount = 0
     const errors = results.filter((result,index) => {
         if (result instanceof Error) {
-            console.error(FAILURE_KEY, JSON.stringify(result));
             batchesFailureIndexes.push(batches[index].originalIndexes)
             return true
         } else {
