@@ -38,10 +38,10 @@ const main = async function (params) {
             const priceProcessedFlags =  {
               startDateProcessed: priceChangeProcessStatus.false,
               endDateProcessed: priceChangeProcessStatus.false,
-              originalPriceProcessed: priceChangeProcessStatus.false,
+              originalPriceProcessed: priceChangeProcessStatus.true,
               startDateProcessedCT: priceChangeProcessStatus.false,
               endDateProcessedCT: priceChangeProcessStatus.false,
-              originalPriceProcessedCT: priceChangeProcessStatus.false
+              originalPriceProcessedCT: priceChangeProcessStatus.true
             };
             const priceChangeUpdateWithProcessFlagSet = { ...priceChangeUpdate, ...priceProcessedFlags }
 
