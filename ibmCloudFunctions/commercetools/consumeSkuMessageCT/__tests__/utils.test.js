@@ -163,7 +163,7 @@ describe('formatSkuRequestBody', () => {
   });
 
   it('returns the correct body to create a new SKU', () => {
-    const expectedBody = '{"version":1,"actions":[{"action":"addVariant","sku":"sku-01","attributes":[{"name":"season","value":"Winter 2020"}],"images":[{"url":"https://i1.adis.ws/i/harryrosen/undefined?$prp-4col-xl$","dimensions":{"w":242,"h":288}}],"staged":false},{"action":"setAttribute","sku":"sku-01","name":"colorId","value":"c1","staged":false},{"action":"setAttribute","sku":"sku-01","name":"sizeId","value":"s1","staged":false}]}';
+    const expectedBody = '{"version":1,"actions":[{"action":"addVariant","sku":"sku-01","attributes":[{"name":"season","value":"Winter 2020"}],"images":[{"url":"https://i1.adis.ws/i/harryrosen/undefined?$prp-4col-xl$","dimensions":{"w":242,"h":288}}],"prices":[],"staged":false},{"action":"setAttribute","sku":"sku-01","name":"colorId","value":"c1","staged":false},{"action":"setAttribute","sku":"sku-01","name":"sizeId","value":"s1","staged":false}]}';
     const actualBody = formatSkuRequestBody(sku, style, null);
     expect(actualBody).toBe(expectedBody);
   });
