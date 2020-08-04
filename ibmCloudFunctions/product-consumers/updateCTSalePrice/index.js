@@ -1,6 +1,6 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { createLog, addErrorHandling, log } = require('../utils');
+const { createLog, addErrorHandling, log, addLoggingToMain } = require('../utils');
 const {
   findApplicablePriceChanges,
   findUnprocessedStyleIds,
@@ -16,7 +16,7 @@ const getCtHelpers = require('../../lib/commercetoolsSdk');
 // `main` so the same client can be shared between warm starts.
 let ctHelpers;
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('updateCTSalePrice', params));
     const { productTypeId } = params;
 
@@ -69,4 +69,5 @@ global.main = async function (params) {
     };
 };
 
+global.main = addLoggingToMain(main)
 module.exports = global.main;
