@@ -41,7 +41,7 @@ describe('updateCTSalePrice', () => {
     });
 
     it('Runs CF; returns failed result with no params', async () => {
-        await expect(updateCTSalePrice({})).rejects.toThrow();
+        expect((await updateCTSalePrice({})).error).toBeTruthy();
     });
 });
 
