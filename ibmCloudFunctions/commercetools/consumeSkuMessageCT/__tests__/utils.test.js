@@ -1,5 +1,6 @@
 const parseSkuMessageCt = require('../../../lib/parseSkuMessageCt');
 const {
+  getPriceActionsForSku,
   getActionsFromSku,
   getActionsFromSkus,
   formatSkuRequestBody,
@@ -42,6 +43,420 @@ const validParams = {
   ctpApiUrl: 'apiUrl',
   ctpScopes: 'manage_products:harryrosen-dev'
 };
+
+describe('getPriceActionsForSku', () => {
+  const price = {
+    country: 'CA',
+    value: {
+        type: 'centPrecision',
+        currencyCode: 'CAD',
+        centAmount: 10000,
+        fractionDigits: 2
+    },
+    id: '9e194fab-2c79-4bdf-a990-dc344c8c1f63',
+    custom: {
+        type: {
+            typeId: 'type',
+            id: 'af9c14ac-6b56-48d4-b152-2b751d2c9c24'
+        },
+        fields: {
+            priceType: 'temporaryMarkdown',
+            processDateCreated: new Date(2020),
+            priceChangeId: '1'
+        }
+    }
+  }
+  const variant = { id: 'sku-01', styleId: '1', prices: [] };
+  const existingStyle = {
+    masterData: {
+      current: {
+        masterVariant: {
+          id: 'masterVariant',
+          styleId: '1',
+          prices: []
+        }
+      }
+    }
+  }
+
+  it('master variant and sku both have same price row but master variant is most recent -> remove sku price, add master variant price', () => {
+    const testVariant = { ...variant, prices: [ { ...price, custom: { ...price.custom, fields: { ...price.custom.fields, processDateCreated: new Date(2019) } } } ] }
+    const testExistingStyle = {
+      ...existingStyle,
+      masterData: {
+        ...existingStyle.masterData,
+        current: {
+          ...existingStyle.masterData.current,
+          masterVariant: {
+            ...existingStyle.masterData.current.masterVariant,
+            prices: [ { ...price } ]
+          }
+        }
+      }
+    }
+
+    const { id, ...addedPrice } = price;
+    const expectedActions = [
+      {
+        action: 'removePrice',
+        priceId: id,
+        staged: false
+      },
+      {
+        action: 'addPrice',
+        price: addedPrice,
+        staged: false,
+        variantId: testVariant.id,
+      }
+    ]
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+  it('the sku has a price the master variant doesn\'t have -> remove sku price', () => {
+    const testVariant = { ...variant, prices: [ { ...price } ] }
+    const testExistingStyle = { ...existingStyle }
+
+    const expectedActions = [
+      {
+        action: 'removePrice',
+        priceId: testVariant.prices[0].id,
+        staged: false
+      }
+    ]
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+  it('master variant and sku both have the same price but the monetary value is different -> remove sku price, add master variant price', () => {
+    const testVariant = { ...variant, prices: [ { ...price, value: { ...price.value, centAmount: 10 } } ] }
+    const testExistingStyle = {
+      ...existingStyle,
+      masterData: {
+        ...existingStyle.masterData,
+        current: {
+          ...existingStyle.masterData.current,
+          masterVariant: {
+            ...existingStyle.masterData.current.masterVariant,
+            prices: [ { ...price } ]
+          }
+        }
+      }
+    }
+
+    const { id, ...addedPrice } = price;
+    const expectedActions = [
+      {
+        action: 'removePrice',
+        priceId: id,
+        staged: false
+      },
+      {
+        action: 'addPrice',
+        price: addedPrice,
+        staged: false,
+        variantId: testVariant.id,
+      }
+    ]
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+  it('master variant and sku both have the same price but the price type is different -> remove sku price, add master variant price', () => {
+    const testVariant = { ...variant, prices: [ { ...price, custom: { ...price.custom, fields: { ...price.custom.fields, priceType: 'permanentMarkdown' } } } ] }
+    const testExistingStyle = {
+      ...existingStyle,
+      masterData: {
+        ...existingStyle.masterData,
+        current: {
+          ...existingStyle.masterData.current,
+          masterVariant: {
+            ...existingStyle.masterData.current.masterVariant,
+            prices: [ { ...price } ]
+          }
+        }
+      }
+    }
+
+    const { id, ...addedPrice } = price;
+    const expectedActions = [
+      {
+        action: 'removePrice',
+        priceId: id,
+        staged: false
+      },
+      {
+        action: 'addPrice',
+        price: addedPrice,
+        staged: false,
+        variantId: testVariant.id,
+      }
+    ]
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+  it('master variant and sku both have the same price but the sku price is more recent -> do nothing', () => {
+    const testVariant = { ...variant, prices: [ { ...price, custom: { ...price.custom, fields: { ...price.custom.fields, processDateCreated: new Date(2021) } } } ] }
+    const testExistingStyle = {
+      ...existingStyle,
+      masterData: {
+        ...existingStyle.masterData,
+        current: {
+          ...existingStyle.masterData.current,
+          masterVariant: {
+            ...existingStyle.masterData.current.masterVariant,
+            prices: [ { ...price } ]
+          }
+        }
+      }
+    }
+
+    const expectedActions = []
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+  it('master variant and sku both have the exact same price -> do nothing', () => {
+    const testVariant = { ...variant, prices: [ { ...price } ] }
+    const testExistingStyle = {
+      ...existingStyle,
+      masterData: {
+        ...existingStyle.masterData,
+        current: {
+          ...existingStyle.masterData.current,
+          masterVariant: {
+            ...existingStyle.masterData.current.masterVariant,
+            prices: [ { ...price } ]
+          }
+        }
+      }
+    }
+
+    const expectedActions = []
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+  it('master variant and sku both have the same price but the master variant is more recent -> remove sku price, add master variant price', () => {
+    const testVariant = { ...variant, prices: [ { ...price } ] }
+    const testExistingStyle = {
+      ...existingStyle,
+      masterData: {
+        ...existingStyle.masterData,
+        current: {
+          ...existingStyle.masterData.current,
+          masterVariant: {
+            ...existingStyle.masterData.current.masterVariant,
+            prices: [ { ...price, custom: { ...price.custom, fields: { ...price.custom.fields, processDateCreated: new Date(2021) } } } ]
+          }
+        }
+      }
+    }
+    const { id, ...addedPrice } = testExistingStyle.masterData.current.masterVariant.prices[0]
+    const expectedActions = [
+      {
+        action: 'removePrice',
+        priceId: id,
+        staged: false
+      },
+      {
+        action: 'addPrice',
+        price: addedPrice,
+        staged: false,
+        variantId: testVariant.id,
+      }
+    ]
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+  it('master variant has a price the sku doesn\'t have -> add master variant price', () => {
+    const testVariant = { ...variant }
+    const testExistingStyle = {
+      ...existingStyle,
+      masterData: {
+        ...existingStyle.masterData,
+        current: {
+          ...existingStyle.masterData.current,
+          masterVariant: {
+            ...existingStyle.masterData.current.masterVariant,
+            prices: [ { ...price } ]
+          }
+        }
+      }
+    }
+    const expectedActions = [
+      {
+        action: 'addPrice',
+        price: testExistingStyle.masterData.current.masterVariant.prices[0],
+        staged: false,
+        variantId: testVariant.id,
+      }
+    ]
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+  it('master variant and sku have the same price but the monetary value is different-> remove sku price, add master variant price', () => {
+    const testVariant = { ...variant, prices: [ { ...price } ] }
+    const testExistingStyle = {
+      ...existingStyle,
+      masterData: {
+        ...existingStyle.masterData,
+        current: {
+          ...existingStyle.masterData.current,
+          masterVariant: {
+            ...existingStyle.masterData.current.masterVariant,
+            prices: [ { ...price, value: { ...price.value, centAmount: 10 } } ]
+          }
+        }
+      }
+    }
+    const { id, ...addedPrice } = testExistingStyle.masterData.current.masterVariant.prices[0]
+    const expectedActions = [
+      {
+        action: 'removePrice',
+        priceId: id,
+        staged: false
+      },
+      {
+        action: 'addPrice',
+        price: addedPrice,
+        staged: false,
+        variantId: testVariant.id,
+      }
+    ]
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+  it('master variant and sku have the same price but the price type is different-> remove sku price, add master variant price', () => {
+    const testVariant = { ...variant, prices: [ { ...price } ] }
+    const testExistingStyle = {
+      ...existingStyle,
+      masterData: {
+        ...existingStyle.masterData,
+        current: {
+          ...existingStyle.masterData.current,
+          masterVariant: {
+            ...existingStyle.masterData.current.masterVariant,
+            prices: [ { ...price, custom: { ...price.custom, fields: { ...price.custom.fields, priceType: 'permanentMarkdown' } } } ]
+          }
+        }
+      }
+    }
+    const { id, ...addedPrice } = testExistingStyle.masterData.current.masterVariant.prices[0]
+    const expectedActions = [
+      {
+        action: 'removePrice',
+        priceId: id,
+        staged: false
+      },
+      {
+        action: 'addPrice',
+        price: addedPrice,
+        staged: false,
+        variantId: testVariant.id,
+      }
+    ]
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+  it('master variant has a price but the sku doesn\'t exist at all -> return a create price object', () => {
+    const testVariant = null;
+    const testExistingStyle = {
+      ...existingStyle,
+      masterData: {
+        ...existingStyle.masterData,
+        current: {
+          ...existingStyle.masterData.current,
+          masterVariant: {
+            ...existingStyle.masterData.current.masterVariant,
+            prices: [ { ...price } ]
+          }
+        }
+      }
+    }
+    const expectedActions = [testExistingStyle.masterData.current.masterVariant.prices[0]]
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+  it('master variant has the same price as the sku but the sku price is more recent -> do nothing', () => {
+    const testVariant = { ...variant, prices: [ { ...price } ] }
+    const testExistingStyle = {
+      ...existingStyle,
+      masterData: {
+        ...existingStyle.masterData,
+        current: {
+          ...existingStyle.masterData.current,
+          masterVariant: {
+            ...existingStyle.masterData.current.masterVariant,
+            prices: [ { ...price, custom: { ...price.custom, fields: { ...price.custom.fields, processDateCreated: new Date(2019) } } } ]
+          }
+        }
+      }
+    }
+    const expectedActions = []
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+  it('master variant and sku have pricing but the master variant has no custom fields -> remove sku price, add master variant price', () => {
+    const testVariant = { ...variant, prices: [ { ...price } ] }
+    const testExistingStyle = {
+      ...existingStyle,
+      masterData: {
+        ...existingStyle.masterData,
+        current: {
+          ...existingStyle.masterData.current,
+          masterVariant: {
+            ...existingStyle.masterData.current.masterVariant,
+            prices: [ { ...price, custom: null } ]
+          }
+        }
+      }
+    }
+    const { id, ...addedPrice } = testExistingStyle.masterData.current.masterVariant.prices[0]
+    const expectedActions = [
+      {
+        action: 'removePrice',
+        priceId: id,
+        staged: false
+      },
+      {
+        action: 'addPrice',
+        price: addedPrice,
+        staged: false,
+        variantId: testVariant.id,
+      }
+    ]
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+  it('master variant and sku have pricing but the master variant has a price row with a different priceChangeId than the sku -> remove sku price, add master variant price', () => {
+    const testVariant = { ...variant, prices: [ { ...price } ] }
+    const testExistingStyle = {
+      ...existingStyle,
+      masterData: {
+        ...existingStyle.masterData,
+        current: {
+          ...existingStyle.masterData.current,
+          masterVariant: {
+            ...existingStyle.masterData.current.masterVariant,
+            prices: [ { ...price, custom: { ...price.custom, fields: { ...price.custom.fields, priceChangeId: '2' } } } ]
+          }
+        }
+      }
+    }
+    const { id, ...addedPrice } = testExistingStyle.masterData.current.masterVariant.prices[0]
+    const expectedActions = [
+      {
+        action: 'removePrice',
+        priceId: id,
+        staged: false
+      },
+      {
+        action: 'addPrice',
+        price: addedPrice,
+        staged: false,
+        variantId: testVariant.id,
+      }
+    ]
+    const actualActions = getPriceActionsForSku(testVariant, testExistingStyle);
+    expect(actualActions).toEqual(expectedActions);
+  });
+});
 
 describe('getActionsFromSku; image tests', () => {
   const sku = { id: 'sku-01', styleId: '1' };

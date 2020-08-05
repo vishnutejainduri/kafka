@@ -278,6 +278,7 @@ const removeDuplicateSkus = skus => {
 module.exports = {
   formatSkuRequestBody,
   getActionsFromSku,
+  getPriceActionsForSku,
   getActionsFromSkus,
   existingCtSkuIsNewer,
   getCtSkuFromCtStyle,
