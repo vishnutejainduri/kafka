@@ -145,6 +145,10 @@ const getOutOfDateSkuIds = (existingCtSkus, skus) => (
   }).map(sku => sku.sku)
 );
 
+const areValidMarkdowns = (price, newPrice) => {
+  return price && price.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED] && newPrice.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED]
+};
+
 const getMatchingCtPrice = (newPrice, existingPrices) => {
   const matchingCtPrice = existingPrices.find(existingPrice => newPrice.custom && existingPrice.custom && newPrice.custom.fields[priceAttributeNames.PRICE_CHANGE_ID] === existingPrice.custom.fields[priceAttributeNames.PRICE_CHANGE_ID]);
   return matchingCtPrice;
@@ -155,7 +159,7 @@ const getPriceActionsForSku = (ctSku, ctStyle) => {
   ? ctSku.prices.map(price => {
     const masterVariantPrices = ctStyle.masterData[entityStatus].masterVariant.prices;
     const masterVariantCtPrice = getMatchingCtPrice(price, masterVariantPrices);
-    if ((masterVariantCtPrice && masterVariantCtPrice.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED] && price.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED]
+    if ((areValidMarkdowns(masterVariantCtPrice, price)
       && new Date(masterVariantCtPrice.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED]).getTime() > new Date(price.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED]).getTime())
       || !masterVariantCtPrice
       || masterVariantCtPrice.value.centAmount !== price.value.centAmount
@@ -180,7 +184,7 @@ const getPriceActionsForSku = (ctSku, ctStyle) => {
   const pricesAddActions = ctStyle.masterData[entityStatus].masterVariant.prices.map(price => {
     const skuPrices = ctSku ? ctSku.prices : [];
     const matchingSkuPrice = getMatchingCtPrice(price, skuPrices);
-    if ((matchingSkuPrice && matchingSkuPrice.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED] && price.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED]
+    if ((areValidMarkdowns(matchingSkuPrice, price)
       && new Date(matchingSkuPrice.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED]).getTime() < new Date(price.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED]).getTime())
       || !matchingSkuPrice
       || matchingSkuPrice.value.centAmount !== price.value.centAmount
