@@ -200,16 +200,16 @@ const responses = {
       'fr-CA': 'MICROSITES'
     }
   } },
-  'GET-MICROSITES-l1microsite_en': () => { return {
+  'GET-57': () => { return {
     ...categoryResponsePrototype,
     id: '5bb79326-16ea-40f5-8857-31a020800a1c',
-    key: 'MICROSITES',
+    key: '57',
     name: {
       'en-CA': 'microsite_en',
       'fr-CA': 'microsite_fr'
     }
   } },
-  'GET-MICROSITES-l1updated_microsite_en': () => null,
+  'GET-58': () => null,
   'POST-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en': (...args) => {
     mockUpdateFn(...args);
     return {
@@ -232,11 +232,11 @@ const responses = {
       }
     }
   },
-  'POST-categoryMICROSITES-l1updated_microsite_en': (...args) => {
+  'POST-category58': (...args) => {
     mockUpdateFn(...args);
     return {
       ...categoryResponsePrototype,
-      key: 'MICROSITES-l1updated_microsite_en',
+      key: '58',
       name: {
         'en-CA': 'updated_microsite_en',
         'fr-CA': 'updated_microsite_fr'
