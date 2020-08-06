@@ -28,6 +28,14 @@ const main = async function (params) {
         throw createError.failedDbConnection(originalError);
     }
 
+    const batchedAtsMessages = {};
+    await Promise.all(params.messages
+        .map(addErrorHandling(msg => filterSkuInventoryMessage(msg) ? msg : null))
+        .map(addErrorHandling(parseSkuInventoryMessage))
+        .map(addErrorHandling(async (atsData) => {
+          batchedAtsMessages[`${atsData.styleId}-${atsData.skuId}-${atsData.storeId}`] = 
+        })));
+
     return Promise.all(params.messages
         .map(addErrorHandling(msg => filterSkuInventoryMessage(msg) ? msg : null))
         .map(addErrorHandling(parseSkuInventoryMessage))
