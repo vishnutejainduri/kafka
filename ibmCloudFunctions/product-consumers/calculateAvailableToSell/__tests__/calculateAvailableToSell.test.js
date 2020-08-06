@@ -52,9 +52,9 @@ const params = {
 
 describe('calculateAvailableToSell', () => {
     const resultWithNoErrors = {
-        errors: [],
-        failureIndexes: [],
-        successCount: 1
+        batchSuccessCount: 1,
+        messagesCount: 1,
+        ok: true
     }
     it('missing all parameters; should fail', async () => {
         const result = await expect(calculateAvailableToSell({}));
@@ -72,7 +72,27 @@ describe('calculateAvailableToSell', () => {
             messages: [validMessage, invalidMessage, validMessage]
         });
         // returns nothing/undefined if successfully run
-        expect(response.failureIndexes.includes(1)).toEqual(true);
+        console.log('response', response);
+        expect(response.batchSuccessCount).toEqual(1)
+        expect(response.messagesCount).toEqual(3)
+    });
+    it('correct messages to update ats; should batch together', async () => {
+        const response = await calculateAvailableToSell({
+            ...params,
+            messages: [validMessage, validMessage]
+        });
+        // returns nothing/undefined if successfully run
+        expect(response.batchSuccessCount).toEqual(1)
+        expect(response.messagesCount).toEqual(2)
+    });
+    it('correct messages to update ats; should batch seperately', async () => {
+        const response = await calculateAvailableToSell({
+            ...params,
+            messages: [validMessage, { topic: validMessage.topic, value: { ...validMessage.value, STORE_ID: 250 } }]
+        });
+        // returns nothing/undefined if successfully run
+        expect(response.batchSuccessCount).toEqual(2)
+        expect(response.messagesCount).toEqual(2)
     });
 });
 

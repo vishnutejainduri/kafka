@@ -1,8 +1,11 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { addErrorHandling, log, createLog, addLoggingToMain, passDownAnyMessageErrors } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain, passDownBatchedErrorsAndFailureIndexes } = require('../utils');
 const { handleSkuAtsUpdate } = require('./utils');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
+const { groupByAttribute } = require('../../lib/utils');
+
+const groupByInventoryId = groupByAttribute('id');
 
 const main = async function (params) {
     log(createLog.params('calculateAvailableToSell', params));
@@ -28,18 +31,22 @@ const main = async function (params) {
         throw createError.failedDbConnection(originalError);
     }
 
-    const batchedAtsMessages = {};
-    await Promise.all(params.messages
+    const inventoryRecords = (params.messages
         .map(addErrorHandling(msg => filterSkuInventoryMessage(msg) ? msg : null))
-        .map(addErrorHandling(parseSkuInventoryMessage))
-        .map(addErrorHandling(async (atsData) => {
-          batchedAtsMessages[`${atsData.styleId}-${atsData.skuId}-${atsData.storeId}`] = 
-        })));
+        .map(addErrorHandling(parseSkuInventoryMessage)))
+    const inventoryGroupedByInventoryId = groupByInventoryId(inventoryRecords);
 
-    return Promise.all(params.messages
-        .map(addErrorHandling(msg => filterSkuInventoryMessage(msg) ? msg : null))
-        .map(addErrorHandling(parseSkuInventoryMessage))
-        .map(addErrorHandling(async (atsData) => {
+    return Promise.all(inventoryGroupedByInventoryId
+        .map(addErrorHandling(async (inventoryGroup) => {
+          const atsData = inventoryGroup.reduce((finalInventoryRecord, inventoryRecord) => {
+            if (!finalInventoryRecord || inventoryRecord.lastModifiedDate >= finalInventoryRecord.lastModifiedDate) {
+              return inventoryRecord;
+            } else {
+              return finalInventoryRecord;
+            }
+          }, null)
+          if (!atsData) return null;
+
           const styleData = await styles.findOne({ _id: atsData.styleId })
                               .catch(originalError => {
                                   return createError.calculateAvailableToSell.failedGetStyle(originalError, atsData);
@@ -78,7 +85,7 @@ const main = async function (params) {
                             })
         }))
     )
-    .then(passDownAnyMessageErrors)
+    .then(passDownBatchedErrorsAndFailureIndexes(inventoryGroupedByInventoryId, params.messages))
     .catch(originalError => {
         throw createError.calculateAvailableToSell.failed(originalError, paramsExcludingMessages);
     });
