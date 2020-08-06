@@ -7,8 +7,7 @@ const { log } = require('../utils');
 const { storeInvalidMessages } = require('../../lib/messagesLogs');
 
 const validators = [
-    'addFacetsToBulkImportQueue',
-    'addMediaContainerToQueue'
+    'addFacetsToBulkImportQueue'
 ].reduce((_validators, cfName) => {
     const { params, message } = require(`../${cfName}/schema.json`);
     _validators[cfName] = {

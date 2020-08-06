@@ -41,7 +41,7 @@ describe('updateCTSalePrice', () => {
     });
 
     it('Runs CF; returns failed result with no params', async () => {
-        await expect(updateCTSalePrice({})).rejects.toThrow();
+        expect((await updateCTSalePrice({})).error).toBeTruthy();
     });
 });
 
@@ -92,4 +92,13 @@ describe('updateStylePermanentMarkdown', () => {
       const result = await updateStylePermanentMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
       expect(result).toBeInstanceOf(Object);
     })
+});
+
+describe('testStubs; documenting test cases', () => {
+  it('if current markdown is a valid site 990 permanent markdown; update CT with new permanent markdown + onSale flag should be changed to true', () => {});
+  it('if current markdown is a valid site 990 temporary markdown; onSale flag should be changed to true', () => {});
+  it('if current markdown is a valid site 00011 permanent markdown; do nothing', () => {});
+  it('if current markdown is a valid site 00011 temporary markdown; do nothing', () => {});
+  it('if there is no current markdown and style has an original price in CT; update CT with original price + onSale flag should be changed to false', () => {});
+  it('if there is no current markdown and style has no original price in CT; do nothing', () => {});
 });
