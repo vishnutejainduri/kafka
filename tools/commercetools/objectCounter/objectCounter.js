@@ -4,6 +4,7 @@ const {
   getAllImagesCount,
   getAllBarcodesCount,
   getAllPricesCount,
+  getAllOutletFlagsCount,
   getAllCount
 } = require('./productService.js');
 
@@ -37,6 +38,11 @@ switch (dataType) {
   case 'prices':
     getAllPricesCount(ctHelpers)
       .then(result => console.log('Total prices FINAL: ', result.pricesTotal))
+      .catch(e => console.log(e));
+    break;
+  case 'outlet':
+    getAllOutletFlagsCount(ctHelpers)
+      .then(result => console.log('Total outlet flags FINAL: ', result.outletFlagsTotal))
       .catch(e => console.log(e));
     break;
   case 'all':
