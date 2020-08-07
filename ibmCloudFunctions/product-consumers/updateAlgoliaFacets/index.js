@@ -80,7 +80,12 @@ const generateStyleUpdatesFromAlgoliaUpdates = (algoliaUpdatesWithoutOutlet) => 
 
 const transformMicrositeAlgoliaRequests = (algoliaUpdatesWithoutOutlet) => {
   return algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => {
-    if (algoliaUpdate['microsite']) return Object.values(algoliaUpdate['microsite'])
+    if (algoliaUpdate['microsite']) {
+      return {
+        objectID: algoliaUpdate.objectID,
+        'microsite': Object.values(algoliaUpdate['microsite'])
+      }
+    }
     return algoliaUpdate;
   });
 }
