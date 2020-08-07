@@ -56,7 +56,7 @@ const main = async function (params) {
               // in that case we first delete the currently existing entry
               currentPriceRecord.priceChanges = currentPriceRecord.priceChanges.filter(priceChange => {
                 let isDuplicate = true;
-                for (const key in Object.keys(priceChangeUpdate)) {
+                for (const key of Object.keys(priceChangeUpdate)) {
                   isDuplicate = priceChangeUpdate[key] === priceChange[key]
                   if (!isDuplicate) break;
                 }
