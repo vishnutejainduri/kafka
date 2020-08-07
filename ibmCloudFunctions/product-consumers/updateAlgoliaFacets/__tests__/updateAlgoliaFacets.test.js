@@ -31,6 +31,122 @@ describe('updateAlgoliaFacets', () => {
     expect(successful).toBeEmpty;
   });
 
+  describe('microsite attribute creation/update', () => {
+    const validMessage = {
+      topic: 'facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA',
+      value: {
+        'STYLEID': 'styleId',
+        'CATEGORY': 'category',
+        'DESC_ENG': 'micrositeDesc',
+        'DESC_FR': 'micrositeDesc',
+        'UPD_FLG': 'T',
+        'FKORGANIZATIONNO': '1',
+        'CHAR_TY_SUB_TYPE': null,
+        'CHARACTERISTIC_TYPE_ID': 'DPM01',
+        'CHARACTERISTIC_VALUE_ID': '57'
+      }
+    };
+
+    const parsedFacetMessage = parseFacetMessage(validMessage);
+    const validAggregate = [{
+      _id: parsedFacetMessage.styleId,
+      facets: [{
+        name: parsedFacetMessage.facetName,
+        value: parsedFacetMessage.facetValue,
+        type: parsedFacetMessage.typeId,
+        facetId: parsedFacetMessage.facetId,
+        isMarkedForDeletion: parsedFacetMessage.isMarkedForDeletion
+      }]
+    }];
+
+    it('should handle microsite creations', async () => {
+      // stub for styles collection
+      const styles = {
+        findOne: jest.fn(() => {
+          return Promise.resolve({
+            isOutlet: false
+          });
+        })
+      };
+
+      const [failed, actual] = await transformUpdateQueueRequestToAlgoliaUpdates(validAggregate, styles);
+      const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
+      const actual3 = transformMicrositeAlgoliaRequests(actual);
+
+      expect(failed).toBeEmpty;
+      expect(actual).toEqual([{
+        objectID: 'styleId',
+        microsite: { '57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
+      }]);
+      expect(actual2[0].updateOne.update.$set).toEqual({
+        _id: "styleId",
+        microsite: { '57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
+      });
+      expect(actual3).toEqual([{
+        objectID: 'styleId',
+        microsite: [{ en: 'micrositeDesc', fr: 'micrositeDesc' }]
+      }]);
+    });
+    it('should handle microsite updates', async () => {
+      // stub for styles collection
+      const styles = {
+        findOne: jest.fn(() => {
+          return Promise.resolve({
+            isOutlet: false,
+            microsite: { '57': { en: 'micrositeDesc_old', fr: 'micrositeDesc_old' } }
+          });
+        })
+      };
+
+      const [failed, actual] = await transformUpdateQueueRequestToAlgoliaUpdates(validAggregate, styles);
+      const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
+      const actual3 = transformMicrositeAlgoliaRequests(actual);
+
+      expect(failed).toBeEmpty;
+      expect(actual).toEqual([{
+        objectID: 'styleId',
+        microsite: { '57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
+      }]);
+      expect(actual2[0].updateOne.update.$set).toEqual({
+        _id: "styleId",
+        microsite: { '57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
+      });
+      expect(actual3).toEqual([{
+        objectID: 'styleId',
+        microsite: [{ en: 'micrositeDesc', fr: 'micrositeDesc' }]
+      }]);
+    });
+    it('should do a create if it can\'t match by facet id instead of an update', async () => {
+      // stub for styles collection
+      const styles = {
+        findOne: jest.fn(() => {
+          return Promise.resolve({
+            isOutlet: false,
+            microsite: { '58': { en: 'micrositeDesc_old', fr: 'micrositeDesc_old' } }
+          });
+        })
+      };
+
+      const [failed, actual] = await transformUpdateQueueRequestToAlgoliaUpdates(validAggregate, styles);
+      const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
+      const actual3 = transformMicrositeAlgoliaRequests(actual);
+
+      expect(failed).toBeEmpty;
+      expect(actual).toEqual([{
+        objectID: 'styleId',
+        microsite: { '57': { en: 'micrositeDesc', fr: 'micrositeDesc' }, '58': { en: 'micrositeDesc_old', fr: 'micrositeDesc_old' } }
+      }]);
+      expect(actual2[0].updateOne.update.$set).toEqual({
+        _id: "styleId",
+        microsite: { '57': { en: 'micrositeDesc', fr: 'micrositeDesc' }, '58': { en: 'micrositeDesc_old', fr: 'micrositeDesc_old' } }
+      });
+      expect(actual3).toEqual([{
+        objectID: 'styleId',
+        microsite: [{ en: 'micrositeDesc', fr: 'micrositeDesc' },{ en: 'micrositeDesc_old', fr: 'micrositeDesc_old' }]
+      }]);
+    });
+  });
+
   describe('microsite attribute deletion', () => {
     const validDeletionMessage = {
       topic: 'facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA',
