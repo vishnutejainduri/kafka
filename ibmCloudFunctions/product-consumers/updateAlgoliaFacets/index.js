@@ -35,12 +35,6 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
             ? delete algoliaUpdate[facetData.name][facetData.facetId]
             : algoliaUpdate[facetData.name][facetData.facetId] = facetData.value
 
-          // removes duplicate facet values; not an ideal solution but without some sort of unique key for each microsite we don't know whether to insert a dupe or not 
-          // (for now we are assuming dupes are not going to happen until we get an update from HR)
-          algoliaUpdate[facetData.name] = algoliaUpdate[facetData.name].filter((facetValue, pos) =>  
-           algoliaUpdate[facetData.name].map(facet => facet.en).indexOf(facetValue.en) === pos &&
-           algoliaUpdate[facetData.name].map(facet => facet.fr).indexOf(facetValue.fr) === pos)
-
           return;
         }
 
@@ -83,6 +77,13 @@ const generateStyleUpdatesFromAlgoliaUpdates = (algoliaUpdatesWithoutOutlet) => 
     };
   });
 };
+
+const transformMicrositeAlgoliaRequests = (algoliaUpdatesWithoutOutlet) => {
+  return algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => {
+    if (algoliaUpdate['microsite']) return Object.values(algoliaUpdate['microsite'])
+    return algoliaUpdate;
+  });
+}
 
 global.main = async function (params) {
     log(JSON.stringify({
@@ -133,12 +134,13 @@ global.main = async function (params) {
     const styleUpdates = generateStyleUpdatesFromAlgoliaUpdates(algoliaUpdatesWithoutOutlet);
 
     const updatedStyleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
+    const transformedAlgoliaUpdates = await transformMicrositeAlgoliaRequests(algoliaUpdatesWithoutOutlet);
 
-    await index.partialUpdateObjects(algoliaUpdatesWithoutOutlet, true)
+    await index.partialUpdateObjects(transformedAlgoliaUpdates, true)
         // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't delete from the queue and it gets stuck
         .then(() => styleUpdates.length > 0 ? styles.bulkWrite(styleUpdates, { ordered : false }) : null) 
         .then(() => algoliaFacetBulkImportQueue.deleteMany({ styleId: { $in:  [...updatedStyleIds, ...ignoredStyleIds] } }))
-        .then(() => updateAlgoliaFacetsCount.insert({ batchSize: algoliaUpdatesWithoutOutlet.length }))
+        .then(() => updateAlgoliaFacetsCount.insert({ batchSize: transformedAlgoliaUpdates.length }))
         .then(() => {
           log(`updated styles: ${updatedStyleIds}`)
           log(`ignored styles: ${ignoredStyleIds}`)
