@@ -2,6 +2,10 @@ const mockCategory = {
   typeId: 'category',
   id: '5bb79326-16ea-40f5-8857-31a020800a1c'
 };
+const mockMicrositeCategory = {
+  typeId: 'category',
+  id: '1ea2fe42-d3fb-4329-a3f2-da6208814aeb'
+};
 
 const mockPrice = {
   country: 'CA',
@@ -64,7 +68,7 @@ const ctMockResponse = {
   version: 1,
   masterData: {
     current: {
-      categories: [mockCategory],
+      categories: [mockCategory, mockMicrositeCategory],
       variants: [mockSku],
       masterVariant: {
         attributes: [{
@@ -77,7 +81,7 @@ const ctMockResponse = {
       }
     },
     staged: {
-      categories: [mockCategory],
+      categories: [mockCategory, mockMicrositeCategory],
       variants: [],
       masterVariant: {
         attributes: [mockSku],
@@ -202,7 +206,7 @@ const responses = {
   } },
   'GET-57': () => { return {
     ...categoryResponsePrototype,
-    id: '5bb79326-16ea-40f5-8857-31a020800a1c',
+    id: '1ea2fe42-d3fb-4329-a3f2-da6208814aeb',
     key: '57',
     name: {
       'en-CA': 'microsite_en',
@@ -232,6 +236,17 @@ const responses = {
       }
     }
   },
+  'POST-57': (...args) => {
+    mockUpdateFn(...args);
+    return {
+      ...categoryResponsePrototype,
+      key: '57',
+      name: {
+        'en-CA': 'updated_microsite_en',
+        'fr-CA': 'updated_microsite_fr'
+      }
+    }
+  },
   'POST-category58': (...args) => {
     mockUpdateFn(...args);
     return {
@@ -251,7 +266,7 @@ const mockClient = {
       const { method, uri, body } = config;
 
       if (body) {
-        const key = JSON.parse(body).key;
+        const key = JSON.parse(body).key || ''
         if (responses[`${method}-${uri}${key}`]) return { body: responses[`${method}-${uri}${key}`](method, uri, body) };
       } else {
         if (responses[`${method}-${uri}`]) return { body: responses[`${method}-${uri}`](method, uri, body) };

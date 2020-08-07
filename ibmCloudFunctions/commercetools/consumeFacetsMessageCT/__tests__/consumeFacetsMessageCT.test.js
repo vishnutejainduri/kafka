@@ -174,31 +174,43 @@ describe('createOrUpdateCategoriesFromFacet', () => {
     const response = await createOrUpdateCategoriesFromFacet(result[0], existingCtStyle, mockedCtHelpers);
     expect(response).toEqual(null);
   });
-  it('existing microsite; return message with existing microsite category', async () => {
-     const result =
-        validMicrositeParams.messages
-        .filter(addErrorHandling(filterFacetMessageCt))
-        .map(addErrorHandling(parseFacetMessageCt))
-    const existingCtStyle = await getExistingCtStyle(result[0].id, mockedCtHelpers);
-    const response = await createOrUpdateCategoriesFromFacet(result[0], existingCtStyle, mockedCtHelpers);
-    expect(response).toEqual([{"ancestors": [], "assets": [], "createdAt": "2020-04-20T19:57:34.586Z", "createdBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "id": "5bb79326-16ea-40f5-8857-31a020800a1c", "key": "57", "lastMessageSequenceNumber": 1, "lastModifiedAt": "2020-04-20T19:57:34.586Z", "lastModifiedBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "name": {"en-CA": "microsite_en", "fr-CA": "microsite_fr"}, "orderHint": "0.00001587412654585211010057", "slug": {"en-CA": "DPMROOTCATEGORY", "fr-CA": "DPMROOTCATEGORY"}, "version": 1}, {"id": "5bb79326-16ea-40f5-8857-31a020800a1c", "typeId": "category"}]);
-  });
-  it('new microsite; return message to create new microsite category', async () => {
+  it('new microsite; return message with existing microsite categories and newly created category', async () => {
     const validNewMicrositeMessage = {
       topic: validMicrositeParams.messages[0].topic,
       value: {
         ...validMicrositeParams.messages[0].value,
         DESC_ENG: 'updated_microsite_en',
         DESC_FR: 'updated_microsite_fr',
-        CHARACTERISTIC_VALUE_ID: '58'
+        CHARACTERISTIC_VALUE_ID: '58' 
       }
     };
     const result = parseFacetMessageCt(validNewMicrositeMessage);
     const existingCtStyle = await getExistingCtStyle(result.id, mockedCtHelpers);
     const response = await createOrUpdateCategoriesFromFacet(result, existingCtStyle, mockedCtHelpers);
-    expect(response).toEqual([{"ancestors": [], "assets": [], "createdAt": "2020-04-20T19:57:34.586Z", "createdBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "id": "8f1b6d78-c29d-46cf-88fe-5bd935e49fd9", "key": "58", "lastMessageSequenceNumber": 1, "lastModifiedAt": "2020-04-20T19:57:34.586Z", "lastModifiedBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "name": {"en-CA": "updated_microsite_en", "fr-CA": "updated_microsite_fr"}, "orderHint": "0.00001587412654585211010057", "slug": {"en-CA": "DPMROOTCATEGORY", "fr-CA": "DPMROOTCATEGORY"}, "version": 1}, {"id": "5bb79326-16ea-40f5-8857-31a020800a1c", "typeId": "category"}]);
+    expect(response).toEqual([{"ancestors": [], "assets": [], "createdAt": "2020-04-20T19:57:34.586Z", "createdBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "id": "8f1b6d78-c29d-46cf-88fe-5bd935e49fd9", "key": "58", "lastMessageSequenceNumber": 1, "lastModifiedAt": "2020-04-20T19:57:34.586Z", "lastModifiedBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "name": {"en-CA": "updated_microsite_en", "fr-CA": "updated_microsite_fr"}, "orderHint": "0.00001587412654585211010057", "slug": {"en-CA": "DPMROOTCATEGORY", "fr-CA": "DPMROOTCATEGORY"}, "version": 1}, {"id": "5bb79326-16ea-40f5-8857-31a020800a1c", "typeId": "category"}, {"id": "1ea2fe42-d3fb-4329-a3f2-da6208814aeb", "typeId": "category"}]);
   });
-  it('microsite flagged for deletion; return no categories since it is to be deleted', async () => {
+  it('existing microsite; return message to updated microsite category', async () => {
+    const validNewMicrositeMessage = {
+      topic: validMicrositeParams.messages[0].topic,
+      value: {
+        ...validMicrositeParams.messages[0].value,
+        DESC_ENG: 'updated_microsite_en',
+        DESC_FR: 'updated_microsite_fr'
+      }
+    };
+    const result = parseFacetMessageCt(validNewMicrositeMessage);
+    const existingCtStyle = await getExistingCtStyle(result.id, mockedCtHelpers);
+    const response = await createOrUpdateCategoriesFromFacet(result, existingCtStyle, mockedCtHelpers);
+    expect(response).toEqual([{"ancestors": [], "assets": [], "createdAt": "2020-04-20T19:57:34.586Z", "createdBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "id": "8f1b6d78-c29d-46cf-88fe-5bd935e49fd9", "key": "57", "lastMessageSequenceNumber": 1, "lastModifiedAt": "2020-04-20T19:57:34.586Z", "lastModifiedBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "name": {"en-CA": "updated_microsite_en", "fr-CA": "updated_microsite_fr"}, "orderHint": "0.00001587412654585211010057", "slug": {"en-CA": "DPMROOTCATEGORY", "fr-CA": "DPMROOTCATEGORY"}, "version": 1}, {"id": "5bb79326-16ea-40f5-8857-31a020800a1c", "typeId": "category"}, {"id": "1ea2fe42-d3fb-4329-a3f2-da6208814aeb", "typeId": "category"}]);
+  });
+  it('existing microsite; return message with no update as nothing has changed for the microsite', async () => {
+    const validNewMicrositeMessage = validMicrositeParams.messages[0];
+    const result = parseFacetMessageCt(validNewMicrositeMessage);
+    const existingCtStyle = await getExistingCtStyle(result.id, mockedCtHelpers);
+    const response = await createOrUpdateCategoriesFromFacet(result, existingCtStyle, mockedCtHelpers);
+    expect(response).toEqual([{"ancestors": [], "assets": [], "createdAt": "2020-04-20T19:57:34.586Z", "createdBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "id": "1ea2fe42-d3fb-4329-a3f2-da6208814aeb", "key": "57", "lastMessageSequenceNumber": 1, "lastModifiedAt": "2020-04-20T19:57:34.586Z", "lastModifiedBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "name": {"en-CA": "microsite_en", "fr-CA": "microsite_fr"}, "orderHint": "0.00001587412654585211010057", "slug": {"en-CA": "DPMROOTCATEGORY", "fr-CA": "DPMROOTCATEGORY"}, "version": 1}, {"id": "5bb79326-16ea-40f5-8857-31a020800a1c", "typeId": "category"}, {"id": "1ea2fe42-d3fb-4329-a3f2-da6208814aeb", "typeId": "category"}]);
+  });
+  it('microsite flagged for deletion; return only categories that aren\'t to be deleted', async () => {
     const validNewMicrositeMessage = {
       topic: validMicrositeParams.messages[0].topic,
       value: {
@@ -209,6 +221,6 @@ describe('createOrUpdateCategoriesFromFacet', () => {
     const result = parseFacetMessageCt(validNewMicrositeMessage);
     const existingCtStyle = await getExistingCtStyle(result.id, mockedCtHelpers);
     const response = await createOrUpdateCategoriesFromFacet(result, existingCtStyle, mockedCtHelpers);
-    expect(response).toEqual([]);
+    expect(response).toEqual([{"id": "5bb79326-16ea-40f5-8857-31a020800a1c", "typeId": "category"}]);
   });
 });

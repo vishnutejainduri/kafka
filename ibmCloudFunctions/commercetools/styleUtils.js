@@ -65,6 +65,7 @@ const updateCategory = async (categoryKey, categoryVersion, categoryName, parent
   const method = 'POST';
   const uri = requestBuilder.categories.byKey(categoryKey).build();
 
+
   const body = {
     version: categoryVersion,
     actions: [{
