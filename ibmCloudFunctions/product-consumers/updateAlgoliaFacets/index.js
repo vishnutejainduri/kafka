@@ -139,7 +139,7 @@ global.main = async function (params) {
     const styleUpdates = generateStyleUpdatesFromAlgoliaUpdates(algoliaUpdatesWithoutOutlet);
 
     const updatedStyleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
-    const transformedAlgoliaUpdates = await transformMicrositeAlgoliaRequests(algoliaUpdatesWithoutOutlet);
+    const transformedAlgoliaUpdates = transformMicrositeAlgoliaRequests(algoliaUpdatesWithoutOutlet);
 
     await index.partialUpdateObjects(transformedAlgoliaUpdates, true)
         // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't delete from the queue and it gets stuck
@@ -159,5 +159,6 @@ global.main = async function (params) {
 module.exports = {
   main: global.main,
   transformUpdateQueueRequestToAlgoliaUpdates,
-  generateStyleUpdatesFromAlgoliaUpdates
+  generateStyleUpdatesFromAlgoliaUpdates,
+  transformMicrositeAlgoliaRequests
 };
