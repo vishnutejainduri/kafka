@@ -30,11 +30,10 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
       styleFacetUpdateData.facets.forEach((facetData) => {
         // DPM01 / microsites is an array of values. thus we add and delete values differently for it
         if (facetData.type === 'DPM01') {
-          algoliaUpdate[facetData.name] = currentMongoStyleData[facetData.name] || [];
-          algoliaUpdate[facetData.name] = facetData.isMarkedForDeletion
-            ? algoliaUpdate[facetData.name].filter((currentMongoFacet) =>
-              !(currentMongoFacet.en === facetData.value.en && currentMongoFacet.fr === facetData.value.fr))
-            : algoliaUpdate[facetData.name].concat([facetData.value]);
+          algoliaUpdate[facetData.name] = currentMongoStyleData[facetData.name] || {};
+          facetData.isMarkedForDeletion
+            ? delete algoliaUpdate[facetData.name][facetData.facetId]
+            : algoliaUpdate[facetData.name][facetData.facetId] = facetData.value
 
           // removes duplicate facet values; not an ideal solution but without some sort of unique key for each microsite we don't know whether to insert a dupe or not 
           // (for now we are assuming dupes are not going to happen until we get an update from HR)
