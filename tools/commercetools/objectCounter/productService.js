@@ -7,8 +7,9 @@ const countBarcodes = (result) => {
   }, 0)
 }
 const countVariants = (result) => result.masterData.current.variants.length
+const countOutletFlags = (result) => result.masterData.current.masterVariant.attributes.filter(attribute => attribute.name === 'isOutlet').length
 
-const getAllVariantAttributeCount = async ({ client, requestBuilder }, { variantCounter, imageCounter, barcodeCounter, pricesCounter }) => {
+const getAllVariantAttributeCount = async ({ client, requestBuilder }, { variantCounter, imageCounter, barcodeCounter, pricesCounter, outletFlagCounter }) => {
   const method = 'GET';
 
   let variantTotal = 0;
@@ -16,6 +17,7 @@ const getAllVariantAttributeCount = async ({ client, requestBuilder }, { variant
   let barcodeTotal = 0;
   let productTotal = 0;
   let pricesTotal = 0;
+  let outletFlagsTotal = 0;
 
   let lastId = null;
   let resultCount = 500;
@@ -41,12 +43,14 @@ const getAllVariantAttributeCount = async ({ client, requestBuilder }, { variant
         if (imageCounter) imageTotal += imageCounter(result);
         if (barcodeCounter) barcodeTotal += barcodeCounter(result);
         if (pricesCounter) pricesTotal += pricesCounter(result);
+        if (outletFlagCounter) outletFlagsTotal += outletFlagCounter(result);
       });
 
       if (variantCounter) console.log('Total Variants : ', variantTotal);
       if (imageCounter) console.log('Total Images : ', imageTotal);
       if (barcodeCounter) console.log('Total Barcodes : ', barcodeTotal);
       if (pricesCounter) console.log('Total Prices : ', pricesTotal);
+      if (outletFlagCounter) console.log('Total Outlet Flags : ', outletFlagsTotal);
 
       lastId = results[results.length-1].id;
     } catch (err) {
@@ -59,7 +63,8 @@ const getAllVariantAttributeCount = async ({ client, requestBuilder }, { variant
     variantTotal,
     imageTotal,
     barcodeTotal,
-    pricesTotal
+    pricesTotal,
+    outletFlagsTotal
   };
 }
 
@@ -67,12 +72,14 @@ const getAllVariantsCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers
 const getAllImagesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { imageCounter: countImage })
 const getAllBarcodesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { barcodeCounter: countBarcodes })
 const getAllPricesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { pricesCounter: countPrices })
-const getAllCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { variantCounter: countVariants, imageCounter: countImage, barcodeCounter: countBarcodes, pricesCounter: countPrices })
+const getAllOutletFlagsCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { outletFlagCounter: countOutletFlags })
+const getAllCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { variantCounter: countVariants, imageCounter: countImage, barcodeCounter: countBarcodes, pricesCounter: countPrices, outletFlagCounter: countOutletFlags })
 
 module.exports = {
   getAllVariantsCount,
   getAllImagesCount,
   getAllBarcodesCount,
   getAllPricesCount,
+  getAllOutletFlagsCount,
   getAllCount
 }

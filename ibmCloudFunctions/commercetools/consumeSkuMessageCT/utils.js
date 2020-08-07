@@ -1,5 +1,5 @@
 const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
-const { skuAttributeNames, isStaged, entityStatus, CT_ACTION_LIMIT } = require('../constantsCt');
+const { priceAttributeNames, skuAttributeNames, isStaged, entityStatus, CT_ACTION_LIMIT } = require('../constantsCt');
 const { groupByAttribute } = require('../../lib/utils');
 
 const groupByStyleId = groupByAttribute('styleId');
@@ -81,7 +81,7 @@ const getActionsFromSku = (sku, existingSku = null) => {
 // for each SKU, but we still need to manually copy them. Copies the most
 // recent version of the mater variant's attributes, which are assumed to be the
 // those in the staged version of the variant if there are staged changes.
-const getCreationAction = (sku, style) => {
+const getCreationAction = (sku, style, priceActions = []) => {
   const attributes = (
     style.masterData[entityStatus].masterVariant.attributes
   );
@@ -91,6 +91,7 @@ const getCreationAction = (sku, style) => {
     sku: sku.id,
     attributes,
     images: [skuImage(style.key)],
+    prices: priceActions,
     staged: isStaged
   };
 };
@@ -144,6 +145,84 @@ const getOutOfDateSkuIds = (existingCtSkus, skus) => (
   }).map(sku => sku.sku)
 );
 
+const areValidMarkdowns = (price, newPrice) => {
+  return price && price.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED] && newPrice.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED]
+};
+
+const arePriceValuesDifferent = (price, newPrice) => {
+  return price.value.centAmount !== newPrice.value.centAmount
+      || price.custom.fields[priceAttributeNames.PRICE_TYPE] !== newPrice.custom.fields[priceAttributeNames.PRICE_TYPE]
+};
+
+const comparePriceRowDates = (price, newPrice, newerOrOlder) => {
+  const dateComparisonNewer = new Date(price.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED]).getTime() < new Date(newPrice.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED]).getTime()
+  const dateComparisonOlder = new Date(price.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED]).getTime() > new Date(newPrice.custom.fields[priceAttributeNames.PROCESS_DATE_CREATED]).getTime()
+  return newerOrOlder === 'newer' ? dateComparisonNewer : dateComparisonOlder
+}
+
+const shouldSyncMasterVariantPrice = (price, newPrice, newerOrOlder) => {
+    const dateComparison = areValidMarkdowns(price, newPrice) && comparePriceRowDates(price, newPrice, newerOrOlder)
+    return dateComparison
+      || !price 
+      || arePriceValuesDifferent (price, newPrice)
+}
+
+const getMatchingCtPrice = (newPrice, existingPrices) => {
+  const matchingCtPrice = existingPrices.find(existingPrice => newPrice.custom && existingPrice.custom && newPrice.custom.fields[priceAttributeNames.PRICE_CHANGE_ID] === existingPrice.custom.fields[priceAttributeNames.PRICE_CHANGE_ID]);
+  return matchingCtPrice;
+};
+
+const getPriceActionsForSku = (ctSku, ctStyle) => {
+  const pricesRemoveActions = ctSku 
+  ? ctSku.prices.map(price => {
+    const masterVariantPrices = ctStyle.masterData[entityStatus].masterVariant.prices;
+    const masterVariantCtPrice = getMatchingCtPrice(price, masterVariantPrices);
+    if (shouldSyncMasterVariantPrice(masterVariantCtPrice, price, 'older')) {
+      // there is a masterVariantPrice the sku has but it's more recent so we remove the sku's older price OR
+      // there is a price on the sku not on the masterVariant, to make them match we remove the sku's extra price OR
+      // there is a matching master variant price but the monetary value is different, always pick master variant in this case OR
+      // there is a matching master variant price but the price type is different, always pick master variant in this case
+      return { 
+          action: 'removePrice',
+          priceId: price.id,
+          staged: isStaged
+      }
+    } else {
+      // there is a masterVariantPrice the sku has but the sku's price is more recent so we don't remove it OR
+      // there is two identical prices on both the sku and masterVariant, do nothing
+      return null;
+    } 
+  })
+  : []
+
+  const pricesAddActions = ctStyle.masterData[entityStatus].masterVariant.prices.map(price => {
+    const skuPrices = ctSku ? ctSku.prices : [];
+    const matchingSkuPrice = getMatchingCtPrice(price, skuPrices);
+    if (shouldSyncMasterVariantPrice(matchingSkuPrice, price, 'newer')) {
+      // there is a matching sku price but the master variant version is more recent so we add it OR
+      // there is no matching sku price but the master variant has one so we add the one the master variant has OR
+      // there is a matching sku price but the monetary value is different, always pick master variant in this case OR
+      // there is a matching sku price but the price type is different, always pick master variant in this case
+      delete price.id
+      if (ctSku) {
+        // only for existing skus can we do an addPrice action, otherwise return the whole price object to be used in creation of the sku
+        return {
+          action: 'addPrice',
+          variantId: ctSku.id,
+          staged: isStaged,
+          price: price
+        }
+      }
+      return price;
+    } else {
+      // there is a matching sku price and it's more recent than the masterVariant price, don't update OR
+      // there is a matching sku price and it's identical to the master variant version so we do nothing
+      return null;
+    }
+  });
+
+  return [ ...pricesRemoveActions, ...pricesAddActions ].filter(Boolean);
+};
 
 // Note: When calling this function, you should already have made sure that
 // each SKU you give it should be updated (e.g., that it's not out of date).
@@ -151,11 +230,12 @@ const getOutOfDateSkuIds = (existingCtSkus, skus) => (
 const getActionsFromSkus = (skus, existingCtSkus, ctStyle) => (
   skus.reduce((previousActions, sku) => {
     const matchingCtSku = existingCtSkus.find(ctSku => ctSku.sku == sku.id);
+    const priceActions = getPriceActionsForSku(matchingCtSku, ctStyle);
     const attributeUpdateActions = getActionsFromSku(sku, matchingCtSku);
 
-    if (matchingCtSku) return [...previousActions, ...attributeUpdateActions];
+    if (matchingCtSku) return [...previousActions, ...attributeUpdateActions, ...priceActions];
 
-    const createSkuAction = getCreationAction(sku, ctStyle); // the SKU doesn't already exist in CT, so we need to create it
+    const createSkuAction = getCreationAction(sku, ctStyle, priceActions); // the SKU doesn't already exist in CT, so we need to create it
     return [...previousActions, createSkuAction, ...attributeUpdateActions];
   }, [])
 );
@@ -212,6 +292,7 @@ const removeDuplicateSkus = skus => {
 module.exports = {
   formatSkuRequestBody,
   getActionsFromSku,
+  getPriceActionsForSku,
   getActionsFromSkus,
   existingCtSkuIsNewer,
   getCtSkuFromCtStyle,

@@ -14,24 +14,12 @@
       barcode-rule:
         action: consume-barcode-message
         trigger: barcode-trigger
-      medias-rule:
-        action: consume-medias-message
-        trigger: medias-trigger
       stores-rule:
         action: consume-stores-message
         trigger: stores-trigger
-      media-containers-rule:
-        action: consume-media-containers-message
-        trigger: media-containers-trigger
-      add-media-container-to-queue-message-rule:
-        action: add-media-container-to-queue-message
-        trigger: media-containers-trigger
       sale-price-sequence-rule:
         action: update-pricing-sequence
         trigger: sale-price-trigger
-      algolia-images-rule:
-        action: update-algolia-image
-        trigger: every-minute
       algolia-inventory-rule:
         action: update-algolia-inventory
         trigger: every-minute

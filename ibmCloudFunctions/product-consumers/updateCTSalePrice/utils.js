@@ -22,6 +22,10 @@ const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicable
       existingCtStyle = (await createAndPublishStyle ({ id: styleId, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
     }
 
+    const originalPrice = getCtStyleAttributeValue(existingCtStyle, styleAttributeNames.ORIGINAL_PRICE);
+    // no valid sale price but no originalPrice to revert to; ignore message until original price later arrives
+    if (!applicablePriceChange && !originalPrice) return null;
+
     const allVariantPrices = getAllVariantPrices(existingCtStyle);
     let priceUpdateActions = allVariantPrices.map((variantPrice) => {
         let priceUpdates;
@@ -33,13 +37,13 @@ const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicable
               ? [{
                 action: 'changePrice',
                 priceId: existingCtPrice.id,
-                price: createPriceUpdate(getCtStyleAttributeValue(existingCtStyle, styleAttributeNames.ORIGINAL_PRICE).centAmount, priceTypes.ORIGINAL_PRICE),
+                price: createPriceUpdate(originalPrice.centAmount, priceTypes.ORIGINAL_PRICE),
                 staged: isStaged
               }, setOnSaleFlag(false)]
               : [{
                 action: 'addPrice',
                 variantId: variantPrice.variantId,
-                price: createPriceUpdate(getCtStyleAttributeValue(existingCtStyle, styleAttributeNames.ORIGINAL_PRICE).centAmount, priceTypes.ORIGINAL_PRICE),
+                price: createPriceUpdate(originalPrice.centAmount, priceTypes.ORIGINAL_PRICE),
                 staged: isStaged
               }, setOnSaleFlag(false)]
         } else {
