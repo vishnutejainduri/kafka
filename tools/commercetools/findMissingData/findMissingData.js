@@ -1,6 +1,7 @@
 const { getCtHelpers } = require('./client.js');
 const { 
-  getAllMissing
+  getAllMissing,
+  getAllProductsMissingAllData
 } = require('./productService.js');
 
 const userInput = process.argv.slice(2);
@@ -26,6 +27,11 @@ if (environment === 'prod' || environment === 'production') ENV = ENV_PROD
 const ctHelpers = getCtHelpers (ENV);
 
 switch (dataType) {
+  case 'missingall':
+    getAllProductsMissingAllData(ctHelpers, ENV)
+      .then(result => console.log('Total FINAL:', result))
+      .catch(e => console.log(e));
+    break;
   case 'all':
     getAllMissing(ctHelpers, ENV)
       .then(result => console.log('Total FINAL:', result))
