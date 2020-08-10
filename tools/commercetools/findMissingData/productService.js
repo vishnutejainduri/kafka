@@ -23,10 +23,10 @@ const STYLES_BASIC_TYPE = 'stylesbasic';
 
 const checkIfMissingAllVariants = (result) => result.masterData.current.variants.map(currentVariant => currentVariant.sku).length === 0
 
-const getBarcodeData = (client, requestBuilder, result) => {
-  const variantBarcodes = result.masterData.current.variants.map(variant => {
+const getBarcodeData = async (client, requestBuilder, result) => {
+  const variantBarcodes = await result.masterData.current.variants.map(async variant => {
     let barcodes = variant.find(attribute => attribute.name === 'barcodes').value
-    barcodes = barcodes.map(barcode => {
+    barcodes = await barcodes.map(async barcode => {
       const method = 'GET';
       const uri = `${requestBuilder.customObjects.build()}/barcodes/${barcode.id}`;
 
@@ -74,10 +74,14 @@ const getFileNamings = (environment, all = false) => {
   return { JESTA_FILE_SUFFIX, MISSING_DATA_SUFFIX }
 }
 
-const compareMissingWithJesta = async ({ client, requestBuilder }, environment, { findMissingVariants, findMissingBarcodes, findMissingStylesBasic }) => {
-  const { MISSING_DATA_SUFFIX, JESTA_FILE_SUFFIX } = getFileNamings (environment);
+const compareMissingWithJesta = async ({ client, requestBuilder }, environment, { findMissingVariants, findMissingBarcodes, findMissingStylesBasic, checkIfMissingAllVariants }) => {
+  let searchForAllMissing = false;
+  if (checkIfMissingAllVariants)  searchForAllMissing = true
+
+  const { MISSING_DATA_SUFFIX, JESTA_FILE_SUFFIX } = getFileNamings (environment, searchForAllMissing);
 
   const wstreams = {}
+  if (checkIfMissingAllVariants)  wstreams[SKU_TYPE] = fs.createWriteStream(MISSING_ALL_DATA_PREFIX + SKU_TYPE + MISSING_DATA_SUFFIX);
   if (findMissingVariants)  wstreams[SKU_TYPE] = fs.createWriteStream(MISSING_DATA_PREFIX + SKU_TYPE + MISSING_DATA_SUFFIX);
   if (findMissingBarcodes)  wstreams[BARCODE_TYPE] = fs.createWriteStream(MISSING_DATA_PREFIX + BARCODE_TYPE + MISSING_DATA_SUFFIX);
   if (findMissingStylesBasic)  wstreams[STYLES_BASIC_TYPE] = fs.createWriteStream(MISSING_DATA_PREFIX + STYLES_BASIC_TYPE + MISSING_DATA_SUFFIX);
@@ -90,6 +94,7 @@ const compareMissingWithJesta = async ({ client, requestBuilder }, environment, 
   const method = 'GET';
 
   let productTotal = 0;
+  let totalProductsMissingAllVariants = 0;
 
   let missingVariantsTotal = 0;
   let missingBarcodesTotal = 0;
@@ -120,12 +125,19 @@ const compareMissingWithJesta = async ({ client, requestBuilder }, environment, 
       console.log('Total Products: ', productTotal);
 
       const results = response.body.results;
-      results.forEach ((result) => {
+      await results.forEach (async (result) => {
+        if (checkIfMissingAllVariants) {
+          if (checkIfMissingAllVariants(result)) {
+            wstreams[SKU_TYPE].write(result.id + '\n')
+            totalProductsMissingAllVariants += 1
+          }
+        }
         if (findMissingVariants) {
           variants = variants.concat(result.masterData.current.variants.map(currentVariant => currentVariant.sku))
         }
         if (findMissingBarcodes) {
-          barcodes = barcodes.concat(getBarcodeData(client, requestBuilder, result))  
+          const barcodeData = await getBarcodeData(client, requestBuilder, result)
+          barcodes = barcodes.concat(barcodeData)
         }
         if (findMissingStylesBasic) {
           stylesBasic.push(result.masterData.current.masterVariant.attributes.filter(attribute => attribute.name === 'isOutlet').length > 0
@@ -161,65 +173,13 @@ const compareMissingWithJesta = async ({ client, requestBuilder }, environment, 
   return {
     missingVariantsTotal,
     missingBarcodesTotal,
-    missingStylesBasicTotal
+    missingStylesBasicTotal,
+    totalProductsMissingAllVariants
   };
 }
 
-const findProductsMissingData = async ({ client, requestBuilder }, environment, { checkIfMissingAllVariants: checkIfMissingAllVariants }) => {
-  const { MISSING_DATA_SUFFIX, JESTA_FILE_SUFFIX } = getFileNamings (environment, true);
-
-  const wstreams = {}
-  if (checkIfMissingAllVariants)  wstreams[SKU_TYPE] = fs.createWriteStream(MISSING_ALL_DATA_PREFIX + SKU_TYPE + MISSING_DATA_SUFFIX);
-
-  const method = 'GET';
-
-  let productTotal = 0;
-  let totalProductsMissingAllVariants = 0;
-
-  let lastId = null;
-  let resultCount = 500;
-  
-  while (resultCount === 500) {
-    let uri;
-    if (!lastId) {
-      uri = requestBuilder.products.withTotal(false).perPage(500).sort('id').build();
-    } else {
-      uri = requestBuilder.products.withTotal(false).perPage(500).sort('id').where(`id > "${lastId}"`).build();
-    }
-
-    try {
-      const response = await client.execute({ method, uri });
-
-      resultCount = response.body.count;
-      productTotal += resultCount;
-      console.log('Total Products: ', productTotal);
-
-      const results = response.body.results;
-      results.forEach ((result) => {
-        if (checkIfMissingAllVariants) {
-          if (checkIfMissingAllVariants(result)) {
-            wstreams[SKU_TYPE].write(result.id + '\n')
-            totalProductsMissingAllVariants += 1
-          }
-        }
-      });
-
-      lastId = results[results.length-1].id;
-      console.log(totalProductsMissingAllVariants);
-      //if (totalProductsMissingAllVariants > 0) break;
-    } catch (err) {
-        if (err.code === 404) return null;
-        throw err;
-    }
-  }
-
-  return {
-    totalProductsMissingAllVariants
-  }
-}
-
 const getAllMissing = (ctHelpers, environment) => compareMissingWithJesta(ctHelpers, environment, { findMissingVariants: true, findMissingBarcodes: true, findMissingStylesBasic: true });
-const getAllProductsMissingAllData = (ctHelpers, environment) => findProductsMissingData(ctHelpers, environment, { checkIfMissingAllVariants: checkIfMissingAllVariants })
+const getAllProductsMissingAllData = (ctHelpers, environment) => compareMissingWithJesta(ctHelpers, environment, { checkIfMissingAllVariants: checkIfMissingAllVariants })
 
 module.exports = {
   getAllMissing,
