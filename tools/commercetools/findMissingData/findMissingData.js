@@ -1,6 +1,7 @@
 const { getCtHelpers } = require('./client.js');
 const { 
   getAllMissing,
+  getAllMissingSkus,
   getAllProductsMissingAllData
 } = require('./productService.js');
 
@@ -29,6 +30,11 @@ const ctHelpers = getCtHelpers (ENV);
 switch (dataType) {
   case 'missingall':
     getAllProductsMissingAllData(ctHelpers, ENV)
+      .then(result => console.log('Total FINAL:', result))
+      .catch(e => console.log(e));
+    break;
+  case 'variants':
+    getAllMissingSkus(ctHelpers, ENV)
       .then(result => console.log('Total FINAL:', result))
       .catch(e => console.log(e));
     break;
