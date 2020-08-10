@@ -29,9 +29,13 @@ const STYLES_BASIC_TYPE = 'stylesbasic';
 const checkIfMissingAllVariants = (result) => result.masterData.current.variants.map(currentVariant => currentVariant.sku).length === 0
 
 const getBarcodeData = async (client, requestBuilder, result) => {
-  const variantBarcodes = await Promise.all(result.masterData.current.variants.map(async variant => {
-    let barcodes = variant.attributes.find(attribute => attribute.name === 'barcodes').value
-    barcodes = await Promise.all(barcodes.map(async barcode => {
+  let variantBarcodes;
+  if (!result.masterData.current.variants) variantBarcodes = []
+
+  variantBarcodes = await Promise.all(result.masterData.current.variants.map(async variant => {
+    let barcodes = variant.attributes.find(attribute => attribute.name === 'barcodes');
+    if (!barcodes) return null;
+    barcodes = await Promise.all(barcodes.value.map(async barcode => {
       const method = 'GET';
       const uri = `${requestBuilder.customObjects.build()}/barcodes/${barcode.id}`;
 
@@ -39,11 +43,15 @@ const getBarcodeData = async (client, requestBuilder, result) => {
         const response = await client.execute({ method, uri }); 
         return response.body.key;
       } catch (err) {
+        console.log(result.key, ',', variant.sku);
         return `ERROR${barcode.id}`;
       }
     }))
     return barcodes;
   }))
+
+  variantBarcodes = variantBarcodes.filter(Boolean)
+  console.log(variantBarcodes);
   return variantBarcodes.reduce((totalBarcodes, variantBarcodes) => [ ...totalBarcodes, ...variantBarcodes ], []).filter(Boolean);
 }
 
