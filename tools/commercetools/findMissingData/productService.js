@@ -1,26 +1,75 @@
 const fs = require('fs');
-const wstreamMissingData = fs.createWriteStream('missingDataStyles.csv');
+const util = require('util');
+const readFile = util.promisify(fs.readFile);
 
-const countPrices = (result) => result.masterData.current.variants.reduce((totalPrices, currentVariant) => (totalPrices += currentVariant.prices.length), 0 )
-const countImage = (result) => result.masterData.current.variants.reduce((totalImages, currentVariant) => (totalImages += currentVariant.images.length), 0 )
-const countBarcodes = (result) => {
+const MISSING_DATA_PREFIX = './results/missingData_';
+const MISSING_DATA_SUFFIX_PROD = '_PROD.csv';
+const MISSING_DATA_SUFFIX_DEV = '_DEV.csv';
+const MISSING_DATA_SUFFIX_STAGE = '_STAGE.csv';
+
+const JESTA_FILE_SUFFIX_PROD = '_JESTA_PROD.csv';
+const JESTA_FILE_SUFFIX_DEV = '_JESTA_TEST.csv';
+const JESTA_FILE_SUFFIX_STAGE = '_JESTA_TEST.csv';
+const JESTA_DATA_PATH = './jestaData/';
+
+const BARCODE_TYPE = 'barcodes';
+const SKU_TYPE = 'skus';
+
+const findMissingBarcodes = (result) => {
   return result.masterData.current.variants.reduce((totalBarcodes, currentVariant) => {
     const barcodeAttribute = currentVariant.attributes.filter((attribute) => attribute.name === 'barcodes')[0];
     return totalBarcodes += barcodeAttribute ? barcodeAttribute.value.length : 0
   }, 0)
 }
-const countVariants = (result) => result.masterData.current.variants.length
-const countOutletFlags = (result) => result.masterData.current.masterVariant.attributes.filter(attribute => attribute.name === 'isOutlet').length
 
-const getAllVariantAttributeCount = async ({ client, requestBuilder }, { variantCounter, imageCounter, barcodeCounter, pricesCounter, outletFlagCounter }) => {
+const findMissingVariants = (variants, jestaSkus) => {
+  return jestaSkus.map(currentSku => {
+    console.log('searching for jesta sku...', currentSku);
+    return variants.includes(currentSku)
+      ? null
+      : currentSku
+  }).filter(Boolean);
+}
+
+const getFileNamings = (environment) => {
+  let JESTA_FILE_SUFFIX, MISSING_DATA_SUFFIX
+  if (environment === 'dev' || environment === 'development') {
+    JESTA_FILE_SUFFIX = JESTA_FILE_SUFFIX_DEV;
+    MISSING_DATA_SUFFIX = MISSING_DATA_SUFFIX_DEV;
+  }
+  if (environment === 'staging' || environment === 'stage') {
+    JESTA_FILE_SUFFIX = JESTA_FILE_SUFFIX_STAGE;
+    MISSING_DATA_SUFFIX = MISSING_DATA_SUFFIX_STAGE;
+  }
+  if (environment === 'production' || environment === 'prod') {
+    JESTA_FILE_SUFFIX = JESTA_FILE_SUFFIX_PROD;
+    MISSING_DATA_SUFFIX = MISSING_DATA_SUFFIX_PROD;
+  }
+  return { JESTA_FILE_SUFFIX, MISSING_DATA_SUFFIX }
+}
+
+const compareMissingWithJesta = async ({ client, requestBuilder }, environment, { findMissingVariants, findMissingBarcodes }) => {
+  const { MISSING_DATA_SUFFIX, JESTA_FILE_SUFFIX } = getFileNamings (environment);
+
+  const wstreams = {}
+  if (findMissingVariants)  wstreams[SKU_TYPE] = fs.createWriteStream(MISSING_DATA_PREFIX + SKU_TYPE + MISSING_DATA_SUFFIX);
+  if (findMissingBarcodes)  wstreams[BARCODE_TYPE] = fs.createWriteStream(MISSING_DATA_PREFIX + BARCODE_TYPE + MISSING_DATA_SUFFIX);
+
+  const jestaData = {}
+  if (findMissingVariants)  jestaData[SKU_TYPE] = (await readFile (JESTA_DATA_PATH + SKU_TYPE + JESTA_FILE_SUFFIX, 'utf-8')).split('\n')
+  if (findMissingBarcodes)  jestaData[BARCODE_TYPE] = (await readFile (JESTA_DATA_PATH + BARCODE_TYPE + JESTA_FILE_SUFFIX, 'utf-8')).split('\n')
+
   const method = 'GET';
 
-  let variantTotal = 0;
-  let imageTotal = 0;
-  let barcodeTotal = 0;
   let productTotal = 0;
-  let pricesTotal = 0;
-  let outletFlagsTotal = 0;
+
+  let missingVariantsTotal = 0;
+  let missingBarcodesTotal = 0;
+
+  let variants = [];
+  let barcodes = [];
+
+  let missingVariants, missingBarcodes
 
   let lastId = null;
   let resultCount = 500;
@@ -42,23 +91,12 @@ const getAllVariantAttributeCount = async ({ client, requestBuilder }, { variant
 
       const results = response.body.results;
       results.forEach ((result) => {
-        if (variantCounter) variantTotal += variantCounter(result)
-        if (imageCounter) imageTotal += imageCounter(result);
-        if (barcodeCounter) {
-          barcodeTotal += barcodeCounter(result);
-          if (barcodeCounter(result) === 0) {
-            wstreamMissingData.write(result.key + ',' + 'NO BARCODES' + '\n');
-          }
+        if (findMissingVariants) {
+          variants = variants.concat(result.masterData.current.variants.map(currentVariant => currentVariant.sku))
         }
-        if (pricesCounter) pricesTotal += pricesCounter(result);
-        if (outletFlagCounter) outletFlagsTotal += outletFlagCounter(result);
+        if (findMissingBarcodes) {
+        }
       });
-
-      if (variantCounter) console.log('Total Variants : ', variantTotal);
-      if (imageCounter) console.log('Total Images : ', imageTotal);
-      if (barcodeCounter) console.log('Total Barcodes : ', barcodeTotal);
-      if (pricesCounter) console.log('Total Prices : ', pricesTotal);
-      if (outletFlagCounter) console.log('Total Outlet Flags : ', outletFlagsTotal);
 
       lastId = results[results.length-1].id;
     } catch (err) {
@@ -66,28 +104,21 @@ const getAllVariantAttributeCount = async ({ client, requestBuilder }, { variant
         throw err;
     }
   }
+
+  if (findMissingVariants) {
+    missingVariants = findMissingVariants (variants, jestaData[SKU_TYPE])
+    missingVariantsTotal += missingVariants.length
+    missingVariants.forEach (variant => wstreams[SKU_TYPE].write(variant + '\n'))
+  }
+
   return {
-    productTotal,
-    variantTotal,
-    imageTotal,
-    barcodeTotal,
-    pricesTotal,
-    outletFlagsTotal
+    missingVariantsTotal,
+    missingBarcodesTotal
   };
 }
 
-const getAllVariantsCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { variantCounter: countVariants })
-const getAllImagesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { imageCounter: countImage })
-const getAllBarcodesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { barcodeCounter: countBarcodes })
-const getAllPricesCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { pricesCounter: countPrices })
-const getAllOutletFlagsCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { outletFlagCounter: countOutletFlags })
-const getAllCount = (ctHelpers) => getAllVariantAttributeCount(ctHelpers, { variantCounter: countVariants, imageCounter: countImage, barcodeCounter: countBarcodes, pricesCounter: countPrices, outletFlagCounter: countOutletFlags })
+const getAllMissing = (ctHelpers, environment) => compareMissingWithJesta(ctHelpers, environment, { findMissingVariants: findMissingVariants, findMissingBarcodes: findMissingBarcodes });
 
 module.exports = {
-  getAllVariantsCount,
-  getAllImagesCount,
-  getAllBarcodesCount,
-  getAllPricesCount,
-  getAllOutletFlagsCount,
-  getAllCount
+  getAllMissing
 }

@@ -47,17 +47,12 @@ const getEnvironmentVariables = (environment) => {
       clientId = process.env.CLIENT_ID_DEV;
       clientSecret = process.env.CLIENT_SECRET_DEV;
       break;
-    case 'development':
-      projectKey = process.env.PROJECT_KEY_DEVELOPMENT
+    case 'stage':
+      projectKey = process.env.PROJECT_KEY_DEVELOPMENT;
       clientId = process.env.CLIENT_ID_DEVELOPMENT;
       clientSecret = process.env.CLIENT_SECRET_DEVELOPMENT;
       break;
-    case 'staging':
-      projectKey = process.env.PROJECT_KEY_STAGING
-      clientId = process.env.CLIENT_ID_STAGING;
-      clientSecret = process.env.CLIENT_SECRET_STAGING;
-      break;
-    case 'production':
+    case 'prod':
       projectKey = process.env.PROJECT_KEY_PRODUCTION
       clientId = process.env.CLIENT_ID_PRODUCTION;
       clientSecret = process.env.CLIENT_SECRET_PRODUCTION;
