@@ -171,7 +171,7 @@ const findProductsMissingData = async ({ client, requestBuilder }, environment, 
 
       lastId = results[results.length-1].id;
       console.log(totalProductsMissingAllVariants);
-      if (totalProductsMissingAllVariants > 0) break;
+      //if (totalProductsMissingAllVariants > 0) break;
     } catch (err) {
         if (err.code === 404) return null;
         throw err;
