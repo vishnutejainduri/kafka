@@ -268,9 +268,7 @@ const mockClient = {
       if (body) {
         const key = JSON.parse(body).key || ''
         if (responses[`${method}-${uri}${key}`]) return { body: responses[`${method}-${uri}${key}`](method, uri, body) };
-      } else {
-        if (responses[`${method}-${uri}`]) return { body: responses[`${method}-${uri}`](method, uri, body) };
-      }
+      } else if (responses[`${method}-${uri}`]) return { body: responses[`${method}-${uri}`](method, uri, body) };
 
       // record other update calls
       if (method === 'POST') mockUpdateFn(method, uri, body);

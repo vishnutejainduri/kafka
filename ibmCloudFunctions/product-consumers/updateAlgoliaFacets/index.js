@@ -2,6 +2,7 @@ const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { addErrorHandling, log } = require('../utils');
+const { MICROSITE } = require('../../lib/constants');
 
 let client = null;
 let index = null;
@@ -31,9 +32,11 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
         // DPM01 / microsites is an array of values. thus we add and delete values differently for it
         if (facetData.type === 'DPM01') {
           algoliaUpdate[facetData.name] = currentMongoStyleData[facetData.name] || {};
-          facetData.isMarkedForDeletion
-            ? delete algoliaUpdate[facetData.name][facetData.facetId]
-            : algoliaUpdate[facetData.name][facetData.facetId] = facetData.value
+          if (facetData.isMarkedForDeletion) {
+            delete algoliaUpdate[facetData.name][facetData.facetId]
+          } else {
+            algoliaUpdate[facetData.name][facetData.facetId] = facetData.value
+          }
 
           return;
         }
@@ -80,10 +83,10 @@ const generateStyleUpdatesFromAlgoliaUpdates = (algoliaUpdatesWithoutOutlet) => 
 
 const transformMicrositeAlgoliaRequests = (algoliaUpdatesWithoutOutlet) => {
   return algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => {
-    if (algoliaUpdate['microsite']) {
+    if (algoliaUpdate[MICROSITE]) {
       return {
         objectID: algoliaUpdate.objectID,
-        'microsite': Object.values(algoliaUpdate['microsite'])
+        [MICROSITE]: Object.values(algoliaUpdate[MICROSITE])
       }
     }
     return algoliaUpdate;

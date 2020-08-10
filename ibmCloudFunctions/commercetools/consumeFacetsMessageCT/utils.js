@@ -9,7 +9,8 @@ const {
   updateCategory,
   categoryNeedsUpdating
 } = require('../styleUtils');
-const { languageKeys, MICROSITE, entityStatus } = require('../constantsCt');
+const { languageKeys, entityStatus } = require('../constantsCt');
+const { MICROSITE } = require('../../lib/constants');
 
 const MICROSITES_ROOT_CATEGORY = 'MICROSITES';
 

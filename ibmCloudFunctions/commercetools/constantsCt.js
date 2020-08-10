@@ -64,7 +64,6 @@ const priceTypes = {
 const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
 const KEY_VALUE_DOCUMENT = 'key-value-document'; // reference-type of custom objects in CT
 const TAX_CATEGORY = 'jesta-tax-descriptions';
-const MICROSITE = 'microsite';
 // Business rules of HarryRosen requires us to have this property set to false
 const isStaged = false;
 const entityStatus = isStaged ? 'staged' : 'current';
@@ -99,7 +98,6 @@ module.exports = {
   priceAttributeNames,
   currencyCodes,
   languageKeys,
-  MICROSITE,
   orderStates,
   isStaged,
   entityStatus,

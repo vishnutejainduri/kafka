@@ -1,5 +1,6 @@
 'use strict';
-const { languageKeys, MICROSITE } = require('../commercetools/constantsCt');
+const { languageKeys } = require('../commercetools/constantsCt');
+const { MICROSITE } = require('./constants');
 
 const TOPIC_NAME = 'facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA';
 
@@ -25,7 +26,7 @@ function parseFacetMessageCt(msg) {
         isMarkedForDeletion: msg.value.UPD_FLG === 'F',
     };
     // If the facet is marked for deletion, set the value to null (unless it's a microsite)
-    facetObj[facetName] = msg.value.UPD_FLG === 'F' && facetName !== MICROSITE 
+    facetObj[facetName] = facetObj.isMarkedForDeletion && facetName !== MICROSITE 
         ? { [languageKeys.ENGLISH]: '', [languageKeys.FRENCH]: '' }
         : { [languageKeys.ENGLISH]: msg.value.DESC_ENG, [languageKeys.FRENCH]: msg.value.DESC_FR };
     return facetObj;

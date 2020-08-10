@@ -73,9 +73,24 @@ describe('consumeFacetsMessageCT', () => {
 });
 
 describe('parseFacetMessageCt', () => {
+  const expectedMicrositeResult = {
+    _id: 'styleId',
+    facetId: '57',
+    id: 'styleId',
+    isMarkedForDeletion: false,
+    microsite: { [languageKeys.ENGLISH]: 'microsite_en', [languageKeys.FRENCH]: 'microsite_fr' }
+  }
+  const expectedPromoStickerResult = {
+    _id: 'styleId',
+    facetId: null,
+    id: 'styleId',
+    isMarkedForDeletion: false,
+    promotionalSticker: { [languageKeys.ENGLISH]: 'descEng', [languageKeys.FRENCH]: 'descFr' }
+  }
+
   it('correct message; promo sticker', () => {
     const response = parseFacetMessageCt(validParams.messages[0]);
-    expect(response).toEqual({ _id: 'styleId', facetId: null, id: 'styleId', isMarkedForDeletion: false, promotionalSticker: { 'en-CA': 'descEng', 'fr-CA': 'descFr' } });
+    expect(response).toEqual(expectedPromoStickerResult);
   });
 
   it('should return a null result if the facet is marked for deletion', () => {
@@ -95,22 +110,12 @@ describe('parseFacetMessageCt', () => {
     };
 
     const actual = parseFacetMessageCt(validDeletionMessage);
-
-    expect(actual).toEqual({
-      _id: 'styleId',
-      facetId: null,
-      id: 'styleId',
-      isMarkedForDeletion: true,
-      promotionalSticker: {
-        [languageKeys.ENGLISH]: '',
-        [languageKeys.FRENCH]: ''
-      }
-    });
+    expect(actual).toEqual({ ...expectedPromoStickerResult, isMarkedForDeletion: true, promotionalSticker: { [languageKeys.ENGLISH]: '', [languageKeys.FRENCH]: '' } })
   });
 
   it('correct message; microsite', () => {
     const response = parseFacetMessageCt(validMicrositeParams.messages[0]);
-    expect(response).toEqual({ _id: 'styleId', facetId: '57', id: 'styleId', isMarkedForDeletion: false, microsite: { 'en-CA': 'microsite_en', 'fr-CA': 'microsite_fr' } });
+    expect(response).toEqual(expectedMicrositeResult);
   });
 
   it('should return a valid result if the facet is marked for deletion; only isMarkedForDeletion should be changed to true', () => {
@@ -130,17 +135,7 @@ describe('parseFacetMessageCt', () => {
     };
 
     const actual = parseFacetMessageCt(validMicrositeDeletionMessage);
-
-    expect(actual).toEqual({
-      _id: 'styleId',
-      facetId: '57',
-      id: 'styleId',
-      isMarkedForDeletion: true,
-      microsite: {
-        [languageKeys.ENGLISH]: 'microsite_en',
-        [languageKeys.FRENCH]: 'microsite_fr'
-      }
-    });
+    expect(actual).toEqual({ ...expectedMicrositeResult, isMarkedForDeletion: true })
   });
 });
 
