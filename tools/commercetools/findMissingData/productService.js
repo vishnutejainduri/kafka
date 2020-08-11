@@ -37,7 +37,7 @@ const getBarcodeData = async (client, requestBuilder, result) => {
     if (!barcodes) return null;
     barcodes = await Promise.all(barcodes.value.map(async barcode => {
       const method = 'GET';
-      const uri = `${requestBuilder.customObjects.build()}/barcodes/${barcode.id}`;
+      const uri = `${requestBuilder.customObjects.build()}/${barcode.id}`;
 
       try {
         const response = await client.execute({ method, uri }); 
@@ -88,7 +88,7 @@ const getFileNamings = (environment, all = false) => {
   return { JESTA_FILE_SUFFIX, MISSING_DATA_SUFFIX, CT_FILE_SUFFIX }
 }
 
-const compareMissingWithJesta = async ({ client, requestBuilder }, environment, { findMissingVariants, findMissingBarcodes, findMissingStylesBasic, checkIfMissingAllVariants }) => {
+const compareMissingWithJesta = async ({ client, requestBuilder }, environment, QUICK_TEST = false, { findMissingVariants, findMissingBarcodes, findMissingStylesBasic, checkIfMissingAllVariants }) => {
   let searchForAllMissing = false;
   if (checkIfMissingAllVariants)  searchForAllMissing = true
 
@@ -130,7 +130,7 @@ const compareMissingWithJesta = async ({ client, requestBuilder }, environment, 
   let missingVariants, missingBarcodes, missingStylesBasic
 
   let lastId = null;
-  const STOP_COUNT = 5;
+  const STOP_COUNT = 500;
   let resultCount = STOP_COUNT;
   
   while (resultCount === STOP_COUNT) {
@@ -172,7 +172,7 @@ const compareMissingWithJesta = async ({ client, requestBuilder }, environment, 
       }))
 
       lastId = results[results.length-1].id;
-      break;
+      if (QUICK_TEST) break;
     } catch (err) {
         if (err.code === 404) return null;
         throw err;
@@ -226,11 +226,11 @@ const compareMissingWithJesta = async ({ client, requestBuilder }, environment, 
   };
 }
 
-const getAllMissingSkus = (ctHelpers, environment) => compareMissingWithJesta(ctHelpers, environment, { findMissingVariants: true });
-const getAllMissingBarcodes = (ctHelpers, environment) => compareMissingWithJesta(ctHelpers, environment, { findMissingBarcodes: true });
-const getAllMissingStylesBasic = (ctHelpers, environment) => compareMissingWithJesta(ctHelpers, environment, { findMissingStylesBasic: true });
-const getAllMissing = (ctHelpers, environment) => compareMissingWithJesta(ctHelpers, environment, { findMissingVariants: true, findMissingBarcodes: true, findMissingStylesBasic: true });
-const getAllProductsMissingAllData = (ctHelpers, environment) => compareMissingWithJesta(ctHelpers, environment, { checkIfMissingAllVariants: checkIfMissingAllVariants })
+const getAllMissingSkus = (ctHelpers, environment, QUICK_TEST = false) => compareMissingWithJesta(ctHelpers, environment, QUICK_TEST, { findMissingVariants: true });
+const getAllMissingBarcodes = (ctHelpers, environment, QUICK_TEST = false) => compareMissingWithJesta(ctHelpers, environment, QUICK_TEST, { findMissingBarcodes: true });
+const getAllMissingStylesBasic = (ctHelpers, environment, QUICK_TEST = false) => compareMissingWithJesta(ctHelpers, environment, QUICK_TEST, { findMissingStylesBasic: true });
+const getAllMissing = (ctHelpers, environment, QUICK_TEST = false) => compareMissingWithJesta(ctHelpers, environment, QUICK_TEST, { findMissingVariants: true, findMissingBarcodes: true, findMissingStylesBasic: true });
+const getAllProductsMissingAllData = (ctHelpers, environment, QUICK_TEST = false) => compareMissingWithJesta(ctHelpers, environment, QUICK_TEST, { checkIfMissingAllVariants: checkIfMissingAllVariants })
 
 module.exports = {
   getAllMissing,

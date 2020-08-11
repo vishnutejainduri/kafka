@@ -10,10 +10,14 @@ const {
 const userInput = process.argv.slice(2);
 const environment = userInput[0];
 const dataType = userInput[1];
+const quickTest = userInput[2];
 
 const ENV_DEV = 'dev'
 const ENV_STAGE = 'stage'
 const ENV_PROD = 'prod'
+
+let QUICK_TEST
+if (quickTest === 'test') QUICK_TEST = true
 
 if (environment !== 'dev' && environment !== 'development'
    && environment !== 'staging' && environment !== 'stage'
@@ -31,27 +35,27 @@ const ctHelpers = getCtHelpers (ENV);
 
 switch (dataType) {
   case 'missingall':
-    getAllProductsMissingAllData(ctHelpers, ENV)
+    getAllProductsMissingAllData(ctHelpers, ENV, QUICK_TEST)
       .then(result => console.log('Total FINAL:', result))
       .catch(e => console.log(e));
     break;
   case 'variants':
-    getAllMissingSkus(ctHelpers, ENV)
+    getAllMissingSkus(ctHelpers, ENV, QUICK_TEST)
       .then(result => console.log('Total FINAL:', result))
       .catch(e => console.log(e));
     break;
   case 'barcodes':
-    return getAllMissingBarcodes(ctHelpers, ENV)
+    getAllMissingBarcodes(ctHelpers, ENV, QUICK_TEST)
       .then(result => console.log('Total FINAL:', result))
       .catch(e => console.log(e));
     break;
   case 'stylesbasic':
-    getAllMissingStylesBasic(ctHelpers, ENV)
+    getAllMissingStylesBasic(ctHelpers, ENV, QUICK_TEST)
       .then(result => console.log('Total FINAL:', result))
       .catch(e => console.log(e));
     break;
   case 'all':
-    getAllMissing(ctHelpers, ENV)
+    getAllMissing(ctHelpers, ENV, QUICK_TEST)
       .then(result => console.log('Total FINAL:', result))
       .catch(e => console.log(e));
     break;
