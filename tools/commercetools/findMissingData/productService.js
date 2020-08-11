@@ -43,7 +43,9 @@ const getBarcodeData = async (client, requestBuilder, result) => {
         const response = await client.execute({ method, uri }); 
         return response.body.key;
       } catch (err) {
-        return `ERROR-${barcode.id},${result.key},${variant.sku}`;
+        if (err.code === 404) return `MISSING_BARCODE-${barcode.id},${result.key},${variant.sku}`;
+        return `ERROR_GETTING_BARCODE-${barcode.id},${result.key},${variant.sku}`;
+        
       }
     }))
     return barcodes;
