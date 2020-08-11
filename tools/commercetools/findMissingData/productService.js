@@ -130,7 +130,7 @@ const compareMissingWithJesta = async ({ client, requestBuilder }, environment, 
   let missingVariants, missingBarcodes, missingStylesBasic
 
   let lastId = null;
-  const STOP_COUNT = 500;
+  const STOP_COUNT = 5;
   let resultCount = STOP_COUNT;
   
   while (resultCount === STOP_COUNT) {
@@ -172,6 +172,7 @@ const compareMissingWithJesta = async ({ client, requestBuilder }, environment, 
       }))
 
       lastId = results[results.length-1].id;
+      break;
     } catch (err) {
         if (err.code === 404) return null;
         throw err;
