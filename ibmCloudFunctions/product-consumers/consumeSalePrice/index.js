@@ -34,15 +34,11 @@ const main = async function (params) {
     const priceRecords = (params.messages
         .map(addErrorHandling(validateSalePriceMessages))
         .map(addErrorHandling(parseSalePriceMessage)))
-    console.log('priceRecords', priceRecords);
     const pricesGroupedByStyleId = groupByStyleId(priceRecords);
-    console.log('pricesGroupedByStyleId', pricesGroupedByStyleId);
 
     return Promise.all(pricesGroupedByStyleId
         .map(addErrorHandling(async (batchedUpdate) => {
-            console.log('batchedUpdate', batchedUpdate);
             for (let update of batchedUpdate) {
-              console.log('update', update);
               const { styleId, ...priceChangeUpdate } = update
               // delete price type as that's only relevant for CT and just makes our mongo messier if we have it there with no gain
               delete priceChangeUpdate.priceType
@@ -59,18 +55,12 @@ const main = async function (params) {
               let newPriceRecord = {};
               const currentPriceRecord = await pricesCollection.findOne({ styleId });
               if (!currentPriceRecord) {
-                console.log('1');
-                console.log('priceChangeUpdateWithProcessFlagSet', priceChangeUpdateWithProcessFlagSet);
                 newPriceRecord = { _id: styleId, id: styleId, styleId, priceChanges: [priceChangeUpdateWithProcessFlagSet] };
               } else if (!currentPriceRecord.priceChanges) {
-                console.log('2');
-                console.log('priceChangeUpdateWithProcessFlagSet', priceChangeUpdateWithProcessFlagSet);
                 newPriceRecord = { ...currentPriceRecord, priceChanges: [priceChangeUpdateWithProcessFlagSet] }
               } else {
-                console.log('3');
                 // The same price change entry might exist if the same messages is requeued for whatever reason e.g. a resync to add a new field to price data,
                 // in that case we first delete the currently existing entry
-                console.log('currentPriceRecord.priceChanges', currentPriceRecord.priceChanges);
                 currentPriceRecord.priceChanges = currentPriceRecord.priceChanges.filter(priceChange => {
                   let isDuplicate = true;
                   for (const key of Object.keys(priceChangeUpdate)) {
@@ -82,12 +72,10 @@ const main = async function (params) {
                       : priceChange[key]
 
                     isDuplicate = compare1 === compare2 
-                    console.log(`${isDuplicate} ${key} ${compare1} ${compare2}`);
                     if (!isDuplicate) break;
                   }
                   return !isDuplicate;
                 });
-                console.log('priceChangeUpdateWithProcessFlagSet', priceChangeUpdateWithProcessFlagSet);
                 newPriceRecord = { ...currentPriceRecord, priceChanges: currentPriceRecord.priceChanges.concat([priceChangeUpdateWithProcessFlagSet]) }
               }
 
