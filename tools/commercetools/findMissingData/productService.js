@@ -55,13 +55,12 @@ const getBarcodeData = async (client, requestBuilder, result) => {
   return variantBarcodes.reduce((totalBarcodes, variantBarcodes) => [ ...totalBarcodes, ...variantBarcodes ], []).filter(Boolean);
 }
 
-const findMissingDataFromJesta = async (ctData, jestaData) => {
-  console.log(`searching for jesta data...`);
-  return Promise.all(jestaData.map(async currentJestaData => {
+const findMissingDataFromJesta = (ctData, jestaData) => {
+  return jestaData.map(currentJestaData => {
     return ctData.includes(currentJestaData)
       ? null
       : currentJestaData
-  }))
+  })
 }
 
 const getFileNamings = (environment, all = false) => {
@@ -182,41 +181,43 @@ const compareMissingWithJesta = async ({ client, requestBuilder }, environment, 
   }
   console.log('found all products');
 
-  const jestaCompareResults = [];
-
   if (findMissingVariants) {
     console.log('writing CT skus...');
     wstreams[`CT${SKU_TYPE}`].cork();
     variants.forEach (variant => wstreams[`CT${SKU_TYPE}`].write(variant + '\n'))
     wstreams[`CT${SKU_TYPE}`].uncork();
-
-    //jestaCompareResults.push(findMissingDataFromJesta (variants, jestaData[SKU_TYPE]))
-    //console.log(jestaCompareResults);
-    /*missingVariantsTotal += missingVariants.length
-    missingVariants.forEach (variant => wstreams[SKU_TYPE].write(variant + '\n'))*/
-  }
-  if (findMissingBarcodes) {
-    console.log('writing CT barcodes...');
-    wstreams[`CT${BARCODE_TYPE}`].cork();
-    barcodes.forEach (barcode => wstreams[`CT${BARCODE_TYPE}`].write(barcode + '\n'))
-    wstreams[`CT${BARCODE_TYPE}`].uncork();
-
-    //jestaCompareResults[BARCODE_TYPE] = findMissingDataFromJesta (barcodes, jestaData[BARCODE_TYPE])
-    /*missingBarcodesTotal += missingBarcodes.length
-    missingBarcodes.forEach (barcode => wstreams[BARCODE_TYPE].write(barcode + '\n'))*/
   }
   if (findMissingStylesBasic) {
     console.log('writing CT styles basic...');
     wstreams[`CT${STYLES_BASIC_TYPE}`].cork();
     stylesBasics.forEach (stylesBasic => wstreams[`CT${STYLES_BASIC_TYPE}`].write(stylesBasic + '\n'))
     wstreams[`CT${STYLES_BASIC_TYPE}`].uncork();
-
-    //jestaCompareResults[STYLES_BASIC_TYPE] = findMissingDataFromJesta (stylesBasic, jestaData[STYLES_BASIC_TYPE])
-    /*missingStylesBasicTotal += missingStylesBasic.length
-    missingStylesBasic.forEach (stylebasic => wstreams[STYLES_BASIC_TYPE].write(stylebasic + '\n'))*/
+  }
+  if (findMissingBarcodes) {
+    console.log('writing CT barcodes...');
+    wstreams[`CT${BARCODE_TYPE}`].cork();
+    barcodes.forEach (barcode => wstreams[`CT${BARCODE_TYPE}`].write(barcode + '\n'))
+    wstreams[`CT${BARCODE_TYPE}`].uncork();
   }
 
-  //await Promise.all(Object.values(jestaCompareResults))
+  if (findMissingVariants) {
+    console.log('finding diff btw CT and JESTA skus...');
+    missingVariants = findMissingDataFromJesta (variants, jestaData[SKU_TYPE])
+    missingVariantsTotal += missingVariants.length
+    missingVariants.forEach (variant => wstreams[SKU_TYPE].write(variant + '\n'))
+  }
+  if (findMissingStylesBasic) {
+    console.log('finding diff btw CT and JESTA styles basic...');
+    missingStylesBasic = findMissingDataFromJesta (stylesBasic, jestaData[STYLES_BASIC_TYPE])
+    missingStylesBasicTotal += missingStylesBasic.length
+    missingStylesBasic.forEach (stylebasic => wstreams[STYLES_BASIC_TYPE].write(stylebasic + '\n'))
+  }
+  if (findMissingBarcodes) {
+    console.log('finding diff btw CT and JESTA barcodes...');
+    missingBarcodes = findMissingDataFromJesta (barcodes, jestaData[BARCODE_TYPE])
+    missingBarcodesTotal += missingBarcodes.length
+    missingBarcodes.forEach (barcode => wstreams[BARCODE_TYPE].write(barcode + '\n'))
+  }
 
   console.log('FINISH');
 

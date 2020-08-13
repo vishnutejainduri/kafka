@@ -62,4 +62,3 @@ switch (dataType) {
   default:
     console.log ('Invalid data type provided');
 };
-
