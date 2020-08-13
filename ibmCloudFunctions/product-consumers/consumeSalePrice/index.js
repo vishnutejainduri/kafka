@@ -38,7 +38,7 @@ const main = async function (params) {
 
     return Promise.all(pricesGroupedByStyleId
         .map(addErrorHandling(async (batchedUpdate) => {
-            for (let update of batchedUpdate) {
+            for (const update of batchedUpdate) {
               const { styleId, ...priceChangeUpdate } = update
               // delete price type as that's only relevant for CT and just makes our mongo messier if we have it there with no gain
               delete priceChangeUpdate.priceType
