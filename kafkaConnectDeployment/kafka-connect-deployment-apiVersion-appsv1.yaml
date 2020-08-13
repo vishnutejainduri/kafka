@@ -189,7 +189,7 @@ spec:
             secretKeyRef:
               key: CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM
               name: eventstreams-kafka-connect-standard
-        image: us.icr.io/hrretailplatform/kafkaconnecthost:5.3.3
+        image: us.icr.io/hrretailplatform/kafkaconnecthost:kafkaConnect5.5.1-oracleDriver18.3
         imagePullPolicy: IfNotPresent
         name: kafka-connect-standard-host
         ports:
