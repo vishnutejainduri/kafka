@@ -13,7 +13,7 @@ Populate .env with the following variables:
 
 * HR_PLATORM_PATH
 
-## Find all created connectors using kafkacat
+## Find all created connectors and their versions using kafkacat
 Run something like the following code:
 ```
 kafkacat -C -X bootstrap.servers=$KAFKA_BROKERS -X security.protocol=SASL_SSL -X sasl.mechanisms=PLAIN -X sasl.password=$KAFKA_PASSWORD -X sasl.username=$KAFKA_USERNAME -t kafka-connect-config -o 0 > development-kafka-connect-config.log
