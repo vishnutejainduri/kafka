@@ -105,7 +105,7 @@ const getCollection = (collectionName) => {
                 find: () => ({
                     project: () => ({
                       limit: () => ({
-                        toArray: async () => ([{ _id: 'success', styleId: 'success', priceChanges: [] }]) 
+                        toArray: async () => ([{ _id: 'success-with-priceChange', styleId: 'success-with-priceChange', priceChanges: [ ] }]) 
                       })
                     })
                 }),
@@ -113,7 +113,7 @@ const getCollection = (collectionName) => {
                 updateOne: async ({ _id }) => ({ _id }),
                 findOne: async (query) => {
                     if (query && query.styleId && query.styleId.includes('with-priceChange')) {
-                        return ({ styleId: query.styleId, priceChanges: [{ priceChangeId: 'some-id', startDate: new Date(), newRetailPrice: 10, activityType: 'A', siteId: '00011' }] });
+                        return ({ styleId: query.styleId, priceChanges: [{ priceChangeId: 'some-id', startDate: new Date(), newRetailPrice: 10, activityType: 'A', siteId: '00990' }] });
                     }
                     return ({ _id: 'success', styleId: 'styleId', onlineSalePrice: 'onlineSalePrice', inStoreSalePrice: 'inStoreSalePrice', processDateCreated: new Date() });
                 }

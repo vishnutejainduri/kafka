@@ -30,18 +30,14 @@ describe('updateCTSalePrice', () => {
     it('Runs CF; returns valid result', async () => {
         const response = await updateCTSalePrice(validParams);
         expect(response).toEqual({
-            counts: {
-                styleIds: 1,
-                successes: 1,
-                failures: 0
-            },
-            styleIds: [ 'success' ],
-            failureIndexes: []
+            errors: [],
+            failureIndexes: [],
+            successCount: 1
         });
     });
 
     it('Runs CF; returns failed result with no params', async () => {
-        expect((await updateCTSalePrice({})).error).toBeTruthy();
+        await expect(updateCTSalePrice({})).rejects.toThrow();
     });
 });
 

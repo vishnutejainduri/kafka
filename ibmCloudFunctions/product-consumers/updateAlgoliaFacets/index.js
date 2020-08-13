@@ -2,6 +2,7 @@ const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { addErrorHandling, log } = require('../utils');
+const { MICROSITE } = require('../../lib/constants');
 
 let client = null;
 let index = null;
@@ -30,17 +31,12 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
       styleFacetUpdateData.facets.forEach((facetData) => {
         // DPM01 / microsites is an array of values. thus we add and delete values differently for it
         if (facetData.type === 'DPM01') {
-          algoliaUpdate[facetData.name] = currentMongoStyleData[facetData.name] || [];
-          algoliaUpdate[facetData.name] = facetData.isMarkedForDeletion
-            ? algoliaUpdate[facetData.name].filter((currentMongoFacet) =>
-              !(currentMongoFacet.en === facetData.value.en && currentMongoFacet.fr === facetData.value.fr))
-            : algoliaUpdate[facetData.name].concat([facetData.value]);
-
-          // removes duplicate facet values; not an ideal solution but without some sort of unique key for each microsite we don't know whether to insert a dupe or not 
-          // (for now we are assuming dupes are not going to happen until we get an update from HR)
-          algoliaUpdate[facetData.name] = algoliaUpdate[facetData.name].filter((facetValue, pos) =>  
-           algoliaUpdate[facetData.name].map(facet => facet.en).indexOf(facetValue.en) === pos &&
-           algoliaUpdate[facetData.name].map(facet => facet.fr).indexOf(facetValue.fr) === pos)
+          algoliaUpdate[facetData.name] = currentMongoStyleData[facetData.name] || {};
+          if (facetData.isMarkedForDeletion) {
+            delete algoliaUpdate[facetData.name][facetData.facetId]
+          } else {
+            algoliaUpdate[facetData.name][facetData.facetId] = facetData.value
+          }
 
           return;
         }
@@ -85,6 +81,18 @@ const generateStyleUpdatesFromAlgoliaUpdates = (algoliaUpdatesWithoutOutlet) => 
   });
 };
 
+const transformMicrositeAlgoliaRequests = (algoliaUpdatesWithoutOutlet) => {
+  return algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => {
+    if (algoliaUpdate[MICROSITE]) {
+      return {
+        objectID: algoliaUpdate.objectID,
+        [MICROSITE]: Object.values(algoliaUpdate[MICROSITE])
+      }
+    }
+    return algoliaUpdate;
+  });
+}
+
 global.main = async function (params) {
     log(JSON.stringify({
         cfName: 'updateAlgoliaFacets',
@@ -118,7 +126,7 @@ global.main = async function (params) {
     const facetUpdatesByStyle = await algoliaFacetBulkImportQueue.aggregate([
         { $group: {
             _id: "$styleId",
-            facets: { $push: { name: "$facetName", value: "$facetValue", type: "$typeId", isMarkedForDeletion: "$isMarkedForDeletion" } }
+            facets: { $push: { name: "$facetName", value: "$facetValue", type: "$typeId", isMarkedForDeletion: "$isMarkedForDeletion", facetId: "$facetId" } }
         }},
         { $limit: 750 }
     ],
@@ -134,12 +142,13 @@ global.main = async function (params) {
     const styleUpdates = generateStyleUpdatesFromAlgoliaUpdates(algoliaUpdatesWithoutOutlet);
 
     const updatedStyleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
+    const transformedAlgoliaUpdates = transformMicrositeAlgoliaRequests(algoliaUpdatesWithoutOutlet);
 
-    await index.partialUpdateObjects(algoliaUpdatesWithoutOutlet, true)
+    await index.partialUpdateObjects(transformedAlgoliaUpdates, true)
         // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't delete from the queue and it gets stuck
         .then(() => styleUpdates.length > 0 ? styles.bulkWrite(styleUpdates, { ordered : false }) : null) 
         .then(() => algoliaFacetBulkImportQueue.deleteMany({ styleId: { $in:  [...updatedStyleIds, ...ignoredStyleIds] } }))
-        .then(() => updateAlgoliaFacetsCount.insert({ batchSize: algoliaUpdatesWithoutOutlet.length }))
+        .then(() => updateAlgoliaFacetsCount.insert({ batchSize: transformedAlgoliaUpdates.length }))
         .then(() => {
           log(`updated styles: ${updatedStyleIds}`)
           log(`ignored styles: ${ignoredStyleIds}`)
@@ -153,5 +162,6 @@ global.main = async function (params) {
 module.exports = {
   main: global.main,
   transformUpdateQueueRequestToAlgoliaUpdates,
-  generateStyleUpdatesFromAlgoliaUpdates
+  generateStyleUpdatesFromAlgoliaUpdates,
+  transformMicrositeAlgoliaRequests
 };

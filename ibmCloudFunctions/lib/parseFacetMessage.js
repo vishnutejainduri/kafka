@@ -1,5 +1,6 @@
 'use strict';
 const { camelCase } = require('./utils');
+const { MICROSITE } = require('./constants');
 
 const facetMap = {
     "Category": "style",
@@ -12,7 +13,7 @@ const facetMap = {
 };
 
 const facetTypeMap = {
-  "DPM01": "microsite"
+  "DPM01": MICROSITE
 };
 
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.
@@ -21,6 +22,7 @@ function parseFacetMessage(msg) {
     return {
         styleId: msg.value.STYLEID,
         typeId: msg.value.CHARACTERISTIC_TYPE_ID,
+        facetId: msg.value.CHARACTERISTIC_VALUE_ID,
         facetName,
         facetValue: {
             en: msg.value.DESC_ENG,

@@ -17,9 +17,6 @@
       stores-rule:
         action: consume-stores-message
         trigger: stores-trigger
-      sale-price-sequence-rule:
-        action: update-pricing-sequence
-        trigger: sale-price-trigger
       algolia-inventory-rule:
         action: update-algolia-inventory
         trigger: every-minute
