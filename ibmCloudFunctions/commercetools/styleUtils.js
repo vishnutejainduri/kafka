@@ -65,6 +65,7 @@ const updateCategory = async (categoryKey, categoryVersion, categoryName, parent
   const method = 'POST';
   const uri = requestBuilder.categories.byKey(categoryKey).build();
 
+
   const body = {
     version: categoryVersion,
     actions: [{
@@ -85,7 +86,7 @@ const updateCategory = async (categoryKey, categoryVersion, categoryName, parent
 
   const requestBody = JSON.stringify(body);
 
-  const response = await client.execute({ method, uri, body: requestBody });
+  const response = await client.execute({ method, uri, body: requestBody })
   return response.body;
 };
 
@@ -104,14 +105,14 @@ const getCategory = async (category, { client, requestBuilder }) => {
   }
 };
 
+const categoryNeedsUpdating = (fetchedCategory, categoryName) => {
+  return fetchedCategory.name[languageKeys.ENGLISH] !== categoryName[languageKeys.ENGLISH]
+    || fetchedCategory.name[languageKeys.FRENCH] !== categoryName[languageKeys.FRENCH];
+};
+
 const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
   const enCA = languageKeys.ENGLISH;
   const frCA = languageKeys.FRENCH;
-
-  const categoryNeedsUpdating = (fetchedCategory, categoryName) => {
-    return fetchedCategory.name[enCA] !== categoryName[enCA]
-      || fetchedCategory.name[frCA] !== categoryName[frCA];
-  };
 
   // TODO
   // bug 1: this uses the en-CA label for the category name and not the category code from the dictionaryitem
@@ -509,5 +510,6 @@ module.exports = {
   getUniqueCategoryIdsFromCategories,
   createCategory,
   categoryKeyFromNames,
-  createPriceUpdate
+  createPriceUpdate,
+  categoryNeedsUpdating
 };

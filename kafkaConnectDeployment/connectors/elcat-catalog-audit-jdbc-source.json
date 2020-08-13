@@ -4,6 +4,7 @@
     "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": 1,
     "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "db.timezone":"America/New_York",
     "mode": "timestamp",
     "batch.max.rows": 100,
     "timestamp.column.name": "UPD_TIMESTAMP",
