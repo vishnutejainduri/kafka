@@ -1,5 +1,3 @@
-# Created by running 'kubectl convert -f ./kafka-connect-deployment.yaml --output-version apps/v1 > kafka-connect-deployment-apiVersion-appsv1.yaml'
-# More info: https://kubernetes.io/blog/2019/07/18/api-deprecations-in-1-16/
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -27,9 +25,8 @@ spec:
     spec:
       containers:
       - env:
-        # I'm also not sure whether it is -Doracle.jdbc.timezoneAsRegion=false or -Duser.timezone=UTC that is needed, or perhaps both.
         - name: KAFKA_OPTS
-          value: "-Doracle.jdbc.timezoneAsRegion=false -Duser.timezone=UTC"
+          value: "-Doracle.jdbc.timezoneAsRegion=false"
         - name: CONNECT_BOOTSTRAP_SERVERS
           valueFrom:
             secretKeyRef:
