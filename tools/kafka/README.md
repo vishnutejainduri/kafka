@@ -26,7 +26,14 @@ e.g. Development environment
 ```bash
 KAFKA_BROKERS=broker-1-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-3-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-4-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-0-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-2-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-5-wjsrff5cz9cpsyg3.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093
 KAFKA_USERNAME=token
-KAFKA_PASSWORD=mXMZoKv8g5NZRnKZo-1cpFtshXSodLO4YLSrqelCI4B1
+KAFKA_PASSWORD=string
+```
+
+e.g. Staging environment
+```bash
+KAFKA_BROKERS=broker-4-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-3-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-1-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-2-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-5-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093,broker-0-td05h9dhfzqh2zyq.kafka.svc03.us-south.eventstreams.cloud.ibm.com:9093
+KAFKA_USERNAME=token
+KAFKA_PASSWORD=string
 ```
 
 ## Examples

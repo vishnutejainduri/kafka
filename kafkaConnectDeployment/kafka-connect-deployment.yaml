@@ -27,12 +27,8 @@ spec:
     spec:
       containers:
       - env:
-        # either KAFKA_OPTS or JAVA_OPTS set the timezone on Kafka Connect, I'm not sure which.
-        # I'm also not sure whether it is -Doracle.jdbc.timezoneAsRegion=false or -Duser.timezone=UTC.
-        # We should try KAFKA_OPTS with -Doracle.jdbc.timezoneAsRegion=false and if it works, get rid of the rest.
+        # I'm also not sure whether it is -Doracle.jdbc.timezoneAsRegion=false or -Duser.timezone=UTC that is needed, or perhaps both.
         - name: KAFKA_OPTS
-          value: "-Doracle.jdbc.timezoneAsRegion=false -Duser.timezone=UTC"
-        - name: JAVA_OPTS
           value: "-Doracle.jdbc.timezoneAsRegion=false -Duser.timezone=UTC"
         - name: CONNECT_BOOTSTRAP_SERVERS
           valueFrom:
@@ -189,7 +185,7 @@ spec:
             secretKeyRef:
               key: CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM
               name: eventstreams-kafka-connect-standard
-        image: us.icr.io/hrretailplatform/kafkaconnecthost:kafkaConnect5.5.1-oracleDriver18.3
+        image: us.icr.io/hrretailplatform/kafkaconnecthost:5.5.1-oracleDriver18.3
         imagePullPolicy: IfNotPresent
         name: kafka-connect-standard-host
         ports:
