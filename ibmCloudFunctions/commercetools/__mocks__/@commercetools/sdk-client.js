@@ -204,16 +204,16 @@ const responses = {
       'fr-CA': 'MICROSITES'
     }
   } },
-  'GET-57': () => { return {
+  'GET-facetid_57': () => { return {
     ...categoryResponsePrototype,
     id: '1ea2fe42-d3fb-4329-a3f2-da6208814aeb',
-    key: '57',
+    key: 'facetid_57',
     name: {
       'en-CA': 'microsite_en',
       'fr-CA': 'microsite_fr'
     }
   } },
-  'GET-58': () => null,
+  'GET-facetid_58': () => null,
   'POST-DPMROOTCATEGORY-l1category_en-l2categoryLevel1A_en': (...args) => {
     mockUpdateFn(...args);
     return {
@@ -236,22 +236,22 @@ const responses = {
       }
     }
   },
-  'POST-57': (...args) => {
+  'POST-facetid_57': (...args) => {
     mockUpdateFn(...args);
     return {
       ...categoryResponsePrototype,
-      key: '57',
+      key: 'facetid_57',
       name: {
         'en-CA': 'updated_microsite_en',
         'fr-CA': 'updated_microsite_fr'
       }
     }
   },
-  'POST-category58': (...args) => {
+  'POST-categoryfacetid_58': (...args) => {
     mockUpdateFn(...args);
     return {
       ...categoryResponsePrototype,
-      key: '58',
+      key: 'facetid_58',
       name: {
         'en-CA': 'updated_microsite_en',
         'fr-CA': 'updated_microsite_fr'

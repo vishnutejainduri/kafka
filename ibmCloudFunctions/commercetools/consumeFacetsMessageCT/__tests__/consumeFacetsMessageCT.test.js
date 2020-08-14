@@ -75,14 +75,14 @@ describe('consumeFacetsMessageCT', () => {
 describe('parseFacetMessageCt', () => {
   const expectedMicrositeResult = {
     _id: 'styleId',
-    facetId: '57',
+    facetId: 'facetid_57',
     id: 'styleId',
     isMarkedForDeletion: false,
     microsite: { [languageKeys.ENGLISH]: 'microsite_en', [languageKeys.FRENCH]: 'microsite_fr' }
   }
   const expectedPromoStickerResult = {
     _id: 'styleId',
-    facetId: null,
+    facetId: 'facetid_null',
     id: 'styleId',
     isMarkedForDeletion: false,
     promotionalSticker: { [languageKeys.ENGLISH]: 'descEng', [languageKeys.FRENCH]: 'descFr' }
@@ -182,7 +182,7 @@ describe('createOrUpdateCategoriesFromFacet', () => {
     const result = parseFacetMessageCt(validNewMicrositeMessage);
     const existingCtStyle = await getExistingCtStyle(result.id, mockedCtHelpers);
     const response = await createOrUpdateCategoriesFromFacet(result, existingCtStyle, mockedCtHelpers);
-    expect(response).toEqual([{"ancestors": [], "assets": [], "createdAt": "2020-04-20T19:57:34.586Z", "createdBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "id": "8f1b6d78-c29d-46cf-88fe-5bd935e49fd9", "key": "58", "lastMessageSequenceNumber": 1, "lastModifiedAt": "2020-04-20T19:57:34.586Z", "lastModifiedBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "name": {"en-CA": "updated_microsite_en", "fr-CA": "updated_microsite_fr"}, "orderHint": "0.00001587412654585211010057", "slug": {"en-CA": "DPMROOTCATEGORY", "fr-CA": "DPMROOTCATEGORY"}, "version": 1}, {"id": "5bb79326-16ea-40f5-8857-31a020800a1c", "typeId": "category"}, {"id": "1ea2fe42-d3fb-4329-a3f2-da6208814aeb", "typeId": "category"}]);
+    expect(response).toEqual([{"ancestors": [], "assets": [], "createdAt": "2020-04-20T19:57:34.586Z", "createdBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "id": "8f1b6d78-c29d-46cf-88fe-5bd935e49fd9", "key": "facetid_58", "lastMessageSequenceNumber": 1, "lastModifiedAt": "2020-04-20T19:57:34.586Z", "lastModifiedBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "name": {"en-CA": "updated_microsite_en", "fr-CA": "updated_microsite_fr"}, "orderHint": "0.00001587412654585211010057", "slug": {"en-CA": "DPMROOTCATEGORY", "fr-CA": "DPMROOTCATEGORY"}, "version": 1}, {"id": "5bb79326-16ea-40f5-8857-31a020800a1c", "typeId": "category"}, {"id": "1ea2fe42-d3fb-4329-a3f2-da6208814aeb", "typeId": "category"}]);
   });
   it('existing microsite; return message to updated microsite category', async () => {
     const validNewMicrositeMessage = {
@@ -196,14 +196,14 @@ describe('createOrUpdateCategoriesFromFacet', () => {
     const result = parseFacetMessageCt(validNewMicrositeMessage);
     const existingCtStyle = await getExistingCtStyle(result.id, mockedCtHelpers);
     const response = await createOrUpdateCategoriesFromFacet(result, existingCtStyle, mockedCtHelpers);
-    expect(response).toEqual([{"ancestors": [], "assets": [], "createdAt": "2020-04-20T19:57:34.586Z", "createdBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "id": "8f1b6d78-c29d-46cf-88fe-5bd935e49fd9", "key": "57", "lastMessageSequenceNumber": 1, "lastModifiedAt": "2020-04-20T19:57:34.586Z", "lastModifiedBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "name": {"en-CA": "updated_microsite_en", "fr-CA": "updated_microsite_fr"}, "orderHint": "0.00001587412654585211010057", "slug": {"en-CA": "DPMROOTCATEGORY", "fr-CA": "DPMROOTCATEGORY"}, "version": 1}, {"id": "5bb79326-16ea-40f5-8857-31a020800a1c", "typeId": "category"}, {"id": "1ea2fe42-d3fb-4329-a3f2-da6208814aeb", "typeId": "category"}]);
+    expect(response).toEqual([{"ancestors": [], "assets": [], "createdAt": "2020-04-20T19:57:34.586Z", "createdBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "id": "8f1b6d78-c29d-46cf-88fe-5bd935e49fd9", "key": "facetid_57", "lastMessageSequenceNumber": 1, "lastModifiedAt": "2020-04-20T19:57:34.586Z", "lastModifiedBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "name": {"en-CA": "updated_microsite_en", "fr-CA": "updated_microsite_fr"}, "orderHint": "0.00001587412654585211010057", "slug": {"en-CA": "DPMROOTCATEGORY", "fr-CA": "DPMROOTCATEGORY"}, "version": 1}, {"id": "5bb79326-16ea-40f5-8857-31a020800a1c", "typeId": "category"}, {"id": "1ea2fe42-d3fb-4329-a3f2-da6208814aeb", "typeId": "category"}]);
   });
   it('existing microsite; return message with no update as nothing has changed for the microsite', async () => {
     const validNewMicrositeMessage = validMicrositeParams.messages[0];
     const result = parseFacetMessageCt(validNewMicrositeMessage);
     const existingCtStyle = await getExistingCtStyle(result.id, mockedCtHelpers);
     const response = await createOrUpdateCategoriesFromFacet(result, existingCtStyle, mockedCtHelpers);
-    expect(response).toEqual([{"ancestors": [], "assets": [], "createdAt": "2020-04-20T19:57:34.586Z", "createdBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "id": "1ea2fe42-d3fb-4329-a3f2-da6208814aeb", "key": "57", "lastMessageSequenceNumber": 1, "lastModifiedAt": "2020-04-20T19:57:34.586Z", "lastModifiedBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "name": {"en-CA": "microsite_en", "fr-CA": "microsite_fr"}, "orderHint": "0.00001587412654585211010057", "slug": {"en-CA": "DPMROOTCATEGORY", "fr-CA": "DPMROOTCATEGORY"}, "version": 1}, {"id": "5bb79326-16ea-40f5-8857-31a020800a1c", "typeId": "category"}, {"id": "1ea2fe42-d3fb-4329-a3f2-da6208814aeb", "typeId": "category"}]);
+    expect(response).toEqual([{"ancestors": [], "assets": [], "createdAt": "2020-04-20T19:57:34.586Z", "createdBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "id": "1ea2fe42-d3fb-4329-a3f2-da6208814aeb", "key": "facetid_57", "lastMessageSequenceNumber": 1, "lastModifiedAt": "2020-04-20T19:57:34.586Z", "lastModifiedBy": {"clientId": "9YnDCNDg16EER7mWlMjXeHkF", "isPlatformClient": false}, "name": {"en-CA": "microsite_en", "fr-CA": "microsite_fr"}, "orderHint": "0.00001587412654585211010057", "slug": {"en-CA": "DPMROOTCATEGORY", "fr-CA": "DPMROOTCATEGORY"}, "version": 1}, {"id": "5bb79326-16ea-40f5-8857-31a020800a1c", "typeId": "category"}, {"id": "1ea2fe42-d3fb-4329-a3f2-da6208814aeb", "typeId": "category"}]);
   });
   it('microsite flagged for deletion; return only categories that aren\'t to be deleted', async () => {
     const validNewMicrositeMessage = {

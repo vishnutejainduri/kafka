@@ -76,11 +76,11 @@ describe('updateAlgoliaFacets', () => {
       expect(failed).toBeEmpty;
       expect(actual).toEqual([{
         objectID: 'styleId',
-        microsite: { '57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
+        microsite: { 'facetid_57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
       }]);
       expect(actual2[0].updateOne.update.$set).toEqual({
         _id: "styleId",
-        microsite: { '57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
+        microsite: { 'facetid_57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
       });
       expect(actual3).toEqual([{
         objectID: 'styleId',
@@ -93,7 +93,7 @@ describe('updateAlgoliaFacets', () => {
         findOne: jest.fn(() => {
           return Promise.resolve({
             isOutlet: false,
-            microsite: { '57': { en: 'micrositeDesc_old', fr: 'micrositeDesc_old' } }
+            microsite: { 'facetid_57': { en: 'micrositeDesc_old', fr: 'micrositeDesc_old' } }
           });
         })
       };
@@ -105,11 +105,11 @@ describe('updateAlgoliaFacets', () => {
       expect(failed).toBeEmpty;
       expect(actual).toEqual([{
         objectID: 'styleId',
-        microsite: { '57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
+        microsite: { 'facetid_57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
       }]);
       expect(actual2[0].updateOne.update.$set).toEqual({
         _id: "styleId",
-        microsite: { '57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
+        microsite: { 'facetid_57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
       });
       expect(actual3).toEqual([{
         objectID: 'styleId',
@@ -122,7 +122,7 @@ describe('updateAlgoliaFacets', () => {
         findOne: jest.fn(() => {
           return Promise.resolve({
             isOutlet: false,
-            microsite: { '58': { en: 'micrositeDesc_old', fr: 'micrositeDesc_old' } }
+            microsite: { 'facetid_58': { en: 'micrositeDesc_old', fr: 'micrositeDesc_old' } }
           });
         })
       };
@@ -134,15 +134,15 @@ describe('updateAlgoliaFacets', () => {
       expect(failed).toBeEmpty;
       expect(actual).toEqual([{
         objectID: 'styleId',
-        microsite: { '57': { en: 'micrositeDesc', fr: 'micrositeDesc' }, '58': { en: 'micrositeDesc_old', fr: 'micrositeDesc_old' } }
+        microsite: { 'facetid_57': { en: 'micrositeDesc', fr: 'micrositeDesc' }, 'facetid_58': { en: 'micrositeDesc_old', fr: 'micrositeDesc_old' } }
       }]);
       expect(actual2[0].updateOne.update.$set).toEqual({
         _id: "styleId",
-        microsite: { '57': { en: 'micrositeDesc', fr: 'micrositeDesc' }, '58': { en: 'micrositeDesc_old', fr: 'micrositeDesc_old' } }
+        microsite: { 'facetid_57': { en: 'micrositeDesc', fr: 'micrositeDesc' }, 'facetid_58': { en: 'micrositeDesc_old', fr: 'micrositeDesc_old' } }
       });
       expect(actual3).toEqual([{
         objectID: 'styleId',
-        microsite: [{ en: 'micrositeDesc', fr: 'micrositeDesc' },{ en: 'micrositeDesc_old', fr: 'micrositeDesc_old' }]
+        microsite: [{ en: 'micrositeDesc_old', fr: 'micrositeDesc_old' },{ en: 'micrositeDesc', fr: 'micrositeDesc' }]
       }]);
     });
   });
@@ -210,7 +210,7 @@ describe('updateAlgoliaFacets', () => {
         findOne: jest.fn(() => {
           return Promise.resolve({
             isOutlet: false,
-            microsite: { '57': { en: 'micrositeDesc', fr: 'micrositeDesc' }, '58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } }
+            microsite: { 'facetid_57': { en: 'micrositeDesc', fr: 'micrositeDesc' }, 'facetid_58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } }
           });
         })
       };
@@ -222,11 +222,11 @@ describe('updateAlgoliaFacets', () => {
       expect(failed).toBeEmpty;
       expect(actual).toEqual([{
         objectID: 'styleId',
-        microsite: { '58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } }
+        microsite: { 'facetid_58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } }
       }]);
       expect(actual2[0].updateOne.update.$set).toEqual({
         _id: "styleId",
-        microsite: { '58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } }
+        microsite: { 'facetid_58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } }
       });
       expect(actual3[0]).toEqual({
         objectID: "styleId",
@@ -240,7 +240,7 @@ describe('updateAlgoliaFacets', () => {
         findOne: jest.fn(() => {
           return Promise.resolve({
             isOutlet: false,
-            microsite: { '58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } }
+            microsite: { 'facetid_58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } }
           });
         })
       };
@@ -252,11 +252,11 @@ describe('updateAlgoliaFacets', () => {
       expect(failed).toBeEmpty;
       expect(actual).toEqual([{
         objectID: 'styleId',
-        microsite: { '58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } }
+        microsite: { 'facetid_58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } }
       }]);
       expect(actual2[0].updateOne.update.$set).toEqual({
         _id: "styleId",
-        microsite: { '58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } },
+        microsite: { 'facetid_58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } },
       });
       expect(actual3).toEqual([{
         objectID: 'styleId',
