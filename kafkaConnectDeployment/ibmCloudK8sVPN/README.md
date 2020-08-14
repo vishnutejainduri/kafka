@@ -10,7 +10,6 @@ and example code here: https://github.com/jkwong888/k8s-add-static-routes. Our r
                                                                                                                      "142.215.50.0/23"
                                                                                                                    ]'```
 
-Note: the yaml file in the github repository does not work with Kubernetes v1.16 and above; use 'add-static-route-daemonset-apiVersion-appsv1.yaml' instead.
 
 You can validate that the access is working by creating a busybox, SSHing in, and pinging an
 on-prem resource:

@@ -9,6 +9,6 @@ of the ojdbc8.jar file.
 
 To build: https://docs.docker.com/get-started/part2/#build-the-app
 0. ibmcloud cr login
-1. docker build --tag=kafkaconnecthost:5.3.3 .
-2. docker tag kafkaconnecthost:5.3.3 us.icr.io/hrretailplatform/kafkaconnecthost:5.3.3
-3. docker push us.icr.io/hrretailplatform/kafkaconnecthost:5.3.3
+1. docker build --tag=kafkaconnecthost:5.5.1-oracleDriver18.3 .
+2. docker tag kafkaconnecthost:5.5.1-oracleDriver18.3 us.icr.io/hrretailplatform/kafkaconnecthost:5.5.1-oracleDriver18.3
+3. docker push us.icr.io/hrretailplatform/kafkaconnecthost:5.5.1-oracleDriver18.3
