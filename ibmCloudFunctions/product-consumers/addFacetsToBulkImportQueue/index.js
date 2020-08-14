@@ -18,7 +18,7 @@ const updateAlgoliaFacetQueue = algoliaFacetQueue => (facetData) => {
         facetName: facetData.facetName,
         styleId: facetData.styleId,
         typeId: facetData.typeId,
-        facetId: facetData.facetId,
+        facetId: `facetid_${facetData.facetId}`,
         isMarkedForDeletion: facetData.isMarkedForDeletion
       },
       {
