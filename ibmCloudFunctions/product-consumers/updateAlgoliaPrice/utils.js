@@ -101,7 +101,7 @@ function getActivePriceChanges (availablePriceChanges, currentTime) {
 function findApplicablePriceChange (siteIdPriceChanges) {
   const addedPriceChanges = siteIdPriceChanges.filter(priceChange =>  [priceChangeActivityTypes.APPROVED, priceChangeActivityTypes.CREATED].includes(priceChange.activityType))
   const deletedPriceChanges = siteIdPriceChanges.filter(priceChange => priceChange.activityType === priceChangeActivityTypes.DELETED)
-  const availablePriceChanges = addedPriceChanges.filter(({ priceChangeId, processDateCreated }) => !deletedPriceChanges.find(deletedPriceChange => (deletedPriceChange.priceChangeId === priceChangeId && deletedPriceChange.processDateCreated >= processDateCreated)))
+  const availablePriceChanges = addedPriceChanges.filter(({ priceChangeId }) => !deletedPriceChanges.find(deletedPriceChange => (deletedPriceChange.priceChangeId === priceChangeId)))
 
   const availablePriceChangesGroupedById = groupPriceChangesById(availablePriceChanges)
   const latestAvailablePriceChanges = getLatestPriceChanges(availablePriceChangesGroupedById)
