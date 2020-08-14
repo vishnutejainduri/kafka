@@ -1,3 +1,17 @@
+# Troubleshooting
+## After redeploying Kafka Connect, connectors that existed before are missing
+Unfortunately the the following Kafka Connect internal topics are not the same across different deployments. You probably created a service with an incorrect value set for these topics, which are used by Kafka Connect to store its settings and status. These parameters are set in eventstreams-kafka-connect-standard secret.
+
+```
+  --from-literal=CONNECT_CONFIG_STORAGE_TOPIC="platform-connect-config"   \
+  --from-literal=CONNECT_OFFSET_STORAGE_TOPIC="platform-connect-offsets"   \
+  --from-literal=CONNECT_STATUS_STORAGE_TOPIC="platform-connect-status"
+```
+
+To find the correct topics, check Kafka instance itself.
+
+# Guide
+
 This directory contains K8s yaml files and scripts to deploy the Kafka Connect host, as well as configure kubernetes.
 
 We use Kafka Connect to integrate legacy data sources on the on-prem Harry Rosen network with IBM Event Streams. Kafka
@@ -54,8 +68,10 @@ TODO: Change this to a script
 - CONNECT_PRODUCER_SASL_JAAS_CONFIG
 
 ## development
+### Note: replace Kafka passwords with proper values
+
 ```bash
-kubectl create secret generic eventstreams-kafka-connect \
+kubectl create secret generic eventstreams-kafka-connect-standard \
   --from-literal=CONNECT_BOOTSTRAP_SERVERS="broker-1-2tfntg0sj88sy590.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-3-2tfntg0sj88sy590.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-0-2tfntg0sj88sy590.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-4-2tfntg0sj88sy590.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-2-2tfntg0sj88sy590.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093,broker-5-2tfntg0sj88sy590.kafka.svc02.us-south.eventstreams.cloud.ibm.com:9093"   \
   --from-literal=CONNECT_REST_PORT=28083   \
   --from-literal=CONNECT_GROUP_ID="platform"   \
@@ -75,13 +91,13 @@ kubectl create secret generic eventstreams-kafka-connect \
   --from-literal=CONNECT_KAFKA_LOG4J_ROOT_LOGLEVEL=INFO \
   --from-literal=CONNECT_CONNECT_LOG4J_ROOT_LOGLEVEL=INFO   \
   --from-literal=CONNECT_PLUGIN_PATH=/usr/share/java,/etc/kafka-connect/jars \
-  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="py_8snyJNHisgbKpvebwD4aSrMO3VzqG_Lz6zR8eDkwo";'  \
+  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="string";'  \
   --from-literal=CONNECT_SECURITY_PROTOCOL=SASL_SSL  \
   --from-literal=CONNECT_SASL_MECHANISM=PLAIN  \
   --from-literal=CONNECT_SSL_PROTOCOL=TLSv1.2  \
   --from-literal=CONNECT_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
   --from-literal=CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS  \
-  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="user" password="py_8snyJNHisgbKpvebwD4aSrMO3VzqG_Lz6zR8eDkwo";'  \
+  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="user" password="string";'  \
   --from-literal=CONNECT_PRODUCER_SECURITY_PROTOCOL=SASL_SSL  \
   --from-literal=CONNECT_PRODUCER_SASL_MECHANISM=PLAIN  \
   --from-literal=CONNECT_PRODUCER_SSL_PROTOCOL=TLSv1.2  \
@@ -112,13 +128,13 @@ kubectl create secret generic eventstreams-kafka-connect-standard \
   --from-literal=CONNECT_KAFKA_LOG4J_ROOT_LOGLEVEL=INFO \
   --from-literal=CONNECT_CONNECT_LOG4J_ROOT_LOGLEVEL=INFO   \
   --from-literal=CONNECT_PLUGIN_PATH=/usr/share/java,/etc/kafka-connect/jars \
-  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="t3YcCPZXXn4eUEIvVxFnHtlLZSQ63vFsZVL-PZLHxYnz";'  \
+  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="string";'  \
   --from-literal=CONNECT_SECURITY_PROTOCOL=SASL_SSL  \
   --from-literal=CONNECT_SASL_MECHANISM=PLAIN  \
   --from-literal=CONNECT_SSL_PROTOCOL=TLSv1.2  \
   --from-literal=CONNECT_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
   --from-literal=CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS  \
-  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="t3YcCPZXXn4eUEIvVxFnHtlLZSQ63vFsZVL-PZLHxYnz";'  \
+  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="string";'  \
   --from-literal=CONNECT_PRODUCER_SECURITY_PROTOCOL=SASL_SSL  \
   --from-literal=CONNECT_PRODUCER_SASL_MECHANISM=PLAIN  \
   --from-literal=CONNECT_PRODUCER_SSL_PROTOCOL=TLSv1.2  \
@@ -154,13 +170,13 @@ kubectl create secret generic eventstreams-kafka-connect-standard \
   --from-literal=CONNECT_KAFKA_LOG4J_ROOT_LOGLEVEL=INFO \
   --from-literal=CONNECT_CONNECT_LOG4J_ROOT_LOGLEVEL=INFO   \
   --from-literal=CONNECT_PLUGIN_PATH=/usr/share/java,/etc/kafka-connect/jars \
-  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="C5QCCPl5XV9dZTpFRVvwHWZDiPM-_cNG3PGS-5Gl9QQ9";'  \
+  --from-literal=CONNECT_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="string";'  \
   --from-literal=CONNECT_SECURITY_PROTOCOL=SASL_SSL  \
   --from-literal=CONNECT_SASL_MECHANISM=PLAIN  \
   --from-literal=CONNECT_SSL_PROTOCOL=TLSv1.2  \
   --from-literal=CONNECT_SSL_ENABLED_PROTOCOLS=TLSv1.2  \
   --from-literal=CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=HTTPS  \
-  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="C5QCCPl5XV9dZTpFRVvwHWZDiPM-_cNG3PGS-5Gl9QQ9";'  \
+  --from-literal=CONNECT_PRODUCER_SASL_JAAS_CONFIG='org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="string";'  \
   --from-literal=CONNECT_PRODUCER_SECURITY_PROTOCOL=SASL_SSL  \
   --from-literal=CONNECT_PRODUCER_SASL_MECHANISM=PLAIN  \
   --from-literal=CONNECT_PRODUCER_SSL_PROTOCOL=TLSv1.2  \
