@@ -44,7 +44,19 @@ describe('consumeStylesBasicMessageCT', () => {
 
   it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeStylesBasicMessageCT(validParams);
-    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
+    expect(response).toEqual({ batchSuccessCount: 1, messagesCount: 1, ok: true });
+  });
+
+  it('returns success result if given valid params and batches two valid messages with same id', async () => {
+    const validBatch = { ...validParams, messages: [validParams.messages[0], validParams.messages[0]] }
+    const response = await consumeStylesBasicMessageCT(validBatch);
+    expect(response).toEqual({ batchSuccessCount: 1, messagesCount: 2, ok: true });
+  });
+
+  it('returns success result if given valid params and doesn\'t batch two valid messages with different id', async () => {
+    const validBatch = { ...validParams, messages: [validParams.messages[0], { ...validParams.messages[0], value: { ...validParams.messages[0].value, STYLE_ID: 'styleId2' } } ] }
+    const response = await consumeStylesBasicMessageCT(validBatch);
+    expect(response).toEqual({ batchSuccessCount: 2, messagesCount: 2, ok: true });
   });
 });
 
