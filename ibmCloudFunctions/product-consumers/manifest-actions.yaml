@@ -221,6 +221,8 @@
     sequences:
       update-pricing-sequence:
         actions: consume-sale-price,update-algolia-price
+      update-catalog-sequence:
+        actions: consume-catalog-message,update-algolia-price
       update-algolia-ct-pricing-sequence:
         actions: update-algolia-price,update-ct-sale-price
       update-inventory-sequence:

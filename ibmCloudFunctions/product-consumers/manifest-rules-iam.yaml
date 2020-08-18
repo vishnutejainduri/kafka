@@ -1,6 +1,6 @@
     rules:
       catalog-rule:
-        action: consume-catalog-message
+        action: update-catalog-sequence
         trigger: catalog-trigger
       styles-basic-rule:
         action: consume-styles-basic-message
