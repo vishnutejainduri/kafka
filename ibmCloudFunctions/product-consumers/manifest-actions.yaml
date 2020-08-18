@@ -223,7 +223,5 @@
         actions: consume-sale-price,update-algolia-price
       update-algolia-ct-pricing-sequence:
         actions: update-algolia-price,update-ct-sale-price
-      update-catalog-sequence:
-        actions: consume-catalog-message,update-algolia-price
       update-inventory-sequence:
         actions: consume-sku-inventory-message,calculate-available-to-sell
