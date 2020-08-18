@@ -8,9 +8,10 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownAnyMessageErrors,
+  passDownBatchedErrorsAndFailureIndexes,
   validateParams
 } = require('../../product-consumers/utils');
+const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
 
 // Holds two CT helpers, including the CT client. It's declared outside of
 // `main` so the same client can be shared between warm starts.
@@ -32,13 +33,18 @@ const main = params => {
       .map(addErrorHandling(parseFacetMessageCt))
   );
 
+  const batchedStylesToUpdate = groupByAttribute('id')(stylesToUpdate)
   const stylePromises = (
-    stylesToUpdate
-      .map(addErrorHandling(updateStyleFacets.bind(null, ctHelpers, productTypeId)))
+    batchedStylesToUpdate
+      .map(addErrorHandling(batchedParsedMessages => {
+        for (const parsedMessage of batchedParsedMessages) {
+          return updateStyleFacets(ctHelpers, productTypeId, parsedMessage);
+        }
+      }))
   );
-  
+
   return Promise.all(stylePromises)
-    .then(passDownAnyMessageErrors)
+    .then(passDownBatchedErrorsAndFailureIndexes(batchedStylesToUpdate, params.messages))
     .catch(handleErrors);
 };
 
