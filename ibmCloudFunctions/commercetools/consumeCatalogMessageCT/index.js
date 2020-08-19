@@ -9,7 +9,7 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownBatchedErrorsAndFailureIndexes,
+  passDownProcessedMessages,
   validateParams
 } = require('../../product-consumers/utils');
 const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
@@ -48,7 +48,7 @@ const main = params => {
 
   
   return Promise.all(stylePromises)
-    .then(passDownBatchedErrorsAndFailureIndexes(batchedStylesToCreateOrUpdate, params.messages))
+    .then(passDownProcessedMessages(params.messages))
     .catch(handleErrors);
 };
 
