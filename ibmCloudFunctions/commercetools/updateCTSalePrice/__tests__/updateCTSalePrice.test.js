@@ -1,6 +1,6 @@
 const updateCTSalePrice = require('../');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
-const { updateStylePermanentMarkdown } = require('../utils');
+const { updateStyleMarkdown } = require('../utils');
 
 jest.mock('mongodb');
 jest.mock('@commercetools/sdk-client');
@@ -107,7 +107,7 @@ describe('updateCTSalePrice', () => {
     });
 });
 
-describe('updateStylePermanentMarkdown', () => {
+describe('updateStyleMarkdown', () => {
     it('valid permanent markdown update; onSale flag should be changed to true', async () => {
       const applicablePriceChanges = {
         '00990': {
@@ -119,21 +119,23 @@ describe('updateStylePermanentMarkdown', () => {
           endDate: new Date(2020)
         }
       }
-      const result = await updateStylePermanentMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
+      const result = await updateStyleMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
       expect(result).toBeInstanceOf(Object);
     })
     it('temporary markdown should cause no price update; onSale flag should be changed to true', async () => {
       const applicablePriceChanges = {
         '00990': {
           newRetailPrice: 99.99,
+          startDate: new Date(2018),
           endDate: new Date(2020)
         },
         '00011': {
           newRetailPrice: 10.99,
+          startDate: new Date(2018),
           endDate: new Date(2020)
         }
       }
-      const result = await updateStylePermanentMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
+      const result = await updateStyleMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
       expect(result).toBeInstanceOf(Object);
     })
     it('markdown is not for online should cause no update; onSale flag should not be affected', async () => {
@@ -143,7 +145,7 @@ describe('updateStylePermanentMarkdown', () => {
           endDate: new Date(2020)
         }
       }
-      const result = await updateStylePermanentMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
+      const result = await updateStyleMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
       expect(result).toEqual(null);
     })
     it('no markdown currently applied should cause a revert to original price; onSale flag should be changed to false', async () => {
@@ -151,7 +153,12 @@ describe('updateStylePermanentMarkdown', () => {
         '00990': undefined,
         '00011': undefined
       }
-      const result = await updateStylePermanentMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
+      const result = await updateStyleMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
+      expect(result).toBeInstanceOf(Object);
+    })
+    it('no markdown currently applied should cause a revert to original price; onSale flag should be changed to false', async () => {
+      const applicablePriceChanges = {}
+      const result = await updateStyleMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
       expect(result).toBeInstanceOf(Object);
     })
 });
