@@ -40,15 +40,16 @@ const main = params => {
   const batchedStylesToCreateOrUpdate = groupByAttribute('id')(stylesToCreateOrUpdate)
   const stylePromises = (
     batchedStylesToCreateOrUpdate
-      .map(addErrorHandling(batchedParsedMessages => {
+      .map(addErrorHandling(async batchedParsedMessages => {
         const latestParsedMessage = getMostUpToDateObject('lastModifiedDate')(batchedParsedMessages);
-        return createOrUpdateStyle(ctHelpers, productTypeId, latestParsedMessage);
+        const result = await createOrUpdateStyle(ctHelpers, productTypeId, latestParsedMessage);
+        return result
       }))
   );
 
-  
+
   return Promise.all(stylePromises)
-    .then(passDownProcessedMessages(params.messages))
+    .then(passDownProcessedMessages(params.messages, batchedStylesToCreateOrUpdate))
     .catch(handleErrors);
 };
 
