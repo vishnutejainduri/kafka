@@ -55,7 +55,8 @@ function parseSalePriceMessage(msg) {
         // Jesta forces a time of 00:00 for all dates
         // So when HR people set an end date of May 28, Jesta converts it to May 28 at 00:00
         // Therefore, you loose 24hr for the sale price validity because it's supposed to be May 28 at 23:59 (inclusive range)
-        priceData.endDate += 86400000;
+        // Due to the way JESTA handles overlaps... we need to make it 23hrs and 58 secs, adding a full 24hrs can cause overlaps with other rows
+        priceData.endDate += 86398000;
         priceData.endDate = new Date(priceData.endDate)
     }
 
