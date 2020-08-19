@@ -24,11 +24,77 @@ const validParams = {
     mongoCertificateBase64: 'mongoCertificateBase64'
 };
 
+const validStyleParams = {
+  topicName: 'sale-prices-connect-jdbc',
+  ctpProjectKey: 'key',
+  ctpClientId: 'id',
+  ctpClientSecret: 'secret',
+  ctpAuthUrl: 'authUrl',
+  ctpApiUrl: 'apiUrl',
+  ctpScopes: 'manage_products:harryrosen-dev',
+  productTypeId: 'product-type-reference-id',
+  mongoUri: 'mongoUri',
+  dbName: 'dbName',
+  collectionName: 'prices',
+  mongoCertificateBase64: 'mongoCertificateBase64',
+  value: {
+      STYLEID: 'success-with-priceChange',
+      SUBDEPT: 'subDept',
+      BRAND_NAME_ENG: 'brandNameEng',
+      BRAND_NAME_FR: 'brandNameFr',
+      DESC_ENG: 'descEng',
+      DESC_FR: 'descFr',
+      MARKET_DESC_ENG: 'marketDescEng',
+      MARKET_DESC_ENG2: 'marketDescEng2',
+      MARKET_DESC_FR: 'marketDescFr',
+      MARKET_DESC_FR2: 'marketDescFr2',
+      DETAIL_DESC3_ENG: 'detailDescEng',
+      DETAIL_DESC3_FR: 'detailDescFr',
+      FABRICANDMATERIAL_EN: 'fabricAndMaterialEn',
+      FABRICANDMATERIAL_FR: 'fabricAndMaterialFr',
+      SIZE_DESC_ENG: 'sizeDescEng',
+      SIZE_DESC_FR: 'sizeDescFr',
+      CAREINSTRUCTIONS_EN: 'careInstructionsEn',
+      CAREINSTRUCTIONS_FR: 'careInstructionsFr',
+      ADVICE_EN: 'adviceEn',
+      ADVICE_FR: 'adviceFr',
+      COLOUR_DESC_ENG: 'colourDescEng',
+      COLOUR_DESC_FR: 'colourDescFr',
+      CATEGORY_EN: 'category_en',
+      CATEGORY_FR: 'category_fr',
+      CATEGORY_LEVEL_1A_EN: 'categoryLevel1A_en',
+      CATEGORY_LEVEL_1A_FR: 'categoryLevel1A_fr',
+      CATEGORY_LEVEL_2A_EN: 'categoryLevel2A_en',
+      CATEGORY_LEVEL_2A_FR: 'categoryLevel2A_fr',
+      WEBSTATUS: 'webStatus',
+      SEASON_CD: 'seasonCd',
+      COLORID: 'colorId',
+      UNIT_PRICE: 1.0,
+      VSN: 'vsn',
+      SUBCLASS: 341,
+      UPD_TIMESTAMP: 1000000000000,
+      EFFECTIVE_DATE: 1000000000000,
+      TRUE_COLOURGROUP_EN: 'trueColourGroupEn',
+      TRUE_COLOURGROUP_FR: 'trueColourGroupFr',
+      LAST_MODIFIED_DATE: 1470391439001, // circa 2016,
+      SIZE_CHART: 16
+  }
+}
+
 const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('updateCTSalePrice', () => {
     it('Runs CF; returns valid result', async () => {
         const response = await updateCTSalePrice(validParams);
+        expect(response).toEqual({
+            errors: [],
+            failureIndexes: [],
+            successCount: 1
+        });
+    });
+
+    it('Runs CF with messages; returns valid result', async () => {
+        const response = await updateCTSalePrice(validStyleParams);
         expect(response).toEqual({
             errors: [],
             failureIndexes: [],

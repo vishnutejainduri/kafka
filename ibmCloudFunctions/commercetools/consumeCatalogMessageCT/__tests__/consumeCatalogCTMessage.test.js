@@ -572,7 +572,7 @@ describe('consumeCatalogueMessageCT', () => {
 
   it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeCatalogueMessageCT(validParams);
-    expect(response).toEqual({ messagesCount: 1, batchSuccessCount: 1, ok: true });
+    expect(response).toEqual({ errors: [], failureIndexes: [], messages: response.messages, successCount: 1 });
   });
 
   it('returns one success result if given valid params and two valid messages for the same style', async () => {
@@ -580,7 +580,7 @@ describe('consumeCatalogueMessageCT', () => {
       ...validParams,
       messages: [validMessage, validMessage]
     });
-    expect(response).toEqual({ messagesCount: 2, batchSuccessCount: 1, ok: true });
+    expect(response).toEqual({ errors: [], failureIndexes: [], messages: response.messages, successCount: 1 });
   });
 
   it('returns two success results if given valid params and two valid messages for different styles', async () => {
@@ -588,7 +588,7 @@ describe('consumeCatalogueMessageCT', () => {
       ...validParams,
       messages: [validMessage, { ...validMessage, value: { ...validMessage.value, STYLEID: '20000001' } }]
     });
-    expect(response).toEqual({ messagesCount: 2, batchSuccessCount: 2, ok: true });
+    expect(response).toEqual({ errors: [], failureIndexes: [], messages: response.messages, successCount: 2 });
   });
 });
 

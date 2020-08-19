@@ -63,3 +63,14 @@
           timeout: 600000
         inputs:
           topicName: sales-order-details-connect-jdbc
+      update-ct-sale-price:
+        location: ./commercetools/updateCTSalePrice/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 600000
+        inputs:
+          collectionName: $PRICES_COLLECTION_NAME
+    sequences:
+      update-catalog-ct-sequence:
+        actions: consume-catalog-message-ct,update-ct-sale-price
