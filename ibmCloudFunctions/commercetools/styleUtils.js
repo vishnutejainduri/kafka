@@ -162,8 +162,8 @@ const createOrUpdateCategoriesFromStyle = async (style, ctHelpers) => {
   return [...categories.slice(1, categories.length), ...brandCategories.slice(1, brandCategories.length)].filter(Boolean);
 };
 
-function createPriceUpdate (originalPrice, priceTypeValue = priceTypes.ORIGINAL_PRICE) {
-  return {
+function createPriceUpdate (originalPrice, priceTypeValue = priceTypes.ORIGINAL_PRICE, priceChangeIdValue = null, processDateCreatedValue = null, startDateValue = null, endDateValue = null) {
+  const priceUpdate = {
     country: 'CA',
     value: {
       currencyCode: currencyCodes.CAD,
@@ -178,6 +178,15 @@ function createPriceUpdate (originalPrice, priceTypeValue = priceTypes.ORIGINAL_
       }
     }
   }
+
+  if (processDateCreatedValue) priceUpdate.custom.fields.processDateCreated = processDateCreatedValue
+  if (priceChangeIdValue) priceUpdate.custom.fields.priceChangeId = priceChangeIdValue
+  if (startDateValue && endDateValue) {
+    priceUpdate.validFrom = startDateValue
+    priceUpdate.validUntil = endDateValue
+  }
+
+  return priceUpdate;
 }
 
 const getProductType = async (productTypeId, { client, requestBuilder }) => {

@@ -1,6 +1,6 @@
 const updateCTSalePrice = require('../');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
-const { updateStylePermanentMarkdown } = require('../utils');
+const { updateStyleMarkdown } = require('../utils');
 
 jest.mock('mongodb');
 jest.mock('@commercetools/sdk-client');
@@ -24,6 +24,63 @@ const validParams = {
     mongoCertificateBase64: 'mongoCertificateBase64'
 };
 
+const validStyleParams = {
+  topicName: 'sale-prices-connect-jdbc',
+  ctpProjectKey: 'key',
+  ctpClientId: 'id',
+  ctpClientSecret: 'secret',
+  ctpAuthUrl: 'authUrl',
+  ctpApiUrl: 'apiUrl',
+  ctpScopes: 'manage_products:harryrosen-dev',
+  productTypeId: 'product-type-reference-id',
+  mongoUri: 'mongoUri',
+  dbName: 'dbName',
+  collectionName: 'prices',
+  mongoCertificateBase64: 'mongoCertificateBase64',
+  value: {
+      STYLEID: 'success-with-priceChange',
+      SUBDEPT: 'subDept',
+      BRAND_NAME_ENG: 'brandNameEng',
+      BRAND_NAME_FR: 'brandNameFr',
+      DESC_ENG: 'descEng',
+      DESC_FR: 'descFr',
+      MARKET_DESC_ENG: 'marketDescEng',
+      MARKET_DESC_ENG2: 'marketDescEng2',
+      MARKET_DESC_FR: 'marketDescFr',
+      MARKET_DESC_FR2: 'marketDescFr2',
+      DETAIL_DESC3_ENG: 'detailDescEng',
+      DETAIL_DESC3_FR: 'detailDescFr',
+      FABRICANDMATERIAL_EN: 'fabricAndMaterialEn',
+      FABRICANDMATERIAL_FR: 'fabricAndMaterialFr',
+      SIZE_DESC_ENG: 'sizeDescEng',
+      SIZE_DESC_FR: 'sizeDescFr',
+      CAREINSTRUCTIONS_EN: 'careInstructionsEn',
+      CAREINSTRUCTIONS_FR: 'careInstructionsFr',
+      ADVICE_EN: 'adviceEn',
+      ADVICE_FR: 'adviceFr',
+      COLOUR_DESC_ENG: 'colourDescEng',
+      COLOUR_DESC_FR: 'colourDescFr',
+      CATEGORY_EN: 'category_en',
+      CATEGORY_FR: 'category_fr',
+      CATEGORY_LEVEL_1A_EN: 'categoryLevel1A_en',
+      CATEGORY_LEVEL_1A_FR: 'categoryLevel1A_fr',
+      CATEGORY_LEVEL_2A_EN: 'categoryLevel2A_en',
+      CATEGORY_LEVEL_2A_FR: 'categoryLevel2A_fr',
+      WEBSTATUS: 'webStatus',
+      SEASON_CD: 'seasonCd',
+      COLORID: 'colorId',
+      UNIT_PRICE: 1.0,
+      VSN: 'vsn',
+      SUBCLASS: 341,
+      UPD_TIMESTAMP: 1000000000000,
+      EFFECTIVE_DATE: 1000000000000,
+      TRUE_COLOURGROUP_EN: 'trueColourGroupEn',
+      TRUE_COLOURGROUP_FR: 'trueColourGroupFr',
+      LAST_MODIFIED_DATE: 1470391439001, // circa 2016,
+      SIZE_CHART: 16
+  }
+}
+
 const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('updateCTSalePrice', () => {
@@ -36,12 +93,21 @@ describe('updateCTSalePrice', () => {
         });
     });
 
+    it('Runs CF with messages; returns valid result', async () => {
+        const response = await updateCTSalePrice(validStyleParams);
+        expect(response).toEqual({
+            errors: [],
+            failureIndexes: [],
+            successCount: 1
+        });
+    });
+
     it('Runs CF; returns failed result with no params', async () => {
         await expect(updateCTSalePrice({})).rejects.toThrow();
     });
 });
 
-describe('updateStylePermanentMarkdown', () => {
+describe('updateStyleMarkdown', () => {
     it('valid permanent markdown update; onSale flag should be changed to true', async () => {
       const applicablePriceChanges = {
         '00990': {
@@ -53,21 +119,23 @@ describe('updateStylePermanentMarkdown', () => {
           endDate: new Date(2020)
         }
       }
-      const result = await updateStylePermanentMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
+      const result = await updateStyleMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
       expect(result).toBeInstanceOf(Object);
     })
     it('temporary markdown should cause no price update; onSale flag should be changed to true', async () => {
       const applicablePriceChanges = {
         '00990': {
           newRetailPrice: 99.99,
+          startDate: new Date(2018),
           endDate: new Date(2020)
         },
         '00011': {
           newRetailPrice: 10.99,
+          startDate: new Date(2018),
           endDate: new Date(2020)
         }
       }
-      const result = await updateStylePermanentMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
+      const result = await updateStyleMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
       expect(result).toBeInstanceOf(Object);
     })
     it('markdown is not for online should cause no update; onSale flag should not be affected', async () => {
@@ -77,7 +145,7 @@ describe('updateStylePermanentMarkdown', () => {
           endDate: new Date(2020)
         }
       }
-      const result = await updateStylePermanentMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
+      const result = await updateStyleMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
       expect(result).toEqual(null);
     })
     it('no markdown currently applied should cause a revert to original price; onSale flag should be changed to false', async () => {
@@ -85,7 +153,12 @@ describe('updateStylePermanentMarkdown', () => {
         '00990': undefined,
         '00011': undefined
       }
-      const result = await updateStylePermanentMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
+      const result = await updateStyleMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
+      expect(result).toBeInstanceOf(Object);
+    })
+    it('no markdown currently applied should cause a revert to original price; onSale flag should be changed to false', async () => {
+      const applicablePriceChanges = {}
+      const result = await updateStyleMarkdown(mockedCtHelpers, validParams.productTypeId, applicablePriceChanges);
       expect(result).toBeInstanceOf(Object);
     })
 });

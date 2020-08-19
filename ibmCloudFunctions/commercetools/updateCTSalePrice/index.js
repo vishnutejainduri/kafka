@@ -1,15 +1,16 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { createLog, addErrorHandling, log, passDownAnyMessageErrors } = require('../utils');
+const { createLog, addErrorHandling, log, passDownAnyMessageErrors } = require('../../product-consumers/utils');
 const {
+  extractStyleId,
   findApplicablePriceChanges,
   findUnprocessedStyleIds,
   markProcessedChanges,
   markFailedChanges
-} = require('../updateAlgoliaPrice/utils.js');
+} = require('../../product-consumers/updateAlgoliaPrice/utils.js');
 
 // CT related requires
-const { updateStylePermanentMarkdown } = require('./utils');
+const { updateStyleMarkdown } = require('./utils');
 const getCtHelpers = require('../../lib/commercetoolsSdk');
 
 // Holds two CT helpers, including the CT client. It's declared outside of
@@ -32,14 +33,16 @@ const main = async function (params) {
     }
     
     const processingDate = new Date()
-    const styleIds = await findUnprocessedStyleIds(pricesCollection, processingDate, 'CT')
+    const styleIds = params.messages && params.messages.length
+        ? params.messages.map(addErrorHandling(extractStyleId))
+        : await findUnprocessedStyleIds(pricesCollection, processingDate, 'CT')
 
     let CTUpdateResult = await Promise.all(styleIds
         .map(addErrorHandling(async (styleId) => {
             const prices = await pricesCollection.findOne({ styleId });
             const priceChanges = prices && prices.priceChanges || []
             const applicablePriceChanges = findApplicablePriceChanges(priceChanges)
-            const styleUpdate = updateStylePermanentMarkdown(ctHelpers, productTypeId, applicablePriceChanges, styleId)
+            const styleUpdate = updateStyleMarkdown(ctHelpers, productTypeId, applicablePriceChanges, styleId)
             return styleUpdate;
         }))
     );

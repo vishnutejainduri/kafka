@@ -1,0 +1,4 @@
+    rules:
+      update-future-sale-price-changes-rule-ct:
+        action: update-ct-sale-price
+        trigger: every-minute
