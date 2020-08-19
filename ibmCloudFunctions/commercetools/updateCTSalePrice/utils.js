@@ -13,19 +13,15 @@ const setOnSaleFlag = (value) => ({
 });
 
 const buildPriceActions = (applicablePriceChange, existingCtPrice, variantPrice, priceType, isSale) => {
+    const priceActions = [{
+          price: createPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice), priceType, applicablePriceChange.priceChangeId, applicablePriceChange.processDateCreated, applicablePriceChange.startDate, applicablePriceChange.endDate),
+          staged: isStaged
+        }, setOnSaleFlag(isSale)]
+
     return existingCtPrice
-        ? [{
-          action: 'changePrice',
-          priceId: existingCtPrice.id,
-          price: createPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice), priceType, applicablePriceChange.priceChangeId, applicablePriceChange.processDateCreated, applicablePriceChange.startDate, applicablePriceChange.endDate),
-          staged: isStaged
-        }, setOnSaleFlag(isSale)]
-        : [{
-          action: 'addPrice',
-          variantId: variantPrice.variantId,
-          price: createPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice), priceType, applicablePriceChange.priceChangeId, applicablePriceChange.processDateCreated, applicablePriceChange.startDate, applicablePriceChange.endDate),
-          staged: isStaged
-        }, setOnSaleFlag(isSale)]
+      ? [{ ...priceActions[0], action: 'changePrice', priceId: existingCtPrice.id }, priceActions[1]]
+      : [{ ...priceActions[0], action: 'addPrice', variantId: variantPrice.variantId }, priceActions[1]]
+          
 }
 
 const updateStyleMarkdown = async (ctHelpers, productTypeId, applicablePriceChanges, styleId) => {
