@@ -1,7 +1,9 @@
 const { siteIds } = require('../../constants')
 const { isStaged, priceTypes, styleAttributeNames } = require('../../commercetools/constantsCt');
 const { getExistingCtStyle, createAndPublishStyle, createPriceUpdate, getCtStyleAttributeValue } = require('../../commercetools/styleUtils');
-const { getAllVariantPrices, getExistingCtOriginalPrice, getExistingCtPermanentMarkdown, convertToCents } = require('../../commercetools/consumeSalePriceCT/utils');
+const { getAllVariantPrices, getExistingCtOriginalPrice, getExistingCtPermanentMarkdown, getExistingCtTemporaryMarkdown, convertToCents } = require('../../commercetools/consumeSalePriceCT/utils');
+
+const convertToDollars = (amount) => Math.round(amount / 100)
 
 const setOnSaleFlag = (value) => ({
   action: 'setAttributeInAllVariants',
@@ -10,9 +12,25 @@ const setOnSaleFlag = (value) => ({
   staged: isStaged
 });
 
-const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicablePriceChanges, styleId) => {
-    // only handle online site id prices
-    if (!Object.keys(applicablePriceChanges).includes(siteIds.ONLINE)) return null;
+const buildPriceActions = (applicablePriceChange, existingCtPrice, variantPrice, priceType, isSale) => {
+    return existingCtPrice
+        ? [{
+          action: 'changePrice',
+          priceId: existingCtPrice.id,
+          price: createPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice), priceType, applicablePriceChange.priceChangeId, applicablePriceChange.processDateCreated, applicablePriceChange.startDate, applicablePriceChange.endDate),
+          staged: isStaged
+        }, setOnSaleFlag(isSale)]
+        : [{
+          action: 'addPrice',
+          variantId: variantPrice.variantId,
+          price: createPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice), priceType, applicablePriceChange.priceChangeId, applicablePriceChange.processDateCreated, applicablePriceChange.startDate, applicablePriceChange.endDate),
+          staged: isStaged
+        }, setOnSaleFlag(isSale)]
+}
+
+const updateStyleMarkdown = async (ctHelpers, productTypeId, applicablePriceChanges, styleId) => {
+    // if there is a markdown (so has keys), only accept keys equal to that of online so we ignore in store markdowns
+    if (Object.keys(applicablePriceChanges).length !== 0 && !Object.keys(applicablePriceChanges).includes(siteIds.ONLINE)) return null;
 
     const applicablePriceChange = applicablePriceChanges[siteIds.ONLINE];
 
@@ -28,38 +46,16 @@ const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicable
 
     const allVariantPrices = getAllVariantPrices(existingCtStyle);
     let priceUpdateActions = allVariantPrices.map((variantPrice) => {
-        let priceUpdates;
-        const existingCtPrice = getExistingCtOriginalPrice(variantPrice) || getExistingCtPermanentMarkdown(variantPrice)
+        let priceUpdates, existingCtPrice;
         if (applicablePriceChange && applicablePriceChange.endDate) {
-          priceUpdates = [setOnSaleFlag(true)];
+          existingCtPrice = getExistingCtTemporaryMarkdown(variantPrice, applicablePriceChange.priceChangeId);
+          priceUpdates = buildPriceActions (applicablePriceChange, existingCtPrice, variantPrice, priceTypes.TEMPORARY_MARKDOWN, true);
         } else if (!applicablePriceChange) {
-          priceUpdates = existingCtPrice
-              ? [{
-                action: 'changePrice',
-                priceId: existingCtPrice.id,
-                price: createPriceUpdate(originalPrice.centAmount, priceTypes.ORIGINAL_PRICE),
-                staged: isStaged
-              }, setOnSaleFlag(false)]
-              : [{
-                action: 'addPrice',
-                variantId: variantPrice.variantId,
-                price: createPriceUpdate(originalPrice.centAmount, priceTypes.ORIGINAL_PRICE),
-                staged: isStaged
-              }, setOnSaleFlag(false)]
+          existingCtPrice = getExistingCtOriginalPrice(variantPrice) || getExistingCtPermanentMarkdown(variantPrice)
+          priceUpdates = buildPriceActions ({ newRetailPrice: convertToDollars(originalPrice.centAmount) }, existingCtPrice, variantPrice, priceTypes.ORIGINAL_PRICE, false);
         } else {
-          priceUpdates = existingCtPrice
-              ? [{
-                action: 'changePrice',
-                priceId: existingCtPrice.id,
-                price: createPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice), priceTypes.PERMANENT_MARKDOWN),
-                staged: isStaged
-              }, setOnSaleFlag(true)]
-              : [{
-                action: 'addPrice',
-                variantId: variantPrice.variantId,
-                price: createPriceUpdate(convertToCents(applicablePriceChange.newRetailPrice), priceTypes.PERMANENT_MARKDOWN),
-                staged: isStaged
-              }, setOnSaleFlag(true)]
+          existingCtPrice = getExistingCtOriginalPrice(variantPrice) || getExistingCtPermanentMarkdown(variantPrice)
+          priceUpdates = buildPriceActions (applicablePriceChange, existingCtPrice, variantPrice, priceTypes.PERMANENT_MARKDOWN, true);
         }
         return priceUpdates;
       })
@@ -74,5 +70,5 @@ const updateStylePermanentMarkdown = async (ctHelpers, productTypeId, applicable
 };
 
 module.exports = {
-  updateStylePermanentMarkdown
+  updateStyleMarkdown
 };
