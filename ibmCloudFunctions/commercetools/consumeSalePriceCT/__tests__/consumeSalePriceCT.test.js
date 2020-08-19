@@ -59,14 +59,13 @@ describe('consumeSalePriceCT', () => {
   it('returns expected success result for correct params and a valid message', async () => {
     const response = await consumeSalePriceCT(validParams);
     return expect(response).toEqual({
-      errors: [],
-      failureIndexes: [],
-      successCount: 1,
-      messages: validParams.messages
+      batchSuccessCount: 1,
+      messagesCount: 1,
+      ok: true
     });
   });
 
-  it('ignored messages are still passed down to the next action in the sequence', async () => {
+  it('invalid site id messages are ignored', async () => {
     // site ID is not 09900
     const messageToBeIgnored = {
       ...validMessage,
@@ -79,10 +78,10 @@ describe('consumeSalePriceCT', () => {
       ...validParams,
       messages: [messageToBeIgnored]
     });
-    return expect(response.messages).toEqual([messageToBeIgnored]);
+    expect(response).toEqual({ batchSuccessCount:0, messagesCount:1, ok:true });
   });
 
-  it('messages that resulted in an error are not passed down to the next action in the sequence', async () => {
+  it('one invalid message in a batch should not be processed but the one valid message should be', async () => {
     // missing topic
     const invalidMessage = { id: 'invalid_message' }; 
     const response = await consumeSalePriceCT({
@@ -92,10 +91,39 @@ describe('consumeSalePriceCT', () => {
         invalidMessage
       ]
     });
-    expect(response.messages).toEqual([validMessage]);
-    expect(response.errors.length).toEqual(1);
-    expect(response.failureIndexes).toEqual([1]);
-
+    expect(response).toEqual({ batchSuccessCount: 1, messagesCount: 2, ok: true });
+  });
+  it('two valid messages should be batched together and processed', async () => {
+    const response = await consumeSalePriceCT({
+      ...validParams,
+      messages:[
+        validMessage,
+        validMessage
+      ]
+    });
+    expect(response).toEqual({ batchSuccessCount: 1, messagesCount: 2, ok: true });
+  });
+  it('two valid messages should not be batched together but still processed', async () => {
+    const otherValidMessage = { ...validMessage, value: { ...validMessage.value, STYLE_ID: 'styleId2' } };
+    const response = await consumeSalePriceCT({
+      ...validParams,
+      messages:[
+        validMessage,
+        otherValidMessage
+      ]
+    });
+    expect(response).toEqual({ batchSuccessCount: 2, messagesCount: 2, ok: true });
+  });
+  it('two valid messages should be batched together, reordered by date, and still processed', async () => {
+    const otherValidMessage = { ...validMessage, value: { ...validMessage.value,  PROCESS_DATE_CREATED: 1000000000001 } };
+    const response = await consumeSalePriceCT({
+      ...validParams,
+      messages:[
+        otherValidMessage,
+        validMessage
+      ]
+    });
+    expect(response).toEqual({ batchSuccessCount: 1, messagesCount: 2, ok: true });
   });
 });
 

@@ -1,0 +1,5 @@
+    triggers:
+      every-minute:
+        feed: /whisk.system/alarms/alarm
+        inputs:
+          cron: "*/1 * * * *"

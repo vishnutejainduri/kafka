@@ -127,21 +127,6 @@
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
-      update-ct-sale-price:
-        location: ./product-consumers/updateCTSalePrice/dist/bundle.js
-        runtime: nodejs:10
-        limits:
-          memorySize: 2048
-          timeout: 600000
-        inputs:
-          collectionName: $PRICES_COLLECTION_NAME
-          ctpProjectKey: $CTP_PROJECT_KEY
-          ctpClientId: $CTP_CLIENT_ID
-          ctpClientSecret: $CTP_CLIENT_SECRET
-          ctpAuthUrl: $CTP_AUTH_URL
-          ctpApiUrl: $CTP_API_URL
-          ctpScopes: $CTP_SCOPES
-          productTypeId: $PRODUCT_TYPE_ID
       bulk-calculate-available-to-sell:
         location: ./product-consumers/bulkCalculateAvailableToSell/dist/bundle.js
         runtime: nodejs:10
@@ -223,7 +208,5 @@
         actions: consume-sale-price,update-algolia-price
       update-catalog-sequence:
         actions: consume-catalog-message,update-algolia-price
-      update-algolia-ct-pricing-sequence:
-        actions: update-algolia-price,update-ct-sale-price
       update-inventory-sequence:
         actions: consume-sku-inventory-message,calculate-available-to-sell

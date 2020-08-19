@@ -47,6 +47,11 @@ const getExistingCtPermanentMarkdown = (variantPrice) => {
   return existingCtPermanentMarkdown;
 };
 
+const getExistingCtTemporaryMarkdown = (variantPrice, priceChangeId) => {
+  const existingCtTemporaryMarkdown = variantPrice.prices.find((price) => price.custom && price.custom.fields[priceAttributeNames.PRICE_TYPE] === priceTypes.TEMPORARY_MARKDOWN && price.custom.fields[priceAttributeNames.PRICE_CHANGE_ID] === priceChangeId);
+  return existingCtTemporaryMarkdown;
+};
+
 const getExistingCtPrice = (variantPrice, parsedPriceMessage) => {
   const existingCtPrice = variantPrice.prices.find((price) => price.custom && price.custom.fields[priceAttributeNames.PRICE_CHANGE_ID] === parsedPriceMessage[priceAttributeNames.PRICE_CHANGE_ID]);
   return existingCtPrice;
@@ -152,6 +157,7 @@ module.exports = {
   convertToCents,
   getExistingCtOriginalPrice,
   getExistingCtPermanentMarkdown,
+  getExistingCtTemporaryMarkdown,
   // internal functions exported for tests follows:
   getActionsForVariantPrice,
   getActionsForSalePrice
