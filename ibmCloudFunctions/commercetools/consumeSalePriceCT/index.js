@@ -13,9 +13,10 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownProcessedMessages,
+  passDownBatchedErrorsAndFailureIndexes,
   validateParams
 } = require('../../product-consumers/utils');
+const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
 
 // Holds two CT helpers, including the CT client. It's declared outside of
 // `main` so the same client can be shared between warm starts.
@@ -39,13 +40,17 @@ const main = async params => {
         .map(addErrorHandling(parseSalePriceMessage))
   ));
 
-  const updateStyleSalePricesPromises = (
-    pricesToUpdate
-      .map(addErrorHandling(updateStyleSalePrice.bind(null, ctHelpers, productTypeId)))
+  const batchedPricesToUpdate = groupByAttribute('id')(pricesToUpdate)
+  const pricePromises = (
+    batchedPricesToUpdate
+      .map(addErrorHandling(batchedParsedMessages => {
+        const latestParsedMessage = getMostUpToDateObject('processDateCreated')(batchedParsedMessages);
+        return updateStyleSalePrice(ctHelpers, productTypeId, latestParsedMessage);
+      }))
   );
-  
-  return Promise.all(updateStyleSalePricesPromises)
-    .then(passDownProcessedMessages(params.messages))
+
+  return Promise.all(pricePromises)
+    .then(passDownBatchedErrorsAndFailureIndexes(batchedPricesToUpdate, params.messages))
     .catch(handleErrors);
 };
 
