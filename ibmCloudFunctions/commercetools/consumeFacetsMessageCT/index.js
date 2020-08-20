@@ -11,7 +11,7 @@ const {
   passDownBatchedErrorsAndFailureIndexes,
   validateParams
 } = require('../../product-consumers/utils');
-const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
+const { groupByAttribute } = require('../../lib/utils');
 
 // Holds two CT helpers, including the CT client. It's declared outside of
 // `main` so the same client can be shared between warm starts.
