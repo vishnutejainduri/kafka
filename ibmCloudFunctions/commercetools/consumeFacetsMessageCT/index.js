@@ -34,18 +34,18 @@ const main = params => {
   );
 
   const batchedStylesToUpdate = groupByAttribute('id')(stylesToUpdate)
-  const stylePromises = (
+  return Promise.all(
     batchedStylesToUpdate
-      .map(addErrorHandling(batchedParsedMessages => {
-        for (const parsedMessage of batchedParsedMessages) {
-          return updateStyleFacets(ctHelpers, productTypeId, parsedMessage);
+      .map(addErrorHandling(async batchedParsedMessages => {
+        const facetsSortedByDate = batchedParsedMessages.sort((facet1, facet2) => (
+          facet1.lastModified.getTime() - facet2.lastModified.getTime()
+        ));
+        for (const facetMessage of facetsSortedByDate) {
+          await updateStyleFacets(ctHelpers, productTypeId, facetMessage);
         }
       }))
-  );
-
-  return Promise.all(stylePromises)
-    .then(passDownBatchedErrorsAndFailureIndexes(batchedStylesToUpdate, params.messages))
-    .catch(handleErrors);
+  ).then(passDownBatchedErrorsAndFailureIndexes(batchedStylesToUpdate, params.messages))
+   .catch(handleErrors);
 };
 
 global.main = addLoggingToMain(main, messagesLogs);

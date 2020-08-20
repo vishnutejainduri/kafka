@@ -28,7 +28,8 @@ function parseFacetMessage(msg) {
             en: msg.value.DESC_ENG,
             fr: msg.value.DESC_FR
         },
-        isMarkedForDeletion: msg.value.UPD_FLG === 'F'
+        isMarkedForDeletion: msg.value.UPD_FLG === 'F',
+        lastModified: new Date(msg.value.LAST_MODIFIED)
     };
 }
 
