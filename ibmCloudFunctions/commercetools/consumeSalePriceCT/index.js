@@ -1,4 +1,5 @@
 const { updateStyleSalePrice } = require('./utils');
+const { priceAttributeNames } = require('../constantsCt');
 const {
     validateSalePriceMessages,
     passOnlinePriceMessages,
@@ -13,9 +14,10 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownProcessedMessages,
+  passDownBatchedErrorsAndFailureIndexes,
   validateParams
 } = require('../../product-consumers/utils');
+const { groupByAttribute } = require('../../lib/utils');
 
 // Holds two CT helpers, including the CT client. It's declared outside of
 // `main` so the same client can be shared between warm starts.
@@ -39,14 +41,20 @@ const main = async params => {
         .map(addErrorHandling(parseSalePriceMessage))
   ));
 
-  const updateStyleSalePricesPromises = (
-    pricesToUpdate
-      .map(addErrorHandling(updateStyleSalePrice.bind(null, ctHelpers, productTypeId)))
-  );
-  
-  return Promise.all(updateStyleSalePricesPromises)
-    .then(passDownProcessedMessages(params.messages))
-    .catch(handleErrors);
+  const batchedPricesToUpdate = groupByAttribute('id')(pricesToUpdate)
+  return Promise.all(
+    batchedPricesToUpdate
+      .map(addErrorHandling(async batchedParsedMessages => {
+        const pricesSortedByDate = batchedParsedMessages.sort((price1, price2) => (
+          price1[priceAttributeNames.PROCESS_DATE_CREATED].getTime() - price2[priceAttributeNames.PROCESS_DATE_CREATED].getTime()
+        ));
+        for (const priceMessage of pricesSortedByDate) {
+          await updateStyleSalePrice(ctHelpers, productTypeId, priceMessage);
+        }
+      }))
+  ).then(passDownBatchedErrorsAndFailureIndexes(batchedPricesToUpdate, params.messages))
+   .catch(handleErrors);
+
 };
 
 global.main = addLoggingToMain(main, messagesLogs);
