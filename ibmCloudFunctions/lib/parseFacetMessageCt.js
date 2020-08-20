@@ -24,6 +24,7 @@ function parseFacetMessageCt(msg) {
         id: msg.value.STYLEID,
         facetId: `facetid_${msg.value.CHARACTERISTIC_VALUE_ID}`,
         isMarkedForDeletion: msg.value.UPD_FLG === 'F',
+        lastModified: new Date(msg.value.LAST_MODIFIED)
     };
     // If the facet is marked for deletion, set the value to null (unless it's a microsite)
     facetObj[facetName] = facetObj.isMarkedForDeletion && facetName !== MICROSITE 
