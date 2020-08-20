@@ -2,11 +2,18 @@ const { MAX_BYTE_RESPONSE } = require('./constants');
 const messagesLogs = require('../lib/messagesLogs');
 const FAILURE_KEY = 'FAILURE'
  
-// NOTE: addErrorHandling should be used for all of the chained methods on array e.g. map, filter, etc.
-// and you cannot wrap some methods with addErrorHandling while skipping others,
-// because if one method returns an Error instance, the rest of the methods will simply bypass that Error
-// if wrapped with addErrorHandling, otherwise you might end up with difficult to reason about bugs.
-// Note: if we don't want a message to be processed but it does not warrant an error, we simply can pass null along
+
+/**
+ * NOTE 1: addErrorHandling should be used for all of the chained methods on array e.g. map, filter, etc.
+ * and you cannot wrap some methods with addErrorHandling while skipping others,
+ * because if one method returns an Error instance, the rest of the methods will simply bypass that Error
+ * if wrapped with addErrorHandling, otherwise you might end up with difficult to reason about bugs.
+ * Note 2: if we don't want a message to be processed but it does not warrant an error, we simply can pass null along
+ * Note 3: if a function wrapped by addErrorHandling returns a promise, that function should be declared 'async' otherwise addErrorHandling will not work
+ * i.e. instead of 'function fn () { return Promise.resolve() }' use 'async function fn () => { return Promise.resolve() }'
+ * @param {Function|async Function} fn Note that if fn returns a promise it SHOULD be declared as async
+ * @param {Function|undefined} createError 
+ */
 const addErrorHandling = (fn, createError) => {
     if (Promise.resolve(fn) == fn || fn.constructor.name === 'AsyncFunction') {
         return async arg => {
