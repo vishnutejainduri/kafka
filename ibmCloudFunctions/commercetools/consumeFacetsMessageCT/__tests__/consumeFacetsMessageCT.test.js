@@ -27,7 +27,8 @@ const validParams = {
         'FKORGANIZATIONNO': '1',
         'CHAR_TY_SUB_TYPE': null,
         'CHARACTERISTIC_TYPE_ID': '15',
-        'CHARACTERISTIC_VALUE_ID': null
+        'CHARACTERISTIC_VALUE_ID': null,
+        'LAST_MODIFIED': 1000000000000
       }
   }],
   mongoUri: 'mongo-uri',
@@ -53,7 +54,8 @@ const validMicrositeParams = { ...validParams, messages: [{
       'FKORGANIZATIONNO': '1',
       'CHAR_TY_SUB_TYPE': null,
       'CHARACTERISTIC_TYPE_ID': 'DPM01',
-      'CHARACTERISTIC_VALUE_ID': '57'
+      'CHARACTERISTIC_VALUE_ID': '57',
+      'LAST_MODIFIED': 1000000000000
     }
   }]
 };
@@ -68,7 +70,19 @@ describe('consumeFacetsMessageCT', () => {
 
   it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeFacetsMessageCT(validParams);
-    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
+    expect(response).toEqual({ batchSuccessCount:1, messagesCount:1, ok:true });
+  });
+
+  it('returns success result if given valid params and batches two valid messages', async () => {
+    const validBatchParams = { ...validParams, messages: [{ ...validParams.messages[0] }, { ...validParams.messages[0] }] }
+    const response = await consumeFacetsMessageCT(validBatchParams);
+    expect(response).toEqual({ batchSuccessCount:1, messagesCount:2, ok:true });
+  });
+
+  it('returns success result if given valid params and doesn\'t batch two valid messages', async () => {
+    const validBatchParams = { ...validParams, messages: [{ ...validParams.messages[0] }, { ...validParams.messages[0], value: { ...validParams.messages[0].value, STYLEID: 'styleId2' } } ] }
+    const response = await consumeFacetsMessageCT(validBatchParams);
+    expect(response).toEqual({ batchSuccessCount:2, messagesCount:2, ok:true });
   });
 });
 
@@ -78,6 +92,7 @@ describe('parseFacetMessageCt', () => {
     facetId: 'facetid_57',
     id: 'styleId',
     isMarkedForDeletion: false,
+    lastModified: new Date(1000000000000),
     microsite: { [languageKeys.ENGLISH]: 'microsite_en', [languageKeys.FRENCH]: 'microsite_fr' }
   }
   const expectedPromoStickerResult = {
@@ -85,6 +100,7 @@ describe('parseFacetMessageCt', () => {
     facetId: 'facetid_null',
     id: 'styleId',
     isMarkedForDeletion: false,
+    lastModified: new Date(1000000000000),
     promotionalSticker: { [languageKeys.ENGLISH]: 'descEng', [languageKeys.FRENCH]: 'descFr' }
   }
 
@@ -105,7 +121,8 @@ describe('parseFacetMessageCt', () => {
         'FKORGANIZATIONNO': '1',
         'CHAR_TY_SUB_TYPE': null,
         'CHARACTERISTIC_TYPE_ID': '15',
-        'CHARACTERISTIC_VALUE_ID': null
+        'CHARACTERISTIC_VALUE_ID': null,
+        'LAST_MODIFIED': 1000000000000
       }
     };
 
@@ -130,7 +147,8 @@ describe('parseFacetMessageCt', () => {
         'FKORGANIZATIONNO': '1',
         'CHAR_TY_SUB_TYPE': null,
         'CHARACTERISTIC_TYPE_ID': 'DPM01',
-        'CHARACTERISTIC_VALUE_ID': '57'
+        'CHARACTERISTIC_VALUE_ID': '57',
+        'LAST_MODIFIED': 1000000000000
       }
     };
 
@@ -176,7 +194,7 @@ describe('createOrUpdateCategoriesFromFacet', () => {
         ...validMicrositeParams.messages[0].value,
         DESC_ENG: 'updated_microsite_en',
         DESC_FR: 'updated_microsite_fr',
-        CHARACTERISTIC_VALUE_ID: '58' 
+        CHARACTERISTIC_VALUE_ID: '58'
       }
     };
     const result = parseFacetMessageCt(validNewMicrositeMessage);
