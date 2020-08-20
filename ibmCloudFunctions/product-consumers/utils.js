@@ -2,11 +2,18 @@ const { MAX_BYTE_RESPONSE } = require('./constants');
 const messagesLogs = require('../lib/messagesLogs');
 const FAILURE_KEY = 'FAILURE'
  
-// NOTE: addErrorHandling should be used for all of the chained methods on array e.g. map, filter, etc.
-// and you cannot wrap some methods with addErrorHandling while skipping others,
-// because if one method returns an Error instance, the rest of the methods will simply bypass that Error
-// if wrapped with addErrorHandling, otherwise you might end up with difficult to reason about bugs.
-// Note: if we don't want a message to be processed but it does not warrant an error, we simply can pass null along
+
+/**
+ * NOTE 1: addErrorHandling should be used for all of the chained methods on array e.g. map, filter, etc.
+ * and you cannot wrap some methods with addErrorHandling while skipping others,
+ * because if one method returns an Error instance, the rest of the methods will simply bypass that Error
+ * if wrapped with addErrorHandling, otherwise you might end up with difficult to reason about bugs.
+ * Note 2: if we don't want a message to be processed but it does not warrant an error, we simply can pass null along
+ * Note 3: if a function wrapped by addErrorHandling returns a promise, that function should be declared 'async' otherwise addErrorHandling will not work
+ * i.e. instead of 'function fn () { return Promise.resolve() }' use 'async function fn () => { return Promise.resolve() }'
+ * @param {Function|async Function} fn Note that if fn returns a promise it SHOULD be declared as async
+ * @param {Function|undefined} createError 
+ */
 const addErrorHandling = (fn, createError) => {
     if (Promise.resolve(fn) == fn || fn.constructor.name === 'AsyncFunction') {
         return async arg => {
@@ -139,17 +146,6 @@ const passDownAnyMessageErrors = (results) => {
     return result;
 };
 
-// This function is useful if we want to send the same messages that were successfully processed by one step in a functions sequence to the next step
-// Excluding messages that were not successfully processed ensures we won't cause an incosistency; not that messages that are ignored e.g. because they required no operation, will be passed on as well.
-const passDownProcessedMessages = messages => results => {
-    const result = passDownAnyMessageErrors(results)
-    const failureIndexes = result.failureIndexes
-    return {
-        ...result,
-        messages: messages.filter((_, index) => !failureIndexes.includes(index))
-    }
-}
-
 /**
  * @param {[][]} batches Each entry in 'batches' is an array of items that has an 'originalIndexes' property. Specifically, each entry will have that property if 'batches' is created by groupByAttribute
  */
@@ -192,6 +188,24 @@ const passDownBatchedErrorsAndFailureIndexes = (batches, messages) => results =>
     };
   };
   
+// This function is useful if we want to send the same messages that were successfully processed by one step in a functions sequence to the next step
+// Excluding messages that were not successfully processed ensures we won't cause an incosistency; note that messages that are ignored e.g. because they required no operation, will be passed on as well.
+/**
+ *  
+ * @param {any[]} messages 
+ * @param {[][]|undefined} batches If batches is present passDownBatchedErrorsAndFailureIndexes will be used instead of passDownAnyMessageErrors to calculate the results
+ */
+const passDownProcessedMessages = (messages, batches) => results => {
+    const result = batches
+        ? passDownBatchedErrorsAndFailureIndexes(batches, messages)(results)
+        : passDownAnyMessageErrors(results)
+    const failureIndexes = result.failureIndexes || []
+    return {
+        ...result,
+        messages: messages.filter((_, index) => !failureIndexes.includes(index))
+    }
+}
+
 /**
  * Catches the error returned from the function and returns it as an instance of Error instead of throwing it
  * @param {function} fn
@@ -245,7 +259,7 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
     ]).then(async ([mainResult, storeBatchResult]) => {
         // returning 0 and 1 instead of true and false, since it's easier to infer result in case they are converted to string by OpenWhisk
         const storeBatchFailed = storeBatchResult instanceof Error ? 1 : 0
-        
+
         const hasPartialFailure = mainResult && mainResult.failureIndexes && mainResult.failureIndexes.length > 0
         let updateBatchWithFailureIndexesFailed = 0
         let updateBatchWithFailureIndexesResult

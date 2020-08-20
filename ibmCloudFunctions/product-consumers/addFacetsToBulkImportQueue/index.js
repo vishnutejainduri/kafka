@@ -8,7 +8,7 @@ const parseFacetMessageWithErrorHandling = addErrorHandling(
     createError.addFacetsToBulkImportQueue.failedParseMessage
 );
 
-const updateAlgoliaFacetQueue = algoliaFacetQueue => (facetData) => {
+const updateAlgoliaFacetQueue = algoliaFacetQueue => async (facetData) => {
     return algoliaFacetQueue.updateOne(
       {
         facetValue: {

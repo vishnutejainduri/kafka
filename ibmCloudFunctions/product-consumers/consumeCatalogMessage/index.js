@@ -30,7 +30,7 @@ const main = async function (params) {
         .map(addErrorHandling(msg => filterStyleMessages(msg) ? msg : null))
         .map(addErrorHandling(parseStyleMessage))
         .map(addErrorHandling((styleData) => styles.findOne({ _id: styleData._id })
-            .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
+            .then(async (existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
                 ? styles.updateOne({ _id: styleData._id, lastModifiedDate: { $lte: styleData.lastModifiedDate } }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: styleData })
                     .then((result) => result.modifiedCount > 0
                         ? prices.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOriginalPrice: { $type:"timestamp" } }, $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice } }, { upsert: true })

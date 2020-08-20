@@ -35,7 +35,7 @@ const main = params => {
   const batchedStylesToUpdate = groupByAttribute('id')(stylesToUpdate)
   const stylePromises = (
     batchedStylesToUpdate
-      .map(addErrorHandling(batchedParsedMessages => {
+      .map(addErrorHandling(async batchedParsedMessages => {
         const latestParsedMessage = getMostUpToDateObject('lastModifiedDate')(batchedParsedMessages);
         return updateStyleOutlet(ctHelpers, productTypeId, latestParsedMessage);
       }))

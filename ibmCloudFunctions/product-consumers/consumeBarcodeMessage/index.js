@@ -24,7 +24,7 @@ const main = async function (params) {
     return Promise.all(params.messages
         .map(addErrorHandling(msg => filterBarcodeMessage(msg) ? msg : null))
         .map(addErrorHandling(parseBarcodeMessage))
-        .map(addErrorHandling((barcodeData) => barcodes.findOne({ _id: barcodeData._id })
+        .map(addErrorHandling(async (barcodeData) => barcodes.findOne({ _id: barcodeData._id })
             .then((existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
                 ? barcodes.updateOne({ _id: barcodeData._id, lastModifiedDate: { $lte: barcodeData.lastModifiedDate } }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: barcodeData })
                 : barcodes.updateOne({ _id: barcodeData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: barcodeData }, { upsert: true })

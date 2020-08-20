@@ -70,6 +70,13 @@ const validMessage = {
   }
 };
 
+const invalidMessage = {
+  topic: 'styles-connect-jdbc-CATALOG',
+  value: {
+      STYLEID: '20000000'
+  }
+};
+
 const validParams = {
   topicName: 'styles-connect-jdbc-CATALOG',
   ctpProjectKey: 'key',
@@ -570,9 +577,15 @@ describe('consumeCatalogueMessageCT', () => {
     return expect((await consumeCatalogueMessageCT(invalidParams)).error).toBeTruthy();
   });
 
+  it('returns failure indexes result if given valid params but an invalid message', async () => {
+    const result = await consumeCatalogueMessageCT({ ...validParams, messages: [invalidMessage]});
+    expect(result).toMatchObject({ messages: result.messages, batchSuccessCount: 0, messagesCount: 1, failureIndexes: [0] });
+  });
+
+
   it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeCatalogueMessageCT(validParams);
-    expect(response).toEqual({ errors: [], failureIndexes: [], messages: response.messages, successCount: 1 });
+    expect(response).toEqual({ messages: response.messages, batchSuccessCount: 1, messagesCount: 1, ok: true });
   });
 
   it('returns one success result if given valid params and two valid messages for the same style', async () => {
@@ -580,7 +593,7 @@ describe('consumeCatalogueMessageCT', () => {
       ...validParams,
       messages: [validMessage, validMessage]
     });
-    expect(response).toEqual({ errors: [], failureIndexes: [], messages: response.messages, successCount: 1 });
+    expect(response).toEqual({ messages: response.messages, batchSuccessCount: 1, messagesCount: 2, ok: true });
   });
 
   it('returns two success results if given valid params and two valid messages for different styles', async () => {
@@ -588,7 +601,7 @@ describe('consumeCatalogueMessageCT', () => {
       ...validParams,
       messages: [validMessage, { ...validMessage, value: { ...validMessage.value, STYLEID: '20000001' } }]
     });
-    expect(response).toEqual({ errors: [], failureIndexes: [], messages: response.messages, successCount: 2 });
+    expect(response).toEqual({ messages: response.messages, batchSuccessCount: 2, messagesCount: 2, ok: true });
   });
 });
 
