@@ -87,6 +87,39 @@ describe('updateAlgoliaFacets', () => {
         microsite: [{ en: 'micrositeDesc', fr: 'micrositeDesc' }]
       }]);
     });
+    it('should handle microsite and other facet creations in one call', async () => {
+      // stub for styles collection
+      const styles = {
+        findOne: jest.fn(() => {
+          return Promise.resolve({
+            isOutlet: false
+          });
+        })
+      };
+
+      const multiValidAggregate = [{ ...validAggregate[0], facets: [{ ...validAggregate[0].facets[0] }, { ...validAggregate[0].facets[0], name: 'testFacet', value: 'testFacetValue', type: null }] }]
+
+      const [failed, actual] = await transformUpdateQueueRequestToAlgoliaUpdates(multiValidAggregate, styles);
+      const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
+      const actual3 = transformMicrositeAlgoliaRequests(actual);
+
+      expect(failed).toBeEmpty;
+      expect(actual).toEqual([{
+        objectID: 'styleId',
+        microsite: { 'facetid_57': { en: 'micrositeDesc', fr: 'micrositeDesc' } },
+        'testFacet': 'testFacetValue'
+      }]);
+      expect(actual2[0].updateOne.update.$set).toEqual({
+        _id: "styleId",
+        microsite: { 'facetid_57': { en: 'micrositeDesc', fr: 'micrositeDesc' } },
+        'testFacet': 'testFacetValue'
+      });
+      expect(actual3).toEqual([{
+        objectID: 'styleId',
+        microsite: [{ en: 'micrositeDesc', fr: 'micrositeDesc' }],
+        'testFacet': 'testFacetValue'
+      }]);
+    });
     it('should handle microsite updates', async () => {
       // stub for styles collection
       const styles = {
