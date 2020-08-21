@@ -141,8 +141,6 @@ global.main = async function (params) {
     const updatedStyleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
     const transformedAlgoliaUpdates = transformMicrositeAlgoliaRequests(algoliaUpdatesWithoutOutlet);
 
-    console.log('transformedAlgoliaUpdates', transformedAlgoliaUpdates);
-
     await index.partialUpdateObjects(transformedAlgoliaUpdates, true)
         // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't delete from the queue and it gets stuck
         .then(() => styleUpdates.length > 0 ? styles.bulkWrite(styleUpdates, { ordered : false }) : null) 
