@@ -28,7 +28,7 @@ describe('updateAlgoliaFacets', () => {
     const actual2 = transformMicrositeAlgoliaRequests(actual);
 
     expect(actual2).toHaveLength(1);
-    expect(successful).toBeEmpty;
+    expect(successful).toEqual([]);
   });
 
   describe('microsite attribute creation/update', () => {
@@ -73,7 +73,7 @@ describe('updateAlgoliaFacets', () => {
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
       const actual3 = transformMicrositeAlgoliaRequests(actual);
 
-      expect(failed).toBeEmpty;
+      expect(failed).toEqual([]);
       expect(actual).toEqual([{
         objectID: 'styleId',
         microsite: { 'facetid_57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
@@ -103,7 +103,7 @@ describe('updateAlgoliaFacets', () => {
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
       const actual3 = transformMicrositeAlgoliaRequests(actual);
 
-      expect(failed).toBeEmpty;
+      expect(failed).toEqual([]);
       expect(actual).toEqual([{
         objectID: 'styleId',
         microsite: { 'facetid_57': { en: 'micrositeDesc', fr: 'micrositeDesc' } },
@@ -135,7 +135,7 @@ describe('updateAlgoliaFacets', () => {
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
       const actual3 = transformMicrositeAlgoliaRequests(actual);
 
-      expect(failed).toBeEmpty;
+      expect(failed).toEqual([]);
       expect(actual).toEqual([{
         objectID: 'styleId',
         microsite: { 'facetid_57': { en: 'micrositeDesc', fr: 'micrositeDesc' } }
@@ -164,7 +164,7 @@ describe('updateAlgoliaFacets', () => {
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
       const actual3 = transformMicrositeAlgoliaRequests(actual);
 
-      expect(failed).toBeEmpty;
+      expect(failed).toEqual([]);
       expect(actual).toEqual([{
         objectID: 'styleId',
         microsite: { 'facetid_57': { en: 'micrositeDesc', fr: 'micrositeDesc' }, 'facetid_58': { en: 'micrositeDesc_old', fr: 'micrositeDesc_old' } }
@@ -222,7 +222,7 @@ describe('updateAlgoliaFacets', () => {
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
       const actual3 = transformMicrositeAlgoliaRequests(actual);
 
-      expect(failed).toBeEmpty;
+      expect(failed).toEqual([]);
       expect(actual).toEqual([{
         objectID: 'styleId',
         microsite: {}
@@ -252,7 +252,7 @@ describe('updateAlgoliaFacets', () => {
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
       const actual3 = transformMicrositeAlgoliaRequests(actual);
 
-      expect(failed).toBeEmpty;
+      expect(failed).toEqual([]);
       expect(actual).toEqual([{
         objectID: 'styleId',
         microsite: { 'facetid_58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } }
@@ -282,7 +282,7 @@ describe('updateAlgoliaFacets', () => {
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
       const actual3 = transformMicrositeAlgoliaRequests(actual);
 
-      expect(failed).toBeEmpty;
+      expect(failed).toEqual([]);
       expect(actual).toEqual([{
         objectID: 'styleId',
         microsite: { 'facetid_58': { en: 'micrositeDesc2', fr: 'micrositeDesc2' } }
@@ -340,7 +340,7 @@ describe('updateAlgoliaFacets', () => {
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
       const actual3 = transformMicrositeAlgoliaRequests(actual);
 
-      expect(failed).toBeEmpty;
+      expect(failed).toEqual([]);
       expect(actual).toEqual([{
         objectID: 'styleId',
         category: { en: null, fr: null }
@@ -370,7 +370,7 @@ describe('updateAlgoliaFacets', () => {
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
       const actual3 = transformMicrositeAlgoliaRequests(actual);
 
-      expect(failed).toBeEmpty;
+      expect(failed).toEqual([]);
       expect(actual).toEqual([{
         objectID: 'styleId',
         category: { en: null, fr: null }
@@ -400,7 +400,7 @@ describe('updateAlgoliaFacets', () => {
       const actual2 = generateStyleUpdatesFromAlgoliaUpdates(actual);
       const actual3 = transformMicrositeAlgoliaRequests(actual);
 
-      expect(failed).toBeEmpty;
+      expect(failed).toEqual([]);
       expect(actual).toEqual([{
         objectID: 'styleId',
         category: { en: null, fr: null }
