@@ -15,7 +15,7 @@ let index = null;
  */
 const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, styles) => {
   let ignoredStyleIds = []
-  let algoliaUpdatesWithoutOutlet = await Promise.all(facetUpdatesByStyle.map(addErrorHandling((styleFacetUpdateData) => styles.findOne({ _id: styleFacetUpdateData._id })
+  let algoliaUpdatesWithoutOutlet = await Promise.all(facetUpdatesByStyle.map(addErrorHandling(async (styleFacetUpdateData) => styles.findOne({ _id: styleFacetUpdateData._id })
     .then((currentMongoStyleData) => {
       if ((currentMongoStyleData && currentMongoStyleData.isOutlet) || !currentMongoStyleData || !styleFacetUpdateData._id) {
         if (styleFacetUpdateData._id) {
@@ -84,10 +84,7 @@ const generateStyleUpdatesFromAlgoliaUpdates = (algoliaUpdatesWithoutOutlet) => 
 const transformMicrositeAlgoliaRequests = (algoliaUpdatesWithoutOutlet) => {
   return algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => {
     if (algoliaUpdate[MICROSITE]) {
-      return {
-        objectID: algoliaUpdate.objectID,
-        [MICROSITE]: Object.values(algoliaUpdate[MICROSITE])
-      }
+      return { ...algoliaUpdate, [MICROSITE]: Object.values(algoliaUpdate[MICROSITE]) }
     }
     return algoliaUpdate;
   });
