@@ -4,6 +4,16 @@ const { addErrorHandling, log, createLog, addLoggingToMain, passDownProcessedMes
 const createError = require('../../lib/createError');
 const getCollection = require('../../lib/getCollection');
 
+const updateOriginalPrice = (prices, styleData) => prices.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOriginalPrice: { $type:"timestamp" } }, $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice } }, { upsert: true }).catch(originalError => {
+    throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
+})
+const updateOriginalPriceProcessedFlag = (prices, styleData) => prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessed': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessed': priceChangeProcessStatus.false } }).catch(originalError => {
+    throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
+})
+const updateOriginalPriceProcessedFlagCT = (prices, styleData) => prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessedCT': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessedCT': priceChangeProcessStatus.false } }).catch(originalError => {
+    throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
+})
+
 const main = async function (params) {
     log(createLog.params('consumeCatalogMessage', params));
 
@@ -30,20 +40,7 @@ const main = async function (params) {
         .map(addErrorHandling(msg => filterStyleMessages(msg) ? msg : null))
         .map(addErrorHandling(parseStyleMessage))
         .map(addErrorHandling(async (styleData) => {
-          const priceOperations = [
-              prices.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOriginalPrice: { $type:"timestamp" } }, $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice } }, { upsert: true })
-              .catch(originalError => {
-                  throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
-              }),
-              prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessed': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessed': priceChangeProcessStatus.false } })
-              .catch(originalError => {
-                  throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
-              }),
-              prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessedCT': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessedCT': priceChangeProcessStatus.false } })
-              .catch(originalError => {
-                  throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
-              })
-          ];
+          const priceOperations = [updateOriginalPrice(prices, styleData), updateOriginalPriceProcessedFlag(prices, styleData), updateOriginalPriceProcessedFlagCT(prices, styleData)];
 
           let operations = [];
 
