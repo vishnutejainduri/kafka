@@ -69,6 +69,21 @@ describe('buildSizesArray', () => {
       const result = buildSizesArray(validSkus);
       expect(result).toEqual([ { en: 'sizeEnOutOfStockOnline', fr: 'sizeFrOutOfStockOnline' } ]); 
     });
+    it('two available skus should produce two available online sizes', async () => {
+      const validSkus = [validSku, { ...validSku, _id: 'skuId2', size: { en: 'sizeEn2', fr: 'sizeFr2' } }]
+      const result = buildSizesArray(validSkus, true);
+      expect(result).toEqual([ { en: 'sizeEn', fr: 'sizeFr' }, { en: 'sizeEn2', fr: 'sizeFr2' } ]); 
+    });
+    it('one available sku and one out of stock sku should produce one available online sizes', async () => {
+      const validSkus = [validSkuOutOfStock, { ...validSku, _id: 'skuId2', size: { en: 'sizeEn2', fr: 'sizeFr2' } }]
+      const result = buildSizesArray(validSkus, true);
+      expect(result).toEqual([ { en: 'sizeEn2', fr: 'sizeFr2' } ]); 
+    });
+    it('two available instore only skus should produce no available online sizes', async () => {
+      const validSkus = [validSkuOutOfStockOnline, { ...validSkuOutOfStockOnline, _id: 'skuId2', size: { en: 'sizeEn2', fr: 'sizeFr2' } }]
+      const result = buildSizesArray(validSkus, true);
+      expect(result).toEqual([]); 
+    });
 });
 
 describe('buildStoreInventory', () => {

@@ -65,7 +65,8 @@ global.main = async function (params) {
         return {
             isAvailableToSell: styleAts.ats > 0,
             isOnlineAvailableToSell: styleAts.onlineAts > 0,
-            sizes: buildSizesArray(styleSkus),
+            sizes: buildSizesArray(styleSkus, false),
+            onlineSizes: buildSizesArray(styleSkus, true),
             storeInventory: buildStoreInventory(styleSkus),
             stores: buildStoresArray(styleSkus),
             objectID: styleData._id
