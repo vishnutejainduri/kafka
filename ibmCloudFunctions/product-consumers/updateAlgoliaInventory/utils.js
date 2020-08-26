@@ -1,8 +1,10 @@
 const buildSizesArray = (
     ats,
+    isOnlineOnly = false
 ) => {
+      const atsKey = isOnlineOnly ? 'onlineAts' : 'ats'
       let sizes = ats.map((skuAts) => {
-        return (skuAts.ats || []).length > 0
+        return (skuAts[atsKey] || []).length > 0
           ? skuAts.size
           : null
       });
