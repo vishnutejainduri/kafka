@@ -57,7 +57,7 @@ This directory contains OpenWhisk cloud functions and configurations for commere
   - We build a unique microsite category key using the facet's facet id field
   - We attempt to fetch an existing microsite category from CT using this unique key
   - If the microsite category does not exist in CT and is not flagged for deletion, we create it
-  - If the microsite category does exist in CT but is flagged fro deletion, we make sure to remove it from the list of categories assigned to the style. NOTE: we do not deletd the microsite cateogry itself
+  - If the microsite category does exist in CT but is flagged for deletion, we make sure to remove it from the list of categories assigned to the style. NOTE: we do not deletd the microsite cateogry itself
   - If the microsite category does exist in CT and is not flagged for deletion, we make a check to see if any of the microsite category labels have changed. If they have we make an update call to CT updating the microsite category
 - We make a series of update action calls to the product in CT, updating the attributes as per the current facet message in the batch
 
@@ -67,10 +67,27 @@ This directory contains OpenWhisk cloud functions and configurations for commere
 - Kafka messages for sale prices not for site id `00990` are rejected
 - Kafka messages for sale prices with no end date (and therefore are permanent markdowns) are rejected
 - Kafka messages are then transformed from JESTA fields to relevant CT attributes, 23 hrs 59 mins and 58 secs is added to any end date
+- We then batch sale price messages by style id to avoid concurrent modifications to the same product in CT
+- We then loop through the batched sale price messages, for each batch we sort the sale price messages from oldest to newest
+- We get an existing product from CT if it exists
+- If an existing product for the sale price message doesn't exist we create a "dummy" style. An empty style with no attributes
+- We then fetch all price rows for every variant including the master variant for the product in CT
+- For each variant and it's price rows we do the following:
+  - Try and get an existing price row matching the sale price message from the variant
+  - If there is an existing matchng price row on the variant and it is newer than the sale price message we stop execution on this variant since there is no need to update anything
+  - If the activity type of the sale price message is approved or created, we create an update action if an existing matching price row exists otherwise we create a create price row action for a new price row
+  - If the activity type of the sale price message is deleted, we create an update action to remove the price row for the variant
+- We send all price row actions created for every variant to CT
 
 ## consumeSalesOrderDetailsMessageCT
+- Currently decommissioned and not running/deployed
+
 ## consumeSalesOrderMessageCT
+- Currently decommissioned and not running/deployed
+
 ## consumeShipmentDetailsMessageCT
+- Currently decommissioned and not running/deployed
+
 ## consumeSkuMessageCT
 ## consumeStylesBasicMessageCT
 ## updateCTSalePrice
