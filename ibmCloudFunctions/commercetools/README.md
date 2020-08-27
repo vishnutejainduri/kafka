@@ -89,8 +89,46 @@ This directory contains OpenWhisk cloud functions and configurations for commere
 - Currently decommissioned and not running/deployed
 
 ## consumeSkuMessageCT
-## consumeStylesBasicMessageCT
-## updateCTSalePrice
+- `index.js` is the main file where execution starts, `utils.js` holds functions used by `index.js`
+- First kafka messages are filtered so that only sku topic messages and organization 1 skus are processed
+- Kafka messages are transformed from JESTA named fields to appropriate CT sku field names
+- Messages are batched by style id, this is to prevent concurrent updates to a single product which CT doesn't allow
+- The batched sku messages are sent to be processed in another function
+- We then attempt to fetch an existing style for each batched sku message
+- If we cannot find an existing style in CT for a batched sku message, we create a "dummy" style. A product in CT with no attributes
+- We then fetch all existing variants (skus) from the existing style in CT
+- We then compare the existing CT skus with the batched message skus to determine which (if any) are older than the sku already existing in CT
+- We then remove any batched sku messages that are older than the existing CT sku
+- We then remove any duplicate sku messages within the batched skus
+- We then make a call for each batched sku message remaining updating/creating the corresponding variant on the product in CT
+- As part of updating/creating the variant we also compare all price rows with the master variant and update the updating/creating variant with price rows from the master variant
+- All calls to CT are batched by a constant "action limit", since we cannot exceed 500 update actions to CT in a single call we need to break down all calls into batches of 500
 
-# Configuration
-## Deployment Manifests
+## consumeStylesBasicMessageCT
+- `index.js` is the main file where execution starts, `utils.js` holds functions used by `index.js`
+- Kafka messages are filtered, any not from the styles basics topic are rejected
+- Kafka messages are then transformed from JESTA attributes to CT relevant attributes
+- Messages are then batched by style id to prevent concurrent updates to the same product in CT
+- We loop through each batch of styles basic messages, picking up only the newest message and rejecting the rest in a batch. We process only that message in the batch
+- We fetch the product type record from CT
+- We attempt to fetch an existing product from CT for this styles basic message
+- If there is no existing product from CT for this styles basic message we create a "dummy" style. An empty style with no attributes.
+- We compare the existing product from CT with the styles basic message, if the existing product in CT is newer than the styles basic message we ignore it
+- We make a series of update action calls to the product in CT, updating the attributes as per the current styles basic message in the batch. Styles basic only really updates a single field in CT, isOutlet based on BRAND_ID from JESTA
+
+## updateCTSalePrice
+- `index.js` is the main file where execution starts, `utils.js` holds functions used by `index.js`. `index.js` also shares functions from `product-consumers/updateAlgoliaPrice/utils.js`
+- This function runs every minute or whenever a style updates in CT
+- At the start of each run we get the current date and time
+- We then either fetch any price rows from the prices collection in mongo where their start date has been flagged as unprocessed and is older or equal to current datetime OR we simply process any style messages passed to the function (this only happens when executed after consumeCatalogMessageCT)
+- We loop through all style messages, checking their price rows and determining what sale price updates need to happen for CT
+  - For each style we start by grabbing all price rows in mongo and batching them by their site id
+  - For each batched price rows we first sort them into two seperate rows, price rows that are creations/updates and price rows that are deletions
+  - From the price rows that are creations/updates we delete any that also exist in the price rows that are marked as deletions
+  - From this list of price rows we then batch by their unique price id (priceChangeId)
+  - We go through each batch of price rows and take only the latest price row (all updates are newer than any creates or older updates so we end up retriving only the latest price row for each priceChangeId)
+  - From this final list of batched price rows we determine if there are any overlapping prices based on start date and end date. Any price row with no end date automatically is replaced by a price row with an end date. Two price rows with overlapping start and end dates cause an error since we cannot determine a current sale price. We throw an error and stop execution in that case
+- Once we've determined a current sale price, we prepare the update to CT
+- If the current active sale price is not for the online site id (`00990`), we end execution here. We only send online data to CT
+- We try and fetch an existing style for the active sale price from CT
+- If there is no existing style we create a "dummy" style. A product with not attributes
