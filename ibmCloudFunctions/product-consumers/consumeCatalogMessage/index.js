@@ -1,18 +1,15 @@
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
-const { priceChangeProcessStatus } = require('../constants')
 const { addErrorHandling, log, createLog, addLoggingToMain, passDownProcessedMessages } = require('../utils');
 const createError = require('../../lib/createError');
 const getCollection = require('../../lib/getCollection');
-
-const updateOriginalPrice = (prices, styleData) => prices.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOriginalPrice: { $type:"timestamp" } }, $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice } }, { upsert: true }).catch(originalError => {
-    throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
-})
-const updateOriginalPriceProcessedFlag = (prices, styleData) => prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessed': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessed': priceChangeProcessStatus.false } }).catch(originalError => {
-    throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
-})
-const updateOriginalPriceProcessedFlagCT = (prices, styleData) => prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessedCT': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessedCT': priceChangeProcessStatus.false } }).catch(originalError => {
-    throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
-})
+const {
+  updateOriginalPrice,
+  updateOriginalPriceProcessedFlag,
+  updateOriginalPriceProcessedFlagCT,
+  upsertStyle,
+  hasDepertmentIdChangedFrom27,
+  addStyleToBulkATSQueue
+} = require('./utils');
 
 const main = async function (params) {
     log(createLog.params('consumeCatalogMessage', params));
@@ -40,31 +37,26 @@ const main = async function (params) {
         .map(addErrorHandling(msg => filterStyleMessages(msg) ? msg : null))
         .map(addErrorHandling(parseStyleMessage))
         .map(addErrorHandling(async (styleData) => {
-          const priceOperations = [updateOriginalPrice(prices, styleData), updateOriginalPriceProcessedFlag(prices, styleData), updateOriginalPriceProcessedFlagCT(prices, styleData)];
+          const priceOperations = [
+            updateOriginalPrice(prices, styleData),
+            updateOriginalPriceProcessedFlag(prices, styleData),
+            updateOriginalPriceProcessedFlagCT(prices, styleData)
+          ];
 
           let operations = [];
 
           const existingDocument = await styles.findOne({ _id: styleData._id })
           if (existingDocument) {
             if (existingDocument.lastModifiedDate <= styleData.lastModifiedDate) {
-              operations.push(styles.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: styleData })
-              .catch(originalError => {
-                  throw createError.consumeCatalogMessage.failedStyleUpdates(originalError, styleData);
-              }))
+              operations.push(upsertStyle(styles, styleData, false))
               operations = operations.concat(priceOperations);
               
-              if (existingDocument.departmentId && existingDocument.departmentId !== styleData.departmentId && (styleData.departmentId === '27' || existingDocument.departmentId === '27')) {
-                operations.push(bulkAtsRecalculateQueue.insertOne({ _id: styleData._id, insertTimestamp: styleData.effectiveDate })
-                .catch(originalError => {
-                    throw createError.consumeCatalogMessage.failedBulkAtsInsert(originalError, styleData);
-                }))
+              if (hasDepertmentIdChangedFrom27(existingDocument, styleData)) {
+                operations.push(addStyleToBulkATSQueue(bulkAtsRecalculateQueue, styleData));
               }
             }
           } else {
-            operations.push(styles.updateOne({ _id: styleData._id }, { $set: styleData }, { upsert: true })
-            .catch(originalError => {
-                throw createError.consumeCatalogMessage.failedStyleUpdates(originalError, styleData);
-            }))
+            operations.push(upsertStyle(styles, styleData, true))
             operations = operations.concat(priceOperations);
           }
 
