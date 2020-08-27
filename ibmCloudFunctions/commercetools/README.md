@@ -131,4 +131,12 @@ This directory contains OpenWhisk cloud functions and configurations for commere
 - Once we've determined a current sale price, we prepare the update to CT
 - If the current active sale price is not for the online site id (`00990`), we end execution here. We only send online data to CT
 - We try and fetch an existing style for the active sale price from CT
-- If there is no existing style we create a "dummy" style. A product with not attributes
+- If there is no existing style we create a "dummy" style. A product with no attributes
+- We then fetch an original price custom attribute value from the CT product
+- If there is no active sale price but also no original price custom attribute value, we stop execution since the code would need to revert back to original price but it can't without an original price value
+- We then fetch all price rows from all variants on the existing CT product
+- Going through every variant from the CT product, we apply the following based on the active sale price:
+  - If the active sale price is a sale and has an end date (meaning it's a temporary markdown), we send update/creation actions to create this temporary markdown price row for the variant
+  - If the active sale price is not a sale, that means there are no active sales for the product and we must revert to original price. Update/create actions are sent to CT to revert back any permanent markdowns to original price and/or update the original price if that is the case
+  - Otherwise, the active sale price is a sale and has no end date (meaning it's a permanent markdown). We send update/create actions to CT to set the permanent markdown sale price, overwritting and original price rows in the process
+- After all messages are processed, any price rows that were successfully processed are marked as processed so that they won't be reprocessed later. If any failure occurs then they are flagged as "failure" and an alert is sent out (this is usually due to overlapping temporary markdowns that we cannot correct on our side)
