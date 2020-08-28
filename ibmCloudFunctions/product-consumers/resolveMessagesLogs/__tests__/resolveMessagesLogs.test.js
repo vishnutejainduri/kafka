@@ -68,6 +68,40 @@ describe('resolveMessagesLogs', function() {
         });
     });
 
+    it('returns retry for a batch with no activation info', async function() {
+        const mockBatch = {
+            activationId: 'some-activationId'
+        };
+        const mockActivationInfo = {
+            response: {
+              body: {
+                error: 'some-error'
+              }
+            }
+        };
+        const mockMessage = {
+            id: 'some-message',
+            value: {
+                id: 'some-id'
+            }
+        };
+        mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage] });
+        const resolveMessagesLogs = require('../index');
+        expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                failedToResolve: 0,
+                successfullyResolved: 1
+            },
+            resolveBatchesResult: [{
+                batch: mockBatch,
+                resolved: true,
+                dlqed: 0,
+                retried: 1,
+                success: 0
+            }]
+        });
+    });
+
     it('returns empty dlq and retry for a successful batch', async function() {
         const mockBatch = {
             activationId: 'some-activationId'
@@ -147,6 +181,45 @@ describe('resolveMessagesLogs', function() {
             }],
             response: {
                 success: false
+            }
+        };
+        const mockMessage = {
+            id: 'some-message',
+            value: {
+                id: 'some-id',
+                metadata: {
+                    lastRetry: 0,
+                    nextRetry: 0,
+                    retries: MAX_RETRIES
+                }
+            }
+        };
+        mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage] });
+        const resolveMessagesLogs = require('../index');
+        expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                successfullyResolved: 1,
+                failedToResolve: 0
+            },
+            resolveBatchesResult: [{
+                batch: mockBatch,
+                resolved: true,
+                retried: 0,
+                success: 0,
+                dlqed: 1
+            }]
+        });
+    });
+
+    it('returns a dlq message for a batch with no activation info that has a message that has exceeded maximum retries', async function() {
+        const mockBatch = {
+            activationId: 'some-activationId'
+        };
+        const mockActivationInfo = {
+            response: {
+              body: {
+                error: 'some-error'
+              }
             }
         };
         const mockMessage = {
