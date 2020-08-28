@@ -349,4 +349,47 @@ describe('resolveMessagesLogs', function() {
             }]
         });
     });
+
+    it('returns dlq message and success message for a batch with partial failure that has been retried more than the limit', async function() {
+        const mockBatch = {
+            activationId: 'some-activationId',
+            failureIndexes: [1]
+        };
+        const mockActivationInfo = {
+            annotations: [{
+                key: 'timeout',
+                value: false
+            }],
+            response: {
+                success: true
+            },
+            end: 0
+        };
+        const mockMessage = {
+            id: 'some-message',
+            value: {
+                id: 'some-id',
+                metadata: {
+                    lastRetry: 0,
+                    nextRetry: 0,
+                    retries: MAX_RETRIES
+                }
+            }
+        };
+        mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage, mockMessage] });
+        const resolveMessagesLogs = require('../index');
+        expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                failedToResolve: 0,
+                successfullyResolved: 1
+            },
+            resolveBatchesResult: [{
+                resolved: true,
+                dlqed: 1,
+                retried: 0,
+                batch: mockBatch,
+                success: 1
+            }]
+        });
+    });
 });

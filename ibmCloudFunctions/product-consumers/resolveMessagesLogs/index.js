@@ -108,7 +108,7 @@ global.main = async function(params) {
                 log(`Retrying messages: successfully queued ${messagesByNextAction.retry.length} messages to be retried activation ID: ${activationId}.`)
             }
         } 
-        if ((!hasFailed && !hasFailedMessages) || (!hasFailed && hasFailedMessages)) {
+        if (!hasFailed) {
           successMessages = !hasFailed && !hasFailedMessages
               ? allMessages
               : allMessages.filter((_, index) => !failureIndexes.includes(index));
