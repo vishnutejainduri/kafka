@@ -75,11 +75,12 @@ global.main = async function(params) {
 
         const debugInfo = { activationId, failureIndexes };
         const findMessages = await getFindMessages(params);
-        const allMessages = await findMessages(activationId).catch(originalError => {
+        let allMessages = await findMessages(activationId).catch(originalError => {
             const error = createError.resolveMessageLogs.failedToFetchMessages(originalError, debugInfo)
             log.error(error)
             throw error
         });
+        if (!allMessages) allMessages = []
 
         if (hasFailed || hasFailedMessages) {
             const failedMessages = hasFailed
@@ -112,15 +113,17 @@ global.main = async function(params) {
           successMessages = !hasFailed && !hasFailedMessages
               ? allMessages
               : allMessages.filter((_, index) => !failureIndexes.includes(index));
-          // if a batch was successful, we save it to a success collection for logging purposes
-          const storeSuccessMessages = await getStoreSuccessMessages(params);
-          log(`Successful messages: initiating ${successMessages.length} messages to be stored for activation ID: ${activationId}.`)
-          await storeSuccessMessages(successMessages, { activationInfo }).catch(originalError => {
-              const error = createError.resolveMessageLogs.failedToStoreSuccess(originalError, debugInfo)
-              log.error(error)
-              throw error
-          })
-          log(`Successful messages: successfully queued ${successMessages.length} messages to be stored for activation ID: ${activationId}.`)
+          if (successMessages.length) {
+            // if a batch was successful, we save it to a success collection for logging purposes
+            const storeSuccessMessages = await getStoreSuccessMessages(params);
+            log(`Successful messages: initiating ${successMessages.length} messages to be stored for activation ID: ${activationId}.`)
+            await storeSuccessMessages(successMessages, { activationInfo }).catch(originalError => {
+                const error = createError.resolveMessageLogs.failedToStoreSuccess(originalError, debugInfo)
+                log.error(error)
+                throw error
+            })
+            log(`Successful messages: successfully stored ${successMessages.length} messages to be stored for activation ID: ${activationId}.`)
+          }
         }
 
         // if a batch was successful or successfuly DLQed or requeued its messages for retry,
