@@ -13,7 +13,8 @@ global.main = async function (params) {
     }
 
     try {
-        const waitPeriod = 1200000; //20 minutes in milliseconds
+        const waitPeriod = 1800000; //30 minutes in milliseconds
+
         const cutOffTime = (new Date()).getTime() - waitPeriod;
 
         const findQuery = { quantitiesReserved: { $elemMatch: { lastModified: { $lte: cutOffTime } } } };
