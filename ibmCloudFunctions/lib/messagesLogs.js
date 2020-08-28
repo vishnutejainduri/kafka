@@ -87,6 +87,23 @@ async function getRetryCollection({
     );
 }
 
+async function getSuccessCollection({
+    messagesMongoUri,
+    messagesMongoCertificateBase64,
+    dbName
+}) {
+    return getCollection(
+        {
+            mongoUri: messagesMongoUri,
+            mongoCertificateBase64: messagesMongoCertificateBase64,
+            collectionName: 'successMessagesByActivationIds',
+            dbName,
+            instance: getCollection.instances.MESSAGES
+        },
+        null
+    );
+}
+
 async function getValuesCollection({
     messagesMongoUri,
     messagesMongoCertificateBase64,
@@ -170,6 +187,14 @@ async function getStoreDlqMessages(params) {
 
 async function getStoreRetryMessages(params) {
     const collection = await getRetryCollection(params);
+    return async function(messages, metadata ) {
+        const result = await collection.insertOne({ messages, metadata });
+        return result;
+    }
+}
+
+async function getStoreSuccessMessages(params) {
+    const collection = await getSuccessCollection(params);
     return async function(messages, metadata ) {
         const result = await collection.insertOne({ messages, metadata });
         return result;
@@ -336,6 +361,7 @@ module.exports = {
     getStoreValues,
     getStoreDlqMessages,
     getStoreRetryMessages,
+    getStoreSuccessMessages,
     getRetryBatches,
     getUpdateRetryBatch,
     getDeleteRetryBatch,
