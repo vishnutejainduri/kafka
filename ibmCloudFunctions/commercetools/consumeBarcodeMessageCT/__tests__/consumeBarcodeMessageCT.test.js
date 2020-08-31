@@ -33,6 +33,11 @@ describe('consumeBarcodeMessageCT', () => {
 
   it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeBarcodeMessageCT(validParams);
-    expect(response).toEqual({ ok: true, batchSuccessCount: 1, messagesCount: 1 });
+    expect(response).toEqual({
+      ok: true,
+      batchSuccessCount: 1,
+      messagesCount: 1,
+      shouldSkipResolvingOffsets: 1
+    });
   });
 });

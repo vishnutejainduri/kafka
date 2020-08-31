@@ -19,7 +19,8 @@ describe('addFacetsToBulkImportQueue', function() {
         expect((await addFacetsToBulkImportQueue(params))).toEqual({
             successCount: 1,
             failureIndexes: [],
-            errors: []
+            errors: [],
+            shouldSkipResolvingOffsets: 1
         });
     });
 });

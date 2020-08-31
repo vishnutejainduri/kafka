@@ -261,6 +261,7 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
         const storeBatchFailed = storeBatchResult instanceof Error ? 1 : 0
 
         const hasPartialFailure = mainResult && mainResult.failureIndexes && mainResult.failureIndexes.length > 0
+        const shouldSkipResolvingOffsets = (!storeBatchFailed || !hasPartialFailure) ? 1 : 0
         let updateBatchWithFailureIndexesFailed = 0
         let updateBatchWithFailureIndexesResult
         if (!storeBatchFailed && hasPartialFailure) {
@@ -292,12 +293,13 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
                 updateBatchWithFailureIndexesFailed,
                 updateBatchWithFailureIndexesResult,
                 storeBatchResult,
-                error
+                error,
+                shouldSkipResolvingOffsets
             }
             return truncateErrorsIfNecessary(hasPartialFailure ? { ...retryInfo, ...mainResult } : retryInfo)
         }
 
-        return truncateErrorsIfNecessary(mainResult)
+        return truncateErrorsIfNecessary(mainResult instanceof Error ? mainResult : { ...mainResult, shouldSkipResolvingOffsets })
     })
   )
 );

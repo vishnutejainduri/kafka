@@ -26,7 +26,6 @@ describe('consumeBarcodeMessage', () => {
             collectionName: 'barcodes'
         };
         const response = await consumeBarcodeMessage(params);
-        // returns nothing/undefined if successfully run
-        expect(response).toEqual(undefined);
+        expect(response).toEqual({ shouldSkipResolvingOffsets: 1 });
     });
 });

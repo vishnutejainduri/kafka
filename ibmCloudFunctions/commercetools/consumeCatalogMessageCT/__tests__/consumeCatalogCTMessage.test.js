@@ -579,13 +579,13 @@ describe('consumeCatalogueMessageCT', () => {
 
   it('returns failure indexes result if given valid params but an invalid message', async () => {
     const result = await consumeCatalogueMessageCT({ ...validParams, messages: [invalidMessage]});
-    expect(result).toMatchObject({ messages: result.messages, batchSuccessCount: 0, messagesCount: 1, failureIndexes: [0] });
+    expect(result).toMatchObject({ messages: result.messages, batchSuccessCount: 0, messagesCount: 1, failureIndexes: [0], shouldSkipResolvingOffsets: 0 });
   });
 
 
   it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeCatalogueMessageCT(validParams);
-    expect(response).toEqual({ messages: response.messages, batchSuccessCount: 1, messagesCount: 1, ok: true });
+    expect(response).toEqual({ messages: response.messages, batchSuccessCount: 1, messagesCount: 1, ok: true, shouldSkipResolvingOffsets: 1 });
   });
 
   it('returns one success result if given valid params and two valid messages for the same style', async () => {
@@ -593,7 +593,7 @@ describe('consumeCatalogueMessageCT', () => {
       ...validParams,
       messages: [validMessage, validMessage]
     });
-    expect(response).toEqual({ messages: response.messages, batchSuccessCount: 1, messagesCount: 2, ok: true });
+    expect(response).toEqual({ messages: response.messages, batchSuccessCount: 1, messagesCount: 2, ok: true, shouldSkipResolvingOffsets: 1 });
   });
 
   it('returns two success results if given valid params and two valid messages for different styles', async () => {
@@ -601,7 +601,7 @@ describe('consumeCatalogueMessageCT', () => {
       ...validParams,
       messages: [validMessage, { ...validMessage, value: { ...validMessage.value, STYLEID: '20000001' } }]
     });
-    expect(response).toEqual({ messages: response.messages, batchSuccessCount: 2, messagesCount: 2, ok: true });
+    expect(response).toEqual({ messages: response.messages, batchSuccessCount: 2, messagesCount: 2, ok: true, shouldSkipResolvingOffsets: 1 });
   });
 });
 
