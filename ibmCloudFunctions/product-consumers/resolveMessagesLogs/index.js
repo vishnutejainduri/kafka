@@ -49,16 +49,23 @@ global.main = async function(params) {
             method: 'GET',
             auth,
             json: true
-        });
+        }).catch(error => error.response ? error.response.body : error.response)
     }
 
     async function resolveBatchWithActivationInfo({ activationId, failureIndexes }) {
-        const activationInfo = await fetchActivationInfo(activationId);
-        if (!activationInfo || activationInfo.error) {
-            const originalError = !activationInfo ? new Error(`Could not find activation info for actvation ID ${activationId}`) : activationInfo.error
-            const error = createError.resolveMessageLogs.batchFailure(originalError,{ activationId, failureIndexes })
-            throw error
+        let activationInfo = await fetchActivationInfo(activationId);
+        if (!activationInfo) {
+          activationInfo = {
+            error: 'No response for activation id'
+          }
         }
+        if (activationInfo.error) {
+          activationInfo['activationId'] = activationId;
+          activationInfo['end'] = (new Date()).getTime()
+        }
+
+        const hasFailed = !!activationInfo.error || !activationInfo.response.success
+
         let messagesByNextAction = {
             dlq: [],
             retry: []
@@ -70,7 +77,6 @@ global.main = async function(params) {
         let successMessages = [];
 
         // if an activation has failed or has partial failures, the messages in the batch should be either DLQed or retried
-        const hasFailed = !activationInfo.response.success;
         const hasFailedMessages = failureIndexes && failureIndexes.length > 0;
 
         const debugInfo = { activationId, failureIndexes };
