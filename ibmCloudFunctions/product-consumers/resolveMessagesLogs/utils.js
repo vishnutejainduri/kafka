@@ -20,8 +20,7 @@ function getValueWithUpdatedMetadata(value, activationEndTime) {
     };
 }
 
-function groupMessagesByNextAction(messages, activationEndTime, maxRetries = MAX_RETRIES) {
-    if (!activationEndTime && activationEndTime !== 0) activationEndTime = (new Date()).getTime();
+function groupMessagesByNextAction(messages, activationEndTime = (new Date()).getTime(), maxRetries = MAX_RETRIES) {
     return messages.reduce(function ({ retry, dlq }, message) {
         if (message.value.metadata && message.value.metadata.retries >= maxRetries) {
             dlq.push(message);

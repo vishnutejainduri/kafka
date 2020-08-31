@@ -49,11 +49,16 @@ global.main = async function(params) {
             method: 'GET',
             auth,
             json: true
-        }).catch(error => error.response.body)
+        }).catch(error => error.response ? error.response.body : error.response)
     }
 
     async function resolveBatchWithActivationInfo({ activationId, failureIndexes }) {
-        const activationInfo = await fetchActivationInfo(activationId);
+        let activationInfo = await fetchActivationInfo(activationId);
+        if (!activationInfo) {
+          activationInfo = {
+            error: 'No response for activation id'
+          }
+        }
         if (activationInfo.error) {
           activationInfo['activationId'] = activationId;
           activationInfo['end'] = (new Date()).getTime()

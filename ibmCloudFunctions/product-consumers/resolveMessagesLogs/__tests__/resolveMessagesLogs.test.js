@@ -102,6 +102,33 @@ describe('resolveMessagesLogs', function() {
         });
     });
 
+    it('returns retry for a batch with no response for activation info', async function() {
+        const mockBatch = {
+            activationId: 'some-activationId'
+        };
+        const mockMessage = {
+            id: 'some-message',
+            value: {
+                id: 'some-id'
+            }
+        };
+        mockModules({ mockBatch, mockMessages: [mockMessage] });
+        const resolveMessagesLogs = require('../index');
+        expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                failedToResolve: 0,
+                successfullyResolved: 1
+            },
+            resolveBatchesResult: [{
+                batch: mockBatch,
+                resolved: true,
+                dlqed: 0,
+                retried: 1,
+                success: 0
+            }]
+        });
+    });
+
     it('returns empty dlq and retry for a successful batch', async function() {
         const mockBatch = {
             activationId: 'some-activationId'
@@ -234,6 +261,38 @@ describe('resolveMessagesLogs', function() {
             }
         };
         mockModules({ mockBatch, mockActivationInfo, mockMessages: [mockMessage] });
+        const resolveMessagesLogs = require('../index');
+        expect(await resolveMessagesLogs({})).toEqual({
+            counts: {
+                successfullyResolved: 1,
+                failedToResolve: 0
+            },
+            resolveBatchesResult: [{
+                batch: mockBatch,
+                resolved: true,
+                retried: 0,
+                success: 0,
+                dlqed: 1
+            }]
+        });
+    });
+
+    it('returns a dlq message for a batch with no response for activation info that has a message that has exceeded maximum retries', async function() {
+        const mockBatch = {
+            activationId: 'some-activationId'
+        };
+        const mockMessage = {
+            id: 'some-message',
+            value: {
+                id: 'some-id',
+                metadata: {
+                    lastRetry: 0,
+                    nextRetry: 0,
+                    retries: MAX_RETRIES
+                }
+            }
+        };
+        mockModules({ mockBatch, mockMessages: [mockMessage] });
         const resolveMessagesLogs = require('../index');
         expect(await resolveMessagesLogs({})).toEqual({
             counts: {
