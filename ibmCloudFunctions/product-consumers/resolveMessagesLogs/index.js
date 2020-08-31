@@ -54,7 +54,7 @@ global.main = async function(params) {
 
     async function resolveBatchWithActivationInfo({ activationId, failureIndexes }) {
         const activationInfo = await fetchActivationInfo(activationId);
-        if (!!activationInfo.error) {
+        if (activationInfo.error) {
           activationInfo['activationId'] = activationId;
           activationInfo['end'] = (new Date()).getTime()
         }
