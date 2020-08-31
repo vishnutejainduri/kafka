@@ -328,25 +328,29 @@ async function deleteOldBatches(params, cutoff) {
     const [
         messagesCollection,
         retryCollection,
-        dlqCollection
+        dlqCollection,
+        successCollection
     ] = await Promise.all([
         getMessagesCollection(params),
         getRetryCollection(params),
-        getDlqCollection(params)
+        getDlqCollection(params),
+        getSuccessCollection(params)
     ]);
     const activationIsOld = { recordTime: { $lt: cutoff } }
     const batchIsOld = { "metadata.activationInfo.end": { $lt: cutoff } }
 
-    const [deletedMessages, deletedRetries, deletedDlqs] = await Promise.all([
+    const [deletedMessages, deletedRetries, deletedDlqs, deletedSuccesses] = await Promise.all([
         messagesCollection.deleteMany(activationIsOld),
         retryCollection.deleteMany(batchIsOld),
-        dlqCollection.deleteMany(batchIsOld)
+        dlqCollection.deleteMany(batchIsOld),
+        successCollection.deleteMany(batchIsOld)
     ]);
 
     return {
         deletedMessages,
         deletedRetries,
-        deletedDlqs
+        deletedDlqs,
+        deletedSuccesses
     }
 }
 
