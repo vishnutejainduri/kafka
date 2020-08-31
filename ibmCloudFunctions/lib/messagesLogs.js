@@ -207,7 +207,8 @@ async function findUnresolvedBatches(params, limit = 500) {
     // maximum runtime of a cloud function is 10 minutes,
     // so after 15 minutes activation info should definitely be available unless somethings wrong on IBM side
     const query = {
-        recordTime: { $lt: (new Date()).getTime() - 15 * 60 * 1000 },
+        recordTime: { $lt: (new Date()).getTime() },
+        // - 15 * 60 * 1000 },
         // this check is needed because we are temporarily using the same messages database for both cloudfoundry and IAM namespaces
         isIam: Boolean(params.cloudFunctionsIsIam)
     };
@@ -328,25 +329,29 @@ async function deleteOldBatches(params, cutoff) {
     const [
         messagesCollection,
         retryCollection,
-        dlqCollection
+        dlqCollection,
+        successCollection
     ] = await Promise.all([
         getMessagesCollection(params),
         getRetryCollection(params),
-        getDlqCollection(params)
+        getDlqCollection(params),
+        getSuccessCollection(params)
     ]);
     const activationIsOld = { recordTime: { $lt: cutoff } }
     const batchIsOld = { "metadata.activationInfo.end": { $lt: cutoff } }
 
-    const [deletedMessages, deletedRetries, deletedDlqs] = await Promise.all([
+    const [deletedMessages, deletedRetries, deletedDlqs, deletedSuccesses] = await Promise.all([
         messagesCollection.deleteMany(activationIsOld),
         retryCollection.deleteMany(batchIsOld),
-        dlqCollection.deleteMany(batchIsOld)
+        dlqCollection.deleteMany(batchIsOld),
+        successCollection.deleteMany(batchIsOld)
     ]);
 
     return {
         deletedMessages,
         deletedRetries,
-        deletedDlqs
+        deletedDlqs,
+        deletedSuccesses
     }
 }
 
