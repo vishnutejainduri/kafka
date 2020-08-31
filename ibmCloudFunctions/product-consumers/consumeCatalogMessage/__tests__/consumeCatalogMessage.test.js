@@ -235,7 +235,7 @@ describe('consumeCatalogMessage', () => {
             failureIndexes: [],
             successCount: 1,
             messages: params.messages,
-            shouldSkipResolvingOffsets: 1
+            shouldResolveOffsets: 1
         });
     });
 });

@@ -37,7 +37,7 @@ describe('consumeBarcodeMessageCT', () => {
       ok: true,
       batchSuccessCount: 1,
       messagesCount: 1,
-      shouldSkipResolvingOffsets: 1
+      shouldResolveOffsets: 1
     });
   });
 });

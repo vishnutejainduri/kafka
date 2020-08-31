@@ -20,7 +20,7 @@ describe('addFacetsToBulkImportQueue', function() {
             successCount: 1,
             failureIndexes: [],
             errors: [],
-            shouldSkipResolvingOffsets: 1
+            shouldResolveOffsets: 1
         });
     });
 });

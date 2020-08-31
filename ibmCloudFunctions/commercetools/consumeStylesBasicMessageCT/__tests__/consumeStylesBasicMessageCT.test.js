@@ -48,7 +48,7 @@ describe('consumeStylesBasicMessageCT', () => {
       batchSuccessCount: 1,
       messagesCount: 1,
       ok: true,
-      shouldSkipResolvingOffsets: 1
+      shouldResolveOffsets: 1
     });
   });
 
@@ -59,7 +59,7 @@ describe('consumeStylesBasicMessageCT', () => {
       batchSuccessCount: 1,
       messagesCount: 2,
       ok: true,
-      shouldSkipResolvingOffsets: 1
+      shouldResolveOffsets: 1
     });
   });
 
@@ -70,7 +70,7 @@ describe('consumeStylesBasicMessageCT', () => {
       batchSuccessCount: 2,
       messagesCount: 2,
       ok: true,
-      shouldSkipResolvingOffsets: 1
+      shouldResolveOffsets: 1
     });
   });
 });

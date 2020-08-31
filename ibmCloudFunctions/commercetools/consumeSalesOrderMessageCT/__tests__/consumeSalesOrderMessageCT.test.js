@@ -43,7 +43,7 @@ describe('consumeSalesOrderMessageCT', () => {
 
   it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeSalesOrderMessageCT(validParams);
-    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1, shouldSkipResolvingOffsets: 1 });
+    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1, shouldResolveOffsets: 1 });
   });
 });
 

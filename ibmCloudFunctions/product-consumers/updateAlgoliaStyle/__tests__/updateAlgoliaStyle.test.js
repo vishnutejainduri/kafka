@@ -49,7 +49,7 @@ describe('updateAlgoliaStyle', () => {
             errors: [],
             failureIndexes: [],
             successCount: 1,
-            shouldSkipResolvingOffsets: 1
+            shouldResolveOffsets: 1
          });
     });
 });

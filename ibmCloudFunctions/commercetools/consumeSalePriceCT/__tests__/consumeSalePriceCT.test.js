@@ -62,7 +62,7 @@ describe('consumeSalePriceCT', () => {
       batchSuccessCount: 1,
       messagesCount: 1,
       ok: true,
-      shouldSkipResolvingOffsets: 1
+      shouldResolveOffsets: 1
     });
   });
 
@@ -83,7 +83,7 @@ describe('consumeSalePriceCT', () => {
       batchSuccessCount: 0,
       messagesCount: 1,
       ok: true,
-      shouldSkipResolvingOffsets: 1
+      shouldResolveOffsets: 1
     });
   });
 
@@ -101,7 +101,7 @@ describe('consumeSalePriceCT', () => {
       batchSuccessCount: 1,
       messagesCount: 2,
       ok: true,
-      shouldSkipResolvingOffsets: 1
+      shouldResolveOffsets: 1
     });
   });
   it('two valid messages should be batched together and processed', async () => {
@@ -116,7 +116,7 @@ describe('consumeSalePriceCT', () => {
       batchSuccessCount: 1,
       messagesCount: 2,
       ok: true,
-      shouldSkipResolvingOffsets: 1
+      shouldResolveOffsets: 1
     });
   });
   it('two valid messages should not be batched together but still processed', async () => {
@@ -132,7 +132,7 @@ describe('consumeSalePriceCT', () => {
       batchSuccessCount: 2,
       messagesCount: 2,
       ok: true,
-      shouldSkipResolvingOffsets: 1
+      shouldResolveOffsets: 1
     });
   });
   it('two valid messages should be batched together, reordered by date, and still processed', async () => {
@@ -148,7 +148,7 @@ describe('consumeSalePriceCT', () => {
       batchSuccessCount: 1,
       messagesCount: 2,
       ok: true,
-      shouldSkipResolvingOffsets: 1
+      shouldResolveOffsets: 1
     });
   });
 });

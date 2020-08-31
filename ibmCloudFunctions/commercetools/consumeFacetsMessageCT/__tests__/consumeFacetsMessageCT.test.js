@@ -70,19 +70,19 @@ describe('consumeFacetsMessageCT', () => {
 
   it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeFacetsMessageCT(validParams);
-    expect(response).toEqual({ batchSuccessCount:1, messagesCount:1, ok:true, shouldSkipResolvingOffsets: 1 });
+    expect(response).toEqual({ batchSuccessCount:1, messagesCount:1, ok:true, shouldResolveOffsets: 1 });
   });
 
   it('returns success result if given valid params and batches two valid messages', async () => {
     const validBatchParams = { ...validParams, messages: [{ ...validParams.messages[0] }, { ...validParams.messages[0] }] }
     const response = await consumeFacetsMessageCT(validBatchParams);
-    expect(response).toEqual({ batchSuccessCount:1, messagesCount:2, ok:true, shouldSkipResolvingOffsets: 1 });
+    expect(response).toEqual({ batchSuccessCount:1, messagesCount:2, ok:true, shouldResolveOffsets: 1 });
   });
 
   it('returns success result if given valid params and doesn\'t batch two valid messages', async () => {
     const validBatchParams = { ...validParams, messages: [{ ...validParams.messages[0] }, { ...validParams.messages[0], value: { ...validParams.messages[0].value, STYLEID: 'styleId2' } } ] }
     const response = await consumeFacetsMessageCT(validBatchParams);
-    expect(response).toEqual({ batchSuccessCount:2, messagesCount:2, ok:true, shouldSkipResolvingOffsets: 1 });
+    expect(response).toEqual({ batchSuccessCount:2, messagesCount:2, ok:true, shouldResolveOffsets: 1 });
   });
 });
 

@@ -32,7 +32,7 @@ describe('consumeSkuMessage', () => {
     });
     it('correct message to update sku', async () => {
         const response = await consumeSkuMessage(params);
-        expect(response).toEqual({ shouldSkipResolvingOffsets: 1 });
+        expect(response).toEqual({ shouldResolveOffsets: 1 });
     });
 });
 

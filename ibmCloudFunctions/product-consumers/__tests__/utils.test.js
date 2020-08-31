@@ -69,7 +69,7 @@ describe('addLoggingToMain', function() {
       }
     }
     const mainWithLogging = addLoggingToMain(main, logger);
-    await expect(mainWithLogging()).resolves.toEqual({ ...successfulMain, shouldSkipResolvingOffsets: 1 });
+    await expect(mainWithLogging()).resolves.toEqual({ ...successfulMain, shouldResolveOffsets: 1 });
     expect(storedBatches).toEqual(true);
   });
 });

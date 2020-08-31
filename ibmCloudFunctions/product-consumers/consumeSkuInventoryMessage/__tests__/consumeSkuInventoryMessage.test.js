@@ -38,7 +38,7 @@ describe('consumeSkuInventoryMessage', () => {
             failureIndexes: [],
             errors: [],
             messages: params.messages,
-            shouldSkipResolvingOffsets: 1
+            shouldResolveOffsets: 1
         });
     });
 });

@@ -28,7 +28,7 @@ describe("consumeSalePrice", function() {
         batchSuccessCount: 1,
         messagesCount: 1,
         ok: true ,
-        shouldSkipResolvingOffsets: 1
+        shouldResolveOffsets: 1
       });
     });
     it("successfuly runs if all the parameters are provided and the messages are valid; 2 messages 1 batch", async function() {
@@ -37,7 +37,7 @@ describe("consumeSalePrice", function() {
         batchSuccessCount: 1,
         messagesCount: 2,
         ok: true,
-        shouldSkipResolvingOffsets: 1
+        shouldResolveOffsets: 1
       });
     });
     it("successfuly runs if all the parameters are provided and the messages are valid; 2 messages 2 batches", async function() {
@@ -46,7 +46,7 @@ describe("consumeSalePrice", function() {
         batchSuccessCount: 2,
         messagesCount: 2,
         ok: true,
-        shouldSkipResolvingOffsets: 1
+        shouldResolveOffsets: 1
       });
     });
     it("invalid params -> failure", async function() {

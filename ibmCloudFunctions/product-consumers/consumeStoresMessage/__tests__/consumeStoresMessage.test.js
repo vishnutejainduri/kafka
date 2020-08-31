@@ -45,19 +45,19 @@ describe('consumeStoresMessage', () => {
     });
     it('correct message; no bulk ats', async () => {
         const response = await consumeStoresMessage(params);
-        expect(response).toEqual({ shouldSkipResolvingOffsets: 1 });
+        expect(response).toEqual({ shouldResolveOffsets: 1 });
     });
     it('correct message; goes through bulk ats code', async () => {
         params.POS_ENABLED = 'N';
 
         const response = await consumeStoresMessage(params);
-        expect(response).toEqual({ shouldSkipResolvingOffsets: 1 });
+        expect(response).toEqual({ shouldResolveOffsets: 1 });
     });
     it('correct message; goes through bulk ats code for dep27', async () => {
         params.DEP27_FULFILL_STATUS = 'N';
 
         const response = await consumeStoresMessage(params);
-        expect(response).toEqual({ shouldSkipResolvingOffsets: 1 });
+        expect(response).toEqual({ shouldResolveOffsets: 1 });
     });
 });
 

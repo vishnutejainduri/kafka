@@ -55,7 +55,7 @@ describe('calculateAvailableToSell', () => {
         batchSuccessCount: 1,
         messagesCount: 1,
         ok: true,
-        shouldSkipResolvingOffsets: 1
+        shouldResolveOffsets: 1
     }
     it('missing all parameters; should fail', async () => {
         const result = await expect(calculateAvailableToSell({}));
