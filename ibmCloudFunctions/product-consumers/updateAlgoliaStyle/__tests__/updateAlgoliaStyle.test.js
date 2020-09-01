@@ -45,6 +45,11 @@ describe('updateAlgoliaStyle', () => {
                 }
             }]
         };
-        expect(await updateAlgoliaStyle(params)).toEqual({ errors: [], failureIndexes: [], successCount: 1 });
+        expect(await updateAlgoliaStyle(params)).toEqual({
+            errors: [],
+            failureIndexes: [],
+            successCount: 1,
+            shouldResolveOffsets: 1
+         });
     });
 });

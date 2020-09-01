@@ -45,22 +45,19 @@ describe('consumeStoresMessage', () => {
     });
     it('correct message; no bulk ats', async () => {
         const response = await consumeStoresMessage(params);
-        // returns nothing/undefined if successfully run
-        expect(response).toBe(undefined);
+        expect(response).toEqual({ shouldResolveOffsets: 1 });
     });
     it('correct message; goes through bulk ats code', async () => {
         params.POS_ENABLED = 'N';
 
         const response = await consumeStoresMessage(params);
-        // returns nothing/undefined if successfully run
-        expect(response).toBe(undefined);
+        expect(response).toEqual({ shouldResolveOffsets: 1 });
     });
     it('correct message; goes through bulk ats code for dep27', async () => {
         params.DEP27_FULFILL_STATUS = 'N';
 
         const response = await consumeStoresMessage(params);
-        // returns nothing/undefined if successfully run
-        expect(response).toBe(undefined);
+        expect(response).toEqual({ shouldResolveOffsets: 1 });
     });
 });
 
@@ -77,7 +74,6 @@ describe('getBulkAtsStyles', () => {
 
         const response = await bulkStyleAtsUpdates.find().upsert().updateOne();
 
-        // returns nothing/undefined if successfully run
         expect(response._id).toBe('success');
     });
 });

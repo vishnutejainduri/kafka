@@ -24,15 +24,30 @@ const validParams = {
 
 describe("consumeSalePrice", function() {
     it("successfuly runs if all the parameters are provided and the messages are valid; 1 message 1 batch", async function() {
-      expect(await consumeSalePrice(validParams)).toEqual({ batchSuccessCount:1, messagesCount:1, ok:true });
+      expect(await consumeSalePrice(validParams)).toEqual({
+        batchSuccessCount: 1,
+        messagesCount: 1,
+        ok: true ,
+        shouldResolveOffsets: 1
+      });
     });
     it("successfuly runs if all the parameters are provided and the messages are valid; 2 messages 1 batch", async function() {
       const validParamsBatch = { ...validParams, messages: [{ ...validParams.messages[0] }, { ...validParams.messages[0], value: { ...validParams.messages[0].value, PRICE_CHANGE_ID: 'priceChangeId2' } }] }
-      expect(await consumeSalePrice(validParamsBatch)).toEqual({ batchSuccessCount:1, messagesCount:2, ok:true });
+      expect(await consumeSalePrice(validParamsBatch)).toEqual({
+        batchSuccessCount: 1,
+        messagesCount: 2,
+        ok: true,
+        shouldResolveOffsets: 1
+      });
     });
     it("successfuly runs if all the parameters are provided and the messages are valid; 2 messages 2 batches", async function() {
       const validParamsBatch = { ...validParams, messages: [{ ...validParams.messages[0] }, { ...validParams.messages[0], value: { ...validParams.messages[0].value, PRICE_CHANGE_ID: 'priceChangeId2', STYLE_ID: 'styleId2' } }] }
-      expect(await consumeSalePrice(validParamsBatch)).toEqual({ batchSuccessCount:2, messagesCount:2, ok:true });
+      expect(await consumeSalePrice(validParamsBatch)).toEqual({
+        batchSuccessCount: 2,
+        messagesCount: 2,
+        ok: true,
+        shouldResolveOffsets: 1
+      });
     });
     it("invalid params -> failure", async function() {
       return expect((await consumeSalePrice({})).error).toBeTruthy();

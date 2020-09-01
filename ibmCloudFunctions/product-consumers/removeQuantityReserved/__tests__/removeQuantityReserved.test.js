@@ -8,12 +8,15 @@ const params = {
 };
 
 describe('removeQuantityReserved', () => {
-    it('missing all parameters; should fail', async () => {
-        await expect(removeQuantityReserved({})).rejects.toThrow();
+    it('returns an object that has `error` attribute when given an invalid argument', async () => {
+        const invalidArgument = {};
+        expect((await removeQuantityReserved(invalidArgument)).error).toBeDefined();
     });
-    it('correct message', async () => {
+
+    it('returns an object with `shouldResolveOffsets` set to 1 when given a valid argument', async () => {
         const response = await removeQuantityReserved(params);
-        // returns nothing/undefined if successfully run
-        expect(response).toBe(undefined);
+        expect(response).toEqual({
+            shouldResolveOffsets: 1
+        });
     });
 });

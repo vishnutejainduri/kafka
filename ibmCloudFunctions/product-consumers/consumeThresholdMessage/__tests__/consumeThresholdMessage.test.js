@@ -44,7 +44,8 @@ describe('consumeThresholdMessage', () => {
     });
     const resultWithNoErrors = {
         errors: [],
-        failureIndexes: []
+        failureIndexes: [],
+        shouldResolveOffsets: 1
     }
     it('correct message', async () => {
         const response = await consumeThresholdMessage(params);

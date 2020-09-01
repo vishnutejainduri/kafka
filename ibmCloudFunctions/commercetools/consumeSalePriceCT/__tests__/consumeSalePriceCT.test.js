@@ -61,7 +61,8 @@ describe('consumeSalePriceCT', () => {
     return expect(response).toEqual({
       batchSuccessCount: 1,
       messagesCount: 1,
-      ok: true
+      ok: true,
+      shouldResolveOffsets: 1
     });
   });
 
@@ -78,7 +79,12 @@ describe('consumeSalePriceCT', () => {
       ...validParams,
       messages: [messageToBeIgnored]
     });
-    expect(response).toEqual({ batchSuccessCount:0, messagesCount:1, ok:true });
+    expect(response).toEqual({
+      batchSuccessCount: 0,
+      messagesCount: 1,
+      ok: true,
+      shouldResolveOffsets: 1
+    });
   });
 
   it('one invalid message in a batch should not be processed but the one valid message should be', async () => {
@@ -91,7 +97,12 @@ describe('consumeSalePriceCT', () => {
         invalidMessage
       ]
     });
-    expect(response).toEqual({ batchSuccessCount: 1, messagesCount: 2, ok: true });
+    expect(response).toEqual({
+      batchSuccessCount: 1,
+      messagesCount: 2,
+      ok: true,
+      shouldResolveOffsets: 1
+    });
   });
   it('two valid messages should be batched together and processed', async () => {
     const response = await consumeSalePriceCT({
@@ -101,7 +112,12 @@ describe('consumeSalePriceCT', () => {
         validMessage
       ]
     });
-    expect(response).toEqual({ batchSuccessCount: 1, messagesCount: 2, ok: true });
+    expect(response).toEqual({
+      batchSuccessCount: 1,
+      messagesCount: 2,
+      ok: true,
+      shouldResolveOffsets: 1
+    });
   });
   it('two valid messages should not be batched together but still processed', async () => {
     const otherValidMessage = { ...validMessage, value: { ...validMessage.value, STYLE_ID: 'styleId2' } };
@@ -112,7 +128,12 @@ describe('consumeSalePriceCT', () => {
         otherValidMessage
       ]
     });
-    expect(response).toEqual({ batchSuccessCount: 2, messagesCount: 2, ok: true });
+    expect(response).toEqual({
+      batchSuccessCount: 2,
+      messagesCount: 2,
+      ok: true,
+      shouldResolveOffsets: 1
+    });
   });
   it('two valid messages should be batched together, reordered by date, and still processed', async () => {
     const otherValidMessage = { ...validMessage, value: { ...validMessage.value,  PROCESS_DATE_CREATED: 1000000000001 } };
@@ -123,7 +144,12 @@ describe('consumeSalePriceCT', () => {
         validMessage
       ]
     });
-    expect(response).toEqual({ batchSuccessCount: 1, messagesCount: 2, ok: true });
+    expect(response).toEqual({
+      batchSuccessCount: 1,
+      messagesCount: 2,
+      ok: true,
+      shouldResolveOffsets: 1
+    });
   });
 });
 

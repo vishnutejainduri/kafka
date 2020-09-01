@@ -55,7 +55,7 @@ describe('addLoggingToMain', function() {
   });
 
   it('finishes storing messages if main does not return an error field in the response', async function() {
-    const successfulMain = 'successful main';
+    const successfulMain = { ok: true };
     const main = async () => successfulMain;
     let storedBatches = false;
     const logger = {
@@ -69,7 +69,7 @@ describe('addLoggingToMain', function() {
       }
     }
     const mainWithLogging = addLoggingToMain(main, logger);
-    await expect(mainWithLogging()).resolves.toEqual(successfulMain);
+    await expect(mainWithLogging()).resolves.toEqual({ ...successfulMain, shouldResolveOffsets: 1 });
     expect(storedBatches).toEqual(true);
   });
 });
