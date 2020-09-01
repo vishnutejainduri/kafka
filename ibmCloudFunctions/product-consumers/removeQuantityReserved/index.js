@@ -1,8 +1,9 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { createLog, log } = require('../utils');
+const messagesLogs = require('../../lib/messagesLogs');
+const { addLoggingToMain, createLog, log } = require('../utils');
 
-global.main = async function (params) {
+const main = async function (params) {
     log(createLog.params('removeQuantityReserved', params));
 
     let skus;
@@ -24,5 +25,7 @@ global.main = async function (params) {
         throw createError.removeQuantityReserved.failedToRemoveSomeReserves(originalError);
     }
 }
+
+global.main = addLoggingToMain(main, messagesLogs);
 
 module.exports = global.main;
