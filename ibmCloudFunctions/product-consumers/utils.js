@@ -261,7 +261,8 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
         const storeBatchFailed = storeBatchResult instanceof Error ? 1 : 0
 
         const hasPartialFailure = mainResult && mainResult.failureIndexes && mainResult.failureIndexes.length > 0
-        const shouldResolveOffsets = (!storeBatchFailed || !hasPartialFailure) ? 1 : 0
+        const hasAnyFailure = hasPartialFailure || mainResult instanceof Error || (mainResult && mainResult.error)
+        const shouldResolveOffsets = (!storeBatchFailed || !hasAnyFailure) ? 1 : 0
         let updateBatchWithFailureIndexesFailed = 0
         let updateBatchWithFailureIndexesResult
         if (!storeBatchFailed && hasPartialFailure) {
