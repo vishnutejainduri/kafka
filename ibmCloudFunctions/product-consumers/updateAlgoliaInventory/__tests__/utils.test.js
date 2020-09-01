@@ -43,6 +43,23 @@ const validSkuOutOfStockOnline = {
   onlineAts: []
 }
 
+const validSkuOutOfStockThreshold = {
+  _id: 'skuIdOutOfStockThreshold',
+  size: {
+    en: 'sizeEnOutOfStockThreshold',
+    fr: 'sizeFrOutOfStockThreshold'
+  },
+  ats: [{
+    storeId: 'storeIdOutOfStockThreshold',
+    availableToSell: 1
+  }],
+  onlineAts: [{
+    storeId: 'storeIdOutOfStockThreshold',
+    availableToSell: 1
+  }],
+  threshold: 1000
+}
+
 describe('buildSizesArray', () => {
     it('two available skus should produce two available sizes', async () => {
       const validSkus = [validSku, { ...validSku, _id: 'skuId2', size: { en: 'sizeEn2', fr: 'sizeFr2' } }]
@@ -83,6 +100,11 @@ describe('buildSizesArray', () => {
       const validSkus = [validSkuOutOfStockOnline, { ...validSkuOutOfStockOnline, _id: 'skuId2', size: { en: 'sizeEn2', fr: 'sizeFr2' } }]
       const result = buildSizesArray(validSkus, true);
       expect(result).toEqual([]); 
+    });
+    it('two available skus but one has a theshold making it online unavailable should produce one available online sizes', async () => {
+      const validSkus = [validSku, { ...validSkuOutOfStockThreshold, _id: 'skuId2', size: { en: 'sizeEn2', fr: 'sizeFr2' } }]
+      const result = buildSizesArray(validSkus, true);
+      expect(result).toEqual([ { en: 'sizeEn', fr: 'sizeFr' }]); 
     });
 });
 
