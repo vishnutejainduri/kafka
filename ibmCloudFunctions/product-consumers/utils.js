@@ -251,21 +251,21 @@ const truncateErrorsIfNecessary = result => {
  * @param main {function}
  * @param logger {{ storeBatch: function, updateBatchWithFailureIndexes: function }}
  */
-const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
+const addLoggingToMain = (main, logger = messagesLogs, neverRetry = false) => (async params => (
     Promise.all([
         // Promise.all will prematurely return if any of the promises is rejected, but we want storeBatch to finish even if  main function fails 
         addErrorHandlingToFn(main)(params),
-        addErrorHandlingToFn(logger.storeBatch)(params)
+        neverRetry ? Promise.resolve(null) : addErrorHandlingToFn(logger.storeBatch)(params) // there's no need to store the batch if it will never be retried
     ]).then(async ([mainResult, storeBatchResult]) => {
         // returning 0 and 1 instead of true and false, since it's easier to infer result in case they are converted to string by OpenWhisk
         const storeBatchFailed = storeBatchResult instanceof Error ? 1 : 0
 
         const hasPartialFailure = mainResult && mainResult.failureIndexes && mainResult.failureIndexes.length > 0
         const hasAnyFailure = hasPartialFailure || mainResult instanceof Error || (mainResult && mainResult.error)
-        const shouldResolveOffsets = (!storeBatchFailed || !hasAnyFailure) ? 1 : 0
+        const shouldResolveOffsets = (!storeBatchFailed || !hasAnyFailure || neverRetry) ? 1 : 0
         let updateBatchWithFailureIndexesFailed = 0
         let updateBatchWithFailureIndexesResult
-        if (!storeBatchFailed && hasPartialFailure) {
+        if (!storeBatchFailed && hasPartialFailure && !neverRetry) {
             try {
                 updateBatchWithFailureIndexesResult = await logger.updateBatchWithFailureIndexes(params, mainResult.failureIndexes);
                 console.warn('Partial failure: ', mainResult.failureIndexes)
@@ -276,7 +276,7 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
 
         // if there is some failure but we cannot retry, then kafka / cloud functions binding service has to deal with the failure
         const mainFailed = mainResult instanceof Error || (mainResult && mainResult.error)
-        if ((mainFailed || hasPartialFailure) && (storeBatchFailed || updateBatchWithFailureIndexesFailed)) {
+        if ((mainFailed || hasPartialFailure) && (storeBatchFailed || updateBatchWithFailureIndexesFailed) && !neverRetry) {
             const error = function () {
                 if (mainResult instanceof Error) {
                     console.error(FAILURE_KEY, JSON.stringify(mainResult))
@@ -300,7 +300,7 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
             return truncateErrorsIfNecessary(hasPartialFailure ? { ...retryInfo, ...mainResult } : retryInfo)
         }
 
-        return truncateErrorsIfNecessary(mainResult instanceof Error ? mainResult : { ...mainResult, shouldResolveOffsets })
+        return truncateErrorsIfNecessary(mainResult instanceof Error ? {error: mainResult, shouldResolveOffsets } : { ...mainResult, shouldResolveOffsets })
     })
   )
 );

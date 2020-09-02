@@ -56,7 +56,8 @@ describe('updateAlgoliaPrice', () => {
         expect(response).toEqual({
             failureIndexes: [],
             errors: [],
-            successCount: 1
+            successCount: 1,
+            shouldResolveOffsets: 1
         });
     });
 
@@ -71,7 +72,8 @@ describe('updateAlgoliaPrice', () => {
         expect(response).toEqual({
             failureIndexes: [],
             errors: [],
-            successCount: 1
+            successCount: 1,
+            shouldResolveOffsets: 1
         });
     });
 
@@ -87,8 +89,9 @@ describe('updateAlgoliaPrice', () => {
         };
 
         const response = await updateAlgoliaPrice(params)
-        expect(response.failureIndexes.length).toEqual(1);
-        expect(response.failureIndexes[0]).toEqual(0);
+        expect(response.failureIndexes.length).toBe(1);
+        expect(response.failureIndexes[0]).toBe(0);
+        expect(response.shouldResolveOffsets).toBe(1)
     });
 
     it('Returns an array of failed messages if any of the messages are invalid', async () =>{
@@ -105,7 +108,8 @@ describe('updateAlgoliaPrice', () => {
         const response = await updateAlgoliaPrice(params)
 
         expect(response.failureIndexes.length).toBe(1);
-        expect(response.failureIndexes[0]).toEqual(1)
+        expect(response.failureIndexes[0]).toBe(1);
+        expect(response.shouldResolveOffsets).toBe(1)
     });
 
     it('Filters out invalid messages from response messages property', async () =>{
@@ -121,6 +125,7 @@ describe('updateAlgoliaPrice', () => {
 
         const response = await updateAlgoliaPrice(params)
         expect(response.failureIndexes.length).toBe(1);
-        expect(response.failureIndexes[0]).toEqual(1)
+        expect(response.failureIndexes[0]).toBe(1);
+        expect(response.shouldResolveOffsets).toBe(1)
     });
 });
