@@ -7,8 +7,10 @@ const main = async function (params) {
     log(createLog.params('removeQuantityReserved', params));
 
     let skus;
+    let styleAvailabilityCheckQueue;
     try {
         skus = await getCollection(params, params.collectionName);
+        styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError, params && params.collectionName);
     }
@@ -20,7 +22,11 @@ const main = async function (params) {
 
         const findQuery = { quantitiesReserved: { $elemMatch: { lastModified: { $lte: cutOffTime } } } };
         const updateQuery = { $pull: { quantitiesReserved: { lastModified: { $lte: cutOffTime } } } };
-        await skus.update(findQuery, updateQuery, { multi: true });
+        const skusToUpdate = await skus.find(findQuery).toArray();
+        const removeReservesQuery = skus.update(findQuery, updateQuery, { multi: true });
+        await Promise.all([removeReservesQuery].concat(skusToUpdate.map(sku => 
+          styleAvailabilityCheckQueue.updateOne({ _id : sku.styleId }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: sku.styleId, styleId: sku.styleId } }, { upsert: true })
+        )))
     } catch (originalError) {
         throw createError.removeQuantityReserved.failedToRemoveSomeReserves(originalError);
     }
