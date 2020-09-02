@@ -1,6 +1,6 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { createLog, addErrorHandling, log, passDownAnyMessageErrors } = require('../../product-consumers/utils');
+const { createLog, addErrorHandling, log, passDownAnyMessageErrors, addLoggingToMain } = require('../../product-consumers/utils');
 const {
   extractStyleId,
   findApplicablePriceChanges,
@@ -64,5 +64,6 @@ const main = async function (params) {
     return passDownAnyMessageErrors(CTUpdateResult)
 };
 
-global.main = main
+global.main = addLoggingToMain(main);
+
 module.exports = global.main;
