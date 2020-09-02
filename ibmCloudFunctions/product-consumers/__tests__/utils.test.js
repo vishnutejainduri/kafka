@@ -16,7 +16,7 @@ describe('addLoggingToMain', function() {
       }
     }
     const mainWithLogging = addLoggingToMain(main, logger);
-    expect(await mainWithLogging()).toEqual(new Error(failedMainError));
+    expect((await mainWithLogging()).error).toEqual(new Error(failedMainError));
   });
 
   it('it returns a error field in the response and 0 for storeBatchFailed if main has partial failure and we store the batch but we fail to update the batch with partial failures', async function() {
@@ -72,6 +72,18 @@ describe('addLoggingToMain', function() {
     await expect(mainWithLogging()).resolves.toEqual({ ...successfulMain, shouldResolveOffsets: 1 });
     expect(storedBatches).toEqual(true);
   });
+
+  it('always returns a result with `shouldResolveOffsets` equal to 1 if the `neverRetry` flag is set to true', async () => {
+    const successfulMain = async () => ({ ok: true });
+    const logger = () => {};
+    const successfulMainWithLogging = addLoggingToMain(successfulMain, logger, true);
+
+    const failedMain = async () => Promise.reject('mock error');
+    const failedMainWithLogging = addLoggingToMain(failedMain, logger, true);
+
+    expect((await (successfulMainWithLogging())).shouldResolveOffsets).toBe(1);
+    expect((await (failedMainWithLogging())).shouldResolveOffsets).toBe(1);
+  })
 });
 
 describe('passDownBatchedErrorsAndFailureIndexes', () => {
