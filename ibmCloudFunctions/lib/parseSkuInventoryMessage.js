@@ -31,7 +31,6 @@ function parseSkuInventoryMessage(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse SKU Inventory update messages');
     }
-    console.log('msg', JSON.stringify(msg));
 
     // Re-map atttributes
     const inventoryData = {};
