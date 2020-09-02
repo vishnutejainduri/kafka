@@ -104,9 +104,11 @@ describe('updateCTSalePrice', () => {
         });
     });
 
-    it('returns an object with an error attribute when given invalid params as an argument', async () => {
+    it('returns an object with an error attribute and `shouldResolveOffsets` set to 1 when given invalid params as an argument', async () => {
       const invalidParams = {}
-      expect((await updateCTSalePrice(invalidParams)).error).not.toBeUndefined();
+      const response = await updateCTSalePrice(invalidParams);
+      expect(response.error).not.toBeUndefined();
+      expect(response.shouldResolveOffsets).toBe(1);
     });
 });
 

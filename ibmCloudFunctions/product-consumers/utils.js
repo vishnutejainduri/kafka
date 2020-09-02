@@ -251,7 +251,7 @@ const truncateErrorsIfNecessary = result => {
  * @param main {function}
  * @param logger {{ storeBatch: function, updateBatchWithFailureIndexes: function }}
  */
-const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
+const addLoggingToMain = (main, logger = messagesLogs, alwaysResolveOffsets = false) => (async params => (
     Promise.all([
         // Promise.all will prematurely return if any of the promises is rejected, but we want storeBatch to finish even if  main function fails 
         addErrorHandlingToFn(main)(params),
@@ -262,7 +262,7 @@ const addLoggingToMain = (main, logger = messagesLogs) => (async params => (
 
         const hasPartialFailure = mainResult && mainResult.failureIndexes && mainResult.failureIndexes.length > 0
         const hasAnyFailure = hasPartialFailure || mainResult instanceof Error || (mainResult && mainResult.error)
-        const shouldResolveOffsets = (!storeBatchFailed || !hasAnyFailure) ? 1 : 0
+        const shouldResolveOffsets = (!storeBatchFailed || !hasAnyFailure || alwaysResolveOffsets) ? 1 : 0
         let updateBatchWithFailureIndexesFailed = 0
         let updateBatchWithFailureIndexesResult
         if (!storeBatchFailed && hasPartialFailure) {

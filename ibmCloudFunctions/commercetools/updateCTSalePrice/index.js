@@ -8,6 +8,7 @@ const {
   markProcessedChanges,
   markFailedChanges
 } = require('../../product-consumers/updateAlgoliaPrice/utils.js');
+const messagesLogs = require('../../lib/messagesLogs');
 
 // CT related requires
 const { updateStyleMarkdown } = require('./utils');
@@ -64,6 +65,6 @@ const main = async function (params) {
     return passDownAnyMessageErrors(CTUpdateResult)
 };
 
-global.main = addLoggingToMain(main);
+global.main = addLoggingToMain(main, messagesLogs, true);
 
 module.exports = global.main;
