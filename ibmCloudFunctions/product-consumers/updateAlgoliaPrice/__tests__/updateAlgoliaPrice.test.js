@@ -56,7 +56,8 @@ describe('updateAlgoliaPrice', () => {
         expect(response).toEqual({
             failureIndexes: [],
             errors: [],
-            successCount: 1
+            successCount: 1,
+            shouldResolveOffsets: 1
         });
     });
 
@@ -71,7 +72,8 @@ describe('updateAlgoliaPrice', () => {
         expect(response).toEqual({
             failureIndexes: [],
             errors: [],
-            successCount: 1
+            successCount: 1,
+            shouldResolveOffsets: 1
         });
     });
 

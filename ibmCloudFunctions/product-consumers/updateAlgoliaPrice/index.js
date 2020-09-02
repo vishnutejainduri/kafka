@@ -4,7 +4,7 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { createLog, addErrorHandling, log, passDownAnyMessageErrors } = require('../utils');
+const { createLog, addErrorHandling, log, passDownAnyMessageErrors, addLoggingToMain } = require('../utils');
 const { extractStyleId, getPriceInfo, findApplicablePriceChanges, findUnprocessedStyleIds, markProcessedChanges, markFailedChanges } = require('./utils.js');
 
 let client = null;
@@ -111,5 +111,6 @@ const main = async function (params) {
     return passDownAnyMessageErrors(updates)
 };
 
-global.main = main
+global.main = addLoggingToMain(main)
+
 module.exports = global.main;
