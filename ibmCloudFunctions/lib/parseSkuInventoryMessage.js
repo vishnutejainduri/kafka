@@ -7,6 +7,7 @@ const attributeMap = {
     'STYLE_ID': 'styleId',
     'SKU_ID': 'skuId',
     'STORE_ID': 'storeId',
+    'CHECKIND': 'checkInd',
     'QOH': 'quantityOnHand',
     'QOO': 'quantityOnOrder',
     'QBO': 'quantityBackOrder',
@@ -30,6 +31,7 @@ function parseSkuInventoryMessage(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse SKU Inventory update messages');
     }
+    console.log('msg', JSON.stringify(msg));
 
     // Re-map atttributes
     const inventoryData = {};
@@ -37,7 +39,9 @@ function parseSkuInventoryMessage(msg) {
         inventoryData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
     }
 
-    inventoryData['availableToSell'] = (inventoryData.quantityOnHandSellable - inventoryData.quantityInPicking) > 0
+    inventoryData.checkInd = inventoryData.checkInd === 't' ? true : false
+
+    inventoryData['availableToSell'] = ((inventoryData.quantityOnHandSellable - inventoryData.quantityInPicking) > 0) && inventoryData.checkInd
       ? (inventoryData.quantityOnHandSellable - inventoryData.quantityInPicking)
       : 0
 

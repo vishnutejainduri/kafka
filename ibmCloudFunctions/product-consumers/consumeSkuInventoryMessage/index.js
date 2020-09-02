@@ -26,7 +26,7 @@ const main = async function (params) {
         .map(addErrorHandling(parseSkuInventoryMessage))
         .map(addErrorHandling(async (inventoryData) => {
             const inventoryLastModifiedDate = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1 } );
-            if (inventoryLastModifiedDate && inventoryData.lastModifiedDate <= inventoryLastModifiedDate.lastModifiedDate) {
+            if (inventoryLastModifiedDate && inventoryData.lastModifiedDate < inventoryLastModifiedDate.lastModifiedDate) {
                log("Jesta time: " + inventoryData.lastModifiedDate + "; Mongo time: " + inventoryLastModifiedDate.lastModifiedDate);
                return null;
             }
