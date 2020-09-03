@@ -2,13 +2,19 @@ const getTotalAts = (sku, atsKey) => (sku[atsKey] || []).reduce((totalAvailableT
       availableToSell > 0 ? totalAvailableToSell + availableToSell : totalAvailableToSell
     ), 0)
 
+const getTotalQuantityReserved = (sku) => (
+    (sku.quantitiesReserved || []).reduce((totalQuantityReserved, { quantityReserved }) => (
+      quantityReserved > 0 ? totalQuantityReserved + quantityReserved : totalQuantityReserved
+    ), 0)
+)
+
 const buildSizesArray = (
     skus,
     isOnlineOnly = false
 ) => {
       const atsKey = isOnlineOnly ? 'onlineAts' : 'ats'
       let sizes = skus.map(sku => {
-        const atsTotal = isOnlineOnly ? Math.max(0, getTotalAts(sku, atsKey) - (sku.threshold || 0)) : getTotalAts(sku, atsKey)
+        const atsTotal = isOnlineOnly ? Math.max(0, getTotalAts(sku, atsKey) - (sku.threshold || 0) - getTotalQuantityReserved(sku)) : getTotalAts(sku, atsKey)
         return atsTotal > 0
           ? sku.size
           : null
