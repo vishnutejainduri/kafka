@@ -91,7 +91,11 @@ function getActivePriceChanges (availablePriceChanges, currentTime) {
       activePriceChange = findCurrentPriceFromOverlappingPrices(activePriceChange, availablePriceChange);
     }
     if (areAvailablePricesOverlapping(availablePriceChange, availablePriceChanges)) {
-      throw new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${availablePriceChange.id}, Price Change ID: ${availablePriceChange.priceChangeId} has overlaps`);
+      if (availablePriceChange.endDate.getTime() < currentTime) {
+        console.error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${availablePriceChange.id}, Price Change ID: ${availablePriceChange.priceChangeId} has overlaps`);
+      } else {
+        throw new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${availablePriceChange.id}, Price Change ID: ${availablePriceChange.priceChangeId} has overlaps`);
+      }
     }
   }
   
