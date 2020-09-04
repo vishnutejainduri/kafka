@@ -200,6 +200,7 @@
         location: ./product-consumers/removeQuantityReserved/dist/bundle.js
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
+          styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
         limits:
           memorySize: 2048
           timeout: 600000

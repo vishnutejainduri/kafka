@@ -60,6 +60,26 @@ const validSkuOutOfStockThreshold = {
   threshold: 1000
 }
 
+const validSkuOutOfStockReserve = {
+  _id: 'skuIdOutOfStockReserve',
+  size: {
+    en: 'sizeEnOutOfStockReserve',
+    fr: 'sizeFrOutOfStockReserve'
+  },
+  ats: [{
+    storeId: 'storeIdOutOfStockReserve',
+    availableToSell: 1
+  }],
+  onlineAts: [{
+    storeId: 'storeIdOutOfStockReserve',
+    availableToSell: 1
+  }],
+  quantitiesReserved: [{
+    quantityReserved: 1,
+    lastModified: 1599146351000
+  }]
+}
+
 describe('buildSizesArray', () => {
     it('two available skus should produce two available sizes', async () => {
       const validSkus = [validSku, { ...validSku, _id: 'skuId2', size: { en: 'sizeEn2', fr: 'sizeFr2' } }]
@@ -103,6 +123,11 @@ describe('buildSizesArray', () => {
     });
     it('two available skus but one has a theshold making it online unavailable should produce one available online sizes', async () => {
       const validSkus = [validSku, { ...validSkuOutOfStockThreshold, _id: 'skuId2', size: { en: 'sizeEn2', fr: 'sizeFr2' } }]
+      const result = buildSizesArray(validSkus, true);
+      expect(result).toEqual([ { en: 'sizeEn', fr: 'sizeFr' }]); 
+    });
+    it('two available skus but one has a reserve making it online unavailable should produce one available online sizes', async () => {
+      const validSkus = [validSku, { ...validSkuOutOfStockReserve, _id: 'skuId2', size: { en: 'sizeEn2', fr: 'sizeFr2' } }]
       const result = buildSizesArray(validSkus, true);
       expect(result).toEqual([ { en: 'sizeEn', fr: 'sizeFr' }]); 
     });
