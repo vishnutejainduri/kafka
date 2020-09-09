@@ -3,6 +3,7 @@ const { priceChangeProcessStatus } = require('../constants')
 const parseSalePriceMessage = require('../../lib/parseSalePriceMessage')
 const parseStyleMessage = require('../../lib/parseStyleMessage')
 const { getMostUpToDateObject } = require('../../lib/utils')
+const { log } = require('../utils');
 
 function groupPriceChangesBySiteId (parsedPriceChanges) {
   return parsedPriceChanges.reduce((groupedPriceChanges, priceChange) => {
@@ -40,7 +41,7 @@ function findCurrentPriceFromOverlappingPrices (currentPrice, overlappingPrice) 
       if ((!currentPrice.processDateCreated || !overlappingPrice.processDateCreated) ||
         currentPrice.processDateCreated.getTime() === overlappingPrice.processDateCreated.getTime()) {
         // if two permanent markdowns activate at the exact same time we can't decide which one to pick, results in unfixable overlap
-        console.error(`Unfixable price overlap: Two permanent markdowns overlap. StyleId: ${currentPrice.id}, Price Change ID: ${currentPrice.priceChangeId} overlaps with Price Change ID: ${overlappingPrice.priceChangeId}`);
+        log.error(`Unfixable price overlap: Two permanent markdowns overlap. StyleId: ${currentPrice.id}, Price Change ID: ${currentPrice.priceChangeId} overlaps with Price Change ID: ${overlappingPrice.priceChangeId}`);
         throw new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${currentPrice.id}, Price Change ID: ${currentPrice.priceChangeId} overlaps with Price Change ID: ${overlappingPrice.priceChangeId}`);
       }
       currentPrice = currentPrice.processDateCreated > overlappingPrice.processDateCreated ? currentPrice : overlappingPrice 
@@ -67,9 +68,9 @@ function areAvailablePricesOverlapping (availablePriceChange, availablePriceChan
         || !availablePriceChange.startDate || !availablePriceChangeToCompare.startDate 
         || availablePriceChange.priceChangeId === availablePriceChangeToCompare.priceChangeId) continue;
       
-      console.log('availablePriceChange', availablePriceChange, 'VS', 'availablePriceChangeToCompare', availablePriceChangeToCompare);
-      if (!availablePriceChange.startDate || !availablePriceChange.endDate) console.error ('MISSING DATES', 'availablePriceChange', availablePriceChange);
-      if (!availablePriceChangeToCompare.startDate || !availablePriceChangeToCompare.endDate) console.error ('MISSING DATES', 'availablePriceChangeToCompare', availablePriceChangeToCompare);
+      log('availablePriceChange', availablePriceChange, 'VS', 'availablePriceChangeToCompare', availablePriceChangeToCompare);
+      if (!availablePriceChange.startDate || !availablePriceChange.endDate) log.error ('MISSING DATES', 'availablePriceChange', availablePriceChange);
+      if (!availablePriceChangeToCompare.startDate || !availablePriceChangeToCompare.endDate) log.error ('MISSING DATES', 'availablePriceChangeToCompare', availablePriceChangeToCompare);
 
       if (
         (availablePriceChange.startDate.getTime() >= availablePriceChangeToCompare.startDate.getTime() && availablePriceChange.endDate.getTime() <= availablePriceChangeToCompare.endDate.getTime()) //one price within another price
@@ -77,7 +78,7 @@ function areAvailablePricesOverlapping (availablePriceChange, availablePriceChan
         || (availablePriceChange.endDate.getTime() >= availablePriceChangeToCompare.endDate.getTime() && availablePriceChange.startDate.getTime() <= availablePriceChangeToCompare.endDate.getTime()) //one price overlaps via end date (in the future but starts within another)
         ) { 
           // unfixable overlap between two temporary prices
-          console.error(`Unfixable price overlap: Two temporary markdowns overlap. StyleId: ${availablePriceChange.id}, Price Change ID: ${availablePriceChange.priceChangeId} overlaps with Price Change ID: ${availablePriceChangeToCompare.priceChangeId}`);
+          log.error(`Unfixable price overlap: Two temporary markdowns overlap. StyleId: ${availablePriceChange.id}, Price Change ID: ${availablePriceChange.priceChangeId} overlaps with Price Change ID: ${availablePriceChangeToCompare.priceChangeId}`);
           isPriceOverlapping = true;
       }
     }
@@ -91,7 +92,9 @@ function getActivePriceChanges (availablePriceChanges, currentTime) {
       activePriceChange = findCurrentPriceFromOverlappingPrices(activePriceChange, availablePriceChange);
     }
     if (areAvailablePricesOverlapping(availablePriceChange, availablePriceChanges)) {
-      throw new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${availablePriceChange.id}, Price Change ID: ${availablePriceChange.priceChangeId} has overlaps`);
+      if (availablePriceChange.endDate.getTime() >= currentTime) {
+        throw new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${availablePriceChange.id}, Price Change ID: ${availablePriceChange.priceChangeId} has overlaps`);
+      }
     }
   }
   

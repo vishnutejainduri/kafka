@@ -289,7 +289,7 @@ describe('findApplicablePriceChanges + findCurrentPriceFromOverlappingPrices', (
 })
 
 describe('findApplicablePriceChanges + areAvailablePricesOverlapping', () => {
-  it('overlapping inactive temporary markdown with active temporary markdown; throws error', () => {
+  it('overlapping inactive temporary markdown with active temporary markdown; logs error but doesnt throw', () => {
     const mockPriceChanges = [{
       priceChangeId: '1',
       siteId: siteIds.ONLINE,
@@ -305,9 +305,13 @@ describe('findApplicablePriceChanges + areAvailablePricesOverlapping', () => {
       activityType: priceChangeActivityTypes.CREATED,
       processDateCreated: new Date('2020')
     }]
-    expect(() => findApplicablePriceChanges(mockPriceChanges)).toThrow(new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${mockPriceChanges[0].id}, Price Change ID: ${mockPriceChanges[0].priceChangeId} has overlaps`))
+    const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
+    expect(applicablePriceChanges).toEqual({
+      [siteIds.IN_STORE]: undefined,
+      [siteIds.ONLINE]: undefined
+    })
   })
-  it('overlapping inactive temporary markdown with inactive temporary markdown; throws error', () => {
+  it('overlapping inactive temporary markdown with inactive temporary markdown; logs error but doesnt throw', () => {
     const mockPriceChanges = [{
       priceChangeId: '1',
       siteId: siteIds.ONLINE,
@@ -323,7 +327,72 @@ describe('findApplicablePriceChanges + areAvailablePricesOverlapping', () => {
       activityType: priceChangeActivityTypes.CREATED,
       processDateCreated: new Date('2018')
     }]
-    expect(() => findApplicablePriceChanges(mockPriceChanges)).toThrow(new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${mockPriceChanges[0].id}, Price Change ID: ${mockPriceChanges[0].priceChangeId} has overlaps`))
+    const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
+    expect(applicablePriceChanges).toEqual({
+      [siteIds.IN_STORE]: undefined,
+      [siteIds.ONLINE]: undefined
+    })
+  })
+  it('overlapping inactive temporary markdown with inactive temporary markdown but there is one active not overlapping temporary markdown; logs error but applies active markdown', () => {
+    const mockPriceChanges = [{
+      priceChangeId: '1',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2018'),
+      endDate: new Date('2019'),
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2018')
+    },{
+      priceChangeId: '2',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2018'),
+      endDate: new Date('2019'),
+      activityType: priceChangeActivityTypes.CREATED,
+      processDateCreated: new Date('2018')
+    },{
+      priceChangeId: '3',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      endDate: new Date('2021'),
+      activityType: priceChangeActivityTypes.CREATED,
+      processDateCreated: new Date('2018')
+    }]
+    const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
+    expect(applicablePriceChanges).toEqual({
+      [siteIds.IN_STORE]: undefined,
+      [siteIds.ONLINE]: mockPriceChanges[2]
+    })
+  })
+  it('overlapping inactive temporary markdown with inactive temporary markdown but there is one active temporary markdown though this one also overlaps; can\'t apply markdown throw error', () => {
+    const mockPriceChanges = [{
+      priceChangeId: '1',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2018'),
+      endDate: new Date('2019'),
+      activityType: priceChangeActivityTypes.APPROVED,
+      processDateCreated: new Date('2018')
+    },{
+      priceChangeId: '2',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2018'),
+      endDate: new Date('2019'),
+      activityType: priceChangeActivityTypes.CREATED,
+      processDateCreated: new Date('2018')
+    },{
+      priceChangeId: '3',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      endDate: new Date('2021'),
+      activityType: priceChangeActivityTypes.CREATED,
+      processDateCreated: new Date('2018')
+    },{
+      priceChangeId: '4',
+      siteId: siteIds.ONLINE,
+      startDate: new Date('2020'),
+      endDate: new Date('2021'),
+      activityType: priceChangeActivityTypes.CREATED,
+      processDateCreated: new Date('2018')
+    }]
+    expect(() => findApplicablePriceChanges(mockPriceChanges)).toThrow(new Error(`Cannot process overlapping price changes for the same site ID for price changes: StyleId: ${mockPriceChanges[2].id}, Price Change ID: ${mockPriceChanges[2].priceChangeId} has overlaps`))
   })
 })
 
