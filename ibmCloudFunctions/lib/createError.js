@@ -599,6 +599,12 @@ module.exports = {
             `Failure to retry messages for batch with activation ID ${debugInfo.activationID}.`,
             debugInfo
         ),
+        failedToStoreSuccess: (originalError, debugInfo) => new CustomError(
+            originalError,
+            'partial-failure-failed-to-store-success-messages',
+            `Failure to store success messages for batch with activation ID ${debugInfo.activationID}.`,
+            debugInfo
+        ),
         failedToFetchMessages: (originalError, debugInfo) => new CustomError(
             originalError,
             'partial-failure-failed-to-fetch-batch-messages',

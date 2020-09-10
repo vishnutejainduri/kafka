@@ -89,7 +89,8 @@ describe('updateCTSalePrice', () => {
         expect(response).toEqual({
             errors: [],
             failureIndexes: [],
-            successCount: 1
+            successCount: 1,
+            shouldResolveOffsets: 1
         });
     });
 
@@ -98,12 +99,16 @@ describe('updateCTSalePrice', () => {
         expect(response).toEqual({
             errors: [],
             failureIndexes: [],
-            successCount: 1
+            successCount: 1,
+            shouldResolveOffsets: 1
         });
     });
 
-    it('Runs CF; returns failed result with no params', async () => {
-        await expect(updateCTSalePrice({})).rejects.toThrow();
+    it('returns an object with an error attribute and `shouldResolveOffsets` set to 1 when given invalid params as an argument', async () => {
+      const invalidParams = {}
+      const response = await updateCTSalePrice(invalidParams);
+      expect(response.error).not.toBeUndefined();
+      expect(response.shouldResolveOffsets).toBe(1);
     });
 });
 

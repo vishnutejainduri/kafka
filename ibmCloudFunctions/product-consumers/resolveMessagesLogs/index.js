@@ -8,7 +8,8 @@ const {
     getDeleteBatch,
     getFindMessages,
     getStoreDlqMessages,
-    getStoreRetryMessages
+    getStoreRetryMessages,  
+    getStoreSuccessMessages
 } = require('../../lib/messagesLogs');
 const { groupMessagesByNextAction } = require('./utils');
 
@@ -48,16 +49,23 @@ global.main = async function(params) {
             method: 'GET',
             auth,
             json: true
-        });
+        }).catch(error => error.response ? error.response.body : error.response)
     }
 
     async function resolveBatchWithActivationInfo({ activationId, failureIndexes }) {
-        const activationInfo = await fetchActivationInfo(activationId);
-        if (!activationInfo || activationInfo.error) {
-            const originalError = !activationInfo ? new Error(`Could not find activation info for actvation ID ${activationId}`) : activationInfo.error
-            const error = createError.resolveMessageLogs.batchFailure(originalError,{ activationId, failureIndexes })
-            throw error
+        let activationInfo = await fetchActivationInfo(activationId);
+        if (!activationInfo) {
+          activationInfo = {
+            error: 'No response for activation id'
+          }
         }
+        if (activationInfo.error) {
+          activationInfo['activationId'] = activationId;
+          activationInfo['end'] = (new Date()).getTime()
+        }
+
+        const hasFailed = !!activationInfo.error || !activationInfo.response.success
+
         let messagesByNextAction = {
             dlq: [],
             retry: []
@@ -66,21 +74,26 @@ global.main = async function(params) {
             dlq: null,
             retry: null
         };
+        let successMessages = [];
+
         // if an activation has failed or has partial failures, the messages in the batch should be either DLQed or retried
-        const hasFailed = !activationInfo.response.success;
         const hasFailedMessages = failureIndexes && failureIndexes.length > 0;
+
+        const debugInfo = { activationId, failureIndexes };
+        const findMessages = await getFindMessages(params);
+        let allMessages = await findMessages(activationId).catch(originalError => {
+            const error = createError.resolveMessageLogs.failedToFetchMessages(originalError, debugInfo)
+            log.error(error)
+            throw error
+        });
+        if (!allMessages) allMessages = []
+
         if (hasFailed || hasFailedMessages) {
-            const debugInfo = { activationId, failureIndexes };
-            const findMessages = await getFindMessages(params);
-            const allMessages = await findMessages(activationId).catch(originalError => {
-                const error = createError.resolveMessageLogs.failedToFetchMessages(originalError, debugInfo)
-                log.error(error)
-                throw error
-            });
-            const messages = hasFailed
+            const failedMessages = hasFailed
                 ? allMessages
                 : allMessages.filter((_, index) => failureIndexes.includes(index));
-            messagesByNextAction = groupMessagesByNextAction(messages, activationInfo.end, params.maxRetries);
+            messagesByNextAction = groupMessagesByNextAction(failedMessages, activationInfo.end, params.maxRetries);
+
             if (messagesByNextAction.dlq.length) {
                 const storeDlqMessages = await getStoreDlqMessages(params);
                 log(`DLQing messages: initiating ${messagesByNextAction.dlq.length} messages to be DLQed for activation ID: ${activationId}.`)
@@ -101,8 +114,25 @@ global.main = async function(params) {
                 })
                 log(`Retrying messages: successfully queued ${messagesByNextAction.retry.length} messages to be retried activation ID: ${activationId}.`)
             }
+        } 
+        if (!hasFailed) {
+          successMessages = !hasFailed && !hasFailedMessages
+              ? allMessages
+              : allMessages.filter((_, index) => !failureIndexes.includes(index));
+          if (successMessages.length) {
+            // if a batch was successful, we save it to a success collection for logging purposes
+            const storeSuccessMessages = await getStoreSuccessMessages(params);
+            log(`Successful messages: initiating ${successMessages.length} messages to be stored for activation ID: ${activationId}.`)
+            await storeSuccessMessages(successMessages, { activationInfo }).catch(originalError => {
+                const error = createError.resolveMessageLogs.failedToStoreSuccess(originalError, debugInfo)
+                log.error(error)
+                throw error
+            })
+            log(`Successful messages: successfully stored ${successMessages.length} messages to be stored for activation ID: ${activationId}.`)
+          }
         }
-        // if a batch was successful or if we successfuly DLQed or requeued its messages for retry,
+
+        // if a batch was successful or successfuly DLQed or requeued its messages for retry,
         // we delete the activation record
         const deleteBatch = await getDeleteBatch(params);
         await deleteBatch(activationId);
@@ -110,6 +140,7 @@ global.main = async function(params) {
         return {
             dlqed: messagesByNextAction.dlq.length,
             retried: messagesByNextAction.retry.length,
+            success: successMessages.length,
             activationId
         };
     }
@@ -152,7 +183,8 @@ global.main = async function(params) {
                         resolved: true,
                         batch: batches[index],
                         dlqed: result.dlqed,
-                        retried: result.retried
+                        retried: result.retried,
+                        success: result.success
                     }
                 )
         };

@@ -1,8 +1,15 @@
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
-const { priceChangeProcessStatus } = require('../constants')
 const { addErrorHandling, log, createLog, addLoggingToMain, passDownProcessedMessages } = require('../utils');
 const createError = require('../../lib/createError');
 const getCollection = require('../../lib/getCollection');
+const {
+  updateOriginalPrice,
+  updateOriginalPriceProcessedFlag,
+  updateOriginalPriceProcessedFlagCT,
+  upsertStyle,
+  hasDepertmentIdChangedFrom27,
+  addStyleToBulkATSQueue
+} = require('./utils');
 
 const main = async function (params) {
     log(createLog.params('consumeCatalogMessage', params));
@@ -29,58 +36,35 @@ const main = async function (params) {
     return Promise.all(params.messages
         .map(addErrorHandling(msg => filterStyleMessages(msg) ? msg : null))
         .map(addErrorHandling(parseStyleMessage))
-        .map(addErrorHandling((styleData) => styles.findOne({ _id: styleData._id })
-            .then(async (existingDocument) => (existingDocument && existingDocument.lastModifiedDate)
-                ? styles.updateOne({ _id: styleData._id, lastModifiedDate: { $lte: styleData.lastModifiedDate } }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: styleData })
-                    .then((result) => result.modifiedCount > 0
-                        ? prices.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOriginalPrice: { $type:"timestamp" } }, $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice } }, { upsert: true })
-                          .then(async () => {
-                            await prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessed': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessed': priceChangeProcessStatus.false } })
-                            await prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessedCT': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessedCT': priceChangeProcessStatus.false } })
-                            if (existingDocument.departmentId && existingDocument.departmentId !== styleData.departmentId && (styleData.departmentId === '27' || existingDocument.departmentId === '27')) {
-                              bulkAtsRecalculateQueue.insertOne({ _id: styleData._id, insertTimestamp: styleData.effectiveDate })
-                              .catch(originalError => {
-                                  throw createError.consumeCatalogMessage.failedBulkAtsInsert(originalError, styleData);
-                              })
-                            }
-                          })
-                          .catch(originalError => {
-                              throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
-                          })
-                        : null
-                    )
-                    .catch(originalError => {
-                        throw createError.consumeCatalogMessage.failedStyleUpdates(originalError, styleData);
-                    })
-                  : styles.updateOne({ _id: styleData._id }, { $set: styleData }, { upsert: true })
-                    .then(() => prices.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOriginalPrice: { $type:"timestamp" } }, $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice } }, { upsert: true })
-                          .then(async () => {
-                            await prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessed': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessed': priceChangeProcessStatus.false } })
-                            await prices.updateOne({ _id: styleData._id, 'priceChanges.originalPriceProcessedCT': { $exists: true } }, { $set: { 'priceChanges.$.originalPriceProcessedCT': priceChangeProcessStatus.false } })
-                          })
-                          .catch(originalError => {
-                              throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
-                          })
-                      ).catch(originalError => {
-                        throw createError.consumeCatalogMessage.failedStyleUpdates(originalError, styleData);
-                      })
-            ).then(() => {
-                log('Updated/inserted document ' + styleData._id)
-            })
-            .catch((err) => {
-                console.error('Problem with document ' + styleData._id);
-                console.error(err);
-                if (!(err instanceof Error)) {
-                    const e = new Error();
-                    e.originalError = err;
-                    e.attemptedDocument = styleData;
-                    return e;
-                }
+        .map(addErrorHandling(async (styleData) => {
+          const priceOperations = [
+            updateOriginalPrice(prices, styleData),
+            updateOriginalPriceProcessedFlag(prices, styleData),
+            updateOriginalPriceProcessedFlagCT(prices, styleData)
+          ];
 
-                err.attemptedDocument = styleData;
-                return err;
-            })
-        ))
+          let operations = [];
+
+          const existingDocument = await styles.findOne({ _id: styleData._id })
+          if (existingDocument) {
+            if (existingDocument.lastModifiedDate <= styleData.lastModifiedDate) {
+              operations.push(upsertStyle(styles, styleData, false))
+              operations = operations.concat(priceOperations);
+              
+              if (hasDepertmentIdChangedFrom27(existingDocument, styleData)) {
+                operations.push(addStyleToBulkATSQueue(bulkAtsRecalculateQueue, styleData));
+              }
+            }
+          } else {
+            operations.push(upsertStyle(styles, styleData, true))
+            operations = operations.concat(priceOperations);
+          }
+
+          return Promise.all(operations)
+                            .catch(originalError => {
+                              throw createError.consumeCatalogMessage.failed(originalError);
+                            })
+        }))
     ).then(passDownProcessedMessages(params.messages))
     .catch(originalError => {
         throw createError.consumeCatalogMessage.failed(originalError, params);

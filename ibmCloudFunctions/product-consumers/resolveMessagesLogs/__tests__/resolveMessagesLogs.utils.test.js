@@ -107,4 +107,20 @@ describe('groupMessagesByNextAction', function() {
         });
         validateNextRetry(groupedMessages.retry[0].value.metadata.nextRetry,0,retries);
     });
+    it("groups messages that has been retried less  than the default maxRetries into retry and update their metadata, set activationEndTime to current time if doesn't exist", function() {
+        const retries =  MAX_RETRIES - 1;
+        const retryMessage = {
+            id: 'retryValue',
+            value: {
+                metadata: {
+                    retries,
+                }
+            }
+        };
+        const groupedMessages = groupMessagesByNextAction([retryMessage]);
+        expect(groupedMessages.dlq).toMatchObject([]);
+        expect(groupedMessages.retry[0].value.metadata.lastRetry).toBeGreaterThan(0);
+        expect(groupedMessages.retry[0].value.metadata.retries).toEqual(retries);
+        validateNextRetry(groupedMessages.retry[0].value.metadata.nextRetry,groupedMessages.retry[0].value.metadata.lastRetry,retries);
+    });
 });

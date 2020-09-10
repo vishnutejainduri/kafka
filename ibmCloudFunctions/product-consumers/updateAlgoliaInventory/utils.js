@@ -1,11 +1,22 @@
+const getTotalAts = (sku, atsKey) => (sku[atsKey] || []).reduce((totalAvailableToSell, { availableToSell }) => (
+      availableToSell > 0 ? totalAvailableToSell + availableToSell : totalAvailableToSell
+    ), 0)
+
+const getTotalQuantityReserved = (sku) => (
+    (sku.quantitiesReserved || []).reduce((totalQuantityReserved, { quantityReserved }) => (
+      quantityReserved > 0 ? totalQuantityReserved + quantityReserved : totalQuantityReserved
+    ), 0)
+)
+
 const buildSizesArray = (
-    ats,
+    skus,
     isOnlineOnly = false
 ) => {
       const atsKey = isOnlineOnly ? 'onlineAts' : 'ats'
-      let sizes = ats.map((skuAts) => {
-        return (skuAts[atsKey] || []).length > 0
-          ? skuAts.size
+      let sizes = skus.map(sku => {
+        const atsTotal = isOnlineOnly ? Math.max(0, getTotalAts(sku, atsKey) - (sku.threshold || 0) - getTotalQuantityReserved(sku)) : getTotalAts(sku, atsKey)
+        return atsTotal > 0
+          ? sku.size
           : null
       });
       sizes = sizes.filter((size) => size);

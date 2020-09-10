@@ -87,6 +87,23 @@ async function getRetryCollection({
     );
 }
 
+async function getSuccessCollection({
+    messagesMongoUri,
+    messagesMongoCertificateBase64,
+    dbName
+}) {
+    return getCollection(
+        {
+            mongoUri: messagesMongoUri,
+            mongoCertificateBase64: messagesMongoCertificateBase64,
+            collectionName: 'successMessagesByActivationIds',
+            dbName,
+            instance: getCollection.instances.MESSAGES
+        },
+        null
+    );
+}
+
 async function getValuesCollection({
     messagesMongoUri,
     messagesMongoCertificateBase64,
@@ -170,6 +187,14 @@ async function getStoreDlqMessages(params) {
 
 async function getStoreRetryMessages(params) {
     const collection = await getRetryCollection(params);
+    return async function(messages, metadata ) {
+        const result = await collection.insertOne({ messages, metadata });
+        return result;
+    }
+}
+
+async function getStoreSuccessMessages(params) {
+    const collection = await getSuccessCollection(params);
     return async function(messages, metadata ) {
         const result = await collection.insertOne({ messages, metadata });
         return result;
@@ -303,25 +328,29 @@ async function deleteOldBatches(params, cutoff) {
     const [
         messagesCollection,
         retryCollection,
-        dlqCollection
+        dlqCollection,
+        successCollection
     ] = await Promise.all([
         getMessagesCollection(params),
         getRetryCollection(params),
-        getDlqCollection(params)
+        getDlqCollection(params),
+        getSuccessCollection(params)
     ]);
     const activationIsOld = { recordTime: { $lt: cutoff } }
     const batchIsOld = { "metadata.activationInfo.end": { $lt: cutoff } }
 
-    const [deletedMessages, deletedRetries, deletedDlqs] = await Promise.all([
+    const [deletedMessages, deletedRetries, deletedDlqs, deletedSuccesses] = await Promise.all([
         messagesCollection.deleteMany(activationIsOld),
         retryCollection.deleteMany(batchIsOld),
-        dlqCollection.deleteMany(batchIsOld)
+        dlqCollection.deleteMany(batchIsOld),
+        successCollection.deleteMany(batchIsOld)
     ]);
 
     return {
         deletedMessages,
         deletedRetries,
-        deletedDlqs
+        deletedDlqs,
+        deletedSuccesses
     }
 }
 
@@ -336,6 +365,7 @@ module.exports = {
     getStoreValues,
     getStoreDlqMessages,
     getStoreRetryMessages,
+    getStoreSuccessMessages,
     getRetryBatches,
     getUpdateRetryBatch,
     getDeleteRetryBatch,

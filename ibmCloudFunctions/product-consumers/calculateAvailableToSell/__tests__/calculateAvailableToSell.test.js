@@ -16,6 +16,7 @@ const increaseAtsTestData = {
     'quantityOnOrder':0,
     'skuId': 'skuId',
     'storeId': 34,
+    'checkInd': true,
     'styleId': 'styleId' 
  };
  
@@ -25,6 +26,7 @@ const validMessage = {
       STYLE_ID:'styleId',
       SKU_ID:'skuId',
       STORE_ID:'storeId',
+      CHECKIND: 't',
       QBO:0,
       QIT:0,
       QIP:0,
@@ -54,7 +56,8 @@ describe('calculateAvailableToSell', () => {
     const resultWithNoErrors = {
         batchSuccessCount: 1,
         messagesCount: 1,
-        ok: true
+        ok: true,
+        shouldResolveOffsets: 1
     }
     it('missing all parameters; should fail', async () => {
         const result = await expect(calculateAvailableToSell({}));
@@ -101,6 +104,15 @@ describe('handleSkuAtsUpdate', () => {
         const skus = await getCollection(params, params.skusCollectionName);
 
         let atsUpdates = [await handleSkuAtsUpdate({}, skus, false)];
+        atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
+        expect(atsUpdates.length).toBe(0);
+    });
+
+    it('checkind is false; should not update ats', async () => {
+        const atsTestDataCheckIndFalse = { ...increaseAtsTestData, checkInd: false, availableToSell: 0 }
+        const skus = await getCollection(params, params.skusCollectionName);
+
+        let atsUpdates = [await handleSkuAtsUpdate(atsTestDataCheckIndFalse, skus, false)];
         atsUpdates = atsUpdates.filter((atsUpdate) => atsUpdate);
         expect(atsUpdates.length).toBe(0);
     });
