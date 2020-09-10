@@ -16,10 +16,20 @@ For algolia inventory updates the `styleAvailabilityCheckQueue` is used as the "
 - `stores`
 
 `isAvailableToSell` is determined by whether or not the product api returns an ats value greater than 0 for that style (we use the product api as it calculates the final ats and online ats values based on the raw data in mongo).
+
+
 `isOnlineAvailableToSell` is determined by whether or not the product api returns an online ats value greater than 0 for that style.
+
+
 `sizes` is determined by pulling all skus, and building an array of sizes (both english and french) for any sku that has ats greater than 0.
+
+
 `onlineSizes` is determined by pulling all skus, and building an array of sizes (both english and french) for any sku that has online ats (minus reserved quantity) greater than 0.
+
+
 `storeInventory` is a series of nested objects, where for each store we append all sizes (both english and french) that have a sku with ats greater than 0.
+
+
 `stores` is an array of stores where this style is available (wherever a sku at a store id has ats greater than 0).
 
 ## Price Updates
@@ -34,11 +44,23 @@ For algolia price updates the `prices` collection is used as the "queue" collect
 - `lowestPrice`
 
 `originalPrice` is simply the `originalPrice` field stored in the style document in the `styles` collection. We also save this to the matching pricing document in the `prices` collection.
+
+
 `onlineSalePrice` is the currently active online sale price that the logic in `updateAlgoliaPrice` has determined based on what's present in the `priceChanges` array on the pricing document for that style in `prices`.
+
+
 `onlineSalePrice` is the currently active in store only sale price that the logic in `updateAlgoliaPrice` has determined based on what's present in the `priceChanges` array on the pricing document for that style in `prices`.
+
+
 `isSale` is a boolean flag for whether the style is on sale in store or not.
+
+
 `isOnlineSale` is a boolean flag for whether the style is on sale online or not.
+
+
 `lowestOnlinePrice` is the lowest price the style is currently selling at, excluding any in store only sale prices.
+
+
 `lowestPrice` is the lowest price the style is currently selling at, across any possible sale prices applicable to the style in store included.
 
 ## Outlet Updates
