@@ -2,14 +2,14 @@ const https = require('https');
 
 const getKubeEnv = require('../lib/getKubeEnv');
 const getSessionToken = require('../lib/getSessionToken');
-const { retry, addErrorHandling, formatNamespace } = require('../utils');
+const { retry, addErrorHandling, formatPathStart } = require('../utils');
 
-function getCallDeleteConnector(kubeHost, token, namespace) {
+function getCallDeleteConnector(kubeHost, token, pathStart) {
     return function(connectorName) {
         const options = {
             hostname: kubeHost.replace('https://', ''),
             port: 443,
-            path: `${formatNamespace(namespace)}/connectors/${connectorName}`,
+            path: `${formatPathStart(pathStart)}/connectors/${connectorName}`,
             method: 'DELETE',
             headers: {
                 Authorization: `${token.token_type} ${token.access_token}`
@@ -36,8 +36,8 @@ function getCallDeleteConnector(kubeHost, token, namespace) {
     }
 }
 
-function getDeleteConnector(kubeHost, token, namespace) {
-  const callDeleteConnector = getCallDeleteConnector(kubeHost, token, namespace);
+function getDeleteConnector(kubeHost, token, pathStart) {
+  const callDeleteConnector = getCallDeleteConnector(kubeHost, token, pathStart);
   return async function(connectorName) {
     console.log('Deleting connector: ', connectorName);
     const { statusCode } = await callDeleteConnector(connectorName);
@@ -58,7 +58,7 @@ function getDeleteConnector(kubeHost, token, namespace) {
 async function deleteConnectors(platformEnv, connectorNames) {
     const kubeParams = getKubeEnv(platformEnv);
     const token = await getSessionToken(kubeParams);
-    const deleteConnector = addErrorHandling(retry(getDeleteConnector(kubeParams.host, token, kubeParams.namespace)));
+    const deleteConnector = addErrorHandling(retry(getDeleteConnector(kubeParams.host, token, kubeParams.pathStart)));
     const results = [];
     for (let i = 0; i < connectorNames.length; i++) {
         const result = await deleteConnector(connectorNames[i]);

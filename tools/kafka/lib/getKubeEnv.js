@@ -5,7 +5,7 @@ module.exports = function (platformEnv) {
             password: process.env.KUBE_PRODUCTION_PASSWORD,
             tenant: process.env.KUBE_PRODUCTION_TENANT,
             host: process.env.KUBE_PRODUCTION_HOST,
-            namespace: process.env.KUBE_PRODUCTION_NAMESPACE
+            pathStart: process.env.KUBE_PRODUCTION_PATH_START
         }
     }
 
@@ -15,7 +15,7 @@ module.exports = function (platformEnv) {
             password: process.env.KUBE_STAGING_PASSWORD,
             tenant: process.env.KUBE_STAGING_TENANT,
             host: process.env.KUBE_STAGING_HOST,
-            namespace: process.env.KUBE_STAGING_NAMESPACE
+            pathStart: process.env.KUBE_STAGING_PATH_START
         }
     }
 
@@ -25,7 +25,7 @@ module.exports = function (platformEnv) {
             password: process.env.KUBE_DEVELOPMENT_PASSWORD,
             tenant: process.env.KUBE_DEVELOPMENT_TENANT,
             host: process.env.KUBE_DEVELOPMENT_HOST,
-            namespace: process.env.KUBE_DEVELOPMENT_NAMESPACE
+            pathStart: process.env.KUBE_DEVELOPMENT_PATH_START
         }
     }
 

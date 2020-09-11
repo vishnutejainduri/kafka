@@ -103,13 +103,13 @@ const log = (msg, level = 'log') => {
     else {  console.log(msg); }
 }
 
-const formatNamespace = namespace => namespace ? `/${namespace}` : ''
+const formatPathStart = pathStart => pathStart ? `/${pathStart}` : ''
 
 module.exports = {
     retry,
     addErrorHandling,
     extractFilenameAndVersion,
-    formatNamespace,
+    formatPathStart,
     getConnectorBaseObject,
     createConnectorObject,
     log

@@ -2,13 +2,13 @@ const https = require('https');
 
 const getKubeEnv = require('../lib/getKubeEnv');
 const getSessionToken = require('../lib/getSessionToken');
-const { formatNamespace, retry } = require('../utils');
+const { formatPathStart, retry } = require('../utils');
 
-async function callGetConnector(kubeHost, token, connectorName, namespace) {
+async function callGetConnector(kubeHost, token, connectorName, pathStart) {
     const options = {
         hostname: kubeHost.replace('https://', ''),
         port: 443,
-        path: `${formatNamespace(namespace)}/connectors/${connectorName}`,
+        path: `${formatPathStart(pathStart)}/connectors/${connectorName}`,
         method: 'GET',
         headers: {
             Authorization: `${token.token_type} ${token.access_token}`
@@ -39,7 +39,7 @@ async function callGetConnector(kubeHost, token, connectorName, namespace) {
 async function getConnector(platformEnv, connectorName) {
     const kubeParams = getKubeEnv(platformEnv);
     const token = await retry(getSessionToken)(kubeParams);
-    const { body, statusCode } = await retry(callGetConnector)(kubeParams.host, token, connectorName, kubeParams.namespace);
+    const { body, statusCode } = await retry(callGetConnector)(kubeParams.host, token, connectorName, kubeParams.pathStart);
     //here we have the full response, html or json object
     let info = null;
     let parsingError = false;

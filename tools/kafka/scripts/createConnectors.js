@@ -5,18 +5,18 @@ const getSessionToken = require('../lib/getSessionToken');
 const {
   retry,
   addErrorHandling,
-  formatNamespace,
+  formatPathStart,
   getConnectorBaseObject,
   createConnectorObject,
   log
 } = require('../utils');
 
-function getCallCreateConnector(kubeHost, token, namespace) {
+function getCallCreateConnector(kubeHost, token, pathStart) {
     return function(connectorObject) {
         const options = {
             hostname: kubeHost.replace('https://', ''),
             port: 443,
-            path: `${formatNamespace(namespace)}/connectors`,
+            path: `${formatPathStart(pathStart)}/connectors`,
             method: 'POST',
             headers: {
                 Authorization: `${token.token_type} ${token.access_token}`,
@@ -49,9 +49,9 @@ function getCallCreateConnector(kubeHost, token, namespace) {
     }
 }
 
-function getCreateConnector(kubeHost, token, namespace) {
+function getCreateConnector(kubeHost, token, pathStart) {
   return async function(connectorObject) {
-    const callDeleteConnector = getCallCreateConnector(kubeHost, token, namespace);
+    const callDeleteConnector = getCallCreateConnector(kubeHost, token, pathStart);
     log('Creating connector: ')
     log(JSON.stringify(connectorObject, null, 3));
     const { statusCode, body } = await callDeleteConnector(connectorObject);
@@ -68,7 +68,7 @@ function getCreateConnector(kubeHost, token, namespace) {
 async function createConnectors(platformEnv, connectorsFilenamesAndVersions, connectionUrl) {
     const kubeParams = getKubeEnv(platformEnv);
     const token = await getSessionToken(kubeParams);
-    const createConnector = addErrorHandling(retry(getCreateConnector(kubeParams.host, token, kubeParams.namespace)));
+    const createConnector = addErrorHandling(retry(getCreateConnector(kubeParams.host, token, kubeParams.pathStart)));
     const connectorObjects = connectorsFilenamesAndVersions.map(({ version, filename }) => {
         const { config } = getConnectorBaseObject(filename);
         return createConnectorObject(config, { filename, version, connectionUrl });
