@@ -31,7 +31,6 @@ const main = async function (params) {
 
               const existingInventory = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1, quantityInPicking:1 } );
               if (existingInventory && inventoryData.lastModifiedDate < existingInventory.lastModifiedDate) {
-                 log("Jesta time: " + inventoryData.lastModifiedDate + "; Mongo time: " + existingInventory.lastModifiedDate);
                  return null;
               } else {
                   inventoryOperations.push(inventory
