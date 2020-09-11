@@ -27,31 +27,28 @@ const main = async function (params) {
         .map(addErrorHandling(msg => filterSkuInventoryMessage(msg) ? msg : null))
         .map(addErrorHandling(parseSkuInventoryMessage))
         .map(addErrorHandling(async (inventoryData) => {
-              const inventoryOperations = [];
-
               const existingInventory = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1, quantityInPicking:1 } );
               if (existingInventory && inventoryData.lastModifiedDate < existingInventory.lastModifiedDate) {
                  return null;
-              } else {
-                  inventoryOperations.push(inventory
-                    .updateOne({ _id: inventoryData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: inventoryData }, { upsert: true })
-                    .then(() => inventoryData)
-                    .catch(originalError => {
-                        throw createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
-                    }))
               }
 
-              if (existingInventory) {
+              const inventoryUpdateResult = await inventory
+                .updateOne({ _id: inventoryData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: inventoryData }, { upsert: true })
+                .catch(originalError => {
+                    throw createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
+                })
+
+              if (existingInventory && inventoryUpdateResult.modifiedCount > 0) {
                 const quantityInPickingDiff = Math.max(0,  inventoryData.quantityInPicking - existingInventory.quantityInPicking)
                 if (quantityInPickingDiff > 0) {
-                  inventoryOperations.push(skus.updateOne({ _id: inventoryData.skuId }, { $inc: { quantityReserved: (quantityInPickingDiff*-1) } })
+                  return skus.updateOne({ _id: inventoryData.skuId }, { $inc: { quantityReserved: (quantityInPickingDiff*-1) } })
                   .catch(originalError => {
-                    throw createError.removeQuantityReserved.failedToRemoveSomeReserves(originalError);
-                  }))
+                    throw createError.consumeInventoryMessage.failedToRemoveSomeReserves(originalError);
+                  })
                 }
               }
 
-              return Promise.all(inventoryOperations);
+              return inventoryData;
             })
         )
     )
