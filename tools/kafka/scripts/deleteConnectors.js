@@ -2,14 +2,14 @@ const https = require('https');
 
 const getKubeEnv = require('../lib/getKubeEnv');
 const getSessionToken = require('../lib/getSessionToken');
-const { retry, addErrorHandling } = require('../utils');
+const { retry, addErrorHandling, formatNamespace } = require('../utils');
 
-function getCallDeleteConnector(kubeHost, token) {
+function getCallDeleteConnector(kubeHost, token, namespace) {
     return function(connectorName) {
         const options = {
             hostname: kubeHost.replace('https://', ''),
             port: 443,
-            path: `/connectors/${connectorName}`,
+            path: `${formatNamespace(namespace)}/connectors/${connectorName}`,
             method: 'DELETE',
             headers: {
                 Authorization: `${token.token_type} ${token.access_token}`
@@ -36,8 +36,8 @@ function getCallDeleteConnector(kubeHost, token) {
     }
 }
 
-function getDeleteConnector(kubeHost, token) {
-  const callDeleteConnector = getCallDeleteConnector(kubeHost, token);
+function getDeleteConnector(kubeHost, token, namespace) {
+  const callDeleteConnector = getCallDeleteConnector(kubeHost, token, namespace);
   return async function(connectorName) {
     console.log('Deleting connector: ', connectorName);
     const { statusCode } = await callDeleteConnector(connectorName);
@@ -58,7 +58,7 @@ function getDeleteConnector(kubeHost, token) {
 async function deleteConnectors(platformEnv, connectorNames) {
     const kubeParams = getKubeEnv(platformEnv);
     const token = await getSessionToken(kubeParams);
-    const deleteConnector = addErrorHandling(retry(getDeleteConnector(kubeParams.host, token)));
+    const deleteConnector = addErrorHandling(retry(getDeleteConnector(kubeParams.host, token, kubeParams.namespace)));
     const results = [];
     for (let i = 0; i < connectorNames.length; i++) {
         const result = await deleteConnector(connectorNames[i]);

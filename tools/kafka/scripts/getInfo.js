@@ -2,13 +2,13 @@ const https = require('https');
 
 const getKubeEnv = require('../lib/getKubeEnv');
 const getSessionToken = require('../lib/getSessionToken');
-const { retry } = require('../utils');
+const { formatNamespace, retry } = require('../utils');
 
-async function callGetInfo(kubeHost, token) {
+async function callGetInfo(kubeHost, token, namespace) {
     const options = {
         hostname: kubeHost.replace('https://', ''),
         port: 443,
-        path: `/`,
+        path: `${formatNamespace(namespace)}/`,
         method: 'GET',
         headers: {
             Authorization: `${token.token_type} ${token.access_token}`
@@ -39,7 +39,7 @@ async function callGetInfo(kubeHost, token) {
 async function getInfo(platformEnv) {
     const kubeParams = getKubeEnv(platformEnv);
     const token = await retry(getSessionToken)(kubeParams);
-    const { body, statusCode } = await retry(callGetInfo)(kubeParams.host, token);
+    const { body, statusCode } = await retry(callGetInfo)(kubeParams.host, token, kubeParams.namespace);
     //here we have the full response, html or json object
     let info = null;
     let parsingError = false;

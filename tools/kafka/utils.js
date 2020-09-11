@@ -103,10 +103,13 @@ const log = (msg, level = 'log') => {
     else {  console.log(msg); }
 }
 
+const formatNamespace = namespace => namespace ? `/${namespace}` : ''
+
 module.exports = {
     retry,
     addErrorHandling,
     extractFilenameAndVersion,
+    formatNamespace,
     getConnectorBaseObject,
     createConnectorObject,
     log
