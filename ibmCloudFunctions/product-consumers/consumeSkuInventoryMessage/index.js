@@ -15,8 +15,10 @@ const main = async function (params) {
     }
 
     let inventory;
+    let skus;
     try {
         inventory = await getCollection(params);
+        skus = await getCollection(params, params.skusCollectionName);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
@@ -25,18 +27,32 @@ const main = async function (params) {
         .map(addErrorHandling(msg => filterSkuInventoryMessage(msg) ? msg : null))
         .map(addErrorHandling(parseSkuInventoryMessage))
         .map(addErrorHandling(async (inventoryData) => {
-            const inventoryLastModifiedDate = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1 } );
-            if (inventoryLastModifiedDate && inventoryData.lastModifiedDate < inventoryLastModifiedDate.lastModifiedDate) {
-               log("Jesta time: " + inventoryData.lastModifiedDate + "; Mongo time: " + inventoryLastModifiedDate.lastModifiedDate);
-               return null;
-            }
+              const inventoryOperations = [];
 
-            return inventory
-                .updateOne({ _id: inventoryData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: inventoryData }, { upsert: true })
-                .then(() => inventoryData)
-                .catch(originalError => {
-                    throw createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
-                });
+              const existingInventory = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1, quantityInPicking:1 } );
+              if (existingInventory && inventoryData.lastModifiedDate < existingInventory.lastModifiedDate) {
+                 log("Jesta time: " + inventoryData.lastModifiedDate + "; Mongo time: " + existingInventory.lastModifiedDate);
+                 return null;
+              } else {
+                  inventoryOperations.push(inventory
+                    .updateOne({ _id: inventoryData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: inventoryData }, { upsert: true })
+                    .then(() => inventoryData)
+                    .catch(originalError => {
+                        throw createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
+                    }))
+              }
+
+              if (existingInventory) {
+                const quantityInPickingDiff = Math.max(0,  inventoryData.quantityInPicking - existingInventory.quantityInPicking)
+                if (quantityInPickingDiff > 0) {
+                  inventoryOperations.push(skus.updateOne({ _id: inventoryData.skuId }, { $inc: { quantityReserved: (quantityInPickingDiff*-1) } })
+                  .catch(originalError => {
+                    throw createError.removeQuantityReserved.failedToRemoveSomeReserves(originalError);
+                  }))
+                }
+              }
+
+              return Promise.all(inventoryOperations);
             })
         )
     )
