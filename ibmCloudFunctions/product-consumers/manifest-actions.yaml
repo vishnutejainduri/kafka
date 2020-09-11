@@ -1,3 +1,5 @@
+    # Functions that are invoked by the binding service, which have names ending in -binding e.g. consume-sku-inventory-message-binding-service, should finish in less than 60s.
+    # Functions within a sequence that is invoked by the binding service should finish in less than 60s divided by total number of steps in the sequence.
     actions:
       consume-catalog-message:
         location: ./product-consumers/consumeCatalogMessage/dist/bundle.js

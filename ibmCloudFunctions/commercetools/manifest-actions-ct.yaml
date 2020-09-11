@@ -1,4 +1,6 @@
-    # all the commercetools actions are invoked by hr-eventstreams-cloudfunctions-binding service through REST calls 
+    # All the commercetools actions are invoked by hr-eventstreams-cloudfunctions-binding service through REST calls unless indicated otherwise e.g. update-ct-sale-price-trigger.
+    # Functions that are invoked by the binding service should finish in less than 60s.
+    # Functions within a sequence that is invoked by the binding service should finish in less than 60s divided by total number of steps in the sequence.
     actions:
       consume-catalog-message-ct:
         location: ./commercetools/consumeCatalogMessageCT/dist/bundle.js
@@ -70,6 +72,14 @@
         limits:
           memorySize: 2048
           timeout: 29000
+        inputs:
+          collectionName: $PRICES_COLLECTION_NAME
+      update-ct-sale-price-trigger:
+        location: ./commercetools/updateCTSalePrice/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 600000
         inputs:
           collectionName: $PRICES_COLLECTION_NAME
     sequences:
