@@ -1,3 +1,5 @@
+    # Functions that are invoked by the binding service, which have names ending in -binding e.g. consume-sku-inventory-message-binding-service, should finish in less than 60s.
+    # Functions within a sequence that is invoked by the binding service should finish in less than 60s divided by total number of steps in the sequence.
     actions:
       consume-catalog-message:
         location: ./product-consumers/consumeCatalogMessage/dist/bundle.js
@@ -35,7 +37,7 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 29000
         inputs:
           collectionName: $PRICES_COLLECTION_NAME
           topicName: sale-prices-connect-jdbc
@@ -69,12 +71,12 @@
         inputs:
           collectionName: $BARCODES_COLLECTION_NAME
           topicName: barcodes-connect-jdbc
-      consume-sku-inventory-message:
+      consume-sku-inventory-message-binding-service:
         location: ./product-consumers/consumeSkuInventoryMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 29000
         inputs:
           collectionName: $INVENTORY_COLLECTION_NAME
           stylesCollectionName: $STYLES_COLLECTION_NAME
@@ -82,12 +84,12 @@
           storesCollectionName: $STORES_COLLECTION_NAME
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: inventory-connect-jdbc-SKUINVENTORY
-      calculate-available-to-sell:
+      calculate-available-to-sell-binding-service:
         location: ./product-consumers/calculateAvailableToSell/dist/bundle.js
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 29000
         inputs:
           mongoUri: $MONGO_URI
           mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
@@ -118,6 +120,15 @@
           topicName: styles-basic-connect-jdbc
           stylesCollectionName: $STYLES_COLLECTION_NAME
           collectionName: $ALGOLIA_DELETE_CREATE_QUEUE
+      update-algolia-price-binding-service:
+        location: ./product-consumers/updateAlgoliaPrice/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 29000
+        inputs:
+          collectionName: $STYLES_COLLECTION_NAME
+          pricesCollectionName: $PRICES_COLLECTION_NAME
       update-algolia-price:
         location: ./product-consumers/updateAlgoliaPrice/dist/bundle.js
         runtime: nodejs:10
@@ -206,8 +217,8 @@
           timeout: 600000
     sequences:
       update-pricing-sequence:
-        actions: consume-sale-price,update-algolia-price
+        actions: consume-sale-price,update-algolia-price-binding-service
       update-catalog-sequence:
         actions: consume-catalog-message,update-algolia-price
       update-inventory-sequence:
-        actions: consume-sku-inventory-message,calculate-available-to-sell
+        actions: consume-sku-inventory-message-binding-service,calculate-available-to-sell-binding-service
