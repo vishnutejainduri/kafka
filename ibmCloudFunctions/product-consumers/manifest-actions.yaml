@@ -29,7 +29,6 @@
           timeout: 600000
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
-          stylesCollectionName: $STYLES_COLLECTION_NAME
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: thresholds-connect-jdbc
       consume-sale-price:

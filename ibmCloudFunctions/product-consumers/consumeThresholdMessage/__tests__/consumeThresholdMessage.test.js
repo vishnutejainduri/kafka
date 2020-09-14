@@ -34,7 +34,6 @@ const params = {
     dbName: 'db-name',
     mongoCertificateBase64: 'mong-certificate',
     collectionName: 'skus',
-    stylesCollectionName: 'styles',
     styleAvailabilityCheckQueue: 'styleAvailabilityCheckQueue',
 }
 
@@ -45,21 +44,25 @@ describe('consumeThresholdMessage', () => {
     const resultWithNoErrors = {
         errors: [],
         failureIndexes: [],
-        shouldResolveOffsets: 1
+        shouldResolveOffsets: 1,
+        successCount: 3
     }
     it('correct message', async () => {
         const response = await consumeThresholdMessage(params);
+        resultWithNoErrors['messages'] = params.messages;
         // returns nothing/undefined if successfully run
         expect(response).toEqual(resultWithNoErrors);
     });
     it('correct message; large threshold', async () => {
         params.messages[0].value.THRESHOLD = 'AfQ=';
+        resultWithNoErrors['messages'] = params.messages;
         const response = await consumeThresholdMessage(params);
         // returns nothing/undefined if successfully run
         expect(response).toEqual(resultWithNoErrors);
     });
     it('correct message; threshold is actually integer', async () => {
         params.messages[0].value.THRESHOLD = 3;
+        resultWithNoErrors['messages'] = params.messages;
         const response = await consumeThresholdMessage(params);
         // returns nothing/undefined if successfully run
         expect(response).toEqual(resultWithNoErrors);

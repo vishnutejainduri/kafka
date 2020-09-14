@@ -3,6 +3,13 @@ const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { addErrorHandling, log, createLog, addLoggingToMain, passDownProcessedMessages } = require('../utils');
 
+const addToAlgoliaQueue = (styleAvailabilityCheckQueue, skuData) => styleAvailabilityCheckQueue.updateOne({ _id : skuData.styleId }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: skuData.styleId, styleId: skuData.styleId } }, { upsert: true }).catch(originalError => {
+                                    throw createError.consumeThresholdMessage.failedAddToAlgoliaQueue(originalError, skuData);
+                                })
+const updateSkuThreshold = (skus, thresholdData) => skus.updateOne({ _id: thresholdData.skuId }, { $currentDate: { lastModifiedInternalThreshold: { $type:"timestamp" } }, $set: { threshold: thresholdData.threshold } }).catch(originalError => {
+                                      throw createError.consumeThresholdMessage.failedToUpdateSkuThreshold(originalError, thresholdData);
+                                  })
+
 const main = async function (params) {
     log(createLog.params('consumeThresholdMessage', params));
 
@@ -34,14 +41,7 @@ const main = async function (params) {
                 .catch(originalError => {
                     throw createError.consumeThresholdMessage.failedToGetSku(originalError, thresholdData);
                 });
-              return Promise.all([styleAvailabilityCheckQueue.updateOne({ _id : skuData.styleId }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: skuData.styleId, styleId: skuData.styleId } }, { upsert: true })
-                                .catch(originalError => {
-                                    throw createError.consumeThresholdMessage.failedAddToAlgoliaQueue(originalError, skuData);
-                                }),
-                                skus.updateOne({ _id: thresholdData.skuId }, { $currentDate: { lastModifiedInternalThreshold: { $type:"timestamp" } }, $set: { threshold: thresholdData.threshold } })
-                                .catch(originalError => {
-                                      throw createError.consumeThresholdMessage.failedToUpdateSkuThreshold(originalError, thresholdData);
-                                  })])
+              return Promise.all([addToAlgoliaQueue(styleAvailabilityCheckQueue, skuData), updateSkuThreshold(skus, thresholdData)])
                                 .catch(originalError => {
                                     throw createError.consumeThresholdMessage.failedUpdates(originalError, thresholdData);
                                 })
