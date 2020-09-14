@@ -1,7 +1,7 @@
 const { parseThresholdMessage } = require('../../lib/parseThresholdMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { addErrorHandling, log, createLog, addLoggingToMain } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain, passDownProcessedMessages } = require('../utils');
 
 const main = async function (params) {
     log(createLog.params('consumeThresholdMessage', params));
@@ -19,11 +19,9 @@ const main = async function (params) {
     }
 
     let skus;
-    let styles;
     let styleAvailabilityCheckQueue;
     try {
       skus = await getCollection(params);
-      styles = await getCollection(params, params.stylesCollectionName);
       styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue);
     } catch (originalError) {
       throw createError.failedDbConnection(originalError);
@@ -32,82 +30,28 @@ const main = async function (params) {
     return Promise.all(params.messages
         .map(addErrorHandling(parseThresholdMessage))
         .map(addErrorHandling(async (thresholdData) => { 
-              const thresholdOperations = [];
               const skuData = await skus.findOne({ _id: thresholdData.skuId })
                 .catch(originalError => {
                     throw createError.consumeThresholdMessage.failedToGetSku(originalError, thresholdData);
                 });
-              const styleData = await styles.findOne({ _id: skuData.styleId })
-                .catch(originalError => {
-                    throw createError.consumeThresholdMessage.failedToGetStyle(originalError, thresholdData);
-                });
-
-              const styleUpdates = { $set: {} };
-
-              if (styleData && (styleData.ats || styleData.onlineAts)) {
-                if (styleData.ats) {
-                  styleUpdates["$set"]["ats"] = styleData.ats.map((atsRecord) => {
-                    if (atsRecord.skuId === thresholdData.skuId) {
-                      atsRecord.threshold = thresholdData.threshold
-                    }
-                    return atsRecord;
-                  });
-                }
-                if (styleData.onlineAts) {
-                  styleUpdates["$set"]["onlineAts"] = styleData.onlineAts.map((atsRecord) => {
-                    if (atsRecord.skuId === thresholdData.skuId) {
-                      atsRecord.threshold = thresholdData.threshold
-                    }
-                    return atsRecord;
-                  });
-                }
-        
-                styleUpdates['$currentDate'] = { lastModifiedInternalThreshold: { $type:"timestamp" } };
-                thresholdOperations.push(styles.updateOne({ _id: styleData._id }, styleUpdates)
-                                  .catch(originalError => {
-                                      throw createError.consumeThresholdMessage.failedToUpdateStyleThreshold(originalError, styleData);
-                                  }),
-                                  styleAvailabilityCheckQueue.updateOne({ _id : styleData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: styleData._id, styleId: styleData._id } }, { upsert: true })
-                                  .catch(originalError => {
-                                      throw createError.consumeThresholdMessage.failedAddToAlgoliaQueue(originalError, styleData);
-                                  }));
-              }
-  
-              thresholdOperations.push(skus.updateOne({ _id: thresholdData.skuId }, { $currentDate: { lastModifiedInternalThreshold: { $type:"timestamp" } }, $set: { threshold: thresholdData.threshold } })
-                                  .catch(originalError => {
+              return Promise.all([styleAvailabilityCheckQueue.updateOne({ _id : skuData.styleId }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: skuData.styleId, styleId: skuData.styleId } }, { upsert: true })
+                                .catch(originalError => {
+                                    throw createError.consumeThresholdMessage.failedAddToAlgoliaQueue(originalError, skuData);
+                                }),
+                                skus.updateOne({ _id: thresholdData.skuId }, { $currentDate: { lastModifiedInternalThreshold: { $type:"timestamp" } }, $set: { threshold: thresholdData.threshold } })
+                                .catch(originalError => {
                                       throw createError.consumeThresholdMessage.failedToUpdateSkuThreshold(originalError, thresholdData);
-                                  }));
-
-              return Promise.all(thresholdOperations)
-                                  .catch(originalError => {
-                                      throw createError.consumeThresholdMessage.failedUpdates(originalError, thresholdData);
-                                  })
+                                  })])
+                                .catch(originalError => {
+                                    throw createError.consumeThresholdMessage.failedUpdates(originalError, thresholdData);
+                                })
             })
         )
     )
     .catch(originalError => {
-        return {
-            error: createError.consumeThresholdMessage.failed(originalError, paramsExcludingMessages)
-        };
+      throw createError.consumeThresholdMessage.failed(originalError, paramsExcludingMessages)
     })
-    .then((results) => {
-        const failureIndexes = [];
-        const errors = results.filter((res, index) => {
-            if (res instanceof Error) {
-                failureIndexes.push(index);
-                return true;
-            }
-        });
-
-        if (errors.length > 0) {
-            log.error(createError.consumeThresholdMessage.partialFailure(params.messages, errors));
-        }
-
-        return {
-            failureIndexes,
-            errors
-        }
-    })
+    .then(passDownProcessedMessages(params.messages))
 }
 
 global.main = addLoggingToMain(main)
