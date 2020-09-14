@@ -15,8 +15,10 @@ const main = async function (params) {
     }
 
     let inventory;
+    let skus;
     try {
         inventory = await getCollection(params);
+        skus = await getCollection(params, params.skusCollectionName);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
@@ -25,18 +27,28 @@ const main = async function (params) {
         .map(addErrorHandling(msg => filterSkuInventoryMessage(msg) ? msg : null))
         .map(addErrorHandling(parseSkuInventoryMessage))
         .map(addErrorHandling(async (inventoryData) => {
-            const inventoryLastModifiedDate = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1 } );
-            if (inventoryLastModifiedDate && inventoryData.lastModifiedDate < inventoryLastModifiedDate.lastModifiedDate) {
-               log("Jesta time: " + inventoryData.lastModifiedDate + "; Mongo time: " + inventoryLastModifiedDate.lastModifiedDate);
-               return null;
-            }
+              const existingInventory = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1, quantityInPicking:1 } );
+              if (existingInventory && inventoryData.lastModifiedDate < existingInventory.lastModifiedDate) {
+                 return null;
+              }
 
-            return inventory
+              const inventoryUpdateResult = await inventory
                 .updateOne({ _id: inventoryData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: inventoryData }, { upsert: true })
-                .then(() => inventoryData)
                 .catch(originalError => {
                     throw createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
-                });
+                })
+
+              if (existingInventory && inventoryUpdateResult.modifiedCount > 0) {
+                const quantityInPickingDiff = Math.max(0,  inventoryData.quantityInPicking - existingInventory.quantityInPicking)
+                if (quantityInPickingDiff > 0) {
+                  return skus.updateOne({ _id: inventoryData.skuId }, { $inc: { quantityReserved: (quantityInPickingDiff*-1) } })
+                  .catch(originalError => {
+                    throw createError.consumeInventoryMessage.failedToRemoveSomeReserves(originalError);
+                  })
+                }
+              }
+
+              return inventoryData;
             })
         )
     )

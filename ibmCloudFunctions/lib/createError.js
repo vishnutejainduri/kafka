@@ -103,6 +103,11 @@ module.exports = {
                 messages,
                 messageFailures
             }
+        ),
+        failedToRemoveSomeReserves: (originalError, params) => new CustomError(
+            originalError,
+            'failed-to-remove-some-reserves',
+            `Failure to remove some reserve quantity; params excluding messages: ${getParamsExcludingMessages(params)}.`
         )
     },
     consumeSkuMessage: {

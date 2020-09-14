@@ -5,7 +5,7 @@ const getTotalAts = (sku, atsKey) => (sku[atsKey] || []).reduce((totalAvailableT
 const getTotalQuantityReserved = (sku) => (
     (sku.quantitiesReserved || []).reduce((totalQuantityReserved, { quantityReserved }) => (
       quantityReserved > 0 ? totalQuantityReserved + quantityReserved : totalQuantityReserved
-    ), 0)
+    ), 0) + (sku.quantityReserved || 0)
 )
 
 const buildSizesArray = (
