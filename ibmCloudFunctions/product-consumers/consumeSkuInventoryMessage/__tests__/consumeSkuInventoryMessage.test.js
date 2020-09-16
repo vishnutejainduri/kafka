@@ -37,10 +37,31 @@ describe('consumeSkuInventoryMessage', () => {
         const response = await consumeSkuInventoryMessage(params);
         // returns nothing/undefined if successfully run
         expect(response).toEqual({
-            successCount: 1,
-            failureIndexes: [],
-            errors: [],
-            messages: params.messages,
+            messagesCount: 1,
+            batchSuccessCount: 1,
+            ok: true,
+            shouldResolveOffsets: 1
+        });
+    });
+    it('correct message to update inventory; batch two messages', async () => {
+        const batchParams = { ...params, messages: [params.messages[0], params.messages[0]] }
+        const response = await consumeSkuInventoryMessage(batchParams);
+        // returns nothing/undefined if successfully run
+        expect(response).toEqual({
+            messagesCount: 2,
+            batchSuccessCount: 1,
+            ok: true,
+            shouldResolveOffsets: 1
+        });
+    });
+    it('correct message to update inventory; dont batch two different messages', async () => {
+        const batchParams = { ...params, messages: [{ ...params.messages[0], value: { ...params.messages[0].value, SKU_ID: 'skuId2' } }, params.messages[0]] }
+        const response = await consumeSkuInventoryMessage(batchParams);
+        // returns nothing/undefined if successfully run
+        expect(response).toEqual({
+            messagesCount: 2,
+            batchSuccessCount: 2,
+            ok: true,
             shouldResolveOffsets: 1
         });
     });
