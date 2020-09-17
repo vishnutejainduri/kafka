@@ -14,11 +14,6 @@
         inputs:
           isJSONData: true
           topic: stores-connect-jdbc
-      sale-price-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: sale-prices-connect-jdbc
       facets-trigger:
         feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
         inputs:
