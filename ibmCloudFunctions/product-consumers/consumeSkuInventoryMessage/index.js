@@ -1,7 +1,10 @@
 const getCollection = require('../../lib/getCollection');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 const createError = require('../../lib/createError');
-const { createLog, addErrorHandling, log, addLoggingToMain, passDownProcessedMessages } = require('../utils');
+const { createLog, addErrorHandling, log, addLoggingToMain, passDownBatchedErrorsAndFailureIndexes } = require('../utils');
+const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
+
+const groupByInventoryId = groupByAttribute('id');
 
 const main = async function (params) {
     log(createLog.params('consumeSkuInventoryMessage', params));
@@ -23,10 +26,16 @@ const main = async function (params) {
         throw createError.failedDbConnection(originalError);
     }
 
-    return Promise.all(params.messages
+    const inventoryRecords = (params.messages
         .map(addErrorHandling(msg => filterSkuInventoryMessage(msg) ? msg : null))
-        .map(addErrorHandling(parseSkuInventoryMessage))
-        .map(addErrorHandling(async (inventoryData) => {
+        .map(addErrorHandling(parseSkuInventoryMessage)))
+    const inventoryGroupedByInventoryId = groupByInventoryId(inventoryRecords);
+
+    return Promise.all(inventoryGroupedByInventoryId
+        .map(addErrorHandling(async (inventoryGroup) => {
+              const inventoryData = getMostUpToDateObject('lastModifiedDate')(inventoryGroup)
+              if (!inventoryData) return null;
+
               const existingInventory = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1, quantityInPicking:1 } );
               if (existingInventory && inventoryData.lastModifiedDate < existingInventory.lastModifiedDate) {
                  return null;
@@ -40,8 +49,12 @@ const main = async function (params) {
 
               if (existingInventory && inventoryUpdateResult.modifiedCount > 0) {
                 const quantityInPickingDiff = Math.max(0,  inventoryData.quantityInPicking - existingInventory.quantityInPicking)
+
                 if (quantityInPickingDiff > 0) {
-                  return skus.updateOne({ _id: inventoryData.skuId }, { $inc: { quantityReserved: (quantityInPickingDiff*-1) } })
+                  const existingSku = await skus.findOne({ _id: inventoryData.skuId }, { quantityReserved:1 } )
+                  const newReserveAmount = Math.max(0, existingSku.quantityReserved - quantityInPickingDiff)
+
+                  return skus.updateOne({ _id: inventoryData.skuId }, { $set: { quantityReserved: newReserveAmount } })
                   .catch(originalError => {
                     throw createError.consumeInventoryMessage.failedToRemoveSomeReserves(originalError);
                   })
@@ -52,7 +65,7 @@ const main = async function (params) {
             })
         )
     )
-    .then(passDownProcessedMessages(params.messages))
+    .then(passDownBatchedErrorsAndFailureIndexes(inventoryGroupedByInventoryId, params.messages))
     .catch(originalError => {
         throw createError.consumeInventoryMessage.failed(originalError, params);
     });
