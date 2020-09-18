@@ -52,7 +52,7 @@ const main = async function (params) {
 
                 if (quantityInPickingDiff > 0) {
                   const existingSku = await skus.findOne({ _id: inventoryData.skuId }, { quantityReserved:1 } )
-                  const newReserveAmount = Math.max(0, existingSku.quantityReserved - quantityInPickingDiff)
+                  const newReserveAmount = Math.max(0, existingSku.quantityReserved - quantityInPickingDiff || 0)
 
                   return skus.updateOne({ _id: inventoryData.skuId }, { $set: { quantityReserved: newReserveAmount } })
                   .catch(originalError => {
