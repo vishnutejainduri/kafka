@@ -1,19 +1,7 @@
     rules:
-      catalog-rule:
-        action: update-catalog-sequence
-        trigger: catalog-trigger
-      styles-basic-rule:
-        action: consume-styles-basic-message
-        trigger: styles-basic-trigger
       threshold-rule:
         action: consume-threshold-message
         trigger: threshold-trigger
-      sku-rule:
-        action: consume-sku-message
-        trigger: sku-trigger
-      barcode-rule:
-        action: consume-barcode-message
-        trigger: barcode-trigger
       stores-rule:
         action: consume-stores-message
         trigger: stores-trigger
