@@ -65,7 +65,7 @@ const main = async function (params) {
             })
         )
     )
-    .then(passDownProcessedMessages(params.messages))
+    .then(passDownProcessedMessages(params.messages, inventoryGroupedByInventoryId))
     .catch(originalError => {
         throw createError.consumeInventoryMessage.failed(originalError, params);
     });
