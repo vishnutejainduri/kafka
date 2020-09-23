@@ -37,10 +37,11 @@ describe('consumeSkuInventoryMessage', () => {
         const response = await consumeSkuInventoryMessage(params);
         // returns nothing/undefined if successfully run
         expect(response).toEqual({
-            messagesCount: 1,
-            batchSuccessCount: 1,
-            ok: true,
-            shouldResolveOffsets: 1
+          messages: params.messages,
+          shouldResolveOffsets: 1,
+          ok: true,
+          messagesCount: 1,
+          batchSuccessCount: 1
         });
     });
     it('correct message to update inventory; batch two messages', async () => {
@@ -48,10 +49,11 @@ describe('consumeSkuInventoryMessage', () => {
         const response = await consumeSkuInventoryMessage(batchParams);
         // returns nothing/undefined if successfully run
         expect(response).toEqual({
-            messagesCount: 2,
-            batchSuccessCount: 1,
-            ok: true,
-            shouldResolveOffsets: 1
+          messages: batchParams.messages,
+          shouldResolveOffsets: 1,
+          ok: true,
+          messagesCount: 2,
+          batchSuccessCount: 1
         });
     });
     it('correct message to update inventory; dont batch two different messages', async () => {
@@ -59,10 +61,11 @@ describe('consumeSkuInventoryMessage', () => {
         const response = await consumeSkuInventoryMessage(batchParams);
         // returns nothing/undefined if successfully run
         expect(response).toEqual({
-            messagesCount: 2,
-            batchSuccessCount: 2,
-            ok: true,
-            shouldResolveOffsets: 1
+          messages: batchParams.messages,
+          shouldResolveOffsets: 1,
+          ok: true,
+          messagesCount: 2,
+          batchSuccessCount: 2
         });
     });
 });
