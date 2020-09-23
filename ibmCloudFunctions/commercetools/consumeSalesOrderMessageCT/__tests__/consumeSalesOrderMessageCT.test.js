@@ -43,7 +43,32 @@ describe('consumeSalesOrderMessageCT', () => {
 
   it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeSalesOrderMessageCT(validParams);
-    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1, shouldResolveOffsets: 1 });
+    expect(response).toEqual({
+      batchSuccessCount: 1,
+      messagesCount: 1,
+      ok: true,
+      shouldResolveOffsets: 1
+    });
+  });
+
+  it('returns success result if given valid params and a valid message; should batch updates for the same order number', async () => {
+    const response = await consumeSalesOrderMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] }, { ...validParams.messages[0] }] });
+    expect(response).toEqual({
+      batchSuccessCount: 1,
+      messagesCount: 2,
+      ok: true,
+      shouldResolveOffsets: 1
+    });
+  });
+
+  it('returns success result if given valid params and a valid message; should not batch updates for different order numbers', async () => {
+    const response = await consumeSalesOrderMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] }, { ...validParams.messages[0], value: { ...validParams.messages[0].value, SALES_ORDER_ID: 11111 } }] });
+    expect(response).toEqual({
+      batchSuccessCount: 2,
+      messagesCount: 2,
+      ok: true,
+      shouldResolveOffsets: 1
+    });
   });
 });
 
@@ -61,7 +86,7 @@ describe('updateOrderStatus', () => {
         .filter(addErrorHandling(filterSalesOrderMessages))
         .map(addErrorHandling(parseSalesOrderMessage))
     const response = await updateOrderStatus(mockedCtHelpers, result[0]);
-    expect(response).toBeTruthy();
+    expect(response).toBeTruthy()
   });
 });
 
@@ -70,9 +95,10 @@ describe('testStubs; documenting test cases', () => {
   it('if can\'t find orderNumber fail the code, to generate notification in platform', () => {});
   it('if lastmodifieddate is in the past do nothing', () => {});
   it('if lastmodifieddate is in the future perform a corresponding status update in CT', () => {});
-  it('if inbound status is CANCELED update CT order status to Canceled', () => {});
-  it('if inbound status is OPEN update CT order status to In Process', () => {});
-  it('if inbound status is HOLD update CT order status to In Process', () => {});
-  it('if inbound status is SHIPPED update CT order status to Shipped', () => {});
+  it('if inbound status is CANCELLED update CT order status to CANCELLED', () => {});
+  it('if inbound status is OPEN update CT order status to OPEN', () => {});
+  it('if inbound status is HOLD update CT order status to HOLD', () => {});
+  it('if inbound status is SHIPPED update CT order status to SHIPPED', () => {});
+  it('if inbound status is IN PICKING update CT order status to IN PICKING', () => {});
   it('if inbound status is unmappable to a CT status, fail the code, to generate notification in platform', () => {});
 });

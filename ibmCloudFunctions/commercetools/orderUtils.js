@@ -44,6 +44,8 @@ const getCtOrderDetailsFromCtOrder = (orderDetails, ctOrder) => (
 
 const getExistingCtOrder = async (orderNumber, { client, requestBuilder }) => {
   const method = 'GET';
+  //if (!requestBuilder) console.log('requestBuilder null?', requestBuilder);
+  console.log('requestBuilder', requestBuilder);
 
   const uri = requestBuilder.orders.where(`orderNumber = "${orderNumber}"`).build();
 
@@ -97,7 +99,6 @@ const updateOrder = async ({ order, existingCtOrder, ctHelpers }) => {
 
   const method = 'POST';
   const uri = requestBuilder.orders.byId(existingCtOrder.id).build();
-  console.log('order', order);
   const actions = getActionsFromOrder(order, existingCtOrder);
   const body = JSON.stringify({ version: existingCtOrder.version, actions });
 
