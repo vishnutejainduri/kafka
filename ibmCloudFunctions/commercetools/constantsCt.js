@@ -78,10 +78,19 @@ const languageKeys = {
 };
 
 const orderStates = {
-  CANCELED: 'canceledOrderStatus',
-  OPEN: 'inProcessOrderStatus',
-  HOLD: 'inProcessOrderStatus',
-  SHIPPED: 'shippedOrderStatus'
+  CANCELLED: 'canceledOrderStatus',
+  OPEN: 'openOrderStatus',
+  HOLD: 'holdOrderStatus',
+  SHIPPED: 'shippedOrderStatus',
+  'IN PICKING': 'inPickingOrderStatus'
+};
+
+const orderLineItemStates = {
+  CANCELLED: 'canceledLineItemStatus',
+  OPEN: 'openLineItemStatus',
+  HOLD: 'holdLineItemStatus',
+  SHIPPED: 'shippedLineItemStatus',
+  'IN PICKING': 'inPickingLineItemStatus'
 };
 
 const PRODUCT_SHOULD_BE_PUBLISHED = true;
@@ -99,6 +108,7 @@ module.exports = {
   currencyCodes,
   languageKeys,
   orderStates,
+  orderLineItemStates,
   isStaged,
   entityStatus,
   TAX_CATEGORY,
