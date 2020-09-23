@@ -1,4 +1,4 @@
-const { orderAttributeNames, orderDetailAttributeNames, orderStates } = require('./constantsCt');
+const { orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates } = require('./constantsCt');
 const { groupByAttribute, getMostUpToDateObject } = require('../lib/utils');
 
 const groupByOrderNumber = groupByAttribute('orderNumber');
@@ -20,7 +20,7 @@ const existingCtOrderDetailIsNewer = (existingCtOrderDetail, givenOrderDetail) =
 
   const existingCtOrderDetailDate = new Date(orderDetailLastModifiedDate);
 
-  return existingCtOrderDetailDate.getTime() >= givenOrderDetail[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE].getTime();
+  return existingCtOrderDetailDate.getTime() > givenOrderDetail[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE].getTime();
 };
 
 const getOutOfDateOrderDetailIds = (existingCtOrderDetails, orderDetails) => (
@@ -109,7 +109,7 @@ const existingCtOrderIsNewer = (existingCtOrder, givenOrder) => {
 
   const existingCtOrderDate = new Date(existingCtOrderCustomAttributes.fields.orderLastModifiedDate);
 
-  return existingCtOrderDate.getTime() >= givenOrder[orderAttributeNames.ORDER_LAST_MODIFIED_DATE].getTime();
+  return existingCtOrderDate.getTime() > givenOrder[orderAttributeNames.ORDER_LAST_MODIFIED_DATE].getTime();
 };
 
 const updateOrderStatus = async (ctHelpers, order) => {
@@ -158,11 +158,11 @@ const getActionsFromOrderDetail = (orderDetail, existingOrderDetail) => {
         lineItemId: existingOrderDetail.id,
         quantity: existingOrderDetail.quantity,
         fromState: existingOrderDetail.state[0].state,
-        toState: { key: orderStates[orderDetail.orderStatus] },
+        toState: { key: orderLineItemStates[orderDetail.orderStatus] },
         force: true 
       }
     : null;
-  
+
   const allUpdateActions = [...customAttributeUpdateActions, customTypeUpdateAction, statusUpdateAction].filter(Boolean);
 
   return allUpdateActions;
