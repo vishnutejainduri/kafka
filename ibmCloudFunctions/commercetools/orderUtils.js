@@ -44,8 +44,6 @@ const getCtOrderDetailsFromCtOrder = (orderDetails, ctOrder) => (
 
 const getExistingCtOrder = async (orderNumber, { client, requestBuilder }) => {
   const method = 'GET';
-  //if (!requestBuilder) console.log('requestBuilder null?', requestBuilder);
-  console.log('requestBuilder', requestBuilder);
 
   const uri = requestBuilder.orders.where(`orderNumber = "${orderNumber}"`).build();
 

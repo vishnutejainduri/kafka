@@ -86,7 +86,7 @@ describe('updateOrderStatus', () => {
         .filter(addErrorHandling(filterSalesOrderMessages))
         .map(addErrorHandling(parseSalesOrderMessage))
     const response = await updateOrderStatus(mockedCtHelpers, result[0]);
-    expect(response).toBeTruthy()
+    expect(response).toBeTruthy();
   });
 });
 
