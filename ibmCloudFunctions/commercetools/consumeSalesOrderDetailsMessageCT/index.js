@@ -15,7 +15,7 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownAnyMessageErrors,
+  passDownBatchedErrorsAndFailureIndexes,
   validateParams
 } = require('../../product-consumers/utils');
 
@@ -66,7 +66,7 @@ const main = params => {
   );
   
   return Promise.all(salesOrderDetailsBatchPromises)
-    .then(passDownAnyMessageErrors)
+    .then(passDownBatchedErrorsAndFailureIndexes(salesOrderDetailsGroupedByOrderNumber, params.messages))
     .catch(handleErrors);
 };
 
