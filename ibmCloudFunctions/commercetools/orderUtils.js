@@ -6,9 +6,9 @@ const groupByLineId = groupByAttribute('id');
 const getMostUpToDateOrderDetail = getMostUpToDateObject(orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE);
 
 const removeDuplicateOrderDetails = orderDetails => {
-  const orderDetailsGroupedByBarcode = groupByLineId(orderDetails);
+  const orderDetailsGroupedByLineId = groupByLineId(orderDetails);
 
-  return orderDetailsGroupedByBarcode.reduce((filteredOrderDetails, orderDetailBatch) => {
+  return orderDetailsGroupedByLineId.reduce((filteredOrderDetails, orderDetailBatch) => {
     const mostUpToDateOrderDetail = getMostUpToDateOrderDetail(orderDetailBatch);
     return [...filteredOrderDetails, mostUpToDateOrderDetail];    
   }, []);

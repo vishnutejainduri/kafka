@@ -59,7 +59,52 @@ describe('consumeSalesOrderDetailsMessageCT', () => {
 
   it('returns success result if given valid params and a valid message', async () => {
     const response = await consumeSalesOrderDetailsMessageCT(validParams);
-    expect(response).toEqual({ errors: [], failureIndexes: [], successCount: 1, shouldResolveOffsets: 1 });
+    expect(response).toEqual({
+      batchSuccessCount: 1,
+      messagesCount: 1,
+      ok: true,
+      shouldResolveOffsets: 1
+    });
+  });
+
+  it('returns success result if given valid params and a valid message; batch messages if same order number same line numbers', async () => {
+    const response = await consumeSalesOrderDetailsMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0] }] });
+    expect(response).toEqual({
+      batchSuccessCount: 1,
+      messagesCount: 2,
+      ok: true,
+      shouldResolveOffsets: 1
+    });
+  });
+
+  it('returns success result if given valid params and a valid message; batch messages if same order number different line numbers', async () => {
+    const response = await consumeSalesOrderDetailsMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, EXT_REF_ID: 'id2' } }] });
+    expect(response).toEqual({
+      batchSuccessCount: 1,
+      messagesCount: 2,
+      ok: true,
+      shouldResolveOffsets: 1
+    });
+  });
+
+  it('returns success result if given valid params and a valid message; don\'t batch messages if different order number same line numbers', async () => {
+    const response = await consumeSalesOrderDetailsMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, SALES_ORDER_ID: 11111 } }] });
+    expect(response).toEqual({
+      batchSuccessCount: 2,
+      messagesCount: 2,
+      ok: true,
+      shouldResolveOffsets: 1
+    });
+  });
+
+  it('returns success result if given valid params and a valid message; don\'t batch messages if different order number different line numbers', async () => {
+    const response = await consumeSalesOrderDetailsMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, SALES_ORDER_ID: 11111, EXT_REF_ID: 'id2' } }] });
+    expect(response).toEqual({
+      batchSuccessCount: 2,
+      messagesCount: 2,
+      ok: true,
+      shouldResolveOffsets: 1
+    });
   });
 });
 
