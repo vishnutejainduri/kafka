@@ -28,7 +28,7 @@ const validParams = {
   messages: [{
       topic: 'sales-order-details-connect-jdbc',
       value: {
-        SALES_ORDER_ID: 67897,
+        ORDER_NUMBER: '67897',
         STATUS: 'status',
         EXT_REF_ID: 'id',
         MODIFIED_DATE: 1000000000000
@@ -88,7 +88,7 @@ describe('consumeSalesOrderDetailsMessageCT', () => {
   });
 
   it('returns success result if given valid params and a valid message; don\'t batch messages if different order number same line numbers', async () => {
-    const response = await consumeSalesOrderDetailsMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, SALES_ORDER_ID: 11111 } }] });
+    const response = await consumeSalesOrderDetailsMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, ORDER_NUMBER: '11111' } }] });
     expect(response).toEqual({
       batchSuccessCount: 2,
       messagesCount: 2,
@@ -98,7 +98,7 @@ describe('consumeSalesOrderDetailsMessageCT', () => {
   });
 
   it('returns success result if given valid params and a valid message; don\'t batch messages if different order number different line numbers', async () => {
-    const response = await consumeSalesOrderDetailsMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, SALES_ORDER_ID: 11111, EXT_REF_ID: 'id2' } }] });
+    const response = await consumeSalesOrderDetailsMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, ORDER_NUMBER: '11111', EXT_REF_ID: 'id2' } }] });
     expect(response).toEqual({
       batchSuccessCount: 2,
       messagesCount: 2,

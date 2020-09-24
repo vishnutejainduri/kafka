@@ -17,7 +17,7 @@ const validParams = {
   messages: [{
       topic: 'sales-orders-connect-jdbc',
       value: {
-        SALES_ORDER_ID: 67897,
+        ORDER_NUMBER: '67897',
         STATUS: 'status',
         MODIFIED_DATE: 1000000000000
       }
@@ -62,7 +62,7 @@ describe('consumeSalesOrderMessageCT', () => {
   });
 
   it('returns success result if given valid params and a valid message; should not batch updates for different order numbers', async () => {
-    const response = await consumeSalesOrderMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] }, { ...validParams.messages[0], value: { ...validParams.messages[0].value, SALES_ORDER_ID: 11111 } }] });
+    const response = await consumeSalesOrderMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] }, { ...validParams.messages[0], value: { ...validParams.messages[0].value, ORDER_NUMBER: '11111' } }] });
     expect(response).toEqual({
       batchSuccessCount: 2,
       messagesCount: 2,
@@ -75,7 +75,7 @@ describe('consumeSalesOrderMessageCT', () => {
 describe('parseSalesOrderMessageCt', () => {
   it('correct message', () => {
     const response = parseSalesOrderMessage(validParams.messages[0]);
-    expect(response).toEqual({ orderNumber: 67897, orderStatus: 'status', orderLastModifiedDate: new Date(validParams.messages[0].value.MODIFIED_DATE)  });
+    expect(response).toEqual({ orderNumber: '67897', orderStatus: 'status', orderLastModifiedDate: new Date(validParams.messages[0].value.MODIFIED_DATE)  });
   });
 });
 
