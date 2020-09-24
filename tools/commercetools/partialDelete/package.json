@@ -16,6 +16,6 @@
     "@commercetools/sdk-middleware-http": "^6.0.7",
     "@commercetools/sync-actions": "^4.8.1",
     "dotenv": "^8.2.0",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.1"
   }
 }

@@ -1,10 +1,13 @@
+    # All the commercetools actions are invoked by hr-eventstreams-cloudfunctions-binding service through REST calls unless indicated otherwise e.g. update-ct-sale-price-trigger.
+    # Functions that are invoked by the binding service should finish in less than 60s.
+    # Functions within a sequence that is invoked by the binding service should finish in less than 60s divided by total number of steps in the sequence.
     actions:
       consume-catalog-message-ct:
         location: ./commercetools/consumeCatalogMessageCT/dist/bundle.js
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 29000
         inputs:
           topicName: styles-connect-jdbc-CATALOG
       consume-barcode-message-ct:
@@ -12,7 +15,7 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           topicName: barcodes-connect-jdbc
       consume-sale-price-ct:
@@ -20,7 +23,7 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           topicName: sale-prices-connect-jdbc
       consume-sku-message-ct:
@@ -28,7 +31,7 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           topicName: skus-connect-jdbc
       consume-styles-basic-message-ct:
@@ -36,7 +39,7 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           topicName: styles-basic-connect-jdbc
       consume-facets-message-ct:
@@ -44,7 +47,7 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
       consume-sales-order-message-ct:
@@ -52,7 +55,7 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           topicName: sales-orders-connect-jdbc
       consume-sales-order-details-message-ct:
@@ -60,10 +63,18 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           topicName: sales-order-details-connect-jdbc
       update-ct-sale-price:
+        location: ./commercetools/updateCTSalePrice/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 29000
+        inputs:
+          collectionName: $PRICES_COLLECTION_NAME
+      update-ct-sale-price-trigger:
         location: ./commercetools/updateCTSalePrice/dist/bundle.js
         runtime: nodejs:10
         limits:

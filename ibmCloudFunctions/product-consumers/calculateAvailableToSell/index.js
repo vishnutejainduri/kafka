@@ -3,7 +3,7 @@ const createError = require('../../lib/createError');
 const { addErrorHandling, log, createLog, addLoggingToMain, passDownBatchedErrorsAndFailureIndexes } = require('../utils');
 const { handleSkuAtsUpdate } = require('./utils');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
-const { groupByAttribute } = require('../../lib/utils');
+const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
 
 const groupByInventoryId = groupByAttribute('id');
 
@@ -38,13 +38,7 @@ const main = async function (params) {
 
     return Promise.all(inventoryGroupedByInventoryId
         .map(addErrorHandling(async (inventoryGroup) => {
-          const atsData = inventoryGroup.reduce((finalInventoryRecord, inventoryRecord) => {
-            if (!finalInventoryRecord || inventoryRecord.lastModifiedDate >= finalInventoryRecord.lastModifiedDate) {
-              return inventoryRecord;
-            } else {
-              return finalInventoryRecord;
-            }
-          }, null)
+          const atsData = getMostUpToDateObject('lastModifiedDate')(inventoryGroup)
           if (!atsData) return null;
 
           const styleData = await styles.findOne({ _id: atsData.styleId })

@@ -103,10 +103,13 @@ const log = (msg, level = 'log') => {
     else {  console.log(msg); }
 }
 
+const formatPathStart = pathStart => pathStart ? `/${pathStart}` : ''
+
 module.exports = {
     retry,
     addErrorHandling,
     extractFilenameAndVersion,
+    formatPathStart,
     getConnectorBaseObject,
     createConnectorObject,
     log

@@ -2,6 +2,9 @@ const getCollection = require('../../lib/getCollection');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 const createError = require('../../lib/createError');
 const { createLog, addErrorHandling, log, addLoggingToMain, passDownProcessedMessages } = require('../utils');
+const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
+
+const groupByInventoryId = groupByAttribute('id');
 
 const main = async function (params) {
     log(createLog.params('consumeSkuInventoryMessage', params));
@@ -15,32 +18,54 @@ const main = async function (params) {
     }
 
     let inventory;
+    let skus;
     try {
         inventory = await getCollection(params);
+        skus = await getCollection(params, params.skusCollectionName);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
 
-    return Promise.all(params.messages
+    const inventoryRecords = (params.messages
         .map(addErrorHandling(msg => filterSkuInventoryMessage(msg) ? msg : null))
-        .map(addErrorHandling(parseSkuInventoryMessage))
-        .map(addErrorHandling(async (inventoryData) => {
-            const inventoryLastModifiedDate = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1 } );
-            if (inventoryLastModifiedDate && inventoryData.lastModifiedDate < inventoryLastModifiedDate.lastModifiedDate) {
-               log("Jesta time: " + inventoryData.lastModifiedDate + "; Mongo time: " + inventoryLastModifiedDate.lastModifiedDate);
-               return null;
-            }
+        .map(addErrorHandling(parseSkuInventoryMessage)))
+    const inventoryGroupedByInventoryId = groupByInventoryId(inventoryRecords);
 
-            return inventory
+    return Promise.all(inventoryGroupedByInventoryId
+        .map(addErrorHandling(async (inventoryGroup) => {
+              const inventoryData = getMostUpToDateObject('lastModifiedDate')(inventoryGroup)
+              if (!inventoryData) return null;
+
+              const existingInventory = await inventory.findOne({ _id: inventoryData._id }, { lastModifiedDate: 1, quantityInPicking:1 } );
+              if (existingInventory && inventoryData.lastModifiedDate < existingInventory.lastModifiedDate) {
+                 return null;
+              }
+
+              const inventoryUpdateResult = await inventory
                 .updateOne({ _id: inventoryData._id }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: inventoryData }, { upsert: true })
-                .then(() => inventoryData)
                 .catch(originalError => {
                     throw createError.consumeInventoryMessage.failedUpdateInventory(originalError, inventoryData);
-                });
+                })
+
+              if (existingInventory && inventoryUpdateResult.modifiedCount > 0) {
+                const quantityInPickingDiff = Math.max(0,  inventoryData.quantityInPicking - existingInventory.quantityInPicking)
+
+                if (quantityInPickingDiff > 0) {
+                  const existingSku = await skus.findOne({ _id: inventoryData.skuId }, { quantityReserved:1 } )
+                  const newReserveAmount = Math.max(0, existingSku.quantityReserved - quantityInPickingDiff || 0)
+
+                  return skus.updateOne({ _id: inventoryData.skuId }, { $set: { quantityReserved: newReserveAmount } })
+                  .catch(originalError => {
+                    throw createError.consumeInventoryMessage.failedToRemoveSomeReserves(originalError);
+                  })
+                }
+              }
+
+              return inventoryData;
             })
         )
     )
-    .then(passDownProcessedMessages(params.messages))
+    .then(passDownProcessedMessages(params.messages, inventoryGroupedByInventoryId))
     .catch(originalError => {
         throw createError.consumeInventoryMessage.failed(originalError, params);
     });
