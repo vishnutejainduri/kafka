@@ -1,6 +1,6 @@
 const { orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates } = require('./constantsCt');
 const { groupByAttribute, getMostUpToDateObject } = require('../lib/utils');
-const { addErrorHandling, log } = require('../product-consumers/utils');
+const { log } = require('../product-consumers/utils');
 
 const groupByOrderNumber = groupByAttribute('orderNumber');
 const groupByLineId = groupByAttribute('id');
