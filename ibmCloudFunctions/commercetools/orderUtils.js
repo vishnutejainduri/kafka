@@ -38,10 +38,9 @@ const getCtOrderDetailFromCtOrder = (lineId, ctOrder) => {
 };
 
 const getCtOrderDetailsFromCtOrder = (orderDetails, ctOrder) => (
-  orderDetails.map(addErrorHandling(orderDetail => {
-      const ctOrderDetail = getCtOrderDetailFromCtOrder(orderDetail.id, ctOrder)
-      return ctOrderDetail
-  })).filter(Boolean)
+  orderDetails.map(
+    orderDetail => getCtOrderDetailFromCtOrder(orderDetail.id, ctOrder)
+  ).filter(Boolean)
 );
 
 const getExistingCtOrder = async (orderNumber, { client, requestBuilder }) => {
