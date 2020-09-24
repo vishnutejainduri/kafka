@@ -3,12 +3,12 @@ const https = require('https');
 const getSessionToken = require('../lib/getSessionToken');
 const { formatPathStart, retry } = require('../utils');
 
-async function callGetConnector(kubeHost, token, connectorName, pathStart) {
+async function callRestartTask({ kubeHost, pathStart, token, connectorName, taskId }) {
     const options = {
         hostname: kubeHost.replace('https://', ''),
         port: 443,
-        path: `${formatPathStart(pathStart)}/connectors/${connectorName}/status`,
-        method: 'GET',
+        path: `${formatPathStart(pathStart)}/connectors/${connectorName}/tasks/${taskId}/restart`,
+        method: 'POST',
         headers: {
             Authorization: `${token.token_type} ${token.access_token}`
         }
@@ -35,9 +35,15 @@ async function callGetConnector(kubeHost, token, connectorName, pathStart) {
     });
 }
 
-async function getConnector(kubeParams, connectorName) {
+async function restartTask(kubeParams, connectorName, taskId) {
     const token = await retry(getSessionToken)(kubeParams);
-    const { body, statusCode } = await retry(callGetConnector)(kubeParams.host, token, connectorName, kubeParams.pathStart);
+    const { body, statusCode } = await retry(callRestartTask)({
+      host: kubeParams.host,
+      pathStart: kubeParams.pathStart,
+      token,
+      connectorName,
+      taskId
+    });
     //here we have the full response, html or json object
     let info = null;
     let parsingError = false;
@@ -64,4 +70,4 @@ async function getConnector(kubeParams, connectorName) {
     return info;
 }
 
-module.exports = getConnector;
+module.exports = restartTask;
