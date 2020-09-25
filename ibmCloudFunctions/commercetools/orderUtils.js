@@ -1,4 +1,4 @@
-const { orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates } = require('./constantsCt');
+const { orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates, SHIPMENT_NAMESPACE } = require('./constantsCt');
 const { groupByAttribute, getMostUpToDateObject } = require('../lib/utils');
 
 const groupByOrderNumber = groupByAttribute('orderNumber');
@@ -30,6 +30,23 @@ const getOutOfDateOrderDetailIds = (existingCtOrderDetails, orderDetails) => (
     return existingCtOrderDetailIsNewer(ctOrderDetail, correspondingJestaOrderDetail);
   }).map(ctOrderDetail => ctOrderDetail.id)
 );
+
+const getOutOfDateRecordIds = (existingCtRecords, records, key, comparisonField) => (
+  existingCtRecords.filter(ctRecord => {
+    const correspondingJestaRecord = records.find(record => record[key] === ctRecord[key]);
+    if (!correspondingJestaRecord) return false;
+    return existingCtRecordIsNewer(ctRecord, correspondingJestaRecord, comparisonField);
+  }).map(record => record[key])
+);
+
+const existingCtRecordIsNewer = (existingCtRecord, givenRecord, comparisonField) => {
+  const recordLastModifiedDate = existingCtRecord.custom.fields.orderDetailLastModifiedDate
+  if (!recordLastModifiedDate) return false;
+
+  const existingCtRecordDate = new Date(recordLastModifiedDate);
+
+  return existingCtRecordDate.getTime() > givenRecord[comparisonField].getTime();
+};
 
 const getCtOrderDetailFromCtOrder = (lineId, ctOrder) => {
   const orderDetails = ctOrder.lineItems;
@@ -198,7 +215,28 @@ const updateOrderDetailBatchStatus = (orderDetailsToUpdate, existingCtOrderDetai
   return client.execute({ method, uri, body });
 };
 
+const getExistingCtShipments = async (shipments, ctHelpers) => (
+  (await Promise.all(shipments.map(shipment => getShipmentFromCt(shipment, ctHelpers))))
+    .filter(Boolean)
+);
+
+const getShipmentFromCt = async (shipment, { client, requestBuilder }) => {
+  const method = 'GET';
+  const uri = `${requestBuilder.customObjects.build()}/${SHIPMENT_NAMESPACE}/${shipment.shipmentId}`;
+
+  try {
+    const response = await client.execute({ method, uri }); 
+    return response.body;
+  } catch (err) {
+    if (err.statusCode === 404) return null;
+    throw err;
+  }
+};
+
+
 module.exports = {
+  getOutOfDateRecordIds,
+  getExistingCtShipments,
   updateOrderStatus,
   groupByOrderNumber,
   getExistingCtOrder,

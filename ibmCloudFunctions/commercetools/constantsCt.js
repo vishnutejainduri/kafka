@@ -62,6 +62,7 @@ const priceTypes = {
 }
 
 const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
+const SHIPMENT_NAMESPACE = 'shipments'; // namespace of the custom barcode objects in CT
 const KEY_VALUE_DOCUMENT = 'key-value-document'; // reference-type of custom objects in CT
 const TAX_CATEGORY = 'jesta-tax-descriptions';
 // Business rules of HarryRosen requires us to have this property set to false
@@ -98,6 +99,7 @@ const PRODUCT_SHOULD_BE_PUBLISHED = true;
 const CT_ACTION_LIMIT = 500;
 
 module.exports = {
+  SHIPMENT_NAMESPACE,
   BARCODE_NAMESPACE,
   KEY_VALUE_DOCUMENT,
   styleAttributeNames,
