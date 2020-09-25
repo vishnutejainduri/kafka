@@ -1,24 +1,4 @@
     triggers:
-      catalog-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: styles-connect-jdbc-CATALOG
-      threshold-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: thresholds-connect-jdbc
-      stores-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: stores-connect-jdbc
-      facets-trigger:
-        feed: ${MESSAGING_FEED_BINDING}/messageHubFeed
-        inputs:
-          isJSONData: true
-          topic: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
       every-minute:
         feed: /whisk.system/alarms/alarm
         inputs:
