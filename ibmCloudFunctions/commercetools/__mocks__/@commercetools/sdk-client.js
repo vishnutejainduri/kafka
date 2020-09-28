@@ -37,31 +37,33 @@ const mockSku = {
   }]
 };
 
+const mockOrderLineItem = {
+  id: 'id',
+  quantity: 1,
+  state: [{
+    state: {
+      id: 'stateId'
+    }
+  }],
+  custom: {
+    fields: {
+      orderDetailLastModifiedDate: '1995-12-28T15:23:49.002Z',
+      barcodeData: [{
+        obj: {
+          value: {
+            barcode: 'barcode'
+          }
+        }
+      }]
+    }
+  }
+};
+
 const mockOrder = {
   id: '1',
   orderNumber: '67897',
   version: 1,
-  lineItems: [{
-    id: 'id',
-    quantity: 1,
-    state: [{
-      state: {
-        id: 'stateId'
-      }
-    }],
-    custom: {
-      fields: {
-        orderDetailLastModifiedDate: '1995-12-28T15:23:49.002Z',
-        barcodeData: [{
-          obj: {
-            value: {
-              barcode: 'barcode'
-            }
-          }
-        }]
-      }
-    }
-  }]
+  lineItems: [mockOrderLineItem]
 };
 
 const ctMockResponse = {

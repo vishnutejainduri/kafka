@@ -28,7 +28,7 @@ const validParams = {
   messages: [{
       topic: 'sales-order-details-connect-jdbc',
       value: {
-        SALES_ORDER_ID: 67897,
+        ORDER_NUMBER: '67897',
         STATUS: 'status',
         EXT_REF_ID: 'id',
         MODIFIED_DATE: 1000000000000
@@ -77,18 +77,13 @@ describe('consumeSalesOrderDetailsMessageCT', () => {
     });
   });
 
-  it('returns success result if given valid params and a valid message; batch messages if same order number different line numbers', async () => {
-    const response = await consumeSalesOrderDetailsMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, EXT_REF_ID: 'id2' } }] });
-    expect(response).toEqual({
-      batchSuccessCount: 1,
-      messagesCount: 2,
-      ok: true,
-      shouldResolveOffsets: 1
-    });
+  it('returns failed result if given valid params and a valid message but one line item doesn\'t exist; batch messages if same order number different line numbers', async () => {
+    const batchParams = { ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, EXT_REF_ID: 'id-other' } }] }
+    return expect((await consumeSalesOrderDetailsMessageCT(batchParams)).error).toBeTruthy();
   });
 
   it('returns success result if given valid params and a valid message; don\'t batch messages if different order number same line numbers', async () => {
-    const response = await consumeSalesOrderDetailsMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, SALES_ORDER_ID: 11111 } }] });
+    const response = await consumeSalesOrderDetailsMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, ORDER_NUMBER: '11111' } }] });
     expect(response).toEqual({
       batchSuccessCount: 2,
       messagesCount: 2,
@@ -97,14 +92,9 @@ describe('consumeSalesOrderDetailsMessageCT', () => {
     });
   });
 
-  it('returns success result if given valid params and a valid message; don\'t batch messages if different order number different line numbers', async () => {
-    const response = await consumeSalesOrderDetailsMessageCT({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, SALES_ORDER_ID: 11111, EXT_REF_ID: 'id2' } }] });
-    expect(response).toEqual({
-      batchSuccessCount: 2,
-      messagesCount: 2,
-      ok: true,
-      shouldResolveOffsets: 1
-    });
+  it('returns failed result if given valid params and a valid message but one line item doesn\'t exist; don\'t batch messages if different order number different line numbers', async () => {
+    const batchParams = { ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, ORDER_NUMBER: '11111', EXT_REF_ID: 'id-other' } }] }
+    return expect((await consumeSalesOrderDetailsMessageCT(batchParams)).error).toBeTruthy();
   });
 });
 
@@ -140,13 +130,13 @@ describe('getActionsFromOrderDetail', () => {
 
 describe('formatOrderDetailBatchRequestBody', () => {
   it('returns a string', () => {
-    expect(typeof formatOrderDetailBatchRequestBody(orderDetails, mockOrder, mockOrder.lineItems) === 'string').toBe(true);
+    expect(typeof formatOrderDetailBatchRequestBody(orderDetails, mockOrder, mockOrder.lineItems) === 'object').toBe(true);
   });
 
   it('returns the correct body to update a line item status', () => {
-    const expectedBody = '{"version":1,"actions":[{"action":"setLineItemCustomField","lineItemId":"id","name":"orderDetailLastModifiedDate","value":"2001-09-09T01:46:40.000Z"},{"action":"transitionLineItemState","lineItemId":"id","quantity":1,"fromState":{"id":"stateId"},"toState":{},"force":true}]}';
+    const expectedBody = {"body":'{"version":1,"actions":[{"action":"setLineItemCustomField","lineItemId":"id","name":"orderDetailLastModifiedDate","value":"2001-09-09T01:46:40.000Z"},{"action":"transitionLineItemState","lineItemId":"id","quantity":1,"fromState":{"id":"stateId"},"toState":{},"force":true}]}', "error":null}
     const actualBody = formatOrderDetailBatchRequestBody(orderDetails, mockOrder, mockOrder.lineItems);
-    expect(actualBody).toBe(expectedBody);
+    expect(actualBody).toEqual(expectedBody);
   });
 });
 
@@ -274,6 +264,7 @@ describe('getOutOfDateOrderDetailIds', () => {
 });
 
 describe('getActionsFromOrderDetailss', () => {
+  const missingLineError = new Error('Order line id does not exist')
   const mockOrderMultiLine = JSON.parse(JSON.stringify(mockOrder));
   mockOrderMultiLine.lineItems.push(JSON.parse(JSON.stringify(mockOrderMultiLine.lineItems[0])));
   mockOrderMultiLine.lineItems[1].id = 'id2';
@@ -293,19 +284,19 @@ describe('getActionsFromOrderDetailss', () => {
 
   it('returns the right actions when given a batch of different line items all in the order', () => {
     const orderDetailsTest = [orderDetail1, orderDetail2, orderDetail3];
-    const expected = [{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id2", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id2", "quantity": 1, "toState": {"key": undefined }}, {"action": "setLineItemCustomField", "lineItemId": "id3", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id3", "quantity": 1, "toState": {"key": "openLineItemStatus" }}];
+    const expected = {"actions":[{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id2", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id2", "quantity": 1, "toState": {"key": undefined }}, {"action": "setLineItemCustomField", "lineItemId": "id3", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id3", "quantity": 1, "toState": {"key": "openLineItemStatus" }}], orderDetailUpdateError: null}
     expect(getActionsFromOrderDetails(orderDetailsTest, mockOrderMultiLine.lineItems)).toEqual(expected);
   });
 
   it('returns the right actions when given both existing and line items not existing on the order', () => {
     const orderDetailsTest = [orderDetail1, orderDetail2, orderDetail3, orderDetail4];
-    const expected = [{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id2", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id2", "quantity": 1, "toState": {"key": undefined }}, {"action": "setLineItemCustomField", "lineItemId": "id3", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id3", "quantity": 1, "toState": {"key": "openLineItemStatus"}}];
+    const expected = {"actions":[{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id2", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id2", "quantity": 1, "toState": {"key": undefined }}, {"action": "setLineItemCustomField", "lineItemId": "id3", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id3", "quantity": 1, "toState": {"key": "openLineItemStatus"}}], orderDetailUpdateError: missingLineError}
     expect(getActionsFromOrderDetails(orderDetailsTest, mockOrderMultiLine.lineItems)).toEqual(expected);
   });
 
   it('returns an empty array when given an empty array of line items', () => {
-    expect(getActionsFromOrderDetails([], [])).toEqual([]);
-    expect(getActionsFromOrderDetails([], mockOrderMultiLine.lineItems)).toEqual([]);
+    expect(getActionsFromOrderDetails([], [])).toEqual({ actions:[], orderDetailUpdateError: null });
+    expect(getActionsFromOrderDetails([], mockOrderMultiLine.lineItems)).toEqual({ actions:[], orderDetailUpdateError: null });
   });
 });
 
