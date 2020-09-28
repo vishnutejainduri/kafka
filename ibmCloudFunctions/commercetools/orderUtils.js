@@ -15,23 +15,6 @@ const removeDuplicateOrderDetails = orderDetails => {
   }, []);
 };
 
-const existingCtOrderDetailIsNewer = (existingCtOrderDetail, givenOrderDetail) => {
-  const orderDetailLastModifiedDate = existingCtOrderDetail.custom.fields.orderDetailLastModifiedDate
-  if (!orderDetailLastModifiedDate) return false;
-
-  const existingCtOrderDetailDate = new Date(orderDetailLastModifiedDate);
-
-  return existingCtOrderDetailDate.getTime() > givenOrderDetail[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE].getTime();
-};
-
-const getOutOfDateOrderDetailIds = (existingCtOrderDetails, orderDetails) => (
-  existingCtOrderDetails.filter(ctOrderDetail => {
-    const correspondingJestaOrderDetail = orderDetails.find(orderDetail => orderDetail.id === ctOrderDetail.id);
-    if (!correspondingJestaOrderDetail) return false;
-    return existingCtOrderDetailIsNewer(ctOrderDetail, correspondingJestaOrderDetail);
-  }).map(ctOrderDetail => ctOrderDetail.id)
-);
-
 const getOutOfDateRecordIds = (existingCtRecords, records, key, comparisonFieldPath) => (
   existingCtRecords.filter(ctRecord => {
     const correspondingJestaRecord = records.find(record => record[key] === ctRecord[key]);
@@ -42,7 +25,7 @@ const getOutOfDateRecordIds = (existingCtRecords, records, key, comparisonFieldP
 
 const existingCtRecordIsNewer = (existingCtRecord, givenRecord, comparisonFieldPath) => {
   const existingRecordLastModifiedDate = comparisonFieldPath.reduce((previous, current) => previous[current], existingCtRecord);
-  const givenRecordLastModifiedDate = givenRecord[comparisonFieldPath.pop()]
+  const givenRecordLastModifiedDate = givenRecord[comparisonFieldPath[comparisonFieldPath.length-1]]
   if (!existingRecordLastModifiedDate) return false;
 
   const existingCtRecordDate = new Date(existingRecordLastModifiedDate);
@@ -257,12 +240,11 @@ module.exports = {
   getExistingCtOrder,
   getCtOrderDetailsFromCtOrder,
   getCtOrderDetailFromCtOrder,
-  getOutOfDateOrderDetailIds,
   removeDuplicateOrderDetails,
   updateOrderDetailBatchStatus,
   getActionsFromOrderDetail,
   getActionsFromOrderDetails,
+  existingCtRecordIsNewer,
   formatOrderDetailBatchRequestBody,
-  existingCtOrderDetailIsNewer,
   getMostUpToDateOrderDetail,
 };
