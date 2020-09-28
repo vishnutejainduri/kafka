@@ -19,7 +19,7 @@ const syncShipmentBatchToCT = (ctHelpers) => async shipments => {
   console.log('existingCtShipments', existingCtShipments);
   const outOfDateShipmentIds = getOutOfDateRecordIds(existingCtShipments, shipments, 'key', [shipmentAttributeNames.SHIPMENT_LAST_MODIFIED_DATE]);
   console.log('outOfDateShipmentIds', outOfDateShipmentIds); 
-  /*const barcodesToCreateOrUpdate = removeDuplicateBarcodes(barcodes.filter(({ barcode }) => !outOfDateBarcodeIds.includes(barcode))); // we create or update all barcodes that aren't of out of date
+  /*const shipmentsToCreateOrUpdate = removeDuplicateShipments(shipments.filter(shipment => !outOfDateShipmentIds.includes(shipment.shipmentId)));
   const createdOrUpdatedBarcodes = await createOrUpdateBarcodes(barcodesToCreateOrUpdate, ctHelpers);
 
   return addBarcodesToSkus(createdOrUpdatedBarcodes, productType, ctHelpers);*/
