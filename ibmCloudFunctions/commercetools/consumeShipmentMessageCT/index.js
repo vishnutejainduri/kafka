@@ -1,4 +1,5 @@
-const { getExistingCtShipments } = require('../orderUtils');
+const { getExistingCtShipments, getOutOfDateRecordIds } = require('../orderUtils');
+const { shipmentAttributeNames } = require('../constantsCt');
 const { filterShipmentMessages, parseShipmentMessage } = require('../../lib/parseShipmentMessage');
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
@@ -16,7 +17,7 @@ const { groupByAttribute } = require('../../lib/utils');
 const syncShipmentBatchToCT = (ctHelpers) => async shipments => {
   const existingCtShipments = await getExistingCtShipments(shipments, ctHelpers);
   console.log('existingCtShipments', existingCtShipments);
-  const outOfDateShipmentIds = getOutOfDateRecordIds(existingCtShipments, shipments, 'key', 'orderLastModifiedDate');
+  const outOfDateShipmentIds = getOutOfDateRecordIds(existingCtShipments, shipments, 'key', [shipmentAttributeNames.SHIPMENT_LAST_MODIFIED_DATE]);
   console.log('outOfDateShipmentIds', outOfDateShipmentIds); 
   /*const barcodesToCreateOrUpdate = removeDuplicateBarcodes(barcodes.filter(({ barcode }) => !outOfDateBarcodeIds.includes(barcode))); // we create or update all barcodes that aren't of out of date
   const createdOrUpdatedBarcodes = await createOrUpdateBarcodes(barcodesToCreateOrUpdate, ctHelpers);

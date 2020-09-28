@@ -6,10 +6,11 @@ const {
   groupByOrderNumber,
   getExistingCtOrder,
   getCtOrderDetailsFromCtOrder,
-  getOutOfDateOrderDetailIds,
+  getOutOfDateRecordIds,
   removeDuplicateOrderDetails,
   updateOrderDetailBatchStatus
 } = require('../orderUtils');
+const { orderDetailAttributeNames } = require('../constantsCt');
 const {
   addErrorHandling,
   addLoggingToMain,
@@ -20,6 +21,7 @@ const {
 } = require('../../product-consumers/utils');
 
 const syncSalesOrderDetailBatchToCt = async (ctHelpers, salesOrderDetails) => {
+  console.log('salesOrderDetails', salesOrderDetails);
   if (salesOrderDetails.length === 0) return null;
   const orderNumber = salesOrderDetails[0].orderNumber;
   let existingCtOrder = await getExistingCtOrder(orderNumber, ctHelpers);
@@ -28,7 +30,13 @@ const syncSalesOrderDetailBatchToCt = async (ctHelpers, salesOrderDetails) => {
   }
 
   const existingCtOrderDetails = getCtOrderDetailsFromCtOrder(salesOrderDetails, existingCtOrder);
-  const outOfDateOrderDetailIds = getOutOfDateOrderDetailIds(existingCtOrderDetails, salesOrderDetails);
+  //const outOfDateOrderDetailIds = getOutOfDateOrderDetailIds(existingCtOrderDetails, salesOrderDetails);
+  console.log('existingCtOrderDetails', existingCtOrderDetails);
+  console.log('salesOrderDetails', salesOrderDetails);
+  console.log('orderDetailAttributeNames', orderDetailAttributeNames);
+  console.log('getOutOfDateRecordIds', getOutOfDateRecordIds);
+  const outOfDateOrderDetailIds = getOutOfDateRecordIds(existingCtOrderDetails, salesOrderDetails, 'id', ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE])
+  console.log('outOfDateOrderDetailIds', outOfDateOrderDetailIds);
   const orderDetailsToUpdate = removeDuplicateOrderDetails(salesOrderDetails.filter(orderDetail => (!outOfDateOrderDetailIds.includes(orderDetail.id))));
 
   return updateOrderDetailBatchStatus(
@@ -57,7 +65,7 @@ const main = params => {
       .map(addErrorHandling(msg => filterSalesOrderDetailsMessages(msg) ? msg : null))
       .map(addErrorHandling(parseSalesOrderDetailsMessage))
   );
-
+  console.log('salesOrderDetailsToUpdate', salesOrderDetailsToUpdate);
   const salesOrderDetailsGroupedByOrderNumber = groupByOrderNumber(salesOrderDetailsToUpdate);
 
   const salesOrderDetailsBatchPromises = (

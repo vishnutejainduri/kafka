@@ -43,10 +43,16 @@ const skuAttributeNames = {
 const orderAttributeNames = {
   ORDER_LAST_MODIFIED_DATE: 'orderLastModifiedDate',
 };
-
-
 const orderDetailAttributeNames = {
   ORDER_DETAIL_LAST_MODIFIED_DATE: 'orderDetailLastModifiedDate',
+};
+
+/**
+ * Custom CT shipment attributes that apply to the custom object 'shipments'
+ * @enum {String}
+ */
+const shipmentAttributeNames = {
+  SHIPMENT_LAST_MODIFIED_DATE: 'shipmentLastModifiedDate',
 };
 
 const priceAttributeNames = {
@@ -99,6 +105,7 @@ const PRODUCT_SHOULD_BE_PUBLISHED = true;
 const CT_ACTION_LIMIT = 500;
 
 module.exports = {
+  shipmentAttributeNames,
   SHIPMENT_NAMESPACE,
   BARCODE_NAMESPACE,
   KEY_VALUE_DOCUMENT,

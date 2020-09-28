@@ -31,21 +31,22 @@ const getOutOfDateOrderDetailIds = (existingCtOrderDetails, orderDetails) => (
   }).map(ctOrderDetail => ctOrderDetail.id)
 );
 
-const getOutOfDateRecordIds = (existingCtRecords, records, key, comparisonField) => (
+const getOutOfDateRecordIds = (existingCtRecords, records, key, comparisonFieldPath) => (
   existingCtRecords.filter(ctRecord => {
     const correspondingJestaRecord = records.find(record => record[key] === ctRecord[key]);
     if (!correspondingJestaRecord) return false;
-    return existingCtRecordIsNewer(ctRecord, correspondingJestaRecord, comparisonField);
+    return existingCtRecordIsNewer(ctRecord, correspondingJestaRecord, comparisonFieldPath);
   }).map(record => record[key])
 );
 
-const existingCtRecordIsNewer = (existingCtRecord, givenRecord, comparisonField) => {
-  const recordLastModifiedDate = existingCtRecord.custom.fields.orderDetailLastModifiedDate
-  if (!recordLastModifiedDate) return false;
+const existingCtRecordIsNewer = (existingCtRecord, givenRecord, comparisonFieldPath) => {
+  const existingRecordLastModifiedDate = comparisonFieldPath.reduce((previous, current) => previous[current], existingCtRecord);
+  const givenRecordLastModifiedDate = givenRecord[comparisonFieldPath.pop()]
+  if (!existingRecordLastModifiedDate) return false;
 
-  const existingCtRecordDate = new Date(recordLastModifiedDate);
+  const existingCtRecordDate = new Date(existingRecordLastModifiedDate);
 
-  return existingCtRecordDate.getTime() > givenRecord[comparisonField].getTime();
+  return existingCtRecordDate.getTime() > givenRecordLastModifiedDate.getTime();
 };
 
 const getCtOrderDetailFromCtOrder = (lineId, ctOrder) => {
