@@ -352,4 +352,5 @@ describe('removeDuplicateOrderDetails', () => {
 describe ('teststubs', () => {
   it('getOutOfDateRecordIds', () => {});
   it('existingCtRecordIsNewer', () => {});
+  it('removeDuplicateRecords', () => {});
 });

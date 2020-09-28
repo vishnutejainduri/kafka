@@ -1,4 +1,8 @@
-const { getExistingCtShipments, getOutOfDateRecordIds } = require('../orderUtils');
+const {
+  getExistingCtShipments,
+  getOutOfDateRecordIds,
+  removeDuplicateRecords
+} = require('../orderUtils');
 const { shipmentAttributeNames } = require('../constantsCt');
 const { filterShipmentMessages, parseShipmentMessage } = require('../../lib/parseShipmentMessage');
 const createError = require('../../lib/createError');
@@ -19,8 +23,9 @@ const syncShipmentBatchToCT = (ctHelpers) => async shipments => {
   console.log('existingCtShipments', existingCtShipments);
   const outOfDateShipmentIds = getOutOfDateRecordIds(existingCtShipments, shipments, 'key', [shipmentAttributeNames.SHIPMENT_LAST_MODIFIED_DATE]);
   console.log('outOfDateShipmentIds', outOfDateShipmentIds); 
-  /*const shipmentsToCreateOrUpdate = removeDuplicateShipments(shipments.filter(shipment => !outOfDateShipmentIds.includes(shipment.shipmentId)));
-  const createdOrUpdatedBarcodes = await createOrUpdateBarcodes(barcodesToCreateOrUpdate, ctHelpers);
+  const shipmentsToCreateOrUpdate = removeDuplicateRecords(shipments.filter(shipment => !outOfDateShipmentIds.includes(shipment.shipmentId)), 'shipmentId', shipmentAttributeNames.SHIPMENT_LAST_MODIFIED_DATE);
+  console.log('shipmentsToCreateOrUpdate', shipmentsToCreateOrUpdate);
+  /*const createdOrUpdatedBarcodes = await createOrUpdateBarcodes(barcodesToCreateOrUpdate, ctHelpers);
 
   return addBarcodesToSkus(createdOrUpdatedBarcodes, productType, ctHelpers);*/
   return null;
@@ -39,21 +44,21 @@ const main = params => {
     ctHelpers = getCtHelpers(params);
   }
 
-  const shipmentsToUpdate = (
+  const shipmentsToCreateOrUpdate = (
     params.messages
       .map(addErrorHandling(msg => filterShipmentMessages(msg) ? msg : null))
       .map(addErrorHandling(parseShipmentMessage))
   );
 
-  const batchedShipmentsToUpdate = groupByAttribute('orderNumber')(shipmentsToUpdate)
+  const batchedShipmentsToCreateOrUpdate = groupByAttribute('orderNumber')(shipmentsToCreateOrUpdate)
 
   const batchedShipmentsPromises = (
-    batchedShipmentsToUpdate
+    batchedShipmentsToCreateOrUpdate
       .map(addErrorHandling(syncShipmentBatchToCT(ctHelpers)))
   );
   
   return Promise.all(batchedShipmentsPromises)
-    .then(passDownBatchedErrorsAndFailureIndexes(batchedShipmentsToUpdate, params.messages))
+    .then(passDownBatchedErrorsAndFailureIndexes(batchedShipmentsToCreateOrUpdate, params.messages))
     .catch(handleErrors);
 };
 

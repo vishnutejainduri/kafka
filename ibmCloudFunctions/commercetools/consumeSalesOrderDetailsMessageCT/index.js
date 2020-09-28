@@ -7,7 +7,7 @@ const {
   getExistingCtOrder,
   getCtOrderDetailsFromCtOrder,
   getOutOfDateRecordIds,
-  removeDuplicateOrderDetails,
+  removeDuplicateRecords,
   updateOrderDetailBatchStatus
 } = require('../orderUtils');
 const { orderDetailAttributeNames } = require('../constantsCt');
@@ -31,7 +31,7 @@ const syncSalesOrderDetailBatchToCt = async (ctHelpers, salesOrderDetails) => {
 
   const existingCtOrderDetails = getCtOrderDetailsFromCtOrder(salesOrderDetails, existingCtOrder);
   const outOfDateOrderDetailIds = getOutOfDateRecordIds(existingCtOrderDetails, salesOrderDetails, 'id', ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE])
-  const orderDetailsToUpdate = removeDuplicateOrderDetails(salesOrderDetails.filter(orderDetail => (!outOfDateOrderDetailIds.includes(orderDetail.id))));
+  const orderDetailsToUpdate = removeDuplicateRecords(salesOrderDetails.filter(orderDetail => (!outOfDateOrderDetailIds.includes(orderDetail.id))), 'id', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE);
 
   return updateOrderDetailBatchStatus(
     orderDetailsToUpdate,

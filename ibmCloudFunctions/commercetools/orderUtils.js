@@ -3,15 +3,13 @@ const { groupByAttribute, getMostUpToDateObject } = require('../lib/utils');
 const { log } = require('../product-consumers/utils');
 
 const groupByOrderNumber = groupByAttribute('orderNumber');
-const groupByLineId = groupByAttribute('id');
-const getMostUpToDateOrderDetail = getMostUpToDateObject(orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE);
 
-const removeDuplicateOrderDetails = orderDetails => {
-  const orderDetailsGroupedByLineId = groupByLineId(orderDetails);
+const removeDuplicateRecords = (records, attribute, comparisonField) => {
+  const recordsGroupedByAttribute = groupByAttribute(attribute)(records);
 
-  return orderDetailsGroupedByLineId.reduce((filteredOrderDetails, orderDetailBatch) => {
-    const mostUpToDateOrderDetail = getMostUpToDateOrderDetail(orderDetailBatch);
-    return [...filteredOrderDetails, mostUpToDateOrderDetail];    
+  return recordsGroupedByAttribute.reduce((filteredRecords, recordBatch) => {
+    const mostUpToDateRecord = getMostUpToDateObject(comparisonField)(recordBatch);
+    return [...filteredRecords, mostUpToDateRecord];    
   }, []);
 };
 
@@ -232,6 +230,7 @@ const getExistingCtShipments = async (shipments, ctHelpers) => (
 );
 
 module.exports = {
+  removeDuplicateRecords,
   getOutOfDateRecordIds,
   getExistingCtShipments,
   updateOrderStatus,
@@ -239,11 +238,9 @@ module.exports = {
   getExistingCtOrder,
   getCtOrderDetailsFromCtOrder,
   getCtOrderDetailFromCtOrder,
-  removeDuplicateOrderDetails,
   updateOrderDetailBatchStatus,
   getActionsFromOrderDetail,
   getActionsFromOrderDetails,
   existingCtRecordIsNewer,
   formatOrderDetailBatchRequestBody,
-  getMostUpToDateOrderDetail,
 };
