@@ -11,7 +11,7 @@ function filterShipmentMessages(msg) {
 function parseShipmentMessage(msg) {
     return {
         orderNumber: msg.value.ORDER_NUMBER,
-        shipmentId: msg.value.SHIPMENT_ID,
+        shipmentId: msg.value.SHIPMENT_ID.toString(),
         serviceType: msg.value.SERVICE_TYPE,
         destinationSiteId: msg.value.DEST_SITE_ID,
         shipmentLastModifiedDate: new Date(msg.value.MODIFIED_DATE)

@@ -1,7 +1,8 @@
 const {
   getExistingCtShipments,
   getOutOfDateRecordIds,
-  removeDuplicateRecords
+  removeDuplicateRecords,
+  createOrUpdateShipments
 } = require('../orderUtils');
 const { shipmentAttributeNames } = require('../constantsCt');
 const { filterShipmentMessages, parseShipmentMessage } = require('../../lib/parseShipmentMessage');
@@ -25,9 +26,10 @@ const syncShipmentBatchToCT = (ctHelpers) => async shipments => {
   console.log('outOfDateShipmentIds', outOfDateShipmentIds); 
   const shipmentsToCreateOrUpdate = removeDuplicateRecords(shipments.filter(shipment => !outOfDateShipmentIds.includes(shipment.shipmentId)), 'shipmentId', shipmentAttributeNames.SHIPMENT_LAST_MODIFIED_DATE);
   console.log('shipmentsToCreateOrUpdate', shipmentsToCreateOrUpdate);
-  /*const createdOrUpdatedBarcodes = await createOrUpdateBarcodes(barcodesToCreateOrUpdate, ctHelpers);
+  const createdOrUpdatedShipments = await createOrUpdateShipments(shipmentsToCreateOrUpdate, existingCtShipments, ctHelpers);
+  console.log('createdOrUpdatedShipments', createdOrUpdatedShipments);
 
-  return addBarcodesToSkus(createdOrUpdatedBarcodes, productType, ctHelpers);*/
+  /*return addBarcodesToSkus(createdOrUpdatedBarcodes, productType, ctHelpers);*/
   return null;
 };
 

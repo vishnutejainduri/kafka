@@ -229,6 +229,29 @@ const getExistingCtShipments = async (shipments, ctHelpers) => (
     .filter(Boolean)
 );
 
+const createOrUpdateShipment = async (shipment, existingCtShipment, { client, requestBuilder }) => {
+  shipment.shipmentDetails = existingCtShipment && existingCtShipment.shipmentDetails || []
+
+  const method = 'POST';
+  const uri = requestBuilder.customObjects.build();
+  const body = JSON.stringify({
+    container: SHIPMENT_NAMESPACE,
+    key: shipment.shipmentId,
+    value: shipment
+  });
+  console.log('body', body);
+
+  const response = await client.execute({ method, uri, body });
+  return response.body;
+};
+
+const createOrUpdateShipments = (shipments, existingCtShipments, ctHelpers) => (
+  Promise.all(shipments.map(shipment => {
+    const existingCtShipment = existingCtShipments.find(existingCtShipment => existingCtShipment.shipmentId === shipment.shipmentId)
+    return createOrUpdateShipment(shipment, existingCtShipment, ctHelpers)
+  }))
+);
+
 module.exports = {
   removeDuplicateRecords,
   getOutOfDateRecordIds,
@@ -243,4 +266,5 @@ module.exports = {
   getActionsFromOrderDetails,
   existingCtRecordIsNewer,
   formatOrderDetailBatchRequestBody,
+  createOrUpdateShipments
 };
