@@ -25,5 +25,3 @@ packages:
       identityTokenRestEndpoint: $IDENTITY_TOKEN_REST_ENDPOINT
       cloudFunctionsNamespaceGuid: $CLOUD_FUNCTIONS_NAMESPACE_GUID
       messagesLogsPersistenceDays: $MESSAGES_LOGS_PERSISTENCE_DAYS
-
-

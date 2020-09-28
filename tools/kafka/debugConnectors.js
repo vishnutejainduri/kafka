@@ -30,19 +30,21 @@ async function debug({
 }) {
     switch (command) {
         case 'getInfo': {
-          return await getInfo(env);
+          return getInfo(env);
         }
         case 'get': {
           const connectorNames = options[0] && options[0].split(',');
-          return (await Promise.all(connectorNames.map(name => getConnector(kubeParams, name)))).map(info => ({ ...info, tasks: JSON.stringify(info.tasks)}));
+          return (await Promise.all(connectorNames.map(name => getConnector(kubeParams, name))))
+            .map(info => ({ ...info, tasks: JSON.stringify(info.tasks)}));
         }
         case 'restart': {
           const connectorNames = options[0] && options[0].split(',');
-          return (await Promise.all(connectorNames.map(name => restartConnector(kubeParams, name))));
+          return Promise.all(connectorNames.map(name => restartConnector(kubeParams, name)));
         }
         case 'getTasks': {
           const connectorNames = options[0] && options[0].split(',');
-          return (await Promise.all(connectorNames.map(name => getConnector(kubeParams, name)))).map(({ tasks }) => tasks);
+          return (await Promise.all(connectorNames.map(name => getConnector(kubeParams, name))))
+            .map(({ tasks }) => tasks);
         }
         case 'restartFailedTasks': {
           const connectorNames = options[0] && options[0].split(',');

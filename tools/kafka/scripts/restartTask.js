@@ -46,21 +46,19 @@ async function restartTask(kubeParams, connectorName, taskId) {
     });
     //here we have the full response, html or json object
     let info = null;
-    let parsingError = false;
     let error = null;
 
     if (statusCode < 200 || statusCode >= 300) {
       error = new Error(`Server call not successful with status code: ${statusCode}`);
       error.debugInfo = { body };
-    } else if (parsingError) {
-      error = parsingError;
-      error.debugInfo = { body };
-    }
 
-    try {
-      info = JSON.parse(body);
-    } catch (error) {
-      parsingError = true;
+    } else {
+      try {
+        info = JSON.parse(body);
+      } catch (parsingError) {
+        error = parsingError;
+        error.debugInfo = { body };
+      }
     }
 
     if (error) {
