@@ -15,14 +15,6 @@ const removeDuplicateOrderDetails = orderDetails => {
   }, []);
 };
 
-const getOutOfDateRecordIds = (existingCtRecords, records, key, comparisonFieldPath) => (
-  existingCtRecords.filter(ctRecord => {
-    const correspondingJestaRecord = records.find(record => record[key] === ctRecord[key]);
-    if (!correspondingJestaRecord) return false;
-    return existingCtRecordIsNewer(ctRecord, correspondingJestaRecord, comparisonFieldPath);
-  }).map(record => record[key])
-);
-
 const existingCtRecordIsNewer = (existingCtRecord, givenRecord, comparisonFieldPath) => {
   const existingRecordLastModifiedDate = comparisonFieldPath.reduce((previous, current) => previous[current], existingCtRecord);
   const givenRecordLastModifiedDate = givenRecord[comparisonFieldPath[comparisonFieldPath.length-1]]
@@ -32,6 +24,14 @@ const existingCtRecordIsNewer = (existingCtRecord, givenRecord, comparisonFieldP
 
   return existingCtRecordDate.getTime() > givenRecordLastModifiedDate.getTime();
 };
+
+const getOutOfDateRecordIds = (existingCtRecords, records, key, comparisonFieldPath) => (
+  existingCtRecords.filter(ctRecord => {
+    const correspondingJestaRecord = records.find(record => record[key] === ctRecord[key]);
+    if (!correspondingJestaRecord) return false;
+    return existingCtRecordIsNewer(ctRecord, correspondingJestaRecord, comparisonFieldPath);
+  }).map(record => record[key])
+);
 
 const getCtOrderDetailFromCtOrder = (lineId, ctOrder) => {
   const orderDetails = ctOrder.lineItems;
@@ -213,11 +213,6 @@ const updateOrderDetailBatchStatus = async (orderDetailsToUpdate, existingCtOrde
   }
 };
 
-const getExistingCtShipments = async (shipments, ctHelpers) => (
-  (await Promise.all(shipments.map(shipment => getShipmentFromCt(shipment, ctHelpers))))
-    .filter(Boolean)
-);
-
 const getShipmentFromCt = async (shipment, { client, requestBuilder }) => {
   const method = 'GET';
   const uri = `${requestBuilder.customObjects.build()}/${SHIPMENT_NAMESPACE}/${shipment.shipmentId}`;
@@ -231,6 +226,10 @@ const getShipmentFromCt = async (shipment, { client, requestBuilder }) => {
   }
 };
 
+const getExistingCtShipments = async (shipments, ctHelpers) => (
+  (await Promise.all(shipments.map(shipment => getShipmentFromCt(shipment, ctHelpers))))
+    .filter(Boolean)
+);
 
 module.exports = {
   getOutOfDateRecordIds,
