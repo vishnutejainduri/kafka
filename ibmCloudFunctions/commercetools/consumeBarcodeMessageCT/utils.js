@@ -1,7 +1,7 @@
 const { getExistingCtStyle, createAndPublishStyle } = require('../styleUtils');
 const { skuAttributeNames, BARCODE_NAMESPACE, KEY_VALUE_DOCUMENT, isStaged } = require('../constantsCt');
 const { getCtSkusFromCtStyle, getCtSkuAttributeValue, getCreationAction } = require('../consumeSkuMessageCT/utils');
-const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
+const { groupByAttribute, getMostUpToDateObject, removeDuplicateIds } = require('../../lib/utils');
 
 const groupBarcodesByStyleId = groupByAttribute('styleId');
 
@@ -29,13 +29,6 @@ const createOrUpdateBarcode = async (barcode, { client, requestBuilder }) => {
 
   const response = await client.execute({ method, uri, body });
   return response.body;
-};
-
-const removeDuplicateIds = keyValueDocumentReferences => {
-    const ids = keyValueDocumentReferences.map(({ id }) => id);
-    const uniqueIds = Array.from(new Set(ids));
-    const uniqueKeyValueDocumentReferences = uniqueIds.map(id => ({ id, typeId: KEY_VALUE_DOCUMENT }));
-    return uniqueKeyValueDocumentReferences;
 };
 
 const existingCtBarcodeIsNewer = (existingCtBarcode, givenBarcode) => {
@@ -163,7 +156,6 @@ module.exports = {
   getBarcodeBatchUpdateActions,
   existingCtBarcodeIsNewer,
   getExistingCtBarcodes,
-  removeDuplicateIds,
   groupBarcodesByStyleId,
   getOutOfDateBarcodeIds,
   getMissingSkuIds,

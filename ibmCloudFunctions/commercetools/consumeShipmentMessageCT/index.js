@@ -2,7 +2,8 @@ const {
   getExistingCtShipments,
   getOutOfDateRecordIds,
   removeDuplicateRecords,
-  createOrUpdateShipments
+  createOrUpdateShipments,
+  addShipmentsToOrder
 } = require('../orderUtils');
 const { shipmentAttributeNames } = require('../constantsCt');
 const { filterShipmentMessages, parseShipmentMessage } = require('../../lib/parseShipmentMessage');
@@ -21,16 +22,17 @@ const { groupByAttribute } = require('../../lib/utils');
 
 const syncShipmentBatchToCT = (ctHelpers) => async shipments => {
   const existingCtShipments = await getExistingCtShipments(shipments, ctHelpers);
-  console.log('existingCtShipments', existingCtShipments);
-  const outOfDateShipmentIds = getOutOfDateRecordIds(existingCtShipments, shipments, 'key', [shipmentAttributeNames.SHIPMENT_LAST_MODIFIED_DATE]);
-  console.log('outOfDateShipmentIds', outOfDateShipmentIds); 
+  const outOfDateShipmentIds = getOutOfDateRecordIds({
+    existingCtRecords: existingCtShipments,
+    records: shipments,
+    key: 'shipmentId',
+    ctKey: 'key',
+    comparisonFieldPath: ['value', shipmentAttributeNames.SHIPMENT_LAST_MODIFIED_DATE]
+  });
   const shipmentsToCreateOrUpdate = removeDuplicateRecords(shipments.filter(shipment => !outOfDateShipmentIds.includes(shipment.shipmentId)), 'shipmentId', shipmentAttributeNames.SHIPMENT_LAST_MODIFIED_DATE);
-  console.log('shipmentsToCreateOrUpdate', shipmentsToCreateOrUpdate);
   const createdOrUpdatedShipments = await createOrUpdateShipments(shipmentsToCreateOrUpdate, existingCtShipments, ctHelpers);
-  console.log('createdOrUpdatedShipments', createdOrUpdatedShipments);
 
-  /*return addBarcodesToSkus(createdOrUpdatedBarcodes, productType, ctHelpers);*/
-  return null;
+  return addShipmentsToOrder(createdOrUpdatedShipments, ctHelpers);
 };
 
 // Holds two CT helpers, including the CT client. It's declared outside of

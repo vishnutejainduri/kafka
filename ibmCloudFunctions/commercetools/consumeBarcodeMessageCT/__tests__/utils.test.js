@@ -2,12 +2,12 @@ const {
   existingCtBarcodeIsNewer,
   getSingleSkuBarcodeUpdateAction,
   getBarcodeBatchUpdateActions,
-  removeDuplicateIds,
   groupBarcodesByStyleId,
   getOutOfDateBarcodeIds,
   getMissingSkuIds,
   removeDuplicateBarcodes
 } = require('../utils');
+const { removeDuplicateIds } = require('../../../lib/utils');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');

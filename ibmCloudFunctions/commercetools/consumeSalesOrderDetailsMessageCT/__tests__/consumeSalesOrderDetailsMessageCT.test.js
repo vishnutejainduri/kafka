@@ -254,13 +254,37 @@ describe('getOutOfDateRecordIds', () => {
   upToDateOrderDetails3.id = 'id3';
 
   it('returns an array with the out of date line items', () => {
-    expect(getOutOfDateRecordIds(mockOrderMultiLine.lineItems, [outOfDateOrderDetails1, upToDateOrderDetails2, outOfDateOrderDetails3], 'id', ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE])).toEqual(['id', 'id3']);
-    expect(getOutOfDateRecordIds(mockOrderMultiLine.lineItems, [outOfDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3], 'id', ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE])).toEqual(['id', 'id2']);
-    expect(getOutOfDateRecordIds(mockOrderMultiLine.lineItems, [upToDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3], 'id', ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE])).toEqual(['id2']);
+    expect(getOutOfDateRecordIds({
+      existingCtRecords: mockOrderMultiLine.lineItems,
+      records: [outOfDateOrderDetails1, upToDateOrderDetails2, outOfDateOrderDetails3],
+      key: 'id',
+      ctKey: 'id',
+      comparisonFieldPath: ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE]
+    })).toEqual(['id', 'id3']);
+    expect(getOutOfDateRecordIds({
+      existingCtRecords: mockOrderMultiLine.lineItems,
+      records: [outOfDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3],
+      key: 'id',
+      ctKey: 'id',
+      comparisonFieldPath: ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE]
+    })).toEqual(['id', 'id2']);
+    expect(getOutOfDateRecordIds({
+      existingCtRecords: mockOrderMultiLine.lineItems,
+      records: [upToDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3],
+      key: 'id',
+      ctKey: 'id',
+      comparisonFieldPath: ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE]
+    })).toEqual(['id2']);
   });
 
   it('returns an empty array when there are no out of date line items', () => {
-    expect(getOutOfDateRecordIds(mockOrderMultiLine.lineItems, ['id', 'id2', 'id3'], 'id', ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE])).toEqual([]);
+    expect(getOutOfDateRecordIds({
+      existingCtRecords: mockOrderMultiLine.lineItems,
+      records: ['id', 'id2', 'id3'],
+      key: 'id',
+      ctKey: 'id',
+      comparisonFieldPath: ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE]
+    })).toEqual([]);
   });
 });
 

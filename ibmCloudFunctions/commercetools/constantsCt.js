@@ -42,6 +42,7 @@ const skuAttributeNames = {
  */
 const orderAttributeNames = {
   ORDER_LAST_MODIFIED_DATE: 'orderLastModifiedDate',
+  SHIPMENTS: 'shipments'
 };
 const orderDetailAttributeNames = {
   ORDER_DETAIL_LAST_MODIFIED_DATE: 'orderDetailLastModifiedDate',

@@ -1,5 +1,5 @@
-const { orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates, SHIPMENT_NAMESPACE } = require('./constantsCt');
-const { groupByAttribute, getMostUpToDateObject } = require('../lib/utils');
+const { orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates, SHIPMENT_NAMESPACE, KEY_VALUE_DOCUMENT } = require('./constantsCt');
+const { groupByAttribute, getMostUpToDateObject, removeDuplicateIds } = require('../lib/utils');
 const { log } = require('../product-consumers/utils');
 
 const groupByOrderNumber = groupByAttribute('orderNumber');
@@ -14,7 +14,7 @@ const removeDuplicateRecords = (records, attribute, comparisonField) => {
 };
 
 const existingCtRecordIsNewer = (existingCtRecord, givenRecord, comparisonFieldPath) => {
-  const existingRecordLastModifiedDate = comparisonFieldPath.reduce((previous, current) => previous[current], existingCtRecord);
+  const existingRecordLastModifiedDate = comparisonFieldPath.reduce((previous, current) => previous[current], existingCtRecord)
   const givenRecordLastModifiedDate = givenRecord[comparisonFieldPath[comparisonFieldPath.length-1]]
   if (!existingRecordLastModifiedDate) return false;
 
@@ -23,12 +23,12 @@ const existingCtRecordIsNewer = (existingCtRecord, givenRecord, comparisonFieldP
   return existingCtRecordDate.getTime() > givenRecordLastModifiedDate.getTime();
 };
 
-const getOutOfDateRecordIds = (existingCtRecords, records, key, comparisonFieldPath) => (
+const getOutOfDateRecordIds = ({ existingCtRecords, records, key, ctKey, comparisonFieldPath }) => (
   existingCtRecords.filter(ctRecord => {
-    const correspondingJestaRecord = records.find(record => record[key] === ctRecord[key]);
+    const correspondingJestaRecord = records.find(record => record[key] === ctRecord[ctKey]);
     if (!correspondingJestaRecord) return false;
     return existingCtRecordIsNewer(ctRecord, correspondingJestaRecord, comparisonFieldPath);
-  }).map(record => record[key])
+  }).map(ctRecord => ctRecord[ctKey])
 );
 
 const getCtOrderDetailFromCtOrder = (lineId, ctOrder) => {
@@ -239,7 +239,6 @@ const createOrUpdateShipment = async (shipment, existingCtShipment, { client, re
     key: shipment.shipmentId,
     value: shipment
   });
-  console.log('body', body);
 
   const response = await client.execute({ method, uri, body });
   return response.body;
@@ -251,6 +250,37 @@ const createOrUpdateShipments = (shipments, existingCtShipments, ctHelpers) => (
     return createOrUpdateShipment(shipment, existingCtShipment, ctHelpers)
   }))
 );
+
+const getShipmentsOrderUpdateActions = (shipments, order) => {
+  const existingShipmentReferences = order.custom.fields[orderAttributeNames.SHIPMENTS] || [];
+  const newShipmentReferences = shipments.map(shipment => ({ id: shipment.id, typeId: KEY_VALUE_DOCUMENT }));
+  const allShipmentReferences = removeDuplicateIds([...existingShipmentReferences, ...newShipmentReferences]);
+
+  return [{
+    action: 'setCustomField',
+    name: orderAttributeNames.SHIPMENTS,
+    value: allShipmentReferences
+  }]
+};
+
+const addShipmentsToOrder = async (shipments, ctHelpers) => {
+  if (shipments.length === 0) return null;
+  const { client, requestBuilder } = ctHelpers;
+  const orderNumber = shipments[0].value.orderNumber;
+
+  const existingCtOrder = await getExistingCtOrder(orderNumber, ctHelpers);
+  if (!existingCtOrder) {
+    log.error(`Order number does not exist in CT for shipment ${orderNumber} ${shipments[0].key}`);
+    throw new Error('Order number does not exist');
+  }
+
+  const actions = getShipmentsOrderUpdateActions(shipments, existingCtOrder);
+  const method = 'POST';
+  const uri = requestBuilder.orders.byId(existingCtOrder.id).build();
+  const body = JSON.stringify({ version: existingCtOrder.version, actions });
+
+  return client.execute({ method, uri, body });
+};
 
 module.exports = {
   removeDuplicateRecords,
@@ -266,5 +296,6 @@ module.exports = {
   getActionsFromOrderDetails,
   existingCtRecordIsNewer,
   formatOrderDetailBatchRequestBody,
-  createOrUpdateShipments
+  createOrUpdateShipments,
+  addShipmentsToOrder
 };

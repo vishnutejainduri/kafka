@@ -1,3 +1,13 @@
+const { KEY_VALUE_DOCUMENT } = require('../commercetools/constantsCt');
+
+const removeDuplicateIds = keyValueDocumentReferences => {
+    const ids = keyValueDocumentReferences.map(({ id }) => id);
+    const uniqueIds = Array.from(new Set(ids));
+    const uniqueKeyValueDocumentReferences = uniqueIds.map(id => ({ id, typeId: KEY_VALUE_DOCUMENT }));
+    return uniqueKeyValueDocumentReferences;
+};
+
+
 // https://stackoverflow.com/a/2970667/10777917
 function camelCase(str) {
     return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
@@ -51,5 +61,6 @@ const getMostUpToDateObject = dateName => objects => {
 module.exports = {
     camelCase,
     groupByAttribute,
-    getMostUpToDateObject
+    getMostUpToDateObject,
+    removeDuplicateIds
 };

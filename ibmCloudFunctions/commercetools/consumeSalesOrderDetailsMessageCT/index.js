@@ -30,7 +30,13 @@ const syncSalesOrderDetailBatchToCt = async (ctHelpers, salesOrderDetails) => {
   }
 
   const existingCtOrderDetails = getCtOrderDetailsFromCtOrder(salesOrderDetails, existingCtOrder);
-  const outOfDateOrderDetailIds = getOutOfDateRecordIds(existingCtOrderDetails, salesOrderDetails, 'id', ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE])
+  const outOfDateOrderDetailIds = getOutOfDateRecordIds({
+    existingCtRecords: existingCtOrderDetails,
+    records: salesOrderDetails,
+    key: 'id',
+    ctKey: 'id',
+    comparisonFieldPath: ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE]
+  });
   const orderDetailsToUpdate = removeDuplicateRecords(salesOrderDetails.filter(orderDetail => (!outOfDateOrderDetailIds.includes(orderDetail.id))), 'id', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE);
 
   return updateOrderDetailBatchStatus(
