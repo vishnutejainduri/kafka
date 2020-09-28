@@ -17,6 +17,9 @@
       handle-messages-logs-rule:
         action: handle-messages-logs
         trigger: every-ten-minutes
+      monitor-kafka-connect-rule:
+        action: monitor-kafka-connect
+        trigger: every-ten-minutes
       cleanup-messages-logs-rule:
         action: cleanup-messages-logs
         trigger: every-midnight

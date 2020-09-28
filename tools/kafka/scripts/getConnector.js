@@ -1,6 +1,5 @@
 const https = require('https');
 
-const getKubeEnv = require('../lib/getKubeEnv');
 const getSessionToken = require('../lib/getSessionToken');
 const { formatPathStart, retry } = require('../utils');
 
@@ -8,7 +7,7 @@ async function callGetConnector(kubeHost, token, connectorName, pathStart) {
     const options = {
         hostname: kubeHost.replace('https://', ''),
         port: 443,
-        path: `${formatPathStart(pathStart)}/connectors/${connectorName}`,
+        path: `${formatPathStart(pathStart)}/connectors/${connectorName}/status`,
         method: 'GET',
         headers: {
             Authorization: `${token.token_type} ${token.access_token}`
@@ -36,27 +35,24 @@ async function callGetConnector(kubeHost, token, connectorName, pathStart) {
     });
 }
 
-async function getConnector(platformEnv, connectorName) {
-    const kubeParams = getKubeEnv(platformEnv);
+async function getConnector(kubeParams, connectorName) {
     const token = await retry(getSessionToken)(kubeParams);
     const { body, statusCode } = await retry(callGetConnector)(kubeParams.host, token, connectorName, kubeParams.pathStart);
     //here we have the full response, html or json object
     let info = null;
-    let parsingError = false;
     let error = null;
 
     if (statusCode < 200 || statusCode >= 300) {
       error = new Error(`Server call not successful with status code: ${statusCode}`);
       error.debugInfo = { body };
-    } else if (parsingError) {
-      error = parsingError;
-      error.debugInfo = { body };
-    }
 
-    try {
-      info = JSON.parse(body);
-    } catch (error) {
-      parsingError = true;
+    } else {
+      try {
+        info = JSON.parse(body);
+      } catch (parsingError) {
+        error = parsingError;
+        error.debugInfo = { body };
+      }
     }
 
     if (error) {

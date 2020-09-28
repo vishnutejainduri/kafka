@@ -1,6 +1,5 @@
 const https = require('https');
 
-const getKubeEnv = require('../lib/getKubeEnv');
 const getSessionToken = require('../lib/getSessionToken');
 const { formatPathStart, retry } = require('../utils');
 
@@ -36,8 +35,7 @@ async function callGetConnectorNames(kubeHost, token, pathStart) {
     });
 }
 
-async function getConnectorNames(platformEnv) {
-    const kubeParams = getKubeEnv(platformEnv);
+async function getConnectorNames(kubeParams) {
     const token = await retry(getSessionToken)(kubeParams);
     const { body, statusCode } = await retry(callGetConnectorNames)(kubeParams.host, token, kubeParams.pathStart);
     //here we have the full response, html or json object

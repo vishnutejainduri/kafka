@@ -214,6 +214,17 @@
         limits:
           memorySize: 2048
           timeout: 600000
+    monitor-kafka-connect:
+        location: ./product-consumers/monitorKafkaConnect/dist/bundle.js
+        inputs:
+          kubeUsername: $KUBE_USERNAME
+          kubePassword: $KUBE_PASSWORD
+          kubeTenant: $KUBE_TENANT
+          kubeHost: $KUBE_HOST
+          kafkaConnectKubePathStart: KAFKA_CONNECT_KUBE_PATH_START
+        limits:
+          memorySize: 256
+          timeout: 600000
     sequences:
       update-pricing-sequence:
         actions: consume-sale-price,update-algolia-price-binding-service
