@@ -252,7 +252,7 @@ const createOrUpdateShipments = (shipments, existingCtShipments, ctHelpers) => (
 );
 
 const getShipmentsOrderUpdateActions = (shipments, order) => {
-  const existingShipmentReferences = order.custom.fields[orderAttributeNames.SHIPMENTS] || [];
+  const existingShipmentReferences = order && order.custom && order.custom.fields[orderAttributeNames.SHIPMENTS] || [];
   const newShipmentReferences = shipments.map(shipment => ({ id: shipment.id, typeId: KEY_VALUE_DOCUMENT }));
   const allShipmentReferences = removeDuplicateIds([...existingShipmentReferences, ...newShipmentReferences]);
 
@@ -297,5 +297,6 @@ module.exports = {
   existingCtRecordIsNewer,
   formatOrderDetailBatchRequestBody,
   createOrUpdateShipments,
-  addShipmentsToOrder
+  addShipmentsToOrder,
+  getShipmentsOrderUpdateActions
 };
