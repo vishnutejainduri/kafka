@@ -11,7 +11,7 @@ function filterSalesOrderDetailsMessages(msg) {
 function parseSalesOrderDetailsMessage(msg) {
     return {
         id: msg.value.EXT_REF_ID,
-        orderNumber: msg.value.SALES_ORDER_ID,
+        orderNumber: msg.value.ORDER_NUMBER,
         orderStatus: msg.value.STATUS,
         orderDetailLastModifiedDate: new Date(msg.value.MODIFIED_DATE)
     };

@@ -1,5 +1,6 @@
 const { orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates } = require('./constantsCt');
 const { groupByAttribute, getMostUpToDateObject } = require('../lib/utils');
+const { log } = require('../product-consumers/utils');
 
 const groupByOrderNumber = groupByAttribute('orderNumber');
 const groupByLineId = groupByAttribute('id');
@@ -116,6 +117,7 @@ const updateOrderStatus = async (ctHelpers, order) => {
   const existingCtOrder = await getExistingCtOrder(order.orderNumber, ctHelpers);
 
   if (!existingCtOrder) {
+    log.error(`Order number does not exist in CT ${order.orderNumber}`);
     throw new Error('Order number does not exist');
   }
   if (existingCtOrderIsNewer(existingCtOrder, order)) {
@@ -126,6 +128,11 @@ const updateOrderStatus = async (ctHelpers, order) => {
 };
 
 const getActionsFromOrderDetail = (orderDetail, existingOrderDetail) => {
+  if (!existingOrderDetail) {
+    log.error(`Order line id does not exist in CT order. Order Number: ${orderDetail.orderNumber}, Line Id: ${orderDetail.id}`);
+    throw new Error('Order line id does not exist');
+  }
+
   const customAttributesToUpdate = Object.values(orderDetailAttributeNames);
 
   let customTypeUpdateAction = null;
@@ -164,38 +171,45 @@ const getActionsFromOrderDetail = (orderDetail, existingOrderDetail) => {
     : null;
 
   const allUpdateActions = [...customAttributeUpdateActions, customTypeUpdateAction, statusUpdateAction].filter(Boolean);
-
   return allUpdateActions;
 };
 
-const getActionsFromOrderDetails = (orderDetails, existingCtOrderDetails) => (
-  orderDetails.reduce((previousActions, orderDetail) => {
+const getActionsFromOrderDetails = (orderDetails, existingCtOrderDetails) => {
+  let orderDetailUpdateError = null;
+  const actions = orderDetails.reduce((previousActions, orderDetail) => {
     const matchingCtOrderDetail = existingCtOrderDetails.find(ctOrderDetail => ctOrderDetail.id === orderDetail.id);
-    const attributeUpdateActions = getActionsFromOrderDetail(orderDetail, matchingCtOrderDetail);
 
-    if (matchingCtOrderDetail) return [...previousActions, ...attributeUpdateActions];
-
+    try {
+      const attributeUpdateActions = getActionsFromOrderDetail(orderDetail, matchingCtOrderDetail)
+      if (matchingCtOrderDetail) return [...previousActions, ...attributeUpdateActions];
+    } catch (error) {
+      orderDetailUpdateError = error
+    }
     return [...previousActions];
   }, [])
-);
 
-const formatOrderDetailBatchRequestBody = (orderDetailsToCreateOrUpdate, ctOrder, existingCtOrderDetails) => {
-  const actions = getActionsFromOrderDetails(orderDetailsToCreateOrUpdate, existingCtOrderDetails);
-
-  return JSON.stringify({
-    version: ctOrder.version,
-    actions
-  });
+  return { orderDetailUpdateError, actions }
 };
 
-const updateOrderDetailBatchStatus = (orderDetailsToUpdate, existingCtOrderDetails, existingCtOrder, { client, requestBuilder }) => {
+const formatOrderDetailBatchRequestBody = (orderDetailsToCreateOrUpdate, ctOrder, existingCtOrderDetails) => {
+  const { actions, orderDetailUpdateError } = getActionsFromOrderDetails(orderDetailsToCreateOrUpdate, existingCtOrderDetails);
+
+  return { body: JSON.stringify({ version: ctOrder.version, actions }), error: orderDetailUpdateError }
+};
+
+const updateOrderDetailBatchStatus = async (orderDetailsToUpdate, existingCtOrderDetails, existingCtOrder, { client, requestBuilder }) => {
   if (orderDetailsToUpdate.length === 0) return null;
 
   const method = 'POST';
   const uri = requestBuilder.orders.byId(existingCtOrder.id).build();
-  const body = formatOrderDetailBatchRequestBody(orderDetailsToUpdate, existingCtOrder, existingCtOrderDetails);
+  const { body, error } = formatOrderDetailBatchRequestBody(orderDetailsToUpdate, existingCtOrder, existingCtOrderDetails);
 
-  return client.execute({ method, uri, body });
+  if (error) {
+    await client.execute({ method, uri, body });
+    return error
+  } else {
+    return client.execute({ method, uri, body });
+  }
 };
 
 module.exports = {

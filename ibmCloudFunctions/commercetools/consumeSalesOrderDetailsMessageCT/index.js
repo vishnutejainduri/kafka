@@ -24,6 +24,7 @@ const syncSalesOrderDetailBatchToCt = async (ctHelpers, salesOrderDetails) => {
   const orderNumber = salesOrderDetails[0].orderNumber;
   let existingCtOrder = await getExistingCtOrder(orderNumber, ctHelpers);
   if (!existingCtOrder) {
+    log.error(`Order number does not exist in CT ${orderNumber}`);
     throw new Error('Order number does not exist');
   }
 
