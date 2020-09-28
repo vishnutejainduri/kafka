@@ -1,15 +1,14 @@
 const https = require('https');
 
-const getKubeEnv = require('../lib/getKubeEnv');
 const getSessionToken = require('../lib/getSessionToken');
 const { formatPathStart, retry } = require('../utils');
 
-async function callGetInfo(kubeHost, token, pathStart) {
+async function callRestartConnector(kubeHost, token, connectorName, pathStart) {
     const options = {
         hostname: kubeHost.replace('https://', ''),
         port: 443,
-        path: `${formatPathStart(pathStart)}/`,
-        method: 'GET',
+        path: `${formatPathStart(pathStart)}/connectors/${connectorName}/restart`,
+        method: 'POST',
         headers: {
             Authorization: `${token.token_type} ${token.access_token}`
         }
@@ -36,10 +35,9 @@ async function callGetInfo(kubeHost, token, pathStart) {
     });
 }
 
-async function getInfo(platformEnv) {
-    const kubeParams = getKubeEnv(platformEnv);
+async function resetConnector(kubeParams, connectorName) {
     const token = await retry(getSessionToken)(kubeParams);
-    const { body, statusCode } = await retry(callGetInfo)(kubeParams.host, token, kubeParams.pathStart);
+    const { body, statusCode } = await retry(callRestartConnector)(kubeParams.host, token, connectorName, kubeParams.pathStart);
     //here we have the full response, html or json object
     let info = null;
     let error = null;
@@ -64,4 +62,4 @@ async function getInfo(platformEnv) {
     return info;
 }
 
-module.exports = getInfo;
+module.exports = resetConnector;

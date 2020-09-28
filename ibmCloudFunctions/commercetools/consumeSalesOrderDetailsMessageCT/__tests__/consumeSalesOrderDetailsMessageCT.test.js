@@ -130,7 +130,7 @@ describe('getActionsFromOrderDetail', () => {
 });
 
 describe('formatOrderDetailBatchRequestBody', () => {
-  it('returns a string', () => {
+  it('returns an object', () => {
     expect(typeof formatOrderDetailBatchRequestBody(orderDetails, mockOrder, mockOrder.lineItems) === 'object').toBe(true);
   });
 

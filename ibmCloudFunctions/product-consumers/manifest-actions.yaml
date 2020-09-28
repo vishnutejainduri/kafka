@@ -1,12 +1,13 @@
-    # Functions that are invoked by the binding service, which have names ending in -binding e.g. consume-sku-inventory-message-binding-service, should finish in less than 60s.
+    # Functions that are invoked by the binding service i.e. those which are not associated with the rules define in manifest-rules-iam, should finish in less than 60s.
     # Functions within a sequence that is invoked by the binding service should finish in less than 60s divided by total number of steps in the sequence.
+    # Functions that are invoked by both the binding service and openwhisk triggers, e.g. update-algolia-price, have two versions where one ends with '-binding-service' and has a reduced runtime.
     actions:
       consume-catalog-message:
         location: ./product-consumers/consumeCatalogMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 29000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
@@ -16,7 +17,7 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           algoliaDeleteCreateQueue: $ALGOLIA_DELETE_CREATE_QUEUE
@@ -26,7 +27,7 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
@@ -45,7 +46,7 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           collectionName: $STORES_COLLECTION_NAME
           inventoryCollectionName: $INVENTORY_COLLECTION_NAME
@@ -56,7 +57,7 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
           stylesCollectionName: $STYLES_COLLECTION_NAME
@@ -66,11 +67,11 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           collectionName: $BARCODES_COLLECTION_NAME
           topicName: barcodes-connect-jdbc
-      consume-sku-inventory-message-binding-service:
+      consume-sku-inventory-message:
         location: ./product-consumers/consumeSkuInventoryMessage/dist/bundle.js
         runtime: nodejs:10
         limits:
@@ -83,7 +84,7 @@
           storesCollectionName: $STORES_COLLECTION_NAME
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: inventory-connect-jdbc-SKUINVENTORY
-      calculate-available-to-sell-binding-service:
+      calculate-available-to-sell:
         location: ./product-consumers/calculateAvailableToSell/dist/bundle.js
         runtime: nodejs:10
         limits:
@@ -105,7 +106,7 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           topicName: styles-connect-jdbc-CATALOG
@@ -181,7 +182,7 @@
         runtime: nodejs:10
         limits:
           memorySize: 2048
-          timeout: 600000
+          timeout: 58000
         inputs:
           collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
           topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
@@ -214,10 +215,21 @@
         limits:
           memorySize: 2048
           timeout: 600000
+    monitor-kafka-connect:
+        location: ./product-consumers/monitorKafkaConnect/dist/bundle.js
+        inputs:
+          kubeUsername: $KUBE_USERNAME
+          kubePassword: $KUBE_PASSWORD
+          kubeTenant: $KUBE_TENANT
+          kubeHost: $KUBE_HOST
+          kafkaConnectKubePathStart: KAFKA_CONNECT_KUBE_PATH_START
+        limits:
+          memorySize: 256
+          timeout: 600000
     sequences:
       update-pricing-sequence:
         actions: consume-sale-price,update-algolia-price-binding-service
       update-catalog-sequence:
-        actions: consume-catalog-message,update-algolia-price
+        actions: consume-catalog-message,update-algolia-price-binding-service
       update-inventory-sequence:
-        actions: consume-sku-inventory-message-binding-service,calculate-available-to-sell-binding-service
+        actions: consume-sku-inventory-message,calculate-available-to-sell

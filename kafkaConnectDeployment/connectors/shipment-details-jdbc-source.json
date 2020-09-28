@@ -1,0 +1,18 @@
+{
+  "name": "shipment-details-jdbc-source",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "schema.pattern": "E_SHIPMENT_DETAILS",
+    "timestamp.column.name": "MODIFIED_DATE",
+    "table.poll.interval.ms": 3600000,
+    "mode": "timestamp",
+    "query": "SELECT * FROM (SELECT esd.SHIPMENT_ID, es.WFE_TRANS_ID AS ORDER_NUMBER, esd.STATUS, esd.TRACKING_NUMBER, esd.CARRIER_ID, esd.QTY_SHIPPED, esod.EXT_REF_ID, esd.MODIFIED_DATE FROM EDOM.E_SHIPMENT_DETAILS esd INNER JOIN (SELECT SHIPMENT_ID, SALES_ORDER_ID, WFE_TRANS_ID FROM EDOM.E_SHIPMENTS) es ON esd.SHIPMENT_ID = es.SHIPMENT_ID INNER JOIN (SELECT SALES_ORDER_ID, EXT_REF_ID, LINE FROM EDOM.E_SALES_ORDER_DETAILS) esod ON esod.SALES_ORDER_ID = es.SALES_ORDER_ID AND esod.LINE = esd.SALES_ORDER_LINE_ID WHERE esd.STATUS != 'CANCELLED' AND esd.STATUS != 'FAILED')",
+    "topic.prefix": "shipment-details-connect-jdbc",
+    "validate.non.null": "false",
+    "numeric.mapping": "best_fit",
+    "poll.interval.ms": 60000, 
+    "offset.flush.timeout.ms": 60000
+  }
+}
