@@ -11,6 +11,9 @@ const getAtsUpdateActionsFromAtsBySku = atsBySku =>
     staged: isStaged
   }))
 
+/**
+ * @returns {{styleId: string, ok: true} | Error>}
+ */
 const updateSkuAtsForSingleCtProduct = ctHelpers => async atsBySku => {
   const { client, requestBuilder } = ctHelpers
 
@@ -24,18 +27,19 @@ const updateSkuAtsForSingleCtProduct = ctHelpers => async atsBySku => {
     actions: atsUpdateActions
   })
 
-  return client.execute({
+  await client.execute({
     body,
     method: 'POST',
     uri
   })
+  return { styleId, ok: true }
 }
 
-const updateSkuAtsForManyCtProductsByBatchedSkuAts = (skuAtsBatchedByStyleId, ctHelpers) =>
+const updateSkuAtsForManyCtProductsBatchedByStyleId = (skuAtsBatchedByStyleId, ctHelpers) =>
   Promise.all(skuAtsBatchedByStyleId.map(addErrorHandling(updateSkuAtsForSingleCtProduct(ctHelpers))))
 
 module.exports = {
   getAtsUpdateActionsFromAtsBySku,
-  updateSkuAtsForManyCtProductsByBatchedSkuAts,
+  updateSkuAtsForManyCtProductsBatchedByStyleId,
   updateSkuAtsForSingleCtProduct
 }

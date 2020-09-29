@@ -67,7 +67,7 @@ const getSkuAtsByStyleAndSkuId = (styleId, params) => async skuId => (
   }
 )
 
-const getSkuInventoryFromStyleIdsBatchedByStyleId = ({ styleIds, skuCollection, params }) => (
+const getSkuInventoryBatchedByStyleId = ({ styleIds, skuCollection, params }) => (
   Promise.all(styleIds.map(addErrorHandling(async styleId => {
     const skus = await skuCollection.find({ styleId }).toArray()
     const skuIds = skus.map(sku => sku._id)
@@ -80,5 +80,5 @@ module.exports = {
   buildStoreInventory,
   buildStoresArray,
   getSkuAtsByStyleAndSkuId,
-  getSkuInventoryFromStyleIdsBatchedByStyleId
+  getSkuInventoryBatchedByStyleId
 };

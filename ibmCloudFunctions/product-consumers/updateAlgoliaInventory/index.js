@@ -3,10 +3,13 @@ const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { productApiRequest } = require('../../lib/productApi');
 const { createLog, log, addErrorHandling } = require('../utils');
-const { buildSizesArray, buildStoreInventory, buildStoresArray } = require('./utils');
+const { buildSizesArray, buildStoreInventory, buildStoresArray, getSkuInventoryBatchedByStyleId } = require('./utils');
+const { updateSkuAtsForManyCtProductsBatchedByStyleId } = require('./commercetools')
+const getCtHelpers = require('../../lib/commercetoolsSdk')
 
-let client = null;
-let index = null;
+let algoliaClient = null;
+let algoliaIndex = null;
+let ctHelpers = null
 
 global.main = async function (params) {
     log(createLog.params('updateAlgoliaInventory', params));
@@ -15,20 +18,24 @@ global.main = async function (params) {
         throw new Error('Requires Algolia configuration. See manifest.yml');
     }
 
-    if (index === null) {
+    if (algoliaIndex === null) {
         try {
-            client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
-            client.setTimeouts({
+            algoliaClient = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+            algoliaClient.setTimeouts({
                 connect: 600000,
                 read: 600000,
                 write: 600000
             });
-            index = client.initIndex(params.algoliaIndexName);
+            algoliaIndex = algoliaClient.initIndex(params.algoliaIndexName);
         }
         catch (originalError) {
             throw createError.failedAlgoliaConnection(originalError);
         }
     }
+
+    if (!ctHelpers) {
+        ctHelpers = getCtHelpers(params);
+      }
 
     let styleAvailabilityCheckQueue;
     let styles;
@@ -93,7 +100,7 @@ global.main = async function (params) {
     });
     if (recordsToUpdate.length) {
         try {
-            await index.partialUpdateObjects(recordsToUpdate, true);
+            await algoliaIndex.partialUpdateObjects(recordsToUpdate, true);
             log(`Updated availability for styles: ${stylesIdsToUpdate}`);
         } catch (error) {
             log('Error: Failed to send styles to Algolia.');
@@ -106,11 +113,27 @@ global.main = async function (params) {
             });
     }
 
-    const styleIdsToCleanup = styleIdsForAvailabilitiesToBeSynced.filter((_, index) => !(styleAvailabilitiesToBeSynced[index] instanceof Error));
+    const skuInventoryBatchedByStyleId = await getSkuInventoryBatchedByStyleId({ styleIds: styleIdsForAvailabilitiesToBeSynced, skuCollection: skus, params })
+    const ctAtsUpdateResult = await updateSkuAtsForManyCtProductsBatchedByStyleId(skuInventoryBatchedByStyleId, ctHelpers)
+    const idsOfSuccessfullyUpdatedCtStyles = ctAtsUpdateResult
+        .filter(styleUpdateResult => styleUpdateResult && styleUpdateResult.ok)
+        .map(({ styleId }) => styleId)
+
+    // TODO: log CT ATS update errors
+
+    const styleIdsToCleanup = styleIdsForAvailabilitiesToBeSynced
+        .filter((_, index) => !(styleAvailabilitiesToBeSynced[index] instanceof Error)) // Algolia successes
+        .filter(styleId => idsOfSuccessfullyUpdatedCtStyles.includes(styleId)) // CT successes
+
     try {
         await styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIdsToCleanup } });
     } catch (originalError) {
         throw createError.updateAlgoliaInventory.failedToRemoveFromQueue(originalError, styleIdsToCleanup);
+    }
+
+    return {
+        successCount: styleIdsToCleanup.length,
+        failureCount: stylesIdsToUpdate.length - styleIdsToCleanup.length
     }
 }
 
