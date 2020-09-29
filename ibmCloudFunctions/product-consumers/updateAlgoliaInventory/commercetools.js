@@ -1,4 +1,5 @@
 const { isStaged } = require('../../commercetools/constantsCt')
+const { addErrorHandling } = require('../utils')
 
 // Note: All SKUs must have the same style
 const getAtsUpdateActionsFromAtsBySku = atsBySku =>
@@ -10,7 +11,7 @@ const getAtsUpdateActionsFromAtsBySku = atsBySku =>
     staged: isStaged
   }))
 
-const updateSkuAtsForSingleCtProduct = async (atsBySku, ctHelpers) => {
+const updateSkuAtsForSingleCtProduct = ctHelpers => async atsBySku => {
   const { client, requestBuilder } = ctHelpers
 
   const atsUpdateActions = getAtsUpdateActionsFromAtsBySku(atsBySku)
@@ -30,7 +31,11 @@ const updateSkuAtsForSingleCtProduct = async (atsBySku, ctHelpers) => {
   })
 }
 
+const updateSkuAtsForManyCtProductsByBatchedSkuAts = (skuAtsBatchedByStyleId, ctHelpers) =>
+  Promise.all(skuAtsBatchedByStyleId.map(addErrorHandling(updateSkuAtsForSingleCtProduct(ctHelpers))))
+
 module.exports = {
   getAtsUpdateActionsFromAtsBySku,
+  updateSkuAtsForManyCtProductsByBatchedSkuAts,
   updateSkuAtsForSingleCtProduct
 }
