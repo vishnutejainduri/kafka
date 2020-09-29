@@ -34,7 +34,8 @@ const attributeMap = {
     'UNIT_PRICE': 'originalPrice',
     'SUBDEPT': 'departmentId',
     'VSN': 'vsn',
-    'SIZE_CHART': 'sizeChart'
+    'SIZE_CHART': 'sizeChart',
+    'ISRETURNABLE': 'isReturnable'
 };
 
 const transforms = {
@@ -85,6 +86,7 @@ function parseStyleMessage(msg) {
     styleData.pattern = styleData.pattern || {en: null, fr: null};
     styleData.cuff = styleData.cuff || {en: null, fr: null};
     styleData.webStatus = styleData.webStatus === APPROVED_STATUS ? true : false;
+    styleData.isReturnable = styleData.isReturnable === 't' ? true : false
 
     // Add _id for mongo
     styleData._id = styleData.id;

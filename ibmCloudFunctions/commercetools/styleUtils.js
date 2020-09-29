@@ -336,7 +336,7 @@ const getAttributesFromStyle = (style, productType) => {
 
   return customAttributesToCreate.map(attribute => {
       const attributeType = productType.attributes.find((attributeType) => attributeType.name === attribute).type.name;
-      if (style[attribute]) {
+      if (style[attribute] !== undefined) {
         let attributeCreation = {
           name: attribute,
           value: style[attribute]

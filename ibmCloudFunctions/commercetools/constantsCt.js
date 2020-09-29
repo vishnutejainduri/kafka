@@ -20,7 +20,8 @@ const styleAttributeNames = {
   COLOUR: 'colour',
   COLOUR_GROUP: 'colourGroup',
   SIZE_CHART: 'sizeChart',
-  ORIGINAL_PRICE: 'originalPrice'
+  ORIGINAL_PRICE: 'originalPrice',
+  IS_RETURNABLE: 'isReturnable'
 };
 
 /**
