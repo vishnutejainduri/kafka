@@ -69,6 +69,10 @@ describe('getAtsUpdateActionsFromAtsBySku', () => {
       }
     ])
   })
+
+  it('returns an empty array when given an empty array', () => {
+    expect(getAtsUpdateActionsFromAtsBySku([])).toEqual([])
+  })
 })
 
 describe('updateSkuAtsForSingleCtProduct', () => {
@@ -140,5 +144,9 @@ describe('updateSkuAtsForManyCtProductsBatchedByStyleId', () => {
         styleId: '20036681'
       },
     ])
+  })
+
+  it('returns an empty array when given an empty array of ATS updates', async () => {
+    expect(await updateSkuAtsForManyCtProductsBatchedByStyleId([], mockCtHelpers)).toEqual([])
   })
 })
