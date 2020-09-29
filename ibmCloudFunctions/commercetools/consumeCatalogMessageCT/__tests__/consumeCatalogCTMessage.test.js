@@ -244,6 +244,12 @@ const styleActions = [
   },
   {
     action: 'setAttributeInAllVariants',
+    name: 'isReturnable',
+    staged: false,
+    value: false
+  },
+  {
+    action: 'setAttributeInAllVariants',
     name: 'relatedProductId',
     staged: false,
     value: 'vsn341brandNameEng',
