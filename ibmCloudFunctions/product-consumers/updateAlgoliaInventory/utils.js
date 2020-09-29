@@ -1,5 +1,6 @@
 const { productApiRequest } = require('../../lib/productApi');
 const { addErrorHandling } = require('../utils');
+const createError = require('../../lib/createError');
 
 const getTotalAts = (sku, atsKey) => (sku[atsKey] || []).reduce((totalAvailableToSell, { availableToSell }) => (
       availableToSell > 0 ? totalAvailableToSell + availableToSell : totalAvailableToSell
@@ -75,10 +76,20 @@ const getSkuInventoryBatchedByStyleId = ({ styleIds, skuCollection, params }) =>
   })))
 )
 
+const logCtAtsUpdateErrors = ctAtsUpdateResults => {
+  const errorResults = ctAtsUpdateResults.filter(productResult => !(productResult && productResult.ok))
+  const errorCount = errorResults.length
+
+  if (errorCount > 0) {
+    createError.updateAlgoliaInventory.failedToUpdateCtAts(errorResults)
+  }
+}
+
 module.exports = {
   buildSizesArray,
   buildStoreInventory,
   buildStoresArray,
+  logCtAtsUpdateErrors,
   getSkuAtsByStyleAndSkuId,
   getSkuInventoryBatchedByStyleId
 };

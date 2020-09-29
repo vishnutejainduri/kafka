@@ -404,6 +404,11 @@ module.exports = {
             originalError,
             'failed-to-get-style-ats-data',
             `Failed to get current ats data for styles: ${stylesToCheck}`
+        ),
+        failedToUpdateCtAts: originalError => new CustomError(
+            originalError,
+            'failed-to-update-ct-ats',
+            'Failed to update CT ATS'
         )
     },
     updateAlgoliaFacets: {

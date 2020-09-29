@@ -3,7 +3,13 @@ const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { productApiRequest } = require('../../lib/productApi');
 const { createLog, log, addErrorHandling } = require('../utils');
-const { buildSizesArray, buildStoreInventory, buildStoresArray, getSkuInventoryBatchedByStyleId } = require('./utils');
+const {
+    buildSizesArray,
+    buildStoreInventory,
+    buildStoresArray,
+    getSkuInventoryBatchedByStyleId,
+    logCtAtsUpdateErrors
+} = require('./utils');
 const { updateSkuAtsForManyCtProductsBatchedByStyleId } = require('./commercetools')
 const getCtHelpers = require('../../lib/commercetoolsSdk')
 
@@ -114,12 +120,11 @@ global.main = async function (params) {
     }
 
     const skuInventoryBatchedByStyleId = await getSkuInventoryBatchedByStyleId({ styleIds: styleIdsForAvailabilitiesToBeSynced, skuCollection: skus, params })
-    const ctAtsUpdateResult = await updateSkuAtsForManyCtProductsBatchedByStyleId(skuInventoryBatchedByStyleId, ctHelpers)
-    const idsOfSuccessfullyUpdatedCtStyles = ctAtsUpdateResult
+    const ctAtsUpdateResults = await updateSkuAtsForManyCtProductsBatchedByStyleId(skuInventoryBatchedByStyleId, ctHelpers)
+    logCtAtsUpdateErrors(ctAtsUpdateResults)
+    const idsOfSuccessfullyUpdatedCtStyles = ctAtsUpdateResults
         .filter(styleUpdateResult => styleUpdateResult && styleUpdateResult.ok)
         .map(({ styleId }) => styleId)
-
-    // TODO: log CT ATS update errors
 
     const styleIdsToCleanup = styleIdsForAvailabilitiesToBeSynced
         .filter((_, index) => !(styleAvailabilitiesToBeSynced[index] instanceof Error)) // Algolia successes
