@@ -11,9 +11,6 @@ const getAtsUpdateActionsFromAtsBySku = atsBySku =>
     staged: isStaged
   }))
 
-/**
- * @returns {{styleId: string, ok: true} | Error>}
- */
 const updateSkuAtsForSingleCtProduct = ctHelpers => async atsBySku => {
   const { client, requestBuilder } = ctHelpers
 
