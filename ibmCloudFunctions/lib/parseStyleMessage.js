@@ -42,8 +42,12 @@ const attributeMap = {
     'SUBDEPT': 'departmentId',
     'VSN': 'vsn',
     'SIZE_CHART': 'sizeChart',
+<<<<<<< HEAD
     'RANKINGUNITSSOLD': 'rankingUnitsSold',
     'EA_IND': 'isEndlessAisle'
+=======
+    'ISRETURNABLE': 'isReturnable'
+>>>>>>> HRC-3554 map new ISRETURNABLE field
 };
 
 const transforms = {
@@ -85,6 +89,7 @@ function parseStyleMessage(msg) {
     // VSNs are actually supposed to be compounded with two other fields for uniqueness
     styleData.relatedProductId = styleData.vsn + msg.value.SUBCLASS + styleData.brandName.en;
 
+<<<<<<< HEAD
     styleData.webStatus = styleData.webStatus === APPROVED_STATUS;
     styleData.isEndlessAisle = styleData.isEndlessAisle === JESTA_TRUE;
     styleData.lastModifiedDate = (styleData.lastModifiedDateColours > styleData.lastModifiedDate || !styleData.lastModifiedDate) ? styleData.lastModifiedDateColours : styleData.lastModifiedDate
@@ -92,6 +97,18 @@ function parseStyleMessage(msg) {
     if (styleData.isEndlessAisle) {
         styleData.promotionalSticker = endlessAislePromotionalSticker;
     }
+=======
+    // init the rest of the known facets to help with data consistency
+    styleData.style = styleData.style || {en: null, fr: null};
+    styleData.fabric = styleData.fabric || {en: null, fr: null};
+    styleData.length = styleData.length || {en: null, fr: null};
+    styleData.fit = styleData.fit || {en: null, fr: null};
+    styleData.collar = styleData.collar || {en: null, fr: null};
+    styleData.pattern = styleData.pattern || {en: null, fr: null};
+    styleData.cuff = styleData.cuff || {en: null, fr: null};
+    styleData.webStatus = styleData.webStatus === APPROVED_STATUS ? true : false;
+    styleData.isReturnable = styleData.isReturnable === 't' ? true : false
+>>>>>>> HRC-3554 map new ISRETURNABLE field
 
     // Add _id for mongo
     styleData._id = styleData.id;
