@@ -23,15 +23,26 @@ const sku2Ats = {
 
 const atsBySkuForStyle1 = [sku1Ats, sku2Ats]
 
-const mockRequestBuilder = {
-  products: {
-    byKey: () => mockRequestBuilder.products,
-    build: () => mockRequestBuilder.products
+const MockRequestBuilder = function () {
+  this.key = null
+  this.products = {
+    byKey(key) {
+      this.key = key
+      return this
+    },
+    build() {
+      return this.key
+    }
   }
 }
 
+const mockRequestBuilder = new MockRequestBuilder()
+
 const mockCtClient = {
-  execute: () => Promise.resolve({ body: { version: 1 } })
+  execute: config => {
+    if (config.uri === 'MOCK_FAILURE') throw new Error('Mock CT call failure')
+    return Promise.resolve({ body: { version: 1 } })
+  }
 }
 
 const mockCtHelpers = {
@@ -71,22 +82,30 @@ describe('updateSkuAtsForSingleCtProduct', () => {
 })
 
 describe('updateSkuAtsForManyCtProductsBatchedByStyleId', () => {
-  const sku3Ats = {
-    styleId: '21036361',
+  const atsForSkuThatCannotBeUpdated = {
+    styleId: 'MOCK_FAILURE',
     skuId: '-1678329',
     ats: 1,
     atsBreakdown: [],
     onlineAts: 1
   }
 
-  const atsBySkuForStyle2 = [sku3Ats]
-
-  const atsUpdatesBatchedByStyleId = [
-    atsBySkuForStyle1,
-    atsBySkuForStyle2
-  ]
-
   it('returns an array of success results indicating which styles were updated when all styles are updated successfully', async () => {
+    const sku3Ats = {
+      styleId: '21036361',
+      skuId: '-1678329',
+      ats: 1,
+      atsBreakdown: [],
+      onlineAts: 1
+    }
+  
+    const atsBySkuForStyle2 = [sku3Ats]
+  
+    const atsUpdatesBatchedByStyleId = [
+      atsBySkuForStyle1,
+      atsBySkuForStyle2
+    ]
+
     const updateResults = await updateSkuAtsForManyCtProductsBatchedByStyleId(atsUpdatesBatchedByStyleId, mockCtHelpers)
     expect(updateResults).toEqual([
       {
@@ -97,6 +116,29 @@ describe('updateSkuAtsForManyCtProductsBatchedByStyleId', () => {
         ok: true,
         styleId: '21036361'
       }
+    ])
+  })
+
+  it('returns an array with a failure object when given a style whose ATS update fails', async () => {
+    const atsUpdatesBatchedByStyleId = [[atsForSkuThatCannotBeUpdated]]
+    const updateResults = await updateSkuAtsForManyCtProductsBatchedByStyleId(atsUpdatesBatchedByStyleId, mockCtHelpers)
+    expect(updateResults).toEqual([
+      expect.any(Error)
+    ])
+  })
+
+  it('returns an array with one failure object and one success result when given one style whose ATS update succeeds and one style whose ATS update fails', async () => {
+    const atsUpdatesBatchedByStyleId = [
+      [atsForSkuThatCannotBeUpdated],
+      atsBySkuForStyle1
+    ]
+    const updateResults = await updateSkuAtsForManyCtProductsBatchedByStyleId(atsUpdatesBatchedByStyleId, mockCtHelpers)
+    expect(updateResults).toEqual([
+      expect.any(Error),
+      {
+        ok: true,
+        styleId: '20036681'
+      },
     ])
   })
 })
