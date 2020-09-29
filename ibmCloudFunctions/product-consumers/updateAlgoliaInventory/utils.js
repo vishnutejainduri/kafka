@@ -1,3 +1,6 @@
+const { productApiRequest } = require('../../lib/productApi');
+const { addErrorHandling } = require('../utils');
+
 const getTotalAts = (sku, atsKey) => (sku[atsKey] || []).reduce((totalAvailableToSell, { availableToSell }) => (
       availableToSell > 0 ? totalAvailableToSell + availableToSell : totalAvailableToSell
     ), 0)
@@ -55,8 +58,27 @@ const buildStoresArray = (
       return stores;
      }
 
+
+const getSkuAtsByStyleAndSkuId = (styleId, params) => async skuId => (
+  {
+    styleId,
+    skuId,
+    ...await productApiRequest(params, `/inventory/ats/${styleId}/${skuId}`)
+  }
+)
+
+const getSkuInventoryFromStyleIdsBatchedByStyleId = ({ styleIds, skuCollection, params }) => (
+  Promise.all(styleIds.map(addErrorHandling(async styleId => {
+    const skus = await skuCollection.find({ styleId }).toArray()
+    const skuIds = skus.map(sku => sku._id)
+    return Promise.all(skuIds.map(getSkuAtsByStyleAndSkuId(styleId, params)))
+  })))
+)
+
 module.exports = {
   buildSizesArray,
   buildStoreInventory,
   buildStoresArray,
+  getSkuAtsByStyleAndSkuId,
+  getSkuInventoryFromStyleIdsBatchedByStyleId
 };
