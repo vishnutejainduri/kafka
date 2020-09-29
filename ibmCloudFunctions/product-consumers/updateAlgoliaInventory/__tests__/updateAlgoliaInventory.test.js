@@ -20,10 +20,15 @@ describe('updateAlgoliaInventory', () => {
             mongoCertificateBase64: 'mong-certificate',
             collectionName: 'styleAvailabilityCheckQueue',
             stylesCollectionName: 'styles',
-            styleAvailabilityCheckQueue: 'styleAvailabilityCheckQueue'
+            styleAvailabilityCheckQueue: 'styleAvailabilityCheckQueue',
+            ctpProjectKey: 'harryrosen-dev',
+            ctpClientId: 'ctClientId',
+            ctpClientSecret: 'ceClientSecret',
+            ctpAuthUrl: 'https://auth.us-central1.gcp.commercetools.com',
+            ctpApiUrl: 'https://api.us-central1.gcp.commercetools.com',
+            ctpScopes: 'ctpScopes' 
         }
-        let response = await updateAlgoliaInventory(params);
-        // returns nothing/undefined if successfully run
-        expect(response).toEqual(undefined);
+        const response = await updateAlgoliaInventory(params);
+        expect(response).toEqual({ failureCount: 0, successCount: 0 });
     });
 });
