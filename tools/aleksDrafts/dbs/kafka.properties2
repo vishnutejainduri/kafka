@@ -1,0 +1,7 @@
+bootstrap.servers="kafka01-prod02.messagehub.services.us-south.bluemix.net:9093,kafka04-prod02.messagehub.services.us-south.bluemix.net:9093,kafka03-prod02.messagehub.services.us-south.bluemix.net:9093,kafka05-prod02.messagehub.services.us-south.bluemix.net:9093,kafka02-prod02.messagehub.services.us-south.bluemix.net:9093"
+sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="IjgbHlmYOUFuxiOp" password="A2BYpLuR4jQkh7KIyGY3jNE7Kt01Llbd"
+security.protocol=SASL_SSL
+sasl.mechanism=PLAIN
+ssl.protocol=TLSv1.2
+ssl.enabled.protocols=TLSv1.2
+ssl.endpoint.identification.algorithm=HTTPS

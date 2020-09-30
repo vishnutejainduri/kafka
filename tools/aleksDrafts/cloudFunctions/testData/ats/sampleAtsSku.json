@@ -1,0 +1,21 @@
+{
+  "_id": "89943558-10",
+  "styleId": "20041576",
+  "ats": [{
+    "storeId": "00035",
+    "availableToSell": 0
+  }, {
+    "storeId": "00057",
+    "availableToSell": 1
+  }, {
+    "storeId": "00034",
+    "availableToSell": 2
+  }, {
+    "storeId": "00008",
+    "availableToSell": 3
+  }, {
+    "storeId": "00020",
+    "availableToSell": 1
+  }],
+  "id": "89943558-10"
+}

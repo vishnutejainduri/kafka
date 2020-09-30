@@ -1,0 +1,565 @@
+{
+    "type": "Order",
+    "id": "81403bef-041f-41d4-9f0d-e80b7849c279",
+    "version": 8,
+    "lastMessageSequenceNumber": 5,
+    "createdAt": "2020-09-25T14:55:05.945Z",
+    "lastModifiedAt": "2020-09-25T14:58:52.764Z",
+    "lastModifiedBy": {
+        "clientId": "kCdIHF2Ojlv7-yp1Dq2itE4O",
+        "isPlatformClient": false
+    },
+    "createdBy": {
+        "clientId": "k6QQpXCp89k8R8k7rwxem-h-",
+        "isPlatformClient": false
+    },
+    "orderNumber": "26826390",
+    "customerEmail": "ss_test22@mailinator.com",
+    "anonymousId": "7457556d-0800-47d5-97f2-26c5feab2420",
+    "locale": "en-CA",
+    "totalPrice": {
+        "type": "centPrecision",
+        "currencyCode": "CAD",
+        "centAmount": 47050,
+        "fractionDigits": 2
+    },
+    "taxedPrice": {
+        "totalNet": {
+            "type": "centPrecision",
+            "currencyCode": "CAD",
+            "centAmount": 47050,
+            "fractionDigits": 2
+        },
+        "totalGross": {
+            "type": "centPrecision",
+            "currencyCode": "CAD",
+            "centAmount": 54095,
+            "fractionDigits": 2
+        },
+        "taxPortions": [
+            {
+                "rate": 0.05,
+                "amount": {
+                    "type": "centPrecision",
+                    "currencyCode": "CAD",
+                    "centAmount": 2228,
+                    "fractionDigits": 2
+                },
+                "name": "GST"
+            },
+            {
+                "rate": 0.09975,
+                "amount": {
+                    "type": "centPrecision",
+                    "currencyCode": "CAD",
+                    "centAmount": 4444,
+                    "fractionDigits": 2
+                },
+                "name": "QST"
+            }
+        ]
+    },
+    "country": "CA",
+    "orderState": "Confirmed",
+    "shipmentState": "Pending",
+    "paymentState": "Paid",
+    "syncInfo": [],
+    "returnInfo": [],
+    "shippingInfo": {
+        "shippingMethodName": "FedEx Standard Overnight",
+        "price": {
+            "type": "centPrecision",
+            "currencyCode": "CAD",
+            "centAmount": 2500,
+            "fractionDigits": 2
+        },
+        "shippingRate": {
+            "price": {
+                "type": "centPrecision",
+                "currencyCode": "CAD",
+                "centAmount": 2500,
+                "fractionDigits": 2
+            },
+            "tiers": []
+        },
+        "taxRate": {
+            "name": "",
+            "amount": 0.14975,
+            "includedInPrice": false,
+            "country": "CA",
+            "subRates": [
+                {
+                    "name": "GST",
+                    "amount": 0.05
+                },
+                {
+                    "name": "QST",
+                    "amount": 0.09975
+                }
+            ]
+        },
+        "deliveries": [],
+        "taxedPrice": {
+            "totalNet": {
+                "type": "centPrecision",
+                "currencyCode": "CAD",
+                "centAmount": 2500,
+                "fractionDigits": 2
+            },
+            "totalGross": {
+                "type": "centPrecision",
+                "currencyCode": "CAD",
+                "centAmount": 2874,
+                "fractionDigits": 2
+            }
+        },
+        "shippingMethodState": "MatchesCart"
+    },
+    "taxMode": "ExternalAmount",
+    "inventoryMode": "None",
+    "taxRoundingMode": "HalfEven",
+    "taxCalculationMode": "LineItemLevel",
+    "origin": "Customer",
+    "lineItems": [
+        {
+            "id": "0692e877-5486-4b54-b72b-dce5216ce82a",
+            "productId": "3c59f5bb-abca-4358-95a8-b7eaea701ae0",
+            "name": {
+                "fr-CA": "Pantalon sport",
+                "en-CA": "Drawstring Joggers"
+            },
+            "productType": {
+                "typeId": "product-type",
+                "id": "3f69b1dd-631c-4913-b015-c20c083a7940",
+                "version": 107
+            },
+            "productSlug": {
+                "en-CA": "20053116",
+                "fr-CA": "20053116"
+            },
+            "variant": {
+                "id": 2,
+                "sku": "-1962501",
+                "prices": [
+                    {
+                        "value": {
+                            "type": "centPrecision",
+                            "currencyCode": "CAD",
+                            "centAmount": 49500,
+                            "fractionDigits": 2
+                        },
+                        "id": "7edd1611-253d-4dc5-9075-9516c25bb1bb",
+                        "country": "CA",
+                        "custom": {
+                            "type": {
+                                "typeId": "type",
+                                "id": "b19c36b1-e191-4c9b-89bb-0a31c8859a6f"
+                            },
+                            "fields": {
+                                "priceType": "originalPrice"
+                            }
+                        }
+                    }
+                ],
+                "images": [
+                    {
+                        "url": "https://i1.adis.ws/i/harryrosen/20053116?$prp-4col-xl$",
+                        "dimensions": {
+                            "w": 242,
+                            "h": 288
+                        }
+                    }
+                ],
+                "attributes": [
+                    {
+                        "name": "brandName",
+                        "value": {
+                            "en-CA": "McQ Alexander McQueen",
+                            "fr-CA": "McQ Alexander McQueen"
+                        }
+                    },
+                    {
+                        "name": "construction",
+                        "value": {
+                            "en-CA": "<li> Drawstring waistband\n<li> Side seam pockets\n<li> Back welt pocket\n<li> Ribbed knit ankle cuffs\n<li> Logo embroidery on outer leg seam",
+                            "fr-CA": "<li> Taille à cordon\n<li> Poches dans les coutures latérales\n<li> Poche arrière passepoilée\n<li> Bas de jambe en tricot côtelé\n<li> Logo brodé sur la couture extérieure"
+                        }
+                    },
+                    {
+                        "name": "fabricAndMaterials",
+                        "value": {
+                            "en-CA": "<li> 100% cotton\n<li> Black, green",
+                            "fr-CA": "<li> 100 % coton\n<li> Noir et vert"
+                        }
+                    },
+                    {
+                        "name": "styleAndMeasurements",
+                        "value": {
+                            "en-CA": "<li> Contemporary fit\n<li> High-rise style\n<li> Front rise: 12.5 in\n<li> Back rise: 14 in\n<li> Inseam: 29 in\n<li> Measurements are based on size M",
+                            "fr-CA": "<li> Coupe contemporaine\n<li> Taille haute\n<li> Fourche avant de 31,8 cm (12,5 po)\n<li> Fourche arrière de 35,6 cm (14 po)\n<li> Entrejambe de 73,2 cm (29 po)\n<li> Mesure(s) prise(s) sur la taille M"
+                        }
+                    },
+                    {
+                        "name": "careInstructions",
+                        "value": {
+                            "en-CA": "<li> Machine wash, cold\n<li> Do not tumble dry\n<li> Iron, low\n<li> Do not dry clean",
+                            "fr-CA": "<li> Lavage à la machine à l¿eau froide\n<li> Pas de séchage par culbutage\n<li> Repassage à basse température\n<li> Pas de nettoyage à sec"
+                        }
+                    },
+                    {
+                        "name": "advice",
+                        "value": {
+                            "en-CA": "",
+                            "fr-CA": ""
+                        }
+                    },
+                    {
+                        "name": "webStatus",
+                        "value": true
+                    },
+                    {
+                        "name": "season",
+                        "value": "FA-19"
+                    },
+                    {
+                        "name": "vsn",
+                        "value": "406536RNT29"
+                    },
+                    {
+                        "name": "relatedProductId",
+                        "value": "406536RNT29475337McQ Alexander McQueen"
+                    },
+                    {
+                        "name": "styleLastModifiedInternal",
+                        "value": "2020-09-10T20:23:20.000Z"
+                    },
+                    {
+                        "name": "colorId",
+                        "value": "075"
+                    },
+                    {
+                        "name": "skuLastModifiedInternal",
+                        "value": "2020-09-10T20:23:20.000Z"
+                    },
+                    {
+                        "name": "size",
+                        "value": {
+                            "en-CA": "S",
+                            "fr-CA": "P"
+                        }
+                    },
+                    {
+                        "name": "sizeId",
+                        "value": "180"
+                    },
+                    {
+                        "name": "isOutlet",
+                        "value": false
+                    },
+                    {
+                        "name": "styleOutletLastModifiedInternal",
+                        "value": "2019-10-19T06:18:29.000Z"
+                    },
+                    {
+                        "name": "colour",
+                        "value": {
+                            "fr-CA": "Noir",
+                            "en-CA": "Black"
+                        }
+                    },
+                    {
+                        "name": "colourGroup",
+                        "value": {
+                            "fr-CA": "Noir",
+                            "en-CA": "Black"
+                        }
+                    },
+                    {
+                        "name": "originalPrice",
+                        "value": {
+                            "fractionDigits": 2,
+                            "centAmount": 49500,
+                            "currencyCode": "CAD",
+                            "type": "centPrecision"
+                        }
+                    },
+                    {
+                        "name": "sizeChart",
+                        "value": 7
+                    },
+                    {
+                        "name": "barcodes",
+                        "value": [
+                            {
+                                "id": "5612afd5-6724-45f5-a1f0-b96fb8895992",
+                                "typeId": "key-value-document"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "onSale",
+                        "value": false
+                    }
+                ],
+                "assets": []
+            },
+            "price": {
+                "value": {
+                    "type": "centPrecision",
+                    "currencyCode": "CAD",
+                    "centAmount": 49500,
+                    "fractionDigits": 2
+                },
+                "id": "7edd1611-253d-4dc5-9075-9516c25bb1bb",
+                "country": "CA",
+                "custom": {
+                    "type": {
+                        "typeId": "type",
+                        "id": "b19c36b1-e191-4c9b-89bb-0a31c8859a6f"
+                    },
+                    "fields": {
+                        "priceType": "originalPrice"
+                    }
+                }
+            },
+            "quantity": 1,
+            "discountedPrice": {
+                "value": {
+                    "type": "centPrecision",
+                    "currencyCode": "CAD",
+                    "centAmount": 44550,
+                    "fractionDigits": 2
+                },
+                "includedDiscounts": [
+                    {
+                        "discount": {
+                            "typeId": "cart-discount",
+                            "id": "eb19ab5e-7e73-4971-b2bd-71cf802e9b5f"
+                        },
+                        "discountedAmount": {
+                            "type": "centPrecision",
+                            "currencyCode": "CAD",
+                            "centAmount": 4950,
+                            "fractionDigits": 2
+                        }
+                    }
+                ]
+            },
+            "discountedPricePerQuantity": [
+                {
+                    "quantity": 1,
+                    "discountedPrice": {
+                        "value": {
+                            "type": "centPrecision",
+                            "currencyCode": "CAD",
+                            "centAmount": 44550,
+                            "fractionDigits": 2
+                        },
+                        "includedDiscounts": [
+                            {
+                                "discount": {
+                                    "typeId": "cart-discount",
+                                    "id": "eb19ab5e-7e73-4971-b2bd-71cf802e9b5f"
+                                },
+                                "discountedAmount": {
+                                    "type": "centPrecision",
+                                    "currencyCode": "CAD",
+                                    "centAmount": 4950,
+                                    "fractionDigits": 2
+                                }
+                            }
+                        ]
+                    }
+                }
+            ],
+            "taxRate": {
+                "name": "",
+                "amount": 0.14975,
+                "includedInPrice": false,
+                "country": "CA",
+                "subRates": [
+                    {
+                        "name": "GST",
+                        "amount": 0.05
+                    },
+                    {
+                        "name": "QST",
+                        "amount": 0.09975
+                    }
+                ]
+            },
+            "addedAt": "2020-09-25T14:44:34.779Z",
+            "lastModifiedAt": "2020-09-25T14:55:05.794Z",
+            "priceMode": "Platform",
+            "totalPrice": {
+                "type": "centPrecision",
+                "currencyCode": "CAD",
+                "centAmount": 44550,
+                "fractionDigits": 2
+            },
+            "taxedPrice": {
+                "totalNet": {
+                    "type": "centPrecision",
+                    "currencyCode": "CAD",
+                    "centAmount": 44550,
+                    "fractionDigits": 2
+                },
+                "totalGross": {
+                    "type": "centPrecision",
+                    "currencyCode": "CAD",
+                    "centAmount": 51221,
+                    "fractionDigits": 2
+                }
+            },
+            "custom": {
+                "type": {
+                    "typeId": "type",
+                    "id": "c8cf5790-b974-4baa-a8dc-dfa09c2d66c8"
+                },
+                "fields": {
+                    "isGift": false,
+                    "itemTaxes": "{\"GST\":22.275,\"QST\":44.438625}"
+                }
+            },
+            "lineItemMode": "Standard",
+            "shippingDetails": {
+                "targets": [
+                    {
+                        "addressKey": "5cf333d1-8d31-49fa-bd40-37a58cb31d55",
+                        "quantity": 1
+                    }
+                ],
+                "valid": true
+            }
+        }
+    ],
+    "customLineItems": [],
+    "transactionFee": true,
+    "discountCodes": [
+        {
+            "discountCode": {
+                "typeId": "discount-code",
+                "id": "7498da70-78ff-4bca-b182-8686bbb6b0c0"
+            },
+            "state": "MatchesCart"
+        }
+    ],
+    "cart": {
+        "typeId": "cart",
+        "id": "360f30f1-9e2f-47e2-b274-7cfe75bcde40"
+    },
+    "custom": {
+        "type": {
+            "typeId": "type",
+            "id": "b59020e8-9fea-4219-984e-1ca5bff7630e"
+        },
+        "fields": {
+            "paymentIsReleased": true,
+            "transactionTotal": {
+                "type": "centPrecision",
+                "currencyCode": "CAD",
+                "centAmount": 54095,
+                "fractionDigits": 2
+            },
+            "shippingTaxes": "{\"GST\":1.25,\"QST\":2.49}",
+            "loginRadiusUid": "4ce0da5fec4047b8b896f0c21b1581ff",
+            "sentToCrmStatus": "FAILURE",
+            "sentToOmsStatus": "SUCCESS",
+            "cartClaimed": true
+        }
+    },
+    "paymentInfo": {
+        "payments": [
+            {
+                "typeId": "payment",
+                "id": "b2c86225-18be-45b7-b2fd-6e7a2571d2cd"
+            }
+        ]
+    },
+    "shippingAddress": {
+        "firstName": "Sheetal",
+        "lastName": "Accept",
+        "streetName": "3200 Chemin de la Baronnie",
+        "postalCode": "J3X 1P7",
+        "city": "Varennes",
+        "state": "QC",
+        "country": "CA",
+        "phone": "4162372738",
+        "email": "ss_test22@mailinator.com",
+        "key": "5cf333d1-8d31-49fa-bd40-37a58cb31d55"
+    },
+    "billingAddress": {
+        "firstName": "Sheetal",
+        "lastName": "Accept",
+        "streetName": "3200 Chemin de la Baronnie",
+        "postalCode": "J3X 1P7",
+        "city": "Varennes",
+        "state": "QC",
+        "country": "CA",
+        "phone": "4162372738",
+        "email": "ss_test22@mailinator.com"
+    },
+    "itemShippingAddresses": [
+        {
+            "firstName": "Sheetal",
+            "lastName": "Accept",
+            "streetName": "3200 Chemin de la Baronnie",
+            "postalCode": "J3X 1P7",
+            "city": "Varennes",
+            "state": "QC",
+            "country": "CA",
+            "phone": "4162372738",
+            "email": "ss_test22@mailinator.com",
+            "key": "375de753-32ad-4bdf-8d47-9b47e5405963"
+        },
+        {
+            "firstName": "Sheetal",
+            "lastName": "Accept",
+            "streetName": "3200 Chemin de la Baronnie",
+            "postalCode": "J3X 1P7",
+            "city": "Varennes",
+            "state": "QC",
+            "country": "CA",
+            "phone": "4162372738",
+            "email": "ss_test22@mailinator.com",
+            "key": "7edc380d-be5f-4cf9-8132-3b4d75cdf703"
+        },
+        {
+            "firstName": "Sheetal",
+            "lastName": "Accept",
+            "streetName": "3200 Chemin de la Baronnie",
+            "postalCode": "J3X 1P7",
+            "city": "Varennes",
+            "state": "QC",
+            "country": "CA",
+            "phone": "4162372738",
+            "email": "ss_test22@mailinator.com",
+            "key": "a4bee35d-0e5d-4395-aae8-cdd3455c8d08"
+        },
+        {
+            "firstName": "Sheetal",
+            "lastName": "Accept",
+            "streetName": "3200 Chemin de la Baronnie",
+            "postalCode": "J3X 1P7",
+            "city": "Varennes",
+            "state": "QC",
+            "country": "CA",
+            "phone": "4162372738",
+            "email": "ss_test22@mailinator.com",
+            "key": "a6e31e2b-7b08-4d7e-81d5-06a3a74ab755"
+        },
+        {
+            "firstName": "Sheetal",
+            "lastName": "Accept",
+            "streetName": "3200 Chemin de la Baronnie",
+            "postalCode": "J3X 1P7",
+            "city": "Varennes",
+            "state": "QC",
+            "country": "CA",
+            "phone": "4162372738",
+            "email": "ss_test22@mailinator.com",
+            "key": "5cf333d1-8d31-49fa-bd40-37a58cb31d55"
+        }
+    ],
+    "refusedGifts": []
+}

@@ -1,0 +1,1 @@
+wsk action invoke --apihost localhost -i -u 789c46b1-71f6-4ed5-8c54-816aa4f8c502:abczO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP --blocking -r statusapi -p productApiClientId "4fc13095-72ac-405a-ad4d-ea443d1686f0" -p productApiHost "http://localhost:5000" 

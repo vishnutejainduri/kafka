@@ -1,0 +1,1 @@
+mongo --ssl --sslAllowInvalidCertificates portal-ssl1084-2.bmix-wdc-yp-1410c9d4-631d-4225-8112-258dd1209402.1648250576.composedb.com:17867/compose -u admin -p LADZABDYIEAMEVCV --authenticationDatabase admin

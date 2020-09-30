@@ -1,0 +1,92 @@
+{
+  "_id": "28210066",
+  "advice": {
+    "en": null,
+    "fr": null
+  },
+  "approvedForWeb": null,
+  "brandName": {
+    "en": "JP Tilford Custom",
+    "fr": "JP Tilford Custom"
+  },
+  "careInstructions": {
+    "en": null,
+    "fr": null
+  },
+  "collar": {
+    "en": null,
+    "fr": null
+  },
+  "colour": {
+    "en": null,
+    "fr": null
+  },
+  "colourGroup": {
+    "en": "Assorted",
+    "fr": "Assorti"
+  },
+  "colourId": null,
+  "construction": {
+    "en": null,
+    "fr": null
+  },
+  "cuff": {
+    "en": null,
+    "fr": null
+  },
+  "effectiveDate": 1467331946000,
+  "fabric": {
+    "en": null,
+    "fr": null
+  },
+  "fabricAndMaterials": {
+    "en": null,
+    "fr": null
+  },
+  "fit": {
+    "en": null,
+    "fr": null
+  },
+  "id": "28210066",
+  "length": {
+    "en": null,
+    "fr": null
+  },
+  "level1Category": {
+    "en": "CLOTHING",
+    "fr": null
+  },
+  "level2Category": {
+    "en": "DRESS SHIRTS",
+    "fr": null
+  },
+  "level3Category": {
+    "en": "Dress Shirts",
+    "fr": null
+  },
+  "marketingDescription": {
+    "en": null,
+    "fr": null
+  },
+  "name": {
+    "en": null,
+    "fr": null
+  },
+  "originalPrice": 99.99,
+  "pattern": {
+    "en": null,
+    "fr": null
+  },
+  "relatedProductId": "916F7232821JP Tilford Custom",
+  "season": "FA-96",
+  "style": {
+    "en": null,
+    "fr": null
+  },
+  "styleAndMeasurements": {
+    "en": null,
+    "fr": null
+  },
+  "vsn": "916F7",
+  "webStatus": null
+}
