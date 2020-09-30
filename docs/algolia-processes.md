@@ -6,7 +6,7 @@ The platform builds and updates an algolia search index based on data contained 
 For all our algolia updates we use a combination of a "queue" and a "job". The "queue" in these cases is actually a mongo collection of styles to process. The "job" is a cloud function that runs on a regular internal and processes styles from this mongo collection.
 
 ## Inventory Updates
-For algolia inventory updates the `styleAvailabilityCheckQueue` is used as the "queue" collection. `updateAlgoliaInventory` is the cloud function that runs as the "job". Every minute `updateAlgoliaInventory` pulls 40 styles from the `styleAvailabilityCheckQueue` queue and determines what inventory related updates need to happen to that style in the algolia index. The following fields are handled in this update:
+For algolia inventory updates the `styleAvailabilityCheckQueue` is used as the "queue" collection. `updateAlgoliaAndCtInventory` is the cloud function that runs as the "job". Every minute `updateAlgoliaInventory` pulls 40 styles from the `styleAvailabilityCheckQueue` queue and determines what inventory related updates need to happen to that style in the algolia index. The following Algolia fields are handled in this update:
 
 - `isAvailableToSell`
 - `isOnlineAvailableToSell`
@@ -31,6 +31,8 @@ For algolia inventory updates the `styleAvailabilityCheckQueue` is used as the "
 
 
 `stores` is an array of stores where this style is available (wherever a sku at a store id has ats greater than 0).
+
+This Cloud Function also sends SKU inventory data to commercetools. The only field that is set is the SKU-level `hasOnlineAts`, which is determined by whether the product API returns an online ATS greater than 0 for the SKU.
 
 ## Price Updates
 For algolia price updates the `prices` collection is used as the "queue" collection. `updateAlgoliaPrice` is the cloud function that runs as the "job". Every minute `updateAlgoliaPrice` pulls 1000 styles from the `prices` queue collection and determines any sale prices to apply in algolia. The following fields are handled in this update:
