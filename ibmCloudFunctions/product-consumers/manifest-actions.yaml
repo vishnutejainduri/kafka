@@ -151,7 +151,7 @@
           storesCollectionName: $STORES_COLLECTION_NAME
           inventoryCollectionName: $INVENTORY_COLLECTION_NAME
       update-algolia-inventory:
-        location: ./product-consumers/updateAlgoliaInventory/dist/bundle.js
+        location: ./product-consumers/updateAlgoliaAndCtInventory/dist/bundle.js
         runtime: nodejs:10
         limits:
           memorySize: 2048
@@ -167,12 +167,6 @@
           stylesCollectionName: $STYLES_COLLECTION_NAME
           skusCollectionName: $SKUS_COLLECTION_NAME
           collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
-          ctpProjectKey: $CTP_PROJECT_KEY
-          ctpClientId: $CTP_CLIENT_ID
-          ctpClientSecret: $CTP_CLIENT_SECRET
-          ctpAuthUrl: $CTP_AUTH_URL
-          ctpApiUrl: $CTP_API_URL
-          ctpScopes: $CTP_SCOPES
       update-algolia-facets:
         location: ./product-consumers/updateAlgoliaFacets/dist/bundle.js
         runtime: nodejs:10
