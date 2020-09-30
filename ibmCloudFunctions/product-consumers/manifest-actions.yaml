@@ -215,7 +215,7 @@
         limits:
           memorySize: 2048
           timeout: 600000
-    monitor-kafka-connect:
+      monitor-kafka-connect:
         location: ./product-consumers/monitorKafkaConnect/dist/bundle.js
         inputs:
           kubeUsername: $KUBE_USERNAME
