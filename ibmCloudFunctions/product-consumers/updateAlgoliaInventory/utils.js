@@ -1,5 +1,5 @@
 const { productApiRequest } = require('../../lib/productApi');
-const { addErrorHandling } = require('../utils');
+const { addErrorHandling, log } = require('../utils');
 const createError = require('../../lib/createError');
 
 const getTotalAts = (sku, atsKey) => (sku[atsKey] || []).reduce((totalAvailableToSell, { availableToSell }) => (
@@ -85,11 +85,23 @@ const logCtAtsUpdateErrors = ctAtsUpdateResults => {
   }
 }
 
+const logCtAtsUpdateSuccesses = ctAtsUpdateResults => {
+  const idsOfSuccessfullyUpdatedCtStyles = ctAtsUpdateResults
+    .filter(styleUpdateResult => styleUpdateResult && styleUpdateResult.ok)
+    .map(({ styleId }) => styleId)
+  const successCount = idsOfSuccessfullyUpdatedCtStyles.length
+
+  if (successCount > 0) {
+    log(`Updated CT ATS for styles: ${idsOfSuccessfullyUpdatedCtStyles.join(', ')}`)
+  }
+}
+
 module.exports = {
   buildSizesArray,
   buildStoreInventory,
   buildStoresArray,
   logCtAtsUpdateErrors,
+  logCtAtsUpdateSuccesses,
   getSkuAtsByStyleAndSkuId,
   getSkuInventoryBatchedByStyleId
 };

@@ -8,14 +8,15 @@ const {
     buildStoreInventory,
     buildStoresArray,
     getSkuInventoryBatchedByStyleId,
-    logCtAtsUpdateErrors
+    logCtAtsUpdateErrors,
+    logCtAtsUpdateSuccesses
 } = require('./utils');
 const { updateSkuAtsForManyCtProductsBatchedByStyleId } = require('./commercetools')
 const getCtHelpers = require('../../lib/commercetoolsSdk')
 
 let algoliaClient = null;
 let algoliaIndex = null;
-let ctHelpers = null
+let ctHelpers = null;
 
 global.main = async function (params) {
     log(createLog.params('updateAlgoliaInventory', params));
@@ -119,16 +120,18 @@ global.main = async function (params) {
             });
     }
 
-    const skuInventoryBatchedByStyleId = await getSkuInventoryBatchedByStyleId({ styleIds: styleIdsForAvailabilitiesToBeSynced, skuCollection: skus, params })
-    const ctAtsUpdateResults = await updateSkuAtsForManyCtProductsBatchedByStyleId(skuInventoryBatchedByStyleId, ctHelpers)
-    logCtAtsUpdateErrors(ctAtsUpdateResults)
+    const skuInventoryBatchedByStyleId = await getSkuInventoryBatchedByStyleId({ styleIds: styleIdsForAvailabilitiesToBeSynced, skuCollection: skus, params });
+    const ctAtsUpdateResults = await updateSkuAtsForManyCtProductsBatchedByStyleId(skuInventoryBatchedByStyleId, ctHelpers);
     const idsOfSuccessfullyUpdatedCtStyles = ctAtsUpdateResults
         .filter(styleUpdateResult => styleUpdateResult && styleUpdateResult.ok)
-        .map(({ styleId }) => styleId)
+        .map(({ styleId }) => styleId);
+
+    logCtAtsUpdateErrors(ctAtsUpdateResults);
+    logCtAtsUpdateSuccesses(ctAtsUpdateResults);
 
     const styleIdsToCleanup = styleIdsForAvailabilitiesToBeSynced
         .filter((_, index) => !(styleAvailabilitiesToBeSynced[index] instanceof Error)) // Algolia successes
-        .filter(styleId => idsOfSuccessfullyUpdatedCtStyles.includes(styleId)) // CT successes
+        .filter(styleId => idsOfSuccessfullyUpdatedCtStyles.includes(styleId)); // CT successes
 
     try {
         await styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIdsToCleanup } });
@@ -139,7 +142,7 @@ global.main = async function (params) {
     return {
         successCount: styleIdsToCleanup.length,
         failureCount: stylesIdsToUpdate.length - styleIdsToCleanup.length
-    }
+    };
 }
 
 module.exports = global.main;
