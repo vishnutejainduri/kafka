@@ -1,3 +1,7 @@
+const { productApiRequest } = require('../../lib/productApi');
+const { addErrorHandling, log } = require('../utils');
+const createError = require('../../lib/createError');
+
 const getTotalAts = (sku, atsKey) => (sku[atsKey] || []).reduce((totalAvailableToSell, { availableToSell }) => (
       availableToSell > 0 ? totalAvailableToSell + availableToSell : totalAvailableToSell
     ), 0)
@@ -55,8 +59,49 @@ const buildStoresArray = (
       return stores;
      }
 
+
+const getSkuAtsByStyleAndSkuId = (styleId, params) => async skuId => (
+  {
+    styleId,
+    skuId,
+    ...await productApiRequest(params, `/inventory/ats/${styleId}/${skuId}`)
+  }
+)
+
+const getSkuInventoryBatchedByStyleId = ({ styleIds, skuCollection, params }) => (
+  Promise.all(styleIds.map(addErrorHandling(async styleId => {
+    const skus = await skuCollection.find({ styleId }).toArray()
+    const skuIds = skus.map(sku => sku._id)
+    return Promise.all(skuIds.map(getSkuAtsByStyleAndSkuId(styleId, params)))
+  })))
+)
+
+const logCtAtsUpdateErrors = ctAtsUpdateResults => {
+  const errorResults = ctAtsUpdateResults.filter(productResult => !(productResult && productResult.ok))
+  const errorCount = errorResults.length
+
+  if (errorCount > 0) {
+    createError.updateAlgoliaAndCtInventory.failedToUpdateCtAts(errorResults)
+  }
+}
+
+const logCtAtsUpdateSuccesses = ctAtsUpdateResults => {
+  const idsOfSuccessfullyUpdatedCtStyles = ctAtsUpdateResults
+    .filter(styleUpdateResult => styleUpdateResult && styleUpdateResult.ok)
+    .map(({ styleId }) => styleId)
+  const successCount = idsOfSuccessfullyUpdatedCtStyles.length
+
+  if (successCount > 0) {
+    log(`Updated CT ATS for styles: ${idsOfSuccessfullyUpdatedCtStyles.join(', ')}`)
+  }
+}
+
 module.exports = {
   buildSizesArray,
   buildStoreInventory,
   buildStoresArray,
+  logCtAtsUpdateErrors,
+  logCtAtsUpdateSuccesses,
+  getSkuAtsByStyleAndSkuId,
+  getSkuInventoryBatchedByStyleId
 };

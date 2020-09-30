@@ -152,7 +152,7 @@
           storesCollectionName: $STORES_COLLECTION_NAME
           inventoryCollectionName: $INVENTORY_COLLECTION_NAME
       update-algolia-inventory:
-        location: ./product-consumers/updateAlgoliaInventory/dist/bundle.js
+        location: ./product-consumers/updateAlgoliaAndCtInventory/dist/bundle.js
         runtime: nodejs:10
         limits:
           memorySize: 2048
