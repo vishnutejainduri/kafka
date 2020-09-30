@@ -19,7 +19,7 @@ let algoliaIndex = null;
 let ctHelpers = null;
 
 global.main = async function (params) {
-    log(createLog.params('updateAlgoliaInventory', params));
+    log(createLog.params('updateAlgoliaAndCtInventory', params));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
         throw new Error('Requires Algolia configuration. See manifest.yml');
@@ -47,12 +47,12 @@ global.main = async function (params) {
     let styleAvailabilityCheckQueue;
     let styles;
     let skus;
-    let updateAlgoliaInventoryCount;
+    let updateAlgoliaAndCtInventoryCount;
     try {
         styleAvailabilityCheckQueue = await getCollection(params);
         styles = await getCollection(params, params.stylesCollectionName);
         skus = await getCollection(params, params.skusCollectionName);
-        updateAlgoliaInventoryCount = await getCollection(params, 'updateAlgoliaInventoryCount');
+        updateAlgoliaAndCtInventoryCount = await getCollection(params, 'updateAlgoliaInventoryCount');
     } catch (originalError) {
         throw createError.failedDbConnection(originalError, params && params.collectionName);
     }
@@ -61,20 +61,20 @@ global.main = async function (params) {
     try {
         stylesToCheck = await styleAvailabilityCheckQueue.find().limit(40).toArray();
     } catch (originalError) {
-        throw createError.updateAlgoliaInventory.failedToGetStylesToCheck(originalError);
+        throw createError.updateAlgoliaAndCtInventory.failedToGetStylesToCheck(originalError);
     }
 
     const styleAvailabilitiesToBeSynced = await Promise.all(stylesToCheck.map(addErrorHandling(async style => {
         // for some reason we don't have style data in the DPM for certain styles referenced in inventory data
         const styleData = await styles.findOne({ _id: style.styleId })
             .catch(originalError => {
-                throw createError.updateAlgoliaInventory.failedToGetStyle(originalError, style);
+                throw createError.updateAlgoliaAndCtInventory.failedToGetStyle(originalError, style);
             });
         if (!style.styleId || !styleData || styleData.isOutlet) return null;
         const styleSkus = await skus.find({ styleId: style.styleId }).toArray();
         const styleAts = await productApiRequest(params, `/inventory/ats/${styleData._id}`)
             .catch(originalError => {
-                throw createError.updateAlgoliaInventory.failedToGetApiResponse(originalError, styleData._id);
+                throw createError.updateAlgoliaAndCtInventory.failedToGetApiResponse(originalError, styleData._id);
             });
         return {
             isAvailableToSell: styleAts.ats > 0,
@@ -91,9 +91,9 @@ global.main = async function (params) {
 
     const recordsWithError = styleAvailabilitiesToBeSynced.filter(rec => rec instanceof Error);
     if (recordsWithError.length > 0) {
-        log(createError.updateAlgoliaInventory.failedRecords(null, recordsWithError.length, styleAvailabilitiesToBeSynced.length), "ERROR");
+        log(createError.updateAlgoliaAndCtInventory.failedRecords(null, recordsWithError.length, styleAvailabilitiesToBeSynced.length), "ERROR");
         recordsWithError.forEach(originalError => {
-            log(createError.updateAlgoliaInventory.failedRecord(originalError), "ERROR");
+            log(createError.updateAlgoliaAndCtInventory.failedRecord(originalError), "ERROR");
         });
     }
 
@@ -113,7 +113,7 @@ global.main = async function (params) {
             log('Error: Failed to send styles to Algolia.');
             throw error;
         }
-        await updateAlgoliaInventoryCount
+        await updateAlgoliaAndCtInventoryCount
             .insert({ batchSize: styleAvailabilitiesToBeSynced.length })
             .catch (() => {
                 log('Error: failed to update algolia inventory count.');
@@ -136,7 +136,7 @@ global.main = async function (params) {
     try {
         await styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIdsToCleanup } });
     } catch (originalError) {
-        throw createError.updateAlgoliaInventory.failedToRemoveFromQueue(originalError, styleIdsToCleanup);
+        throw createError.updateAlgoliaAndCtInventory.failedToRemoveFromQueue(originalError, styleIdsToCleanup);
     }
 
     return {

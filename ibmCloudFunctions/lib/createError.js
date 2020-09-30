@@ -364,16 +364,16 @@ module.exports = {
             'Failed to prepare a style for Algolia'
         ),
     },
-    updateAlgoliaInventory: {
+    updateAlgoliaAndCtInventory: {
         failedRecord: (originalError) => new CustomError(
             originalError,
             'failed-record',
-            'Failed to update algolia ats'
+            'Failed to update Algolia and CT ats'
         ),
         failedRecords: (_, failed, total) => new CustomError(
             null,
             'failed-prepare-styles-for-algolia',
-            `Failed to prepare ${failed} of ${total} styles for Algolia.`
+            `Failed to prepare ${failed} of ${total} styles for Algolia and CT.`
         ),
         failedToGetStylesToCheck: (originalError) => new CustomError(
             originalError,
@@ -388,12 +388,12 @@ module.exports = {
         failedToRemoveFromQueue: (originalError, styleIds) => new CustomError(
             originalError,
             'failed-to-remove-from-queue',
-            `Failed to remove from algolia mongo queue the following style ids: ${styleIds}`
+            `Failed to remove from algolia/CT mongo queue the following style ids: ${styleIds}`
         ),
         failedToGetRecords: (originalError) => new CustomError(
             originalError,
             'failed-to-get-records-from-algolia-mongo-queue',
-            'Failed to get any records from the algolia mongo queue'
+            'Failed to get any records from the algolia/CT mongo queue'
         ),
         failedToGetStyle: (originalError, style) => new CustomError(
             originalError,

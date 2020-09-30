@@ -1,12 +1,12 @@
-const updateAlgoliaInventory = require('../');
+const updateAlgoliaAndCtInventory = require('../');
 
 jest.mock("mongodb");
 jest.mock("algoliasearch");
 jest.mock("request-promise");
 
-describe('updateAlgoliaInventory', () => {
+describe('updateAlgoliaAndCtInventory', () => {
     it('missing all parameters; should fail', async () => {
-        await expect(updateAlgoliaInventory({})).rejects.toThrow();
+        await expect(updateAlgoliaAndCtInventory({})).rejects.toThrow();
     });
     it('correct message', async () => {
         const params = {
@@ -28,7 +28,7 @@ describe('updateAlgoliaInventory', () => {
             ctpApiUrl: 'https://api.us-central1.gcp.commercetools.com',
             ctpScopes: 'ctpScopes' 
         }
-        const response = await updateAlgoliaInventory(params);
+        const response = await updateAlgoliaAndCtInventory(params);
         expect(response).toEqual({ failureCount: 0, successCount: 0 });
     });
 });

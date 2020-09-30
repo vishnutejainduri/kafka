@@ -81,7 +81,7 @@ const logCtAtsUpdateErrors = ctAtsUpdateResults => {
   const errorCount = errorResults.length
 
   if (errorCount > 0) {
-    createError.updateAlgoliaInventory.failedToUpdateCtAts(errorResults)
+    createError.updateAlgoliaAndCtInventory.failedToUpdateCtAts(errorResults)
   }
 }
 
