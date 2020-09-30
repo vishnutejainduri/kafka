@@ -29,6 +29,20 @@ There are three logins required.
 2. `kubectl` - used for interacting with the cluster. See [Setting up the CLI](https://console.bluemix.net/docs/containers/cs_cli_install.html#cs_cli_configure) for details
 3. `ibmcloud cr` - used for uploading images to our container registry. Login with `ibmcloud cr login`
 
+# IBM Cloud Toolchain script
+```bash
+#!/bin/bash
+# set working directory
+cd ibmCloudFunctions
+./build.sh
+./test.sh
+./deploy-iam.sh $DEPLOYER_API_KEY $ORG $SPACE $RESOURCE_GROUP $CLOUD_FUNCTIONS_NAMESPACE $DEPLOY_TRIGGERS
+
+./build-ct.sh
+./test.sh
+./deploy-iam-ct.sh $DEPLOYER_API_KEY $ORG $SPACE $RESOURCE_GROUP $CLOUD_FUNCTIONS_NAMESPACE $DEPLOY_TRIGGERS
+```
+
 # Deploying the Event Streams functionality to populate the data store
 
 1. Build and upload the Docker image for the Kafka Connect host. See `/kafka-connect-image` for more details
