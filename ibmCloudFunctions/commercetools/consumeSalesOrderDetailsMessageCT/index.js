@@ -6,10 +6,11 @@ const {
   groupByOrderNumber,
   getExistingCtOrder,
   getCtOrderDetailsFromCtOrder,
-  getOutOfDateOrderDetailIds,
-  removeDuplicateOrderDetails,
+  getOutOfDateRecordIds,
+  removeDuplicateRecords,
   updateOrderDetailBatchStatus
 } = require('../orderUtils');
+const { orderDetailAttributeNames } = require('../constantsCt');
 const {
   addErrorHandling,
   addLoggingToMain,
@@ -29,8 +30,14 @@ const syncSalesOrderDetailBatchToCt = async (ctHelpers, salesOrderDetails) => {
   }
 
   const existingCtOrderDetails = getCtOrderDetailsFromCtOrder(salesOrderDetails, existingCtOrder);
-  const outOfDateOrderDetailIds = getOutOfDateOrderDetailIds(existingCtOrderDetails, salesOrderDetails);
-  const orderDetailsToUpdate = removeDuplicateOrderDetails(salesOrderDetails.filter(orderDetail => (!outOfDateOrderDetailIds.includes(orderDetail.id))));
+  const outOfDateOrderDetailIds = getOutOfDateRecordIds({
+    existingCtRecords: existingCtOrderDetails,
+    records: salesOrderDetails,
+    key: 'id',
+    ctKey: 'id',
+    comparisonFieldPath: ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE]
+  });
+  const orderDetailsToUpdate = removeDuplicateRecords(salesOrderDetails.filter(orderDetail => (!outOfDateOrderDetailIds.includes(orderDetail.id))), 'id', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE);
 
   return updateOrderDetailBatchStatus(
     orderDetailsToUpdate,
@@ -58,7 +65,6 @@ const main = params => {
       .map(addErrorHandling(msg => filterSalesOrderDetailsMessages(msg) ? msg : null))
       .map(addErrorHandling(parseSalesOrderDetailsMessage))
   );
-
   const salesOrderDetailsGroupedByOrderNumber = groupByOrderNumber(salesOrderDetailsToUpdate);
 
   const salesOrderDetailsBatchPromises = (

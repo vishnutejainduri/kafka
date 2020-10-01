@@ -50,6 +50,14 @@
           timeout: 58000
         inputs:
           topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
+      consume-shipment-message-ct:
+        location: ./commercetools/consumeShipmentMessageCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 58000
+        inputs:
+          topicName: shipments-connect-jdbc 
       consume-sales-order-message-ct:
         location: ./commercetools/consumeSalesOrderMessageCT/dist/bundle.js
         runtime: nodejs:10

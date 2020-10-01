@@ -1,5 +1,6 @@
 const consumeSalesOrderDetailsMessageCT = require('..');
 const { filterSalesOrderDetailsMessages, parseSalesOrderDetailsMessage } = require('../../../lib/parseSalesOrderDetailsMessage');
+const { getMostUpToDateObject } = require('../../../lib/utils');
 const {
   addErrorHandling,
 } = require('../../../product-consumers/utils');
@@ -7,14 +8,14 @@ const {
   getActionsFromOrderDetail,
   getActionsFromOrderDetails,
   formatOrderDetailBatchRequestBody,
-  existingCtOrderDetailIsNewer,
+  existingCtRecordIsNewer,
   getCtOrderDetailFromCtOrder,
   getCtOrderDetailsFromCtOrder,
   groupByOrderNumber,
-  getOutOfDateOrderDetailIds,
-  getMostUpToDateOrderDetail,
-  removeDuplicateOrderDetails
+  getOutOfDateRecordIds,
+  removeDuplicateRecords
 } = require('../../orderUtils');
+const { orderDetailAttributeNames } = require('../../constantsCt')
 const { createClient } = require('@commercetools/sdk-client');
 
 jest.mock('@commercetools/sdk-client');
@@ -140,27 +141,27 @@ describe('formatOrderDetailBatchRequestBody', () => {
   });
 });
 
-describe('existingCtOrderDetailIsNewer', () => {
+describe('existingCtRecordIsNewer', () => {
   it('returns `false` if CT line item is newer than JESTA line item', () => {
-    expect(existingCtOrderDetailIsNewer(mockOrder.lineItems[0], orderDetails[0])).toBe(false);
+    expect(existingCtRecordIsNewer(mockOrder.lineItems[0], orderDetails[0], ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE])).toBe(false);
   });
 
   it('returns `true` if CT line item is newer than JESTA line item', () => {
     const oldOrderDetail = JSON.parse(JSON.stringify(orderDetails[0]));
     oldOrderDetail.orderDetailLastModifiedDate = new Date(0);
-    expect(existingCtOrderDetailIsNewer(mockOrder.lineItems[0], oldOrderDetail)).toBe(true);
+    expect(existingCtRecordIsNewer(mockOrder.lineItems[0], oldOrderDetail, ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE])).toBe(true);
   });
 
   it('returns `false` if given CT line item lacks a last modified date', () => {
     const mockOrderDetailMissingDate = JSON.parse(JSON.stringify(mockOrder.lineItems[0]));
     delete mockOrderDetailMissingDate.custom.fields.orderDetailLastModifiedDate
-    expect(existingCtOrderDetailIsNewer(mockOrderDetailMissingDate, orderDetails[0])).toBe(false);
+    expect(existingCtRecordIsNewer(mockOrderDetailMissingDate, orderDetails[0], ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE])).toBe(false);
   });
 
   it('throws an error if given JESTA line item lacks a last modified date', () => {
     const orderDetailMissingDate = JSON.parse(JSON.stringify(orderDetails[0]))
     delete orderDetailMissingDate.orderDetailLastModifiedDate
-    expect(() => existingCtOrderDetailIsNewer(mockOrder.lineItems[0], orderDetailMissingDate)).toThrow("Cannot read property 'getTime' of undefined");
+    expect(() => existingCtRecordIsNewer(mockOrder.lineItems[0], orderDetailMissingDate, ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE])).toThrow("Cannot read property 'getTime' of undefined");
   });
 });
 
@@ -227,7 +228,7 @@ describe('getCtOrderDetailsFromCtOrder', () => {
   });
 });
 
-describe('getOutOfDateOrderDetailIds', () => {
+describe('getOutOfDateRecordIds', () => {
   const mockOrderMultiLine = JSON.parse(JSON.stringify(mockOrder));
   mockOrderMultiLine.lineItems.push(JSON.parse(JSON.stringify(mockOrderMultiLine.lineItems[0])));
   mockOrderMultiLine.lineItems[1].id = 'id2';
@@ -253,13 +254,37 @@ describe('getOutOfDateOrderDetailIds', () => {
   upToDateOrderDetails3.id = 'id3';
 
   it('returns an array with the out of date line items', () => {
-    expect(getOutOfDateOrderDetailIds(mockOrderMultiLine.lineItems, [outOfDateOrderDetails1, upToDateOrderDetails2, outOfDateOrderDetails3])).toEqual(['id', 'id3']);
-    expect(getOutOfDateOrderDetailIds(mockOrderMultiLine.lineItems, [outOfDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3])).toEqual(['id', 'id2']);
-    expect(getOutOfDateOrderDetailIds(mockOrderMultiLine.lineItems, [upToDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3])).toEqual(['id2']);
+    expect(getOutOfDateRecordIds({
+      existingCtRecords: mockOrderMultiLine.lineItems,
+      records: [outOfDateOrderDetails1, upToDateOrderDetails2, outOfDateOrderDetails3],
+      key: 'id',
+      ctKey: 'id',
+      comparisonFieldPath: ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE]
+    })).toEqual(['id', 'id3']);
+    expect(getOutOfDateRecordIds({
+      existingCtRecords: mockOrderMultiLine.lineItems,
+      records: [outOfDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3],
+      key: 'id',
+      ctKey: 'id',
+      comparisonFieldPath: ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE]
+    })).toEqual(['id', 'id2']);
+    expect(getOutOfDateRecordIds({
+      existingCtRecords: mockOrderMultiLine.lineItems,
+      records: [upToDateOrderDetails1, outOfDateOrderDetails2, upToDateOrderDetails3],
+      key: 'id',
+      ctKey: 'id',
+      comparisonFieldPath: ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE]
+    })).toEqual(['id2']);
   });
 
   it('returns an empty array when there are no out of date line items', () => {
-    expect(getOutOfDateOrderDetailIds(mockOrderMultiLine.lineItems, ['id', 'id2', 'id3'])).toEqual([]);
+    expect(getOutOfDateRecordIds({
+      existingCtRecords: mockOrderMultiLine.lineItems,
+      records: ['id', 'id2', 'id3'],
+      key: 'id',
+      ctKey: 'id',
+      comparisonFieldPath: ['custom', 'fields', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE]
+    })).toEqual([]);
   });
 });
 
@@ -300,7 +325,7 @@ describe('getActionsFromOrderDetailss', () => {
   });
 });
 
-describe('getMostUpToDateOrderDetails', () => {
+describe('getMostUpToDateObject', () => {
   it('returns the most up to date line item when given an array of line items', () => {
     const oldOrderDetail = JSON.parse(JSON.stringify(orderDetails[0]));
     oldOrderDetail.orderDetailLastModifiedDate = new Date(10);
@@ -313,16 +338,16 @@ describe('getMostUpToDateOrderDetails', () => {
 
     const orderDetailsTest = [oldOrderDetail, newestOrderDetail, oldestOrderDetail];
 
-    expect(getMostUpToDateOrderDetail(orderDetailsTest)).toEqual(newestOrderDetail);
-    expect(getMostUpToDateOrderDetail([oldOrderDetail])).toEqual(oldOrderDetail);
+    expect(getMostUpToDateObject(orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE)(orderDetailsTest)).toEqual(newestOrderDetail);
+    expect(getMostUpToDateObject(orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE)([oldOrderDetail])).toEqual(oldOrderDetail);
   });
 
   it('returns `undefined` when given an empty array', () => {
-    expect(getMostUpToDateOrderDetail([])).toBeNull();
+    expect(getMostUpToDateObject(orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE)([])).toBeNull();
   });
 });
 
-describe('removeDuplicateOrderDetails', () => {
+describe('removeDuplicateRecords', () => {
   const orderDetail1 = JSON.parse(JSON.stringify(orderDetails[0]));
   orderDetail1.orderDetailLastModifiedDate = new Date(0);
   const orderDetail1Duplicate1 = JSON.parse(JSON.stringify(orderDetails[0]));
@@ -340,11 +365,11 @@ describe('removeDuplicateOrderDetails', () => {
 
   it('returns an array matching the given array when there are no duplicate line items', () => {
     const orderDetailsWithNoDuplicates = [orderDetail1, orderDetail2, orderDetail3];
-    expect(removeDuplicateOrderDetails(orderDetailsWithNoDuplicates)).toEqual(orderDetailsWithNoDuplicates);
+    expect(removeDuplicateRecords(orderDetailsWithNoDuplicates, 'id', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE)).toEqual(orderDetailsWithNoDuplicates);
   });
 
   it('returns an array with oldest duplicate line items removed when given an array that contains duplicate line items', () => {
     const orderDetailsWithDuplicates = [orderDetail1, orderDetail1Duplicate1, orderDetail1Duplicate2, orderDetail2, orderDetail3];
-    expect(removeDuplicateOrderDetails(orderDetailsWithDuplicates)).toEqual([orderDetail1Duplicate2, orderDetail2, orderDetail3]);
+    expect(removeDuplicateRecords(orderDetailsWithDuplicates, 'id', orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE)).toEqual([orderDetail1Duplicate2, orderDetail2, orderDetail3]);
   });
 });

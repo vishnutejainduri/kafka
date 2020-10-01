@@ -1,35 +1,34 @@
-const { orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates } = require('./constantsCt');
-const { groupByAttribute, getMostUpToDateObject } = require('../lib/utils');
+const { orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates, SHIPMENT_NAMESPACE, KEY_VALUE_DOCUMENT } = require('./constantsCt');
+const { groupByAttribute, getMostUpToDateObject, removeDuplicateIds } = require('../lib/utils');
 const { log } = require('../product-consumers/utils');
 
 const groupByOrderNumber = groupByAttribute('orderNumber');
-const groupByLineId = groupByAttribute('id');
-const getMostUpToDateOrderDetail = getMostUpToDateObject(orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE);
 
-const removeDuplicateOrderDetails = orderDetails => {
-  const orderDetailsGroupedByLineId = groupByLineId(orderDetails);
+const removeDuplicateRecords = (records, attribute, comparisonField) => {
+  const recordsGroupedByAttribute = groupByAttribute(attribute)(records);
 
-  return orderDetailsGroupedByLineId.reduce((filteredOrderDetails, orderDetailBatch) => {
-    const mostUpToDateOrderDetail = getMostUpToDateOrderDetail(orderDetailBatch);
-    return [...filteredOrderDetails, mostUpToDateOrderDetail];    
+  return recordsGroupedByAttribute.reduce((filteredRecords, recordBatch) => {
+    const mostUpToDateRecord = getMostUpToDateObject(comparisonField)(recordBatch);
+    return [...filteredRecords, mostUpToDateRecord];    
   }, []);
 };
 
-const existingCtOrderDetailIsNewer = (existingCtOrderDetail, givenOrderDetail) => {
-  const orderDetailLastModifiedDate = existingCtOrderDetail.custom.fields.orderDetailLastModifiedDate
-  if (!orderDetailLastModifiedDate) return false;
+const existingCtRecordIsNewer = (existingCtRecord, givenRecord, comparisonFieldPath) => {
+  const existingRecordLastModifiedDate = comparisonFieldPath.reduce((previous, current) => previous[current], existingCtRecord)
+  const givenRecordLastModifiedDate = givenRecord[comparisonFieldPath[comparisonFieldPath.length-1]]
+  if (!existingRecordLastModifiedDate) return false;
 
-  const existingCtOrderDetailDate = new Date(orderDetailLastModifiedDate);
+  const existingCtRecordDate = new Date(existingRecordLastModifiedDate);
 
-  return existingCtOrderDetailDate.getTime() > givenOrderDetail[orderDetailAttributeNames.ORDER_DETAIL_LAST_MODIFIED_DATE].getTime();
+  return existingCtRecordDate.getTime() > givenRecordLastModifiedDate.getTime();
 };
 
-const getOutOfDateOrderDetailIds = (existingCtOrderDetails, orderDetails) => (
-  existingCtOrderDetails.filter(ctOrderDetail => {
-    const correspondingJestaOrderDetail = orderDetails.find(orderDetail => orderDetail.id === ctOrderDetail.id);
-    if (!correspondingJestaOrderDetail) return false;
-    return existingCtOrderDetailIsNewer(ctOrderDetail, correspondingJestaOrderDetail);
-  }).map(ctOrderDetail => ctOrderDetail.id)
+const getOutOfDateRecordIds = ({ existingCtRecords, records, key, ctKey, comparisonFieldPath }) => (
+  existingCtRecords.filter(ctRecord => {
+    const correspondingJestaRecord = records.find(record => record[key] === ctRecord[ctKey]);
+    if (!correspondingJestaRecord) return false;
+    return existingCtRecordIsNewer(ctRecord, correspondingJestaRecord, comparisonFieldPath);
+  }).map(ctRecord => ctRecord[ctKey])
 );
 
 const getCtOrderDetailFromCtOrder = (lineId, ctOrder) => {
@@ -212,18 +211,92 @@ const updateOrderDetailBatchStatus = async (orderDetailsToUpdate, existingCtOrde
   }
 };
 
+const getShipmentFromCt = async (shipment, { client, requestBuilder }) => {
+  const method = 'GET';
+  const uri = `${requestBuilder.customObjects.build()}/${SHIPMENT_NAMESPACE}/${shipment.shipmentId}`;
+
+  try {
+    const response = await client.execute({ method, uri }); 
+    return response.body;
+  } catch (err) {
+    if (err.statusCode === 404) return null;
+    throw err;
+  }
+};
+
+const getExistingCtShipments = async (shipments, ctHelpers) => (
+  (await Promise.all(shipments.map(shipment => getShipmentFromCt(shipment, ctHelpers))))
+    .filter(Boolean)
+);
+
+const createOrUpdateShipment = async (shipment, existingCtShipment, { client, requestBuilder }) => {
+  shipment.shipmentDetails = existingCtShipment && existingCtShipment.shipmentDetails || []
+
+  const method = 'POST';
+  const uri = requestBuilder.customObjects.build();
+  const body = JSON.stringify({
+    container: SHIPMENT_NAMESPACE,
+    key: shipment.shipmentId,
+    value: shipment
+  });
+
+  const response = await client.execute({ method, uri, body });
+  return response.body;
+};
+
+const createOrUpdateShipments = (shipments, existingCtShipments, ctHelpers) => (
+  Promise.all(shipments.map(shipment => {
+    const existingCtShipment = existingCtShipments.find(existingCtShipment => existingCtShipment.shipmentId === shipment.shipmentId)
+    return createOrUpdateShipment(shipment, existingCtShipment, ctHelpers)
+  }))
+);
+
+const getShipmentsOrderUpdateActions = (shipments, order) => {
+  const existingShipmentReferences = order && order.custom && order.custom.fields[orderAttributeNames.SHIPMENTS] || [];
+  const newShipmentReferences = shipments.map(shipment => ({ id: shipment.id, typeId: KEY_VALUE_DOCUMENT }));
+  const allShipmentReferences = removeDuplicateIds([...existingShipmentReferences, ...newShipmentReferences]);
+
+  return [{
+    action: 'setCustomField',
+    name: orderAttributeNames.SHIPMENTS,
+    value: allShipmentReferences
+  }]
+};
+
+const addShipmentsToOrder = async (shipments, ctHelpers) => {
+  if (shipments.length === 0) return null;
+  const { client, requestBuilder } = ctHelpers;
+  const orderNumber = shipments[0].value.orderNumber;
+
+  const existingCtOrder = await getExistingCtOrder(orderNumber, ctHelpers);
+  if (!existingCtOrder) {
+    log.error(`Order number does not exist in CT for shipment ${orderNumber} ${shipments[0].key}`);
+    throw new Error('Order number does not exist');
+  }
+
+  const actions = getShipmentsOrderUpdateActions(shipments, existingCtOrder);
+  const method = 'POST';
+  const uri = requestBuilder.orders.byId(existingCtOrder.id).build();
+  const body = JSON.stringify({ version: existingCtOrder.version, actions });
+
+  return client.execute({ method, uri, body });
+};
+
 module.exports = {
+  removeDuplicateRecords,
+  getOutOfDateRecordIds,
+  getExistingCtShipments,
   updateOrderStatus,
   groupByOrderNumber,
   getExistingCtOrder,
   getCtOrderDetailsFromCtOrder,
   getCtOrderDetailFromCtOrder,
-  getOutOfDateOrderDetailIds,
-  removeDuplicateOrderDetails,
   updateOrderDetailBatchStatus,
   getActionsFromOrderDetail,
   getActionsFromOrderDetails,
+  existingCtRecordIsNewer,
   formatOrderDetailBatchRequestBody,
-  existingCtOrderDetailIsNewer,
-  getMostUpToDateOrderDetail,
+  createOrUpdateShipments,
+  addShipmentsToOrder,
+  getShipmentsOrderUpdateActions
 };
