@@ -13,7 +13,6 @@
     "topic.prefix": "inventory-connect-jdbc-SKUINVENTORY",
     "validate.non.null": "false",
     "poll.interval.ms": 10800000,
-    "offset.flush.timeout.ms": 120000
-
+    "offset.flush.timeout.ms": 3600000
   }
 }
