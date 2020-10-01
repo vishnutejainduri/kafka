@@ -14,6 +14,6 @@
     "topic.prefix": "sale-prices-connect-jdbc",
     "validate.non.null": "false",
     "poll.interval.ms": 60000,
-    "offset.flush.timeout.ms": 60000
+    "offset.flush.timeout.ms": 3600000
   }
 }
