@@ -7,7 +7,7 @@
     "db.timezone":"America/New_York",
     "mode": "timestamp",
     "batch.max.rows": 100,
-    "timestamp.column.name": "UPD_TIMESTAMP",
+    "timestamp.column.name": "LAST_MODIFIED_DATE",
     "topic.prefix": "styles-connect-jdbc-CATALOG",
     "validate.non.null": "false",
     "errors.log.enable": true,
