@@ -1,0 +1,141 @@
+{
+  "_id": "20041576",
+  "advice": {
+    "en": null,
+    "fr": null
+  },
+  "approvedForWeb": 1551692608000,
+  "brandName": {
+    "en": "34 Heritage",
+    "fr": "34 Heritage"
+  },
+  "careInstructions": {
+    "en": "<li> Machine wash, warm\n<li> Do not tumble dry\n<li> Iron, medium\n<li> Dry clean safe",
+    "fr": "<li> Laver à la machine à l’eau tiède\n<li> Ne pas sécher par culbutage\n<li> Repasser à température moyenne\n<li> Nettoyage à sec possible"
+  },
+  "collar": {
+    "en": null,
+    "fr": null
+  },
+  "colour": {
+    "en": null,
+    "fr": null
+  },
+  "colourGroup": {
+    "en": "Blue",
+    "fr": "Bleu"
+  },
+  "colourId": "049",
+  "construction": {
+    "en": "<li> Zipper fly\n<li> Five pocket style\n<li> Stitching on back pockets",
+    "fr": "<li> Braguette à glissière\n<li> Cinq poches\n<li> Surpiqures sur les poches arrière"
+  },
+  "cuff": {
+    "en": null,
+    "fr": null
+  },
+  "effectiveDate": 1570449142000,
+  "fabric": {
+    "en": null,
+    "fr": null
+  },
+  "fabricAndMaterials": {
+    "en": "<li> 69% cotton, 15% modal, 14% polyester, 2% elastane\n<li> Leather logo patch on waistband\n<li> Dark wash\n<li> Navy",
+    "fr": "<li> 69 % coton, 15 % modal, 14 % polyester, 2 % élasthanne\n<li> Écusson-logo en cuir sur la taille\n<li> Délavage foncé\n<li> Bleu marine"
+  },
+  "fit": {
+    "en": null,
+    "fr": null
+  },
+  "id": "20041576",
+  "length": {
+    "en": null,
+    "fr": null
+  },
+  "level1Category": {
+    "en": "CLOTHING",
+    "fr": null
+  },
+  "level2Category": {
+    "en": "CASUAL WEAR",
+    "fr": null
+  },
+  "level3Category": {
+    "en": "Jeans",
+    "fr": null
+  },
+  "marketingDescription": {
+    "en": "These Courage fit jeans are expertly tailored with a straight leg that slightly tapers from the knee down. The mid-rise denim showcases 34 Heritage's medium wash with an ultra-soft hand that allows for comfortable all-day wear. They're a casual option for everyday dressing.",
+    "fr": "La marque de jeans 34 Heritage confectionne son modèle Courage de main de maitre selon une coupe droite le long des jambes et légèrement fuselée des genoux jusqu’aux chevilles. Le denim bleu foncé est ultradoux, donc décontracté et confortable."
+  },
+  "name": {
+    "en": "Courage Straight Fit Jeans",
+    "fr": "Jean de coupe droite, modèle Courage"
+  },
+  "originalPrice": 185,
+  "pattern": {
+    "en": null,
+    "fr": null
+  },
+  "relatedProductId": "COURAGE 0031046533734 Heritage",
+  "season": "SP-19",
+  "style": {
+    "en": null,
+    "fr": null
+  },
+  "styleAndMeasurements": {
+    "en": "<li> Straight fit\n<li> 34 Heritage Courage Straight fit\n<li> Mid-rise style\n<li> Front rise: 10 in\n<li> Back rise: 14.5 in\n<li> Inseam: 34 in\n<li> Measurements are based on size 32",
+    "fr": "<li> Coupe droite\n<li> Coupe droite Courage de 34 Heritage\n<li> Taille moyenne\n<li> Fourche avant de 25,4 cm (10 po)\n<li> Fourche arrière de 36,8 cm (14,5 po)\n<li> Entrejambe de 86,4 cm (34 po)\n<li> Mesure(s) prise(s) sur la taille 32"
+  },
+  "vsn": "COURAGE 00310",
+  "webStatus": true,
+  "ats": [{
+      "skuId": "89943558-07",
+      "storeId": "00035",
+      "availableToSell": 0,
+      "threshold": 3
+    },
+    {
+      "skuId": "89943558-12",
+      "storeId": "00035",
+      "availableToSell": 1,
+      "threshold": 1
+    },
+    {
+      "skuId": "89943558-07",
+      "storeId": "00057",
+      "availableToSell": 10,
+      "threshold": 1
+    },
+    {
+      "skuId": "89943558-07",
+      "storeId": "00034",
+      "availableToSell": 8,
+      "threshold": 7
+    },
+    {
+      "skuId": "89943558-16",
+      "storeId": "00008",
+      "availableToSell": 8,
+      "threshold": 3
+    },
+    {
+      "skuId": "89943558-09",
+      "storeId": "00034",
+      "availableToSell": 3,
+      "threshold": 1
+    },
+    {
+      "skuId": "89943558-14",
+      "storeId": "00034",
+      "availableToSell": 1,
+      "threshold": 1
+    },
+    {
+      "skuId": "89943558-10",
+      "storeId": "00020",
+      "availableToSell": 10,
+      "threshold": 3
+    }
+  ]
+}

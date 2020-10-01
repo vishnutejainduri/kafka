@@ -1,0 +1,6 @@
+    project: harryrosen-dev
+    client_id: 9YnDCNDg16EER7mWlMjXeHkF
+    client_secret: XRYtGBz7xdMk6N7RAOadlvQSEv_2JlyA
+    oauth_url: https://auth.us-central1.gcp.commercetools.com
+    api_url: https://api.us-central1.gcp.commercetools.com
+    scope: manage_products:harryrosen-dev

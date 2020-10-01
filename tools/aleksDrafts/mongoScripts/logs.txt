@@ -1,0 +1,18 @@
+(node:27433) DeprecationWarning: current Server Discovery and Monitoring engine is deprecated, and will be removed in a future version. To use the new Server Discover and Monitoring engine, pass option { useUnifiedTopology: true } to the MongoClient constructor.
+Warning: no saslprep library specified. Passwords will not be sanitized
+Warning: no saslprep library specified. Passwords will not be sanitized
+starting record count 3091848
+deleting count 3091848
+Warning: no saslprep library specified. Passwords will not be sanitized
+(node:27433) UnhandledPromiseRejectionWarning: MongoNetworkError: connection 0 to ac54f42e-a6f3-46c7-95a1-ff665b9f2d61-0.6131b73286f34215871dfad7254b4f7d.databases.appdomain.cloud:31917 timed out
+    at TLSSocket.<anonymous> (/home/aleksandarstefanovic/dev/hr-tools/mongoScripts/node_modules/mongodb/lib/core/connection/connection.js:335:7)
+    at Object.onceWrapper (events.js:286:20)
+    at TLSSocket.emit (events.js:198:13)
+    at TLSSocket.Socket._onTimeout (net.js:442:8)
+    at ontimeout (timers.js:436:11)
+    at tryOnTimeout (timers.js:300:5)
+    at listOnTimeout (timers.js:263:5)
+    at Timer.processTimers (timers.js:223:10)
+(node:27433) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). (rejection id: 1)
+(node:27433) [DEP0018] DeprecationWarning: Unhandled promise rejections are deprecated. In the future, promise rejections that are not handled will terminate the Node.js process with a non-zero exit code.
+Warning: no saslprep library specified. Passwords will not be sanitized

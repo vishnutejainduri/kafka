@@ -1,0 +1,1 @@
+ibmcloud wsk action list

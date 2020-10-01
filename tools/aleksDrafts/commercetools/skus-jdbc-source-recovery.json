@@ -1,0 +1,19 @@
+{
+  "name": "skus-jdbc-source-recovery-v1",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:myplanet/tSvuuSlG@//132.145.103.206:1521/MPRD_pdb1.snhrproddata.vcnhrprod.oraclevcn.com",
+    "db.timezone":"America/New_York",
+    "schema.pattern": "VSTORE",
+    "table.poll.interval.ms": 3600000,
+    "mode": "bulk",
+    "timestamp.column.name": "LASTMODIFIEDDATE",
+    "query": "SELECT s.LASTMODIFIEDDATE, s.FKORGANIZATIONNO, s.pksku as id, sc.IMAGE_STYLEID as styleId, s.skusize as \"SIZE\", s.fksizeno as sizeId, s.skudimension as dimension, s.skucolor as colorId, st.SIZE_EN, st.SIZE_FR FROM vstore.sku s INNER JOIN ELCAT.STYLE_COLOURS sc ON SUBSTR(sc.STYLEID,1,8) = s.fkstyleno AND sc.COLOUR_ID = s.skucolor INNER JOIN ELCAT.SIZE_TRANSLATION st ON st.SIZE_MERCH = s.SKUSIZE AND s.FKORGANIZATIONNO = 1 AND styleId IS NOT NULL WHERE  s.pksku = '-3195668' OR s.pksku = '-3195676'",
+    "topic.prefix": "skus-connect-jdbc",
+    "validate.non.null": "false",
+    "numeric.mapping": "best_fit",
+    "poll.interval.ms": 14400000,
+    "offset.flush.timeout.ms": 14400000
+  }
+}

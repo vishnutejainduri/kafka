@@ -1,0 +1,1 @@
+mongotop -u "admin" -p "3HR5wd7JxWry" --authenticationDatabase admin --host replset/ac54f42e-a6f3-46c7-95a1-ff665b9f2d61-0.6131b73286f34215871dfad7254b4f7d.databases.appdomain.cloud:31917,ac54f42e-a6f3-46c7-95a1-ff665b9f2d61-1.6131b73286f34215871dfad7254b4f7d.databases.appdomain.cloud:31917
