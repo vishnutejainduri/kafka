@@ -1,0 +1,24 @@
+{
+  "name": "commercetools",
+  "version": "1.0.0",
+  "description": "",
+  "main": "commercetools.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@commercetools/api-request-builder": "^5.6.1",
+    "@commercetools/get-credentials": "^3.0.16",
+    "@commercetools/sdk-client": "^2.1.2",
+    "@commercetools/sdk-middleware-auth": "^6.1.4",
+    "@commercetools/sdk-middleware-http": "^6.0.7",
+    "@commercetools/sync-actions": "^4.8.1",
+    "axios": "^0.20.0",
+    "btoa": "^1.2.1",
+    "dotenv": "^8.2.0",
+    "node-fetch": "^2.6.0",
+    "qs": "^6.9.4"
+  }
+}
