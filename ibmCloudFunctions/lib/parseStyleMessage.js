@@ -30,7 +30,7 @@ const attributeMap = {
     'COLORID': 'colourId',
     'CREATED_DATE': 'createdDate',
     'LASTMODIFIEDDATE': 'lastModifiedDate',
-    'LASTMODIFIEDDATE_COLOURS': 'lastModifiedDateColours'
+    'LASTMODIFIEDDATE_COLOURS': 'lastModifiedDateColours',
     'ONLINEFROMDATE': 'onlineFromDate',
     'UNIT_PRICE': 'originalPrice',
     'SUBDEPT': 'departmentId',
@@ -87,7 +87,7 @@ function parseStyleMessage(msg) {
     styleData.cuff = styleData.cuff || {en: null, fr: null};
     styleData.webStatus = styleData.webStatus === APPROVED_STATUS ? true : false;
 
-    styleData.lastModifiedDate = styleData.lastModifiedDateColours > styleData.lastModifiedDate ? styleData.lastModifiedDateColours : styleData.lastModifiedDate
+    styleData.lastModifiedDate = (styleData.lastModifiedDateColours > styleData.lastModifiedDate || !styleData.lastModifiedDate) ? styleData.lastModifiedDateColours : styleData.lastModifiedDate
 
     // Add _id for mongo
     styleData._id = styleData.id;
