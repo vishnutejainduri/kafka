@@ -65,7 +65,8 @@ const validMessage = {
       EFFECTIVE_DATE: 1000000000000,
       TRUE_COLOURGROUP_EN: 'trueColourGroupEn',
       TRUE_COLOURGROUP_FR: 'trueColourGroupFr',
-      LAST_MODIFIED_DATE: 1470391439001, // circa 2016,
+      LASTMODIFIEDDATE: 1470391439002, // circa 2016,
+      LASTMODIFIEDDATE_COLOURS: 1470391439001,
       SIZE_CHART: 16
   }
 };
@@ -93,7 +94,12 @@ const message = validParams.messages[0];
 
 const messageWithoutLastModifiedDate = {
   ...message,
-  value: { ...message.value, LAST_MODIFIED_DATE: undefined }
+  value: { ...message.value, LASTMODIFIEDDATE: undefined, LASTMODIFIEDDATE_COLOURS: undefined }
+};
+
+const messageWithMoreRecentLastModifiedDateColours = {
+  ...message,
+  value: { ...message.value, LASTMODIFIEDDATE: undefined }
 };
 
 const ctStyleNewer = {
@@ -240,7 +246,7 @@ const styleActions = [
     action: 'setAttributeInAllVariants',
     name: 'styleLastModifiedInternal',
     staged: false,
-    value: new Date('2016-08-05T10:03:59.001Z'),
+    value: new Date('2016-08-05T10:03:59.002Z'),
   },
   {
     action: 'changeName',
@@ -353,6 +359,11 @@ describe('parseStyleMessageCt', () => {
   it('returns a message that lacks a `styleLastModifiedInternal` date if the JESTA corresponding date is undefined', () => {
     const parsedMessage = parseStyleMessageCt(messageWithoutLastModifiedDate);
     expect(parsedMessage.styleLastModifiedInternal).toBeUndefined();
+  });
+
+  it('returns a message that uses the colours lastmodifieddate if the JESTA colours corresponding date is higher', () => {
+    const parsedMessage = parseStyleMessageCt(messageWithMoreRecentLastModifiedDateColours);
+    expect(parsedMessage.styleLastModifiedInternal).toEqual(new Date(messageWithMoreRecentLastModifiedDateColours.value.LASTMODIFIEDDATE_COLOURS))
   });
 });
 

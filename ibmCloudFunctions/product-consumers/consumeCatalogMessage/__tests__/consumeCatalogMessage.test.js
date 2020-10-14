@@ -129,7 +129,9 @@ const testData = {
         "WEIGHT": "AA==",
         "WIDTH_EN": null,
         "WIDTH_FR": null,
-        "WORK_FLOW_TEMPLATE": null
+        "WORK_FLOW_TEMPLATE": null,
+        "LASTMODIFIEDDATE": 1602602938000,
+        "LASTMODIFIEDDATE_COLOURS": 1402602938000,
     }
 };
 
@@ -156,6 +158,17 @@ describe('parseStyleMessage', () => {
     it('should remove the dashes from style IDs', () => {
         const actual = parseStyleMessage(testData);
         expect(actual.id).toMatch((/^\d+$/));
+    });
+
+    it('should pick the highest last modified date', () => {
+        const actual = parseStyleMessage(testData);
+        expect(actual.lastModifiedDate).toEqual(testData.value.LASTMODIFIEDDATE)
+    });
+
+    it('should pick the highest last modified date', () => {
+        const newTestDate = { ...testData, value: { ...testData.value, LASTMODIFIEDDATE_COLOURS: 1602603090000 } }
+        const actual = parseStyleMessage(newTestDate);
+        expect(actual.lastModifiedDate).toEqual(newTestDate.value.LASTMODIFIEDDATE_COLOURS)
     });
 });
 
