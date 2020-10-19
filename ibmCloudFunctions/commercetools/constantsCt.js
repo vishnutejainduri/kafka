@@ -54,6 +54,7 @@ const orderDetailAttributeNames = {
  */
 const shipmentAttributeNames = {
   SHIPMENT_LAST_MODIFIED_DATE: 'shipmentLastModifiedDate',
+  SHIPMENT_DETAILS_LAST_MODIFIED_DATE: 'shipmentDetailLastModifiedDate'
 };
 
 const priceAttributeNames = {

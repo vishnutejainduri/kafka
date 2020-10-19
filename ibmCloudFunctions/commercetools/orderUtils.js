@@ -1,4 +1,4 @@
-const { orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates, SHIPMENT_NAMESPACE, KEY_VALUE_DOCUMENT } = require('./constantsCt');
+const { shipmentAttributeNames, orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates, SHIPMENT_NAMESPACE, KEY_VALUE_DOCUMENT } = require('./constantsCt');
 const { groupByAttribute, getMostUpToDateObject, removeDuplicateIds } = require('../lib/utils');
 const { log } = require('../product-consumers/utils');
 
@@ -30,6 +30,31 @@ const getOutOfDateRecordIds = ({ existingCtRecords, records, key, ctKey, compari
     return existingCtRecordIsNewer(ctRecord, correspondingJestaRecord, comparisonFieldPath);
   }).map(ctRecord => ctRecord[ctKey])
 );
+
+const mergeShipmentDetails = (existingCtShipmentDetails, shipmentDetails) => {
+  console.log('existingCtShipmentDetails', existingCtShipmentDetails)
+  console.log('shipmentDetails', shipmentDetails)
+  const unchangedExistingCtShipmentDetails = existingCtShipmentDetails.map(existingCtShipmentDetail => {
+    const correspondingJestaShipmentDetail = shipmentDetails.find(shipmentDetail => shipmentDetail.shipmentDetailId === existingCtShipmentDetail.shipmentDetailId);
+    if (!correspondingJestaShipmentDetail) return existingCtShipmentDetail;
+    return existingCtRecordIsNewer(existingCtShipmentDetail, correspondingJestaShipmentDetail, [shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE])
+      ? existingCtShipmentDetail
+      : null
+  }).filter(Boolean)
+
+  const updatedShipmentDetails = shipmentDetails.map(shipmentDetail => {
+    const correspondingCtShipmentDetail = existingCtShipmentDetails.find(existingCtShipmentDetail => existingCtShipmentDetail.shipmentDetailId === shipmentDetail.shipmentDetailId);
+    if (!correspondingCtShipmentDetail) return shipmentDetail;
+    return existingCtRecordIsNewer(correspondingCtShipmentDetail, shipmentDetail, [shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE])
+      ? null
+      : shipmentDetail
+  }).filter(Boolean)
+
+  if (updatedShipmentDetails.length === 0) {
+    return null
+  }
+  return [...unchangedExistingCtShipmentDetails, ...updatedShipmentDetails]
+}
 
 const getCtOrderDetailFromCtOrder = (lineId, ctOrder) => {
   const orderDetails = ctOrder.lineItems;
@@ -230,7 +255,10 @@ const getExistingCtShipments = async (shipments, ctHelpers) => (
 );
 
 const createOrUpdateShipment = async (shipment, existingCtShipment, { client, requestBuilder }) => {
-  shipment.shipmentDetails = existingCtShipment && existingCtShipment.shipmentDetails || []
+  shipment.shipmentDetails = shipment.shipmentDetails
+                              ? shipment.shipmentDetails 
+                              : existingCtShipment && existingCtShipment.value && existingCtShipment.value.shipmentDetails || []
+  console.log('shipment', shipment)
 
   const method = 'POST';
   const uri = requestBuilder.customObjects.build();
@@ -246,7 +274,7 @@ const createOrUpdateShipment = async (shipment, existingCtShipment, { client, re
 
 const createOrUpdateShipments = (shipments, existingCtShipments, ctHelpers) => (
   Promise.all(shipments.map(shipment => {
-    const existingCtShipment = existingCtShipments.find(existingCtShipment => existingCtShipment.shipmentId === shipment.shipmentId)
+    const existingCtShipment = existingCtShipments.find(existingCtShipment => existingCtShipment.value.shipmentId === shipment.shipmentId)
     return createOrUpdateShipment(shipment, existingCtShipment, ctHelpers)
   }))
 );
@@ -298,5 +326,6 @@ module.exports = {
   formatOrderDetailBatchRequestBody,
   createOrUpdateShipments,
   addShipmentsToOrder,
-  getShipmentsOrderUpdateActions
+  getShipmentsOrderUpdateActions,
+  mergeShipmentDetails
 };
