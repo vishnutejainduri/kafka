@@ -32,8 +32,6 @@ const getOutOfDateRecordIds = ({ existingCtRecords, records, key, ctKey, compari
 );
 
 const mergeShipmentDetails = (existingCtShipmentDetails, shipmentDetails) => {
-  console.log('existingCtShipmentDetails', existingCtShipmentDetails)
-  console.log('shipmentDetails', shipmentDetails)
   const unchangedExistingCtShipmentDetails = existingCtShipmentDetails.map(existingCtShipmentDetail => {
     const correspondingJestaShipmentDetail = shipmentDetails.find(shipmentDetail => shipmentDetail.shipmentDetailId === existingCtShipmentDetail.shipmentDetailId);
     if (!correspondingJestaShipmentDetail) return existingCtShipmentDetail;
@@ -258,7 +256,6 @@ const createOrUpdateShipment = async (shipment, existingCtShipment, { client, re
   shipment.shipmentDetails = shipment.shipmentDetails
                               ? shipment.shipmentDetails 
                               : existingCtShipment && existingCtShipment.value && existingCtShipment.value.shipmentDetails || []
-  console.log('shipment', shipment)
 
   const method = 'POST';
   const uri = requestBuilder.customObjects.build();

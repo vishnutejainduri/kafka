@@ -4,7 +4,6 @@ const {
   addShipmentsToOrder,
   mergeShipmentDetails
 } = require('../orderUtils');
-const { shipmentAttributeNames } = require('../constantsCt');
 const { filterShipmentDetailsMessages, parseShipmentDetailsMessage } = require('../../lib/parseShipmentDetailsMessage');
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
@@ -21,7 +20,6 @@ const { groupByAttribute } = require('../../lib/utils');
 
 const syncShipmentDetailsBatchToCT = (ctHelpers) => async shipmentDetails => {
   const existingCtShipments = await getExistingCtShipments(shipmentDetails, ctHelpers);
-  console.log('existingCtShipments', existingCtShipments)
   const batchedShipmentDetailsByShipment = groupByAttribute('shipmentId')(shipmentDetails)
 
   const shipmentsToCreateOrUpdate = batchedShipmentDetailsByShipment.map(shipmentDetailsByShipment => {
@@ -33,9 +31,8 @@ const syncShipmentDetailsBatchToCT = (ctHelpers) => async shipmentDetails => {
        }
     }
     const existingCtShipment = existingCtShipments.find(existingCtShipment => existingCtShipment.value.shipmentId === shipmentDetailsByShipment[0].shipmentId) || emptyShipment
-    console.log('existingCtShipment CHOSEN', existingCtShipment)
     const shipmentDetailsToCreateOrUpdate = mergeShipmentDetails(existingCtShipment.value.shipmentDetails, shipmentDetailsByShipment)
-  
+ 
     if (!shipmentDetailsToCreateOrUpdate) {
       return null
     }
@@ -44,7 +41,6 @@ const syncShipmentDetailsBatchToCT = (ctHelpers) => async shipmentDetails => {
       shipmentDetails: shipmentDetailsToCreateOrUpdate
     }
   }).filter(Boolean)
-  console.log('shipmentsToCreateOrUpdate', JSON.stringify(shipmentsToCreateOrUpdate));
 
   const createdOrUpdatedShipments = await createOrUpdateShipments(shipmentsToCreateOrUpdate, existingCtShipments, ctHelpers);
   return addShipmentsToOrder(createdOrUpdatedShipments, ctHelpers);
@@ -62,13 +58,12 @@ const main = params => {
   if (!ctHelpers) {
     ctHelpers = getCtHelpers(params);
   }
-
+  
   const shipmentDetailsToCreateOrUpdate = (
     params.messages
       .map(addErrorHandling(msg => filterShipmentDetailsMessages(msg) ? msg : null))
       .map(addErrorHandling(parseShipmentDetailsMessage))
   );
-  console.log('shipmentDetailsToCreateOrUpdate', shipmentDetailsToCreateOrUpdate)
 
   const batchedShipmentDetailsToCreateOrUpdate = groupByAttribute('orderNumber')(shipmentDetailsToCreateOrUpdate)
 
