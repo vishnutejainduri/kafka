@@ -9,7 +9,6 @@ const {
 const {
   mergeShipmentDetails
 } = require('../../orderUtils');
-//const { createClient } = require('@commercetools/sdk-client');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
