@@ -140,3 +140,15 @@ This directory contains OpenWhisk cloud functions and configurations for commere
   - If the active sale price is not a sale, that means there are no active sales for the product and we must revert to original price. Update/create actions are sent to CT to revert back any permanent markdowns to original price and/or update the original price if that is the case
   - Otherwise, the active sale price is a sale and has no end date (meaning it's a permanent markdown). We send update/create actions to CT to set the permanent markdown sale price, overwritting and original price rows in the process
 - After all messages are processed, any price rows that were successfully processed are marked as processed so that they won't be reprocessed later. If any failure occurs then they are flagged as "failure" and an alert is sent out (this is usually due to overlapping temporary markdowns that we cannot correct on our side)
+
+## consumeSalesOrderMessageCT
+- `index.js` is the main file where execution starts, `utils.js` holds functions used by `index.js`
+- Kafka messages are filtered, any not from the styles basics topic are rejected
+- Kafka messages are then transformed from JESTA attributes to CT relevant attributes
+- Messages are then batched by style id to prevent concurrent updates to the same product in CT
+- We loop through each batch of styles basic messages, picking up only the newest message and rejecting the rest in a batch. We process only that message in the batch
+- We fetch the product type record from CT
+- We attempt to fetch an existing product from CT for this styles basic message
+- If there is no existing product from CT for this styles basic message we create a "dummy" style. An empty style with no attributes.
+- We compare the existing product from CT with the styles basic message, if the existing product in CT is newer than the styles basic message we ignore it
+- We make a series of update action calls to the product in CT, updating the attributes as per the current styles basic message in the batch. Styles basic only really updates a single field in CT, isOutlet based on BRAND_ID from JESTA
