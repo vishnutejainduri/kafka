@@ -4,6 +4,8 @@ const { createLog, addErrorHandling, log, addLoggingToMain, passDownAnyMessageEr
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
+const buildImageUrl = (styleId) => `https://i1.adis.ws/i/harryrosen/${styleId}?$prp-4col-xl$`
+const buildImageZoomUrl = (styleId) => `https://i1.adis.ws/i/harryrosen/${styleId}`
 
 let client = null;
 let index = null;
@@ -57,6 +59,8 @@ const main = async function (params) {
         // Add Algolia object ID
         .map(addErrorHandling((styleData) => {
             styleData.objectID = styleData.id;
+            styleData.image = buildImageUrl(styleData.id);
+            styleData.imageZoom = buildImageZoomUrl(styleData.id);
             return styleData;
         }))
         // We should run the update if there's no existing doc or the update is newer than existing
