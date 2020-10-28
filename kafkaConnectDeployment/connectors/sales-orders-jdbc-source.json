@@ -9,7 +9,7 @@
     "timestamp.column.name": "MODIFIED_DATE",
     "table.poll.interval.ms": 3600000,
     "mode": "timestamp",
-    "query": "SELECT eso.WFE_TRANS_ID AS ORDER_NUMBER, eso.STATUS, eso.MODIFIED_DATE FROM EDOM.E_SALES_ORDERS eso",
+    "query": "SELECT * FROM (SELECT eso.WFE_TRANS_ID AS ORDER_NUMBER, eso.STATUS, eso.MODIFIED_DATE FROM EDOM.E_SALES_ORDERS eso WHERE eso.SITE_ID = '00990')",
     "topic.prefix": "sales-orders-connect-jdbc",
     "validate.non.null": "false",
     "numeric.mapping": "best_fit",
