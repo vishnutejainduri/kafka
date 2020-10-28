@@ -97,11 +97,15 @@ const getActionsFromOrder = (order, existingCtOrder) => {
   } 
 
   const customAttributeUpdateActions = existingCtOrder.custom
-    ? customAttributesToUpdate.map(attribute => ({
-      action: 'setCustomField',
-      name: attribute,
-      value: order[attribute]
-    }))
+    ? customAttributesToUpdate.map(attribute => {
+      return order[attribute]
+        ? {
+            action: 'setCustomField',
+            name: attribute,
+            value: order[attribute]
+          }
+        : null
+    })
     : []
 
   const statusUpdateAction = order.orderStatus
