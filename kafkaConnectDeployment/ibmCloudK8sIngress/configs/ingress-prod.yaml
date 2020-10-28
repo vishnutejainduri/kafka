@@ -8,6 +8,7 @@ metadata:
   # This makes it easier for us to have multiple exposed services on the same
   # domain.
   ingress.bluemix.net/rewrite-path: "serviceName=hr-platform-api rewrite=/;serviceName=kafka-connect-standard rewrite=/;serviceName=hr-ciam rewrite=/;"
+  ingress.bluemix.net/appid-auth: "bindSecret=binding-platformprodservicesappid namespace=default requestType=api serviceName=kafka-connect-standard"
 spec:
  tls:
  - hosts:
