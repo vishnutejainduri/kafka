@@ -1,4 +1,4 @@
-const { shipmentAttributeNames, orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates, SHIPMENT_NAMESPACE, KEY_VALUE_DOCUMENT, RETURN_NAMESPACE } = require('./constantsCt');
+const { orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates, SHIPMENT_NAMESPACE, KEY_VALUE_DOCUMENT, RETURN_NAMESPACE } = require('./constantsCt');
 const { groupByAttribute, getMostUpToDateObject, removeDuplicateIds } = require('../lib/utils');
 const { log } = require('../product-consumers/utils');
 
