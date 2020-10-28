@@ -7,7 +7,7 @@ metadata:
   # See https://cloud.ibm.com/docs/containers?topic=containers-ingress_annotation#rewrite-path
   # This makes it easier for us to have multiple exposed services on the same
   # domain.
-  ingress.bluemix.net/rewrite-path: "serviceName=hr-platform-api rewrite=/;serviceName=kafka-connect-standard rewrite=/;serviceName=hr-ciam rewrite=/;"
+  ingress.bluemix.net/rewrite-path: "serviceName=hr-product-api rewrite=/;serviceName=kafka-connect-standard rewrite=/;serviceName=hr-ciam rewrite=/;"
   ingress.bluemix.net/appid-auth: "bindSecret=binding-platformprodservicesappid namespace=default requestType=api serviceName=kafka-connect-standard"
 spec:
  tls:
@@ -21,8 +21,8 @@ spec:
      paths:
      - path: /hr-product-api/ # Note: the trailing slash is important. (Without it, a request to `/hr-product-api/` will be mapped to `//`)
        backend:
-         serviceName: hr-platform-api # the load balancer
-         servicePort: 80
+         serviceName: hr-product-api # the load balancer
+         servicePort: 8080 # this should match the node.js port
      - path: /kafka-connect/
        backend:
          serviceName: kafka-connect-standard
@@ -30,4 +30,4 @@ spec:
      - path: /hr-ciam/
        backend:
          serviceName: hr-ciam
-         servicePort: 8080 # this should match the node port
+         servicePort: 8080 # this should match the node.js port
