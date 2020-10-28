@@ -35,7 +35,8 @@ const attributeMap = {
     'UNIT_PRICE': 'originalPrice',
     'SUBDEPT': 'departmentId',
     'VSN': 'vsn',
-    'SIZE_CHART': 'sizeChart'
+    'SIZE_CHART': 'sizeChart',
+    'RANKINGUNITSSOLD': 'rankingUnitsSold'
 };
 
 const transforms = {
