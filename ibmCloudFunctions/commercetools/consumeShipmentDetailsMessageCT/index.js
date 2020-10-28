@@ -2,8 +2,9 @@ const {
   getExistingCtShipments,
   createOrUpdateShipments,
   addShipmentsToOrder,
-  mergeShipmentDetails
+  mergeCustomObjectDetails
 } = require('../orderUtils');
+const { shipmentAttributeNames } = require('../constantsCt')
 const { filterShipmentDetailsMessages, parseShipmentDetailsMessage } = require('../../lib/parseShipmentDetailsMessage');
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
@@ -31,7 +32,7 @@ const syncShipmentDetailsBatchToCT = (ctHelpers) => async shipmentDetails => {
        }
     }
     const existingCtShipment = existingCtShipments.find(existingCtShipment => existingCtShipment.value.shipmentId === shipmentDetailsByShipment[0].shipmentId) || emptyShipment
-    const shipmentDetailsToCreateOrUpdate = mergeShipmentDetails(existingCtShipment.value.shipmentDetails, shipmentDetailsByShipment)
+    const shipmentDetailsToCreateOrUpdate = mergeCustomObjectDetails(existingCtShipment.value.shipmentDetails, shipmentDetailsByShipment, 'shipmentDetailId', shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE)
  
     if (!shipmentDetailsToCreateOrUpdate) {
       return null
