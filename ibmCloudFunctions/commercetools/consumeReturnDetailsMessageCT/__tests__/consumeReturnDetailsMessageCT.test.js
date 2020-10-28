@@ -1,14 +1,17 @@
 const consumeReturnDetailsMessageCT = require('..');
 const {
-  //filterReturnDetailsMessages,
+  filterReturnDetailsMessages,
   parseReturnDetailsMessage
 } = require('../../../lib/parseReturnDetailsMessage');
-/*const {
+const {
   addErrorHandling,
-} = require('../../../product-consumers/utils');*/
-/*const {
+} = require('../../../product-consumers/utils');
+const {
   mergeCustomObjectDetails
-} = require('../../orderUtils');*/
+} = require('../../orderUtils');
+const {
+  returnAttributeNames
+} = require('../../constantsCt');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -43,10 +46,10 @@ const validParams = {
   ctpScopes: 'manage_cart_discounts:harryrosen-dev manage_order_edits:harryrosen-dev manage_orders:harryrosen-dev manage_my_orders:harryrosen-dev'
 };
 
-/*const returnDetails =  
+const returnDetails =  
   validParams.messages
   .filter(addErrorHandling(filterReturnDetailsMessages))
-  .map(addErrorHandling(parseReturnDetailsMessage))*/
+  .map(addErrorHandling(parseReturnDetailsMessage))
 
 describe('consumeReturnDetailsMessageCT', () => {
   it('Returns an error if given params are invalid', async () => {
@@ -104,40 +107,40 @@ describe('parseReturnMessage', () => {
   });
 });
 
-/*describe('mergeCustomObjectDetails', () => {
+describe('mergeCustomObjectDetails', () => {
   it('no existing return detail or new return details so returns null', () => {
     const existingReturnDetails = []
     const newReturnDetails = []
-    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails)).toEqual(null)
+    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails, 'returnDetailId', returnAttributeNames.RETURN_DETAILS_LAST_MODIFIED_DATE)).toEqual(null)
   });
   it('1 existing return detail and no new return details so returns null', () => {
     const existingReturnDetails = [{ ...returnDetails[0] }]
     const newReturnDetails = []
-    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails)).toEqual(null)
+    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails, 'returnDetailId', returnAttributeNames.RETURN_DETAILS_LAST_MODIFIED_DATE)).toEqual(null)
   });
   it('1 existing return detail and 1 new return details so returns both return details', () => {
     const existingReturnDetails = [{ ...returnDetails[0] }];
     const newReturnDetails = [{ ...returnDetails[0], returnDetailId: '1234-POS-2-1' }];
-    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails)).toEqual([{"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "returnDetailId": "1234-POS-1-1", "returnDetailLastModifiedDate": new Date("2001-09-09T01:46:40.000Z"), "returnId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}, {"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "returnDetailId": "1234-POS-2-1", "returnDetailLastModifiedDate": new Date('2001-09-09T01:46:40.000Z'), "returnId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}])
+    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails, 'returnDetailId', returnAttributeNames.RETURN_DETAILS_LAST_MODIFIED_DATE)).toEqual([{"businessUnitId": "1", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityReturned": 1, "returnDetailId": "85-POS-1-1", "returnDetailLastModifiedDate": new Date("2001-09-09T01:46:40.000Z"), "returnId": "85", "shipmentId": "1234", "siteId": "POS"}, {"businessUnitId": "1", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityReturned": 1, "returnDetailId": "1234-POS-2-1", "returnDetailLastModifiedDate": new Date("2001-09-09T01:46:40.000Z"), "returnId": "85", "shipmentId": "1234", "siteId": "POS"}])
   });
   it('1 existing return detail and 1 new return detail that has the same id so returns just the latest return detail', () => {
     const existingReturnDetails = [{ ...returnDetails[0] }];
     const newReturnDetails = [{ ...returnDetails[0] }];
-    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails)).toEqual([{"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "returnDetailId": "1234-POS-1-1", "returnDetailLastModifiedDate": new Date('2001-09-09T01:46:40.000Z'), "returnId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}])
+    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails, 'returnDetailId', returnAttributeNames.RETURN_DETAILS_LAST_MODIFIED_DATE)).toEqual([{"businessUnitId": "1", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityReturned": 1, "returnDetailId": "85-POS-1-1", "returnDetailLastModifiedDate": new Date("2001-09-09T01:46:40.000Z"), "returnId": "85", "shipmentId": "1234", "siteId": "POS"}])
   });
   it('1 existing return detail and 1 new return detail that has the same id but is more up to date so returns the latest return detail', () => {
     const existingReturnDetails = [{ ...returnDetails[0] }];
     const newReturnDetails = [{ ...returnDetails[0], returnDetailLastModifiedDate: new Date('2001-09-10T01:46:40.000Z') }];
-    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails)).toEqual([{"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "returnDetailId": "1234-POS-1-1", "returnDetailLastModifiedDate": new Date('2001-09-10T01:46:40.000Z'), "returnId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}])
+    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails, 'returnDetailId', returnAttributeNames.RETURN_DETAILS_LAST_MODIFIED_DATE)).toEqual([{"businessUnitId": "1", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityReturned": 1, "returnDetailId": "85-POS-1-1", "returnDetailLastModifiedDate": new Date("2001-09-10T01:46:40.000Z"), "returnId": "85", "shipmentId": "1234", "siteId": "POS"}])
   });
   it('no existing return detail and 1 new return detail so returns the new return detail', () => {
     const existingReturnDetails = [];
     const newReturnDetails = [{ ...returnDetails[0] }];
-    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails)).toEqual([{"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "returnDetailId": "1234-POS-1-1", "returnDetailLastModifiedDate": new Date('2001-09-09T01:46:40.000Z'), "returnId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}])
+    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails, 'returnDetailId', returnAttributeNames.RETURN_DETAILS_LAST_MODIFIED_DATE)).toEqual([{"businessUnitId": "1", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityReturned": 1, "returnDetailId": "85-POS-1-1", "returnDetailLastModifiedDate": new Date("2001-09-09T01:46:40.000Z"), "returnId": "85", "shipmentId": "1234", "siteId": "POS"}])
   });
   it('1 existing return detail and 1 new return detail that has the same id but is out of date so returns null for no update', () => {
     const existingReturnDetails = [{ ...returnDetails[0] }];
     const newReturnDetails = [{ ...returnDetails[0], returnDetailLastModifiedDate: new Date('2001-09-08T01:46:40.000Z') }];
-    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails)).toEqual(null)
+    expect(mergeCustomObjectDetails(existingReturnDetails, newReturnDetails, 'returnDetailId', returnAttributeNames.RETURN_DETAILS_LAST_MODIFIED_DATE)).toEqual(null)
   });
-});*/
+});
