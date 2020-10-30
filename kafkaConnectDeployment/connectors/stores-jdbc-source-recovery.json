@@ -14,6 +14,6 @@
     "validate.non.null": "false",
     "numeric.mapping": "best_fit",
     "poll.interval.ms": 60000, 
-    "offset.flush.timeout.ms": 3600000
+    "offset.flush.timeout.ms": 60000
   }
 }
