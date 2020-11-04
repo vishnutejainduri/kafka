@@ -141,8 +141,10 @@ async function storeBatch(params) {
     const transactionId = process.env.__OW_TRANSACTION_ID;
     let messages = params.messages;
     if (params.messages === null) {
-        // for messages in a sequence, only the first step has the messages as stored in Kafka topics
-        // for the subsequent steps we copy the messages e.g. see calculateAvailableToSell/index.js
+        // for messages in a cloud function sequence, only the cloud function in the sequence receives the messages as they are stored in Kafka topics
+        // for the subsequent cloud functions, we copy the messages from the record inserted by the first cloud function e.g. see calculateAvailableToSell/index.js
+        // as the aim here is to run the whole sequence from the beginning using the messages as they were stored in Kafka,
+        // and the aim here is _not_ retrying only the step of the sequence that has failed.
         messages = (await collection.findOne({ transactionId }, { projection: { messages: 1 }})).messages;
     }
     const batchInfo = {
