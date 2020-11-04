@@ -41,9 +41,19 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
           return;
         }
 
+        if (facetData.isMarkedForDeletion) {
+          log(`FACET DELETION ${facetData.name} ${JSON.stringify(algoliaUpdate[facetData.name])} ${JSON.stringify(algoliaUpdate)}`)
+        }
+
         algoliaUpdate[facetData.name] = facetData.isMarkedForDeletion
           ? { en: null, fr: null }
           : facetData.value;
+      });
+
+      Object.keys(algoliaUpdate).forEach((facetName) => {
+        if ((!algoliaUpdate[facetName].en || !algoliaUpdate[facetName].fr) && facetName !== 'objectID' && facetName !== 'microsite') {
+          log(`FACET DELETION ${facetName} ${JSON.stringify(algoliaUpdate[facetName])} ${JSON.stringify(algoliaUpdate)}`)
+        }
       });
 
       return algoliaUpdate;
@@ -120,7 +130,9 @@ global.main = async function (params) {
         throw createError.failedDbConnection(originalError);
     }
 
+    const aggregationDate = new Date()
     const facetUpdatesByStyle = await algoliaFacetBulkImportQueue.aggregate([
+        { $match: { processed: { $ne: true } } },
         { $group: {
             _id: "$styleId",
             facets: { $push: { name: "$facetName", value: "$facetValue", type: "$typeId", isMarkedForDeletion: "$isMarkedForDeletion", facetId: "$facetId" } }
@@ -142,9 +154,15 @@ global.main = async function (params) {
     const transformedAlgoliaUpdates = transformMicrositeAlgoliaRequests(algoliaUpdatesWithoutOutlet);
 
     await index.partialUpdateObjects(transformedAlgoliaUpdates, true)
-        // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't delete from the queue and it gets stuck
+        // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't mark as processed from the queue and it gets stuck
         .then(() => styleUpdates.length > 0 ? styles.bulkWrite(styleUpdates, { ordered : false }) : null) 
-        .then(() => algoliaFacetBulkImportQueue.deleteMany({ styleId: { $in:  [...updatedStyleIds, ...ignoredStyleIds] } }))
+        .then(() => algoliaFacetBulkImportQueue.updateMany({
+          // should not process messages that have been added after aggregation was performed
+          lastModifiedInternal: { $lt: aggregationDate },
+          styleId: { $in:  [...updatedStyleIds, ...ignoredStyleIds] }
+        }, {
+          processed: true
+        }))
         .then(() => updateAlgoliaFacetsCount.insert({ batchSize: transformedAlgoliaUpdates.length }))
         .then(() => {
           log(`updated styles: ${updatedStyleIds}`)
