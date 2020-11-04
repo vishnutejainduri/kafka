@@ -121,7 +121,8 @@ const getCollection = (collectionName) => {
         default:
             return {
                 findOne: async (params) => (params._id === '10' ? null : {}),
-                updateOne: async () => ({})
+                updateOne: async () => ({}),
+                insertOne: async () => ({})
             }
     }
 }
