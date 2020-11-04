@@ -130,12 +130,11 @@ global.main = async function (params) {
         throw createError.failedDbConnection(originalError);
     }
 
-    const aggregationDate = new Date()
     const facetUpdatesByStyle = await algoliaFacetBulkImportQueue.aggregate([
         { $match: { processed: { $ne: true } } },
         { $group: {
             _id: "$styleId",
-            facets: { $push: { name: "$facetName", value: "$facetValue", type: "$typeId", isMarkedForDeletion: "$isMarkedForDeletion", facetId: "$facetId" } }
+            facets: { $push: { id: "$id", name: "$facetName", value: "$facetValue", type: "$typeId", isMarkedForDeletion: "$isMarkedForDeletion", facetId: "$facetId" } }
         }},
         { $limit: 750 }
     ],
@@ -153,13 +152,15 @@ global.main = async function (params) {
     const updatedStyleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
     const transformedAlgoliaUpdates = transformMicrositeAlgoliaRequests(algoliaUpdatesWithoutOutlet);
 
+    const ignoredAndProcessedFacetUpdateIds = facetUpdatesByStyle
+      .filter(({ _id }) => [...updatedStyleIds, ...ignoredStyleIds].includes(_id))
+      .reduce(( ids, { facets }) => ids.concat(facets.map(({ id }) => id)), []);
+
     await index.partialUpdateObjects(transformedAlgoliaUpdates, true)
         // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't mark as processed from the queue and it gets stuck
         .then(() => styleUpdates.length > 0 ? styles.bulkWrite(styleUpdates, { ordered : false }) : null) 
         .then(() => algoliaFacetBulkImportQueue.updateMany({
-          // should not process messages that have been added after aggregation was performed
-          lastModifiedInternal: { $lt: aggregationDate },
-          styleId: { $in:  [...updatedStyleIds, ...ignoredStyleIds] }
+          id: { $in:  ignoredAndProcessedFacetUpdateIds }
         }, {
           processed: true
         }))
