@@ -162,7 +162,9 @@ global.main = async function (params) {
         .then(() => algoliaFacetBulkImportQueue.updateMany({
           id: { $in:  ignoredAndProcessedFacetUpdateIds }
         }, {
-          processed: true
+          $set: {
+            processed: true
+          }
         }))
         .then(() => updateAlgoliaFacetsCount.insert({ batchSize: transformedAlgoliaUpdates.length }))
         .then(() => {
