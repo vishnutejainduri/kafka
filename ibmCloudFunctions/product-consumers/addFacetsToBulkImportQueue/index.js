@@ -9,8 +9,7 @@ const parseFacetMessageWithErrorHandling = addErrorHandling(
 );
 
 const updateAlgoliaFacetQueue = algoliaFacetQueue => async (facetData) => {
-    return algoliaFacetQueue.updateOne(
-      {
+    return algoliaFacetQueue.insertOne({
         facetValue: {
           en: facetData.facetValue.en,
           fr: facetData.facetValue.fr
@@ -19,14 +18,9 @@ const updateAlgoliaFacetQueue = algoliaFacetQueue => async (facetData) => {
         styleId: facetData.styleId,
         typeId: facetData.typeId,
         facetId: `facetid_${facetData.facetId}`,
-        isMarkedForDeletion: facetData.isMarkedForDeletion
-      },
-      {
-        $currentDate: { lastModifiedInternal: { $type:"timestamp" } },
-        $set: facetData
-      },
-      { upsert: true }
-    )
+        isMarkedForDeletion: facetData.isMarkedForDeletion,
+        lastModifiedInternal: new Date()
+      });
 };
 
 const updateAlgoliaFacetQueueWithErrorHandling = algoliaFacetQueue => addErrorHandling(
