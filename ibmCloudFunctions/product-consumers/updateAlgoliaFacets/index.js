@@ -173,6 +173,13 @@ global.main = async function (params) {
     if (failures.length) {
       throw createError.updateAlgoliaFacets.failedTransforms(failures);
     }
+    
+    // delete messages older than three months to avoid algoliaFacetBulkImportQueue collection getting too big
+    await algoliaFacetBulkImportQueue.deleteMany({
+      lastModifiedInternal: {
+        $lt: new Date(new Date().getTime() - 4 * 30 * 24 * 60 * 60 * 1000)
+      }
+    })
 };
 
 module.exports = {
