@@ -41,10 +41,6 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
           return;
         }
 
-        if (facetData.isMarkedForDeletion) {
-          log(`FACET DELETION ${facetData.name} ${JSON.stringify(algoliaUpdate[facetData.name])} ${JSON.stringify(algoliaUpdate)}`)
-        }
-
         algoliaUpdate[facetData.name] = facetData.isMarkedForDeletion
           ? { en: null, fr: null }
           : facetData.value;
