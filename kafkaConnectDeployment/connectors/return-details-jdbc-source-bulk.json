@@ -1,0 +1,18 @@
+{
+  "name": "return-details-jdbc-source-bulk",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "schema.pattern": "E_RETURN_DETAILS",
+    "timestamp.column.name": "MODIFIED_DATE",
+    "table.poll.interval.ms": 3600000,
+    "mode": "bulk",
+    "query": "SELECT * FROM (SELECT TO_NUMBER(erd.RETURN_ID) AS RETURN_ID, erd.SITE_ID, erd.LINE, erd.BUSINESS_UNIT_ID, er.SHIPMENT_ID, eso.WFE_TRANS_ID AS ORDER_NUMBER, erd.QTY_RETURNED, esod.EXT_REF_ID, NVL(erd.CREATED_DATE, erd.MODIFIED_DATE) AS MODIFIED_DATE FROM EDOM.E_RETURN_DETAILS erd INNER JOIN (SELECT RETURN_ID, SHIPMENT_ID FROM EDOM.E_RETURNS) er ON er.RETURN_ID = erd.RETURN_ID INNER JOIN (SELECT SHIPMENT_ID, LINE, SALES_ORDER_LINE_ID, STATUS FROM EDOM.E_SHIPMENT_DETAILS) esd ON esd.SHIPMENT_ID = er.SHIPMENT_ID AND esd.LINE = erd.SHIPMENT_LINE_ID INNER JOIN (SELECT SHIPMENT_ID, SALES_ORDER_ID FROM EDOM.E_SHIPMENTS) es ON es.SHIPMENT_ID = esd.SHIPMENT_ID INNER JOIN (SELECT SALES_ORDER_ID, EXT_REF_ID, LINE FROM EDOM.E_SALES_ORDER_DETAILS) esod ON esod.SALES_ORDER_ID = es.SALES_ORDER_ID AND esod.LINE = esd.SALES_ORDER_LINE_ID INNER JOIN (SELECT SALES_ORDER_ID, SITE_ID, WFE_TRANS_ID FROM EDOM.E_SALES_ORDERS) eso ON eso.SALES_ORDER_ID = esod.SALES_ORDER_ID WHERE esd.STATUS != 'CANCELLED' AND esd.STATUS != 'FAILED' AND esd.STATUS != 'FAIL' AND eso.SITE_ID = '00990') WHERE MODIFIED_DATE >= sysdate - interval '15' minute",
+    "topic.prefix": "return-details-connect-jdbc",
+    "validate.non.null": "false",
+    "numeric.mapping": "best_fit",
+    "poll.interval.ms": 60000, 
+    "offset.flush.timeout.ms": 3600000
+  }
+}
