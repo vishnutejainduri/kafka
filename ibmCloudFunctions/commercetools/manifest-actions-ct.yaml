@@ -82,6 +82,14 @@
           timeout: 58000
         inputs:
           topicName: sales-order-details-connect-jdbc
+      consume-return-details-message-ct:
+        location: ./commercetools/consumeReturnDetailsMessageCT/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 58000
+        inputs:
+          topicName: return-details-connect-jdbc
       update-ct-sale-price:
         location: ./commercetools/updateCTSalePrice/dist/bundle.js
         runtime: nodejs:10

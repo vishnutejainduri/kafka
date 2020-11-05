@@ -7,8 +7,11 @@ const {
   addErrorHandling,
 } = require('../../../product-consumers/utils');
 const {
-  mergeShipmentDetails
+  mergeCustomObjectDetails
 } = require('../../orderUtils');
+const {
+  shipmentAttributeNames
+} = require('../../constantsCt');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -108,40 +111,40 @@ describe('parseShipmentMessage', () => {
   });
 });
 
-describe('mergeShipmentDetails', () => {
+describe('mergeCustomObjectDetails', () => {
   it('no existing shipment detail or new shipment details so returns null', () => {
     const existingShipmentDetails = []
     const newShipmentDetails = []
-    expect(mergeShipmentDetails(existingShipmentDetails, newShipmentDetails)).toEqual(null)
+    expect(mergeCustomObjectDetails(existingShipmentDetails, newShipmentDetails, 'shipmentDetailId', shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE)).toEqual(null)
   });
   it('1 existing shipment detail and no new shipment details so returns null', () => {
     const existingShipmentDetails = [{ ...shipmentDetails[0] }]
     const newShipmentDetails = []
-    expect(mergeShipmentDetails(existingShipmentDetails, newShipmentDetails)).toEqual(null)
+    expect(mergeCustomObjectDetails(existingShipmentDetails, newShipmentDetails, 'shipmentDetailId', shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE)).toEqual(null)
   });
   it('1 existing shipment detail and 1 new shipment details so returns both shipment details', () => {
     const existingShipmentDetails = [{ ...shipmentDetails[0] }];
     const newShipmentDetails = [{ ...shipmentDetails[0], shipmentDetailId: '1234-POS-2-1' }];
-    expect(mergeShipmentDetails(existingShipmentDetails, newShipmentDetails)).toEqual([{"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "shipmentDetailId": "1234-POS-1-1", "shipmentDetailLastModifiedDate": new Date("2001-09-09T01:46:40.000Z"), "shipmentId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}, {"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "shipmentDetailId": "1234-POS-2-1", "shipmentDetailLastModifiedDate": new Date('2001-09-09T01:46:40.000Z'), "shipmentId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}])
+    expect(mergeCustomObjectDetails(existingShipmentDetails, newShipmentDetails, 'shipmentDetailId', shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE)).toEqual([{"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "shipmentDetailId": "1234-POS-1-1", "shipmentDetailLastModifiedDate": new Date("2001-09-09T01:46:40.000Z"), "shipmentId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}, {"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "shipmentDetailId": "1234-POS-2-1", "shipmentDetailLastModifiedDate": new Date('2001-09-09T01:46:40.000Z'), "shipmentId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}])
   });
   it('1 existing shipment detail and 1 new shipment detail that has the same id so returns just the latest shipment detail', () => {
     const existingShipmentDetails = [{ ...shipmentDetails[0] }];
     const newShipmentDetails = [{ ...shipmentDetails[0] }];
-    expect(mergeShipmentDetails(existingShipmentDetails, newShipmentDetails)).toEqual([{"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "shipmentDetailId": "1234-POS-1-1", "shipmentDetailLastModifiedDate": new Date('2001-09-09T01:46:40.000Z'), "shipmentId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}])
+    expect(mergeCustomObjectDetails(existingShipmentDetails, newShipmentDetails, 'shipmentDetailId', shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE)).toEqual([{"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "shipmentDetailId": "1234-POS-1-1", "shipmentDetailLastModifiedDate": new Date('2001-09-09T01:46:40.000Z'), "shipmentId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}])
   });
   it('1 existing shipment detail and 1 new shipment detail that has the same id but is more up to date so returns the latest shipment detail', () => {
     const existingShipmentDetails = [{ ...shipmentDetails[0] }];
     const newShipmentDetails = [{ ...shipmentDetails[0], shipmentDetailLastModifiedDate: new Date('2001-09-10T01:46:40.000Z') }];
-    expect(mergeShipmentDetails(existingShipmentDetails, newShipmentDetails)).toEqual([{"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "shipmentDetailId": "1234-POS-1-1", "shipmentDetailLastModifiedDate": new Date('2001-09-10T01:46:40.000Z'), "shipmentId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}])
+    expect(mergeCustomObjectDetails(existingShipmentDetails, newShipmentDetails, 'shipmentDetailId', shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE)).toEqual([{"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "shipmentDetailId": "1234-POS-1-1", "shipmentDetailLastModifiedDate": new Date('2001-09-10T01:46:40.000Z'), "shipmentId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}])
   });
   it('no existing shipment detail and 1 new shipment detail so returns the new shipment detail', () => {
     const existingShipmentDetails = [];
     const newShipmentDetails = [{ ...shipmentDetails[0] }];
-    expect(mergeShipmentDetails(existingShipmentDetails, newShipmentDetails)).toEqual([{"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "shipmentDetailId": "1234-POS-1-1", "shipmentDetailLastModifiedDate": new Date('2001-09-09T01:46:40.000Z'), "shipmentId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}])
+    expect(mergeCustomObjectDetails(existingShipmentDetails, newShipmentDetails, 'shipmentDetailId', shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE)).toEqual([{"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "shipmentDetailId": "1234-POS-1-1", "shipmentDetailLastModifiedDate": new Date('2001-09-09T01:46:40.000Z'), "shipmentId": "1234", "siteId": "POS", "status": "status", "trackingNumber": "trackingNumber"}])
   });
   it('1 existing shipment detail and 1 new shipment detail that has the same id but is out of date so returns null for no update', () => {
     const existingShipmentDetails = [{ ...shipmentDetails[0] }];
     const newShipmentDetails = [{ ...shipmentDetails[0], shipmentDetailLastModifiedDate: new Date('2001-09-08T01:46:40.000Z') }];
-    expect(mergeShipmentDetails(existingShipmentDetails, newShipmentDetails)).toEqual(null)
+    expect(mergeCustomObjectDetails(existingShipmentDetails, newShipmentDetails, 'shipmentDetailId', shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE)).toEqual(null)
   });
 });

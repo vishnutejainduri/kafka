@@ -191,6 +191,13 @@ module.exports = {
             `Failure in run of consume shipment details message CT; params excluding messages: ${getParamsExcludingMessages(params)}.`
         )
     },
+    consumeReturnDetailsMessageCT: {
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-return-details-message-ct',
+            `Failure in run of consume return details message CT; params excluding messages: ${getParamsExcludingMessages(params)}.`
+        )
+    },
     consumeSalesOrderDetailsMessageCT: {
         failed: (originalError, params) => new CustomError(
             originalError,

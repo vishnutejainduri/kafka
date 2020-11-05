@@ -42,7 +42,8 @@ const skuAttributeNames = {
  */
 const orderAttributeNames = {
   ORDER_LAST_MODIFIED_DATE: 'orderLastModifiedDate',
-  SHIPMENTS: 'shipments'
+  SHIPMENTS: 'shipments',
+  RETURNS: 'returns'
 };
 const orderDetailAttributeNames = {
   ORDER_DETAIL_LAST_MODIFIED_DATE: 'orderDetailLastModifiedDate',
@@ -55,6 +56,10 @@ const orderDetailAttributeNames = {
 const shipmentAttributeNames = {
   SHIPMENT_LAST_MODIFIED_DATE: 'shipmentLastModifiedDate',
   SHIPMENT_DETAILS_LAST_MODIFIED_DATE: 'shipmentDetailLastModifiedDate'
+};
+
+const returnAttributeNames = {
+  RETURN_DETAILS_LAST_MODIFIED_DATE: 'returnDetailLastModifiedDate'
 };
 
 const priceAttributeNames = {
@@ -70,7 +75,8 @@ const priceTypes = {
 }
 
 const BARCODE_NAMESPACE = 'barcodes'; // namespace of the custom barcode objects in CT
-const SHIPMENT_NAMESPACE = 'shipments'; // namespace of the custom barcode objects in CT
+const SHIPMENT_NAMESPACE = 'shipments'; // namespace of the custom shipment objects in CT
+const RETURN_NAMESPACE = 'returns'; // namespace of the custom return objects in CT
 const KEY_VALUE_DOCUMENT = 'key-value-document'; // reference-type of custom objects in CT
 const TAX_CATEGORY = 'jesta-tax-descriptions';
 // Business rules of HarryRosen requires us to have this property set to false
@@ -110,11 +116,13 @@ module.exports = {
   shipmentAttributeNames,
   SHIPMENT_NAMESPACE,
   BARCODE_NAMESPACE,
+  RETURN_NAMESPACE,
   KEY_VALUE_DOCUMENT,
   styleAttributeNames,
   skuAttributeNames,
   orderAttributeNames,
   orderDetailAttributeNames,
+  returnAttributeNames,
   priceAttributeNames,
   currencyCodes,
   languageKeys,

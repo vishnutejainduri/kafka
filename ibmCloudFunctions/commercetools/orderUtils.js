@@ -1,4 +1,4 @@
-const { shipmentAttributeNames, orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates, SHIPMENT_NAMESPACE, KEY_VALUE_DOCUMENT } = require('./constantsCt');
+const { orderAttributeNames, orderDetailAttributeNames, orderStates, orderLineItemStates, SHIPMENT_NAMESPACE, KEY_VALUE_DOCUMENT, RETURN_NAMESPACE } = require('./constantsCt');
 const { groupByAttribute, getMostUpToDateObject, removeDuplicateIds } = require('../lib/utils');
 const { log } = require('../product-consumers/utils');
 
@@ -31,27 +31,27 @@ const getOutOfDateRecordIds = ({ existingCtRecords, records, key, ctKey, compari
   }).map(ctRecord => ctRecord[ctKey])
 );
 
-const mergeShipmentDetails = (existingCtShipmentDetails, shipmentDetails) => {
-  const unchangedExistingCtShipmentDetails = existingCtShipmentDetails.map(existingCtShipmentDetail => {
-    const correspondingJestaShipmentDetail = shipmentDetails.find(shipmentDetail => shipmentDetail.shipmentDetailId === existingCtShipmentDetail.shipmentDetailId);
-    if (!correspondingJestaShipmentDetail) return existingCtShipmentDetail;
-    return existingCtRecordIsNewer(existingCtShipmentDetail, correspondingJestaShipmentDetail, [shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE])
-      ? existingCtShipmentDetail
+const mergeCustomObjectDetails = (existingCtDetails, details, detailId, compareDateField) => {
+  const unchangedExistingCtDetails = existingCtDetails.map(existingCtDetail => {
+    const correspondingJestaDetail = details.find(detail => detail[detailId] === existingCtDetail[detailId]);
+    if (!correspondingJestaDetail) return existingCtDetail;
+    return existingCtRecordIsNewer(existingCtDetail, correspondingJestaDetail, [compareDateField])
+      ? existingCtDetail
       : null
   }).filter(Boolean)
 
-  const updatedShipmentDetails = shipmentDetails.map(shipmentDetail => {
-    const correspondingCtShipmentDetail = existingCtShipmentDetails.find(existingCtShipmentDetail => existingCtShipmentDetail.shipmentDetailId === shipmentDetail.shipmentDetailId);
-    if (!correspondingCtShipmentDetail) return shipmentDetail;
-    return existingCtRecordIsNewer(correspondingCtShipmentDetail, shipmentDetail, [shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE])
+  const updatedDetails = details.map(detail => {
+    const correspondingCtDetail = existingCtDetails.find(existingCtDetail => existingCtDetail[detailId] === detail[detailId]);
+    if (!correspondingCtDetail) return detail;
+    return existingCtRecordIsNewer(correspondingCtDetail, detail, [compareDateField])
       ? null
-      : shipmentDetail
+      : detail
   }).filter(Boolean)
 
-  if (updatedShipmentDetails.length === 0) {
+  if (updatedDetails.length === 0) {
     return null
   }
-  return [...unchangedExistingCtShipmentDetails, ...updatedShipmentDetails]
+  return [...unchangedExistingCtDetails, ...updatedDetails]
 }
 
 const getCtOrderDetailFromCtOrder = (lineId, ctOrder) => {
@@ -238,6 +238,19 @@ const updateOrderDetailBatchStatus = async (orderDetailsToUpdate, existingCtOrde
   }
 };
 
+const getReturnFromCt = async (returnObj, { client, requestBuilder }) => {
+  const method = 'GET';
+  const uri = `${requestBuilder.customObjects.build()}/${RETURN_NAMESPACE}/${returnObj.returnId}`;
+
+  try {
+    const response = await client.execute({ method, uri }); 
+    return response.body;
+  } catch (err) {
+    if (err.statusCode === 404) return null;
+    throw err;
+  }
+};
+
 const getShipmentFromCt = async (shipment, { client, requestBuilder }) => {
   const method = 'GET';
   const uri = `${requestBuilder.customObjects.build()}/${SHIPMENT_NAMESPACE}/${shipment.shipmentId}`;
@@ -253,6 +266,11 @@ const getShipmentFromCt = async (shipment, { client, requestBuilder }) => {
 
 const getExistingCtShipments = async (shipments, ctHelpers) => (
   (await Promise.all(shipments.map(shipment => getShipmentFromCt(shipment, ctHelpers))))
+    .filter(Boolean)
+);
+
+const getExistingCtReturns = async (returnObjs, ctHelpers) => (
+  (await Promise.all(returnObjs.map(returnObj => getReturnFromCt(returnObj, ctHelpers))))
     .filter(Boolean)
 );
 
@@ -273,10 +291,34 @@ const createOrUpdateShipment = async (shipment, existingCtShipment, { client, re
   return response.body;
 };
 
+const createOrUpdateReturn = async (returnObj, existingCtReturn, { client, requestBuilder }) => {
+  returnObj.returnDetails = returnObj.returnDetails
+                              ? returnObj.returnDetails 
+                              : existingCtReturn && existingCtReturn.value && existingCtReturn.value.returnDetails || []
+
+  const method = 'POST';
+  const uri = requestBuilder.customObjects.build();
+  const body = JSON.stringify({
+    container: RETURN_NAMESPACE,
+    key: returnObj.returnId,
+    value: returnObj
+  });
+
+  const response = await client.execute({ method, uri, body });
+  return response.body;
+};
+
 const createOrUpdateShipments = (shipments, existingCtShipments, ctHelpers) => (
   Promise.all(shipments.map(shipment => {
     const existingCtShipment = existingCtShipments.find(existingCtShipment => existingCtShipment.value.shipmentId === shipment.shipmentId)
     return createOrUpdateShipment(shipment, existingCtShipment, ctHelpers)
+  }))
+);
+
+const createOrUpdateReturns = (returnObjs, existingCtReturns, ctHelpers) => (
+  Promise.all(returnObjs.map(returnObj => {
+    const existingCtReturn = existingCtReturns.find(existingCtReturn => existingCtReturn.value.returnId === returnObj.returnId)
+    return createOrUpdateReturn(returnObj, existingCtReturn, ctHelpers)
   }))
 );
 
@@ -289,6 +331,18 @@ const getShipmentsOrderUpdateActions = (shipments, order) => {
     action: 'setCustomField',
     name: orderAttributeNames.SHIPMENTS,
     value: allShipmentReferences
+  }]
+};
+
+const getReturnsOrderUpdateActions = (returnObjs, order) => {
+  const existingReturnReferences = order && order.custom && order.custom.fields[orderAttributeNames.RETURNS] || [];
+  const newReturnReferences = returnObjs.map(returnObj => ({ id: returnObj.id, typeId: KEY_VALUE_DOCUMENT }));
+  const allReturnReferences = removeDuplicateIds([...existingReturnReferences, ...newReturnReferences]);
+
+  return [{
+    action: 'setCustomField',
+    name: orderAttributeNames.RETURNS,
+    value: allReturnReferences
   }]
 };
 
@@ -311,10 +365,30 @@ const addShipmentsToOrder = async (shipments, ctHelpers) => {
   return client.execute({ method, uri, body });
 };
 
+const addReturnsToOrder = async (returns, ctHelpers) => {
+  if (returns.length === 0) return null;
+  const { client, requestBuilder } = ctHelpers;
+  const orderNumber = returns[0].value.orderNumber;
+
+  const existingCtOrder = await getExistingCtOrder(orderNumber, ctHelpers);
+  if (!existingCtOrder) {
+    log.error(`Order number does not exist in CT for return ${orderNumber} ${returns[0].key}`);
+    throw new Error('Order number does not exist');
+  }
+
+  const actions = getReturnsOrderUpdateActions(returns, existingCtOrder);
+  const method = 'POST';
+  const uri = requestBuilder.orders.byId(existingCtOrder.id).build();
+  const body = JSON.stringify({ version: existingCtOrder.version, actions });
+
+  return client.execute({ method, uri, body });
+};
+
 module.exports = {
   removeDuplicateRecords,
   getOutOfDateRecordIds,
   getExistingCtShipments,
+  getExistingCtReturns,
   updateOrderStatus,
   groupByOrderNumber,
   getExistingCtOrder,
@@ -328,5 +402,7 @@ module.exports = {
   createOrUpdateShipments,
   addShipmentsToOrder,
   getShipmentsOrderUpdateActions,
-  mergeShipmentDetails
+  mergeCustomObjectDetails,
+  createOrUpdateReturns,
+  addReturnsToOrder
 };
