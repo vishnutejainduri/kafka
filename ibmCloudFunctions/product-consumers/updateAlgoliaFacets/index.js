@@ -148,20 +148,33 @@ global.main = async function (params) {
     const updatedStyleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
     const transformedAlgoliaUpdates = transformMicrositeAlgoliaRequests(algoliaUpdatesWithoutOutlet);
 
-    const ignoredAndProcessedFacetUpdateIds = facetUpdatesByStyle
-      .filter(({ _id }) => [...updatedStyleIds, ...ignoredStyleIds].includes(_id))
+    const ignoredFacetUpdateIds = facetUpdatesByStyle
+      .filter(({ _id }) => ignoredStyleIds.includes(_id))
+      .reduce(( ids, { facets }) => ids.concat(facets.map(({ id }) => id)), []);
+    const processedFacetUpdateIds = facetUpdatesByStyle
+      .filter(({ _id }) => updatedStyleIds.includes(_id))
       .reduce(( ids, { facets }) => ids.concat(facets.map(({ id }) => id)), []);
 
     await index.partialUpdateObjects(transformedAlgoliaUpdates, true)
         // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't mark as processed from the queue and it gets stuck
         .then(() => styleUpdates.length > 0 ? styles.bulkWrite(styleUpdates, { ordered : false }) : null) 
-        .then(() => algoliaFacetBulkImportQueue.updateMany({
-          id: { $in:  ignoredAndProcessedFacetUpdateIds }
-        }, {
-          $set: {
-            processed: true
-          }
-        }))
+        .then(() => Promise.all([
+          algoliaFacetBulkImportQueue.updateMany({
+            id: { $in:  processedFacetUpdateIds }
+          }, {
+            $set: {
+              processed: true
+            }
+          }),
+          algoliaFacetBulkImportQueue.updateMany({
+            id: { $in:  ignoredFacetUpdateIds }
+          }, {
+            $set: {
+              processed: true,
+              ignored: true
+            }
+          })
+        ]))
         .then(() => updateAlgoliaFacetsCount.insert({ batchSize: transformedAlgoliaUpdates.length }))
         .then(() => {
           log(`updated styles: ${updatedStyleIds}`)
