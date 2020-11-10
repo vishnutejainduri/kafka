@@ -150,17 +150,12 @@ global.main = async function (params) {
     const updatedStyleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
     const transformedAlgoliaUpdates = transformMicrositeAlgoliaRequests(algoliaUpdatesWithoutOutlet);
 
-    console.log('facetUpdatesByStyle', JSON.stringify(facetUpdatesByStyle))
-
     const ignoredFacetUpdateIds = facetUpdatesByStyle
       .filter(({ _id }) => ignoredStyleIds.includes(_id))
       .reduce(( ids, { facets }) => ids.concat(facets.map(({ id }) => id)), []);
     const processedFacetUpdateIds = facetUpdatesByStyle
       .filter(({ _id }) => updatedStyleIds.includes(_id))
       .reduce(( ids, { facets }) => ids.concat(facets.map(({ id }) => id)), []);
-
-    console.log('processedFacetUpdateIds', JSON.stringify(processedFacetUpdateIds))
-    console.log('ignoredFacetUpdateIds', JSON.stringify(ignoredFacetUpdateIds))
 
     await index.partialUpdateObjects(transformedAlgoliaUpdates, true)
         // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't mark as processed from the queue and it gets stuck
