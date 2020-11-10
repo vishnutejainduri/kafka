@@ -17,11 +17,13 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
   let ignoredStyleIds = []
   let algoliaUpdatesWithoutOutlet = await Promise.all(facetUpdatesByStyle.map(addErrorHandling(async (styleFacetUpdateData) => styles.findOne({ _id: styleFacetUpdateData._id })
     .then((currentMongoStyleData) => {
-      if ((currentMongoStyleData && currentMongoStyleData.isOutlet) || !currentMongoStyleData || !styleFacetUpdateData._id) {
-        if (styleFacetUpdateData._id) {
+      if ((currentMongoStyleData && currentMongoStyleData.isOutlet) || !currentMongoStyleData || !styleFacetUpdateData._id) { 
+        console.log('IGNORED FACET', 'currentMongoStyleData', JSON.stringify(currentMongoStyleData), 'styleFacetUpdateData_id', styleFacetUpdateData._id)
+        // temporarily uncommented to validate issues in massive facet resyncs
+        /*if (styleFacetUpdateData._id) {
           ignoredStyleIds.push(styleFacetUpdateData._id)
         }
-        return null;
+        return null;*/
       }
 
       const algoliaUpdate = {
@@ -130,7 +132,7 @@ global.main = async function (params) {
         { $match: { processed: { $ne: true } } },
         { $group: {
             _id: "$styleId",
-            facets: { $push: { id: "$id", name: "$facetName", value: "$facetValue", type: "$typeId", isMarkedForDeletion: "$isMarkedForDeletion", facetId: "$facetId" } }
+            facets: { $push: { id: "$_id", name: "$facetName", value: "$facetValue", type: "$typeId", isMarkedForDeletion: "$isMarkedForDeletion", facetId: "$facetId" } }
         }},
         { $limit: 750 }
     ],
@@ -148,6 +150,8 @@ global.main = async function (params) {
     const updatedStyleIds = algoliaUpdatesWithoutOutlet.map((algoliaUpdate) => algoliaUpdate.objectID);
     const transformedAlgoliaUpdates = transformMicrositeAlgoliaRequests(algoliaUpdatesWithoutOutlet);
 
+    console.log('facetUpdatesByStyle', JSON.stringify(facetUpdatesByStyle))
+
     const ignoredFacetUpdateIds = facetUpdatesByStyle
       .filter(({ _id }) => ignoredStyleIds.includes(_id))
       .reduce(( ids, { facets }) => ids.concat(facets.map(({ id }) => id)), []);
@@ -155,19 +159,22 @@ global.main = async function (params) {
       .filter(({ _id }) => updatedStyleIds.includes(_id))
       .reduce(( ids, { facets }) => ids.concat(facets.map(({ id }) => id)), []);
 
+    console.log('processedFacetUpdateIds', JSON.stringify(processedFacetUpdateIds))
+    console.log('ignoredFacetUpdateIds', JSON.stringify(ignoredFacetUpdateIds))
+
     await index.partialUpdateObjects(transformedAlgoliaUpdates, true)
         // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't mark as processed from the queue and it gets stuck
         .then(() => styleUpdates.length > 0 ? styles.bulkWrite(styleUpdates, { ordered : false }) : null) 
         .then(() => Promise.all([
           algoliaFacetBulkImportQueue.updateMany({
-            id: { $in:  processedFacetUpdateIds }
+            _id: { $in:  processedFacetUpdateIds }
           }, {
             $set: {
               processed: true
             }
           }),
           algoliaFacetBulkImportQueue.updateMany({
-            id: { $in:  ignoredFacetUpdateIds }
+            _id: { $in:  ignoredFacetUpdateIds }
           }, {
             $set: {
               processed: true,
