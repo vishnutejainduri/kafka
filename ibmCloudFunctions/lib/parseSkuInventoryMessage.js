@@ -15,7 +15,8 @@ const attributeMap = {
     'QIP': 'quantityInPicking',
     'QOHSELLABLE': 'quantityOnHandSellable',
     'QOHNOTSELLABLE': 'quantityOnHandNotSellable',
-    'LASTMODIFIEDDATE': 'lastModifiedDate'
+    'LASTMODIFIEDDATE': 'lastModifiedDate',
+    'IS_ENDLESS_AISLE': 'isEndlessAisle'
 };
 
 function filterSkuInventoryMessage(msg) {
@@ -38,7 +39,8 @@ function parseSkuInventoryMessage(msg) {
         inventoryData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
     }
 
-    inventoryData.checkInd = inventoryData.checkInd === 't' ? true : false
+    inventoryData.checkInd = inventoryData.checkInd === 't'
+    inventoryData.isEndlessAisle = inventoryData.isEndlessAisle === 't'
 
     inventoryData['availableToSell'] = ((inventoryData.quantityOnHandSellable - inventoryData.quantityInPicking) > 0) && inventoryData.checkInd
       ? (inventoryData.quantityOnHandSellable - inventoryData.quantityInPicking)
