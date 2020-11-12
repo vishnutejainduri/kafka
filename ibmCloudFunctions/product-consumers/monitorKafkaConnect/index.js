@@ -21,7 +21,13 @@ global.main = async function main ({
         pathStart
     }
     const connectorNames = await getConnectorNames(kubeParams)
+        .catch(({ message }) => {
+            throw new Error(`Failed to retrieve connector names: ${message}`)
+        })
     let connectors = await Promise.all(connectorNames.map(name => getConnector(kubeParams, name)))
+        .catch(({ message }) => {
+            throw new Error(`Failed to retrieve initial status of one or more of the connectors: ${message}`)
+        })
     const failedConnectors = connectors.filter(({ connector }) => connector.state === FAILED_STATUS)
     if (failedConnectors.length) {
         log.warn("Found failed connectors: ", failedConnectors.map(({ name }) => name).join(", "))
@@ -37,6 +43,9 @@ global.main = async function main ({
 
     // get updated status of the connectors
     connectors = await Promise.all(connectorNames.map(name => getConnector(kubeParams, name)))
+        .catch(({ message }) => {
+            throw new Error(`Failed to retrieve updated status of one or more of the connectors: ${message}`)
+        })
     for (const connector of connectors) {
         const failedTasks = connector.tasks.filter(({ state }) => state === FAILED_STATUS)
         if (failedTasks.length) {

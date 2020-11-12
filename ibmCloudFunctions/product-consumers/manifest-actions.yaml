@@ -222,7 +222,7 @@
           kubePassword: $KUBE_PASSWORD
           kubeTenant: $KUBE_TENANT
           kubeHost: $KUBE_HOST
-          kafkaConnectKubePathStart: KAFKA_CONNECT_KUBE_PATH_START
+          kafkaConnectKubePathStart: $KAFKA_CONNECT_KUBE_PATH_START
         limits:
           memorySize: 256
           timeout: 600000
