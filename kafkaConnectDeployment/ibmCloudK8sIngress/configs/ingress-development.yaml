@@ -1,21 +1,33 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
- name: kafka-ingress
+ name: hr-ingress
  annotations:
-   ingress.bluemix.net/appid-auth: "bindSecret=binding-platformdevelopmentservicesappid namespace=default requestType=api serviceName=kafka-connect"
+  # Maps the external paths that the services listen on, which is usually just `/`.
+  # See https://cloud.ibm.com/docs/containers?topic=containers-ingress_annotation#rewrite-path
+  # This makes it easier for us to have multiple exposed services on the same
+  # domain.
+  ingress.bluemix.net/rewrite-path: "serviceName=hr-product-api rewrite=/;serviceName=kafka-connect-standard rewrite=/;serviceName=hr-ciam rewrite=/;"
+  ingress.bluemix.net/appid-auth: "bindSecret=binding-platformdevelopmentservicesappid namespace=default requestType=api serviceName=kafka-connect"
 spec:
- # Selcting TLS termination: https://cloud.ibm.com/docs/containers?topic=containers-ingress#public_inside_3
- # ibmcloud ks cluster get --cluster <cluster_name_or_ID> | grep Ingress
  tls:
  - hosts:
+  # The domain and secret name can be retrieved with the command: `ibmcloud ks cluster get --cluster <cluster_name> | grep Ingress`
    - myplanet-platform-devel-d4712d36445d3dca407a41b2c9f18ee0-0000.tor01.containers.appdomain.cloud
    secretName: myplanet-platform-devel-d4712d36445d3dca407a41b2c9f18ee0-0000
  rules:
  - host: myplanet-platform-devel-d4712d36445d3dca407a41b2c9f18ee0-0000.tor01.containers.appdomain.cloud
    http:
      paths:
-     - path: /
+     - path: /hr-product-api/ # Note: the trailing slash is important. (Without it, a request to `/hr-product-api/` will be mapped to `//`)
        backend:
-         serviceName: kafka-connect
-         servicePort: 80
+         serviceName: hr-product-api # the load balancer
+         servicePort: 80 # 8080 # this should match the node.js port
+     - path: /kafka-connect/
+       backend:
+         serviceName: kafka-connect-standard # the load balancer
+         servicePort: 80 #
+     - path: /hr-ciam/
+       backend:
+         serviceName: hr-ciam # the load balancer
+         servicePort: 8080 # 8080 # this should match the node.js port
