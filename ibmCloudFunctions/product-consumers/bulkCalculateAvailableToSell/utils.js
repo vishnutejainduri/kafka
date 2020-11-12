@@ -18,15 +18,15 @@ const calculateSkuAts = async (
 
       await Promise.all(inventoryRecords.map(addErrorHandling(async (inventoryRecord) => {
           const storeData = await stores.findOne({ _id: inventoryRecord.storeId.toString().padStart(5, '0') })
-          .catch(originalError => {
+            .catch(originalError => {
               throw createError.bulkCalculateAvailableToSell.failedGetStore(originalError, inventoryRecord);
-          })
-          if (storeData && inventoryRecord.availableToSell > 0 && storeData.isVisible && !storeData.isOutlet) {
+            })
+          if (inventoryRecord.availableToSell > 0 && (inventoryRecord.isEndlessAisle || (storeData && storeData.isVisible && !storeData.isOutlet))) {
             skuAts.push({
               storeId: inventoryRecord.storeId,
               availableToSell: inventoryRecord.availableToSell
             })
-            if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27")) {
+            if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27") || inventoryRecord.isEndlessAisle) {
               skuOnlineAts.push({
                 storeId: inventoryRecord.storeId,
                 availableToSell: inventoryRecord.availableToSell

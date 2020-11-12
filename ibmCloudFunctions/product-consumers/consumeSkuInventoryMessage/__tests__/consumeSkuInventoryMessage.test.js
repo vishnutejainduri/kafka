@@ -106,7 +106,8 @@ describe('parseSkuInventoryMessage', () => {
           quantityOnOrder: 0,
           skuId: 'skuId',
           storeId: 'storeId',
-          styleId: 'styleId'
+          styleId: 'styleId',
+          isEndlessAisle: false
        });
     });
 
@@ -128,7 +129,8 @@ describe('parseSkuInventoryMessage', () => {
           quantityOnOrder: 0,
           skuId: 'skuId',
           storeId: 'storeId',
-          styleId: 'styleId'
+          styleId: 'styleId',
+          isEndlessAisle: false
        });
     });
 
@@ -150,7 +152,30 @@ describe('parseSkuInventoryMessage', () => {
           quantityOnOrder: 0,
           skuId: 'skuId',
           storeId: 'storeId',
-          styleId: 'styleId'
+          styleId: 'styleId',
+          isEndlessAisle: false
        });
+    });
+
+    it('parses endless aisle messages correctly', () => {
+        const message = { ...params.messages[0], value: { ...params.messages[0].value, IS_ENDLESS_AISLE: 't', CHECKIND: 'f' } }
+        expect(parseSkuInventoryMessage(message)).toEqual({
+           _id: 'styleId-skuId-storeId',
+           availableToSell: 0,
+           checkInd: false,
+           id: 'styleId-skuId-storeId',
+           lastModifiedDate: 1000000000,
+           quantityBackOrder: 0,
+           quantityInPicking: 0,
+           quantityInTransit: 0,
+           quantityOnHand: 0,
+           quantityOnHandNotSellable: 0,
+           quantityOnHandSellable: 1,
+           quantityOnOrder: 0,
+           skuId: 'skuId',
+           storeId: 'storeId',
+           styleId: 'styleId',
+           isEndlessAisle: true
+        });
     });
 });

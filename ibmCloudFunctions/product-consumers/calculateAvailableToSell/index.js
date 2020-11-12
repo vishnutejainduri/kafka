@@ -54,14 +54,20 @@ const main = async function (params) {
                                   return createError.calculateAvailableToSell.failedGetStore(originalError, atsData);
                               });
 
-          if (!storeData || !skuData || !styleData || storeData.isOutlet || !storeData.isVisible) return null;
+          if (
+              (!storeData && !atsData.isEndlessAisle) || // we don't have store data for endless aisle items
+              !skuData ||
+              !styleData ||
+              storeData.isOutlet ||
+              !storeData.isVisible
+            ) return null;
 
           let atsUpdates = [];
 
           // Regular ats operations
           atsUpdates.push(await handleSkuAtsUpdate(atsData, skus, false))
 
-          if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27")) {
+          if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27") || atsData.isEndlessAisle) {
               // Online ats operations
               atsUpdates.push(await handleSkuAtsUpdate(atsData, skus, true))
           }
