@@ -238,6 +238,12 @@ const styleActions = [
   },
   {
     action: 'setAttributeInAllVariants',
+    name: 'isEndlessAisle',
+    staged: false,
+    value: false,
+  },
+  {
+    action: 'setAttributeInAllVariants',
     name: 'relatedProductId',
     staged: false,
     value: 'vsn341brandNameEng',
