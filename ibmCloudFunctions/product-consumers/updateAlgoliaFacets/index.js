@@ -18,12 +18,21 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
   let algoliaUpdatesWithoutOutlet = await Promise.all(facetUpdatesByStyle.map(addErrorHandling(async (styleFacetUpdateData) => styles.findOne({ _id: styleFacetUpdateData._id })
     .then((currentMongoStyleData) => {
       if ((currentMongoStyleData && currentMongoStyleData.isOutlet) || !currentMongoStyleData || !styleFacetUpdateData._id) { 
+        if (!currentMongoStyleData) {
+          console.log('NULL MONGO STYLE', 'currentMongoStyleData', JSON.stringify(currentMongoStyleData), 'styleFacetUpdateData_id', styleFacetUpdateData._id)
+        }
+        if (currentMongoStyleData && currentMongoStyleData.isOutlet) {
+          console.log('OUTLET MONGO STYLE', 'currentMongoStyleData', JSON.stringify(currentMongoStyleData), 'currentMongoStyleData.isOutlet', currentMongoStyleData.isOutlet, 'styleFacetUpdateData_id', styleFacetUpdateData._id)
+        }
+        if (!styleFacetUpdateData._id) {
+          console.log('NULL FACET STYLEID', 'styleFacetUpdateData_id', styleFacetUpdateData._id, 'styleFacetUpdateData', JSON.stringify(styleFacetUpdateData))
+        }
         console.log('IGNORED FACET', 'currentMongoStyleData', JSON.stringify(currentMongoStyleData), 'styleFacetUpdateData_id', styleFacetUpdateData._id)
-        // temporarily uncommented to validate issues in massive facet resyncs
-        /*if (styleFacetUpdateData._id) {
+        if (styleFacetUpdateData._id) {
+          console.log('IGNORED FACET NO FACET STYLEID', 'currentMongoStyleData', JSON.stringify(currentMongoStyleData), 'styleFacetUpdateData_id', styleFacetUpdateData._id)
           ignoredStyleIds.push(styleFacetUpdateData._id)
         }
-        return null;*/
+        return null;
       }
 
       const algoliaUpdate = {
