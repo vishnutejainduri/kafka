@@ -38,7 +38,7 @@ async function callRestartTask({ kubeHost, pathStart, token, connectorName, task
 async function restartTask(kubeParams, connectorName, taskId) {
     const token = await retry(getSessionToken)(kubeParams);
     const { body, statusCode } = await retry(callRestartTask)({
-      host: kubeParams.host,
+      kubeHost: kubeParams.host,
       pathStart: kubeParams.pathStart,
       token,
       connectorName,
@@ -51,8 +51,8 @@ async function restartTask(kubeParams, connectorName, taskId) {
     if (statusCode < 200 || statusCode >= 300) {
       error = new Error(`Server call not successful with status code: ${statusCode}`);
       error.debugInfo = { body };
-
     } else {
+      if (!body) return statusCode
       try {
         info = JSON.parse(body);
       } catch (parsingError) {
