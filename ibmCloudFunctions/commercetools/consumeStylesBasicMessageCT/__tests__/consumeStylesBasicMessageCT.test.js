@@ -80,6 +80,22 @@ describe('parseStyleBasicMessageCt', () => {
     const response = parseStyleBasicMessageCt(validParams.messages[0]);
     expect(response.styleOutletLastModifiedInternal instanceof Date).toBe(true);
   });
+
+  it('returns a message with `isOutlet` set to false when given a message that lacks a brand ID', () => {
+    const messageWithNoBrandId = { ...validParams.messages[0], value: { ...validParams.messages[0].value, BRAND_ID: null } };
+    const parsedMessage = parseStyleBasicMessageCt(messageWithNoBrandId);
+    expect(parsedMessage.isOutlet).toBe(false);
+  });
+
+  it('returns a message with `isOutlet` set to true when given a message has a brand ID of 2 or 3', () => {
+    const messageWithBrandId2 = { ...validParams.messages[0], value: { ...validParams.messages[0].value, BRAND_ID: 2 } };
+    const messageWithBrandId3 = { ...validParams.messages[0],  value: { ...validParams.messages[0].value, BRAND_ID: 3 } };
+    const parsedMessageWithBrandId2 = parseStyleBasicMessageCt(messageWithBrandId2);
+    const parsedMessageWithBrandId3 = parseStyleBasicMessageCt(messageWithBrandId3);
+
+    expect(parsedMessageWithBrandId2.isOutlet).toBe(true);
+    expect(parsedMessageWithBrandId3.isOutlet).toBe(true);
+  });
 });
 
 describe('updateStyleOutlet', () => {
