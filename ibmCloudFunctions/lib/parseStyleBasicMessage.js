@@ -7,11 +7,13 @@ function parseStyleBasicMessage(msg) {
         throw new Error('Can only parse Style Basic update messages');
     }
 
+    const brandId = msg.value.BRAND_ID;
+
     return {
         _id: msg.value.STYLE_ID,
         id: msg.value.STYLE_ID,
-        brandId: msg.value.BRAND_ID,
-        isOutlet: msg.value.BRAND_ID === "1" ? false : true,
+        brandId,
+        isOutlet: brandId !== null && brandId !== '1',
         lastModifiedDate: msg.value.LAST_MODIFIED_DATE
     };
 }
