@@ -238,6 +238,12 @@ const styleActions = [
   },
   {
     action: 'setAttributeInAllVariants',
+    name: 'isEndlessAisle',
+    staged: false,
+    value: false,
+  },
+  {
+    action: 'setAttributeInAllVariants',
     name: 'relatedProductId',
     staged: false,
     value: 'vsn341brandNameEng',
@@ -364,6 +370,21 @@ describe('parseStyleMessageCt', () => {
   it('returns a message that uses the colours lastmodifieddate if the JESTA colours corresponding date is higher', () => {
     const parsedMessage = parseStyleMessageCt(messageWithMoreRecentLastModifiedDateColours);
     expect(parsedMessage.styleLastModifiedInternal).toEqual(new Date(messageWithMoreRecentLastModifiedDateColours.value.LASTMODIFIEDDATE_COLOURS))
+  });
+
+  it('returns a message that has a promo sticker if the style is endless aisle', () => {
+    const eaMessage = { ...message, value: { ...message.value, EA_IND: 'Y' } };
+    const parsedEaMessage = parseStyleMessageCt(eaMessage);
+    expect(parsedEaMessage.promotionalSticker).toEqual({
+      'en-CA': 'Online Only',
+      'fr-CA': 'En ligne seulement'
+    });
+  });
+
+  it('returns a message that has no promo sticker if the style is not endless aisle', () => {
+    const nonEaMessage = { ...message, value: { ...message.value, EA_IND: 'N' } };
+    const parsedNonEaMessage = parseStyleMessageCt(nonEaMessage);
+    expect(parsedNonEaMessage.promotionalSticker).toBeUndefined();
   });
 });
 
