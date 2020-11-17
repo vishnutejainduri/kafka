@@ -9,7 +9,7 @@ metadata:
   # domain.
   ingress.bluemix.net/rewrite-path: "serviceName=hr-product-api rewrite=/;serviceName=kafka-connect-standard rewrite=/;serviceName=hr-ciam rewrite=/;"
   ingress.bluemix.net/appid-auth: "bindSecret=binding-platformdevelopmentservicesappid namespace=default requestType=api serviceName=kafka-connect"
-  ingress.bluemix.net/client-max-body-size: "serviceName=hr-product-api size=200m; size=200m"
+  ingress.bluemix.net/client-max-body-size: "serviceName=hr-product-api size=25m; size=25m"
 spec:
  tls:
  - hosts:
