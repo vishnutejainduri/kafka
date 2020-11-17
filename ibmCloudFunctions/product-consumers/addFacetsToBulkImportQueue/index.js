@@ -17,7 +17,7 @@ const updateAlgoliaFacetQueue = algoliaFacetQueue => async (facetData) => {
         facetName: facetData.facetName,
         styleId: facetData.styleId,
         typeId: facetData.typeId,
-        facetId: `facetid_${facetData.facetId}`,
+        facetId: facetData.facetId,
         isMarkedForDeletion: facetData.isMarkedForDeletion,
         lastModifiedInternal: new Date()
       });
