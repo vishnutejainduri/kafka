@@ -18,18 +18,7 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
   let algoliaUpdatesWithoutOutlet = await Promise.all(facetUpdatesByStyle.map(addErrorHandling(async (styleFacetUpdateData) => styles.findOne({ _id: styleFacetUpdateData._id })
     .then((currentMongoStyleData) => {
       if ((currentMongoStyleData && currentMongoStyleData.isOutlet) || !currentMongoStyleData || !styleFacetUpdateData._id) { 
-        if (!currentMongoStyleData) {
-          console.log('NULL MONGO STYLE', 'currentMongoStyleData', JSON.stringify(currentMongoStyleData), 'styleFacetUpdateData_id', styleFacetUpdateData._id)
-        }
-        if (currentMongoStyleData && currentMongoStyleData.isOutlet) {
-          console.log('OUTLET MONGO STYLE', 'currentMongoStyleData', JSON.stringify(currentMongoStyleData), 'currentMongoStyleData.isOutlet', currentMongoStyleData.isOutlet, 'styleFacetUpdateData_id', styleFacetUpdateData._id)
-        }
-        if (!styleFacetUpdateData._id) {
-          console.log('NULL FACET STYLEID', 'styleFacetUpdateData_id', styleFacetUpdateData._id, 'styleFacetUpdateData', JSON.stringify(styleFacetUpdateData))
-        }
-        console.log('IGNORED FACET', 'currentMongoStyleData', JSON.stringify(currentMongoStyleData), 'styleFacetUpdateData_id', styleFacetUpdateData._id)
         if (styleFacetUpdateData._id) {
-          console.log('IGNORED FACET NO FACET STYLEID', 'currentMongoStyleData', JSON.stringify(currentMongoStyleData), 'styleFacetUpdateData_id', styleFacetUpdateData._id)
           ignoredStyleIds.push(styleFacetUpdateData._id)
         }
         return null;
@@ -55,12 +44,6 @@ const transformUpdateQueueRequestToAlgoliaUpdates = async (facetUpdatesByStyle, 
         algoliaUpdate[facetData.name] = facetData.isMarkedForDeletion
           ? { en: null, fr: null }
           : facetData.value;
-      });
-
-      Object.keys(algoliaUpdate).forEach((facetName) => {
-        if ((!algoliaUpdate[facetName].en || !algoliaUpdate[facetName].fr) && facetName !== 'objectID' && facetName !== 'microsite') {
-          log(`FACET DELETION ${facetName} ${JSON.stringify(algoliaUpdate[facetName])} ${JSON.stringify(algoliaUpdate)}`)
-        }
       });
 
       return algoliaUpdate;
