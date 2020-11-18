@@ -1,5 +1,5 @@
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
-const { addErrorHandling, log, createLog, addLoggingToMain, passDownProcessedMessages } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain, passDown } = require('../utils');
 const createError = require('../../lib/createError');
 const getCollection = require('../../lib/getCollection');
 const {
@@ -65,7 +65,7 @@ const main = async function (params) {
                               throw createError.consumeCatalogMessage.failed(originalError);
                             })
         }))
-    ).then(passDownProcessedMessages(params.messages))
+    ).then(passDown({ messages: params.messages, includeProcessedMessages: true }))
     .catch(originalError => {
         throw createError.consumeCatalogMessage.failed(originalError, params);
     });

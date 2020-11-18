@@ -207,6 +207,20 @@ const passDownProcessedMessages = (messages, batches) => results => {
 }
 
 /**
+ * Use this function in CFs instead of any of the other "passDown" functions,
+ * which merely serve as helpers to this one.
+ */
+const passDown = ({ batches, includeProcessedMessages = false, messages }) => results => {
+    if (includeProcessedMessages) {
+        return passDownProcessedMessages(messages, batches)(results);
+    }
+    if (batches) {
+        return passDownBatchedErrorsAndFailureIndexes(batches, messages)(results);
+    }
+    return passDownAnyMessageErrors(results);
+};
+
+/**
  * Catches the error returned from the function and returns it as an instance of Error instead of throwing it
  * @param {function} fn
  * @return {object|Error}
@@ -343,6 +357,7 @@ module.exports = {
     createLog,
     validateParams,
     addLoggingToMain,
+    passDown,
     passDownProcessedMessages,
     passDownAnyMessageErrors,
     passDownBatchedErrorsAndFailureIndexes,

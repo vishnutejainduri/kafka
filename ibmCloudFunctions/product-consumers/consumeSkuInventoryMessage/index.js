@@ -1,7 +1,7 @@
 const getCollection = require('../../lib/getCollection');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 const createError = require('../../lib/createError');
-const { createLog, addErrorHandling, log, addLoggingToMain, passDownProcessedMessages } = require('../utils');
+const { createLog, addErrorHandling, log, addLoggingToMain, passDown } = require('../utils');
 const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
 
 const groupByInventoryId = groupByAttribute('id');
@@ -65,7 +65,7 @@ const main = async function (params) {
             })
         )
     )
-    .then(passDownProcessedMessages(params.messages, inventoryGroupedByInventoryId))
+    .then(passDown({ messages: params.messages, batches: inventoryGroupedByInventoryId, includeProcessedMessages: true }))
     .catch(originalError => {
         throw createError.consumeInventoryMessage.failed(originalError, params);
     });

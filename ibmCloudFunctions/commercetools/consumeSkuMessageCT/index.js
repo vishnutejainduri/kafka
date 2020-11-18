@@ -18,7 +18,7 @@ const {
   createLog,
   log,
   validateParams,
-  passDownBatchedErrorsAndFailureIndexes
+  passDown
 } = require('../../product-consumers/utils');
 
 // Takes an array of SKUs, all of which have the same style ID. Since they all
@@ -75,7 +75,7 @@ const main = params => {
   );
  
   return Promise.all(skuBatchPromises)
-    .then(passDownBatchedErrorsAndFailureIndexes(skusGroupedByStyleId, params.messages))
+    .then(passDown({ batches: skusGroupedByStyleId, messages: params.messages }))
     .catch(handleErrors)
 };
 

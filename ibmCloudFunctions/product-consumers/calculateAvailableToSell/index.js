@@ -1,6 +1,6 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { addErrorHandling, log, createLog, addLoggingToMain, passDownBatchedErrorsAndFailureIndexes } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain, passDown } = require('../utils');
 const { handleSkuAtsUpdate } = require('./utils');
 const { filterSkuInventoryMessage, parseSkuInventoryMessage } = require('../../lib/parseSkuInventoryMessage');
 const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
@@ -85,7 +85,7 @@ const main = async function (params) {
                             })
         }))
     )
-    .then(passDownBatchedErrorsAndFailureIndexes(inventoryGroupedByInventoryId, params.messages))
+    .then(passDown({ batches: inventoryGroupedByInventoryId, messages: params.messages }))
     .catch(originalError => {
         throw createError.calculateAvailableToSell.failed(originalError, paramsExcludingMessages);
     });

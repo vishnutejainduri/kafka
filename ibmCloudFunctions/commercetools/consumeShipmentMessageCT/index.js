@@ -15,7 +15,7 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownBatchedErrorsAndFailureIndexes,
+  passDown,
   validateParams
 } = require('../../product-consumers/utils');
 const { groupByAttribute } = require('../../lib/utils');
@@ -62,7 +62,7 @@ const main = params => {
   );
   
   return Promise.all(batchedShipmentsPromises)
-    .then(passDownBatchedErrorsAndFailureIndexes(batchedShipmentsToCreateOrUpdate, params.messages))
+    .then(passDown({ batches: batchedShipmentsToCreateOrUpdate, messages: params.messages }))
     .catch(handleErrors);
 };
 

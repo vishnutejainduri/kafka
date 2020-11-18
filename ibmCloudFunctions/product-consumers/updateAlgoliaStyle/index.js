@@ -1,6 +1,6 @@
 const algoliasearch = require('algoliasearch');
 
-const { createLog, addErrorHandling, log, addLoggingToMain, passDownAnyMessageErrors } = require('../utils');
+const { createLog, addErrorHandling, log, addLoggingToMain, passDown } = require('../utils');
 const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
@@ -80,7 +80,7 @@ const main = async function (params) {
         await updateAlgoliaStyleCount.insert({ batchSize: recordsToUpdate.length }).catch(() => { log('Failed to update batch count.') })
     }
 
-    return passDownAnyMessageErrors(records)
+    return passDown({})(records)
 }
 
 global.main = addLoggingToMain(main)

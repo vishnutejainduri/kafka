@@ -1,7 +1,7 @@
 const { parseStyleBasicMessage } = require('../../lib/parseStyleBasicMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { addErrorHandling, log, createLog, addLoggingToMain, passDownProcessedMessages } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain, passDown } = require('../utils');
 
 const handleError = function (err, msg) {
   console.error('Problem with document ' + msg._id);
@@ -66,7 +66,7 @@ const main = async function (params) {
           }
         }))
     )
-      .then(passDownProcessedMessages(params.messages))
+      .then(passDown({ messages: params.messages, includeProcessedMessages: true }))
       .catch(error => ({
           error
       }));

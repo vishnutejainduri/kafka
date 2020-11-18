@@ -1,4 +1,5 @@
-const { truncateErrorsIfNecessary } = require('./utils');
+const { passDown, truncateErrorsIfNecessary } = require('./utils');
+const { groupByAttribute } = require('../lib/utils');
 
 describe('truncateErrorsIfNecessary', () => {
   it('returns its argument if not given an object', () => {
@@ -31,5 +32,50 @@ describe('truncateErrorsIfNecessary', () => {
     };
 
     expect(truncateErrorsIfNecessary(result).errors.length).toBe(2);
+  });
+});
+
+describe('passDown', () => {
+  const messages = [{ id: '1' }, { id: '2' }]
+  const results = [{ foo: true }]
+
+  describe('it is not given batches of messages', () => {
+    it('does not return processed messages when `includeProcessedMessages` is undefined', () => {
+      expect(passDown({ messages })(results)).toEqual({
+        errors: [],
+        failureIndexes: [],
+        successCount: 1      
+      })
+    });
+  
+    it('returns processed messages when `includeProcessedMessages` is set to true', () => {
+      expect(passDown({ messages, includeProcessedMessages: true })(results)).toEqual({
+        errors: [],
+        failureIndexes: [],
+        messages,
+        successCount: 1
+      })
+    });
+  });
+
+  describe('it is given batches of messages', () => {
+    const batches = groupByAttribute('id')(messages)
+
+    it('returns batch success results and no processed messages when `includeProcessedMessages` is undefined', () => {
+      expect(passDown({ messages, batches })(results)).toEqual({
+        batchSuccessCount: 1,
+        messagesCount: 2,
+        ok: true
+      });
+    });
+
+    it('returns batch success results and processed messages when `includeProcessedMessages` is true', () => {
+      expect(passDown({ messages, batches, includeProcessedMessages: true })(results)).toEqual({
+        batchSuccessCount: 1,
+        messages,
+        messagesCount: 2,
+        ok: true
+      });
+    });
   });
 });
