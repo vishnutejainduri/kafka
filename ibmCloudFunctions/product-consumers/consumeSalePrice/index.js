@@ -7,7 +7,7 @@ const {
     parseSalePriceMessage,
 } = require('../../lib/parseSalePriceMessage');
 const createError = require('../../lib/createError');
-const { log, createLog, addErrorHandling, addLoggingToMain, passDownBatchedErrorsAndFailureIndexes } = require('../utils');
+const { log, createLog, addErrorHandling, addLoggingToMain, passDown } = require('../utils');
 const { priceChangeProcessStatus } = require('../constants')
 const { groupByAttribute } = require('../../lib/utils');
 
@@ -82,7 +82,7 @@ const main = async function (params) {
               await pricesCollection.updateOne({ styleId: styleId }, { $set: newPriceRecord }, { upsert: true })
           }
         })))
-        .then(passDownBatchedErrorsAndFailureIndexes(pricesGroupedByStyleId, params.messages))
+        .then(passDown({ batches: pricesGroupedByStyleId, messages: params.messages }))
         .catch(error => ({
             error
         }));

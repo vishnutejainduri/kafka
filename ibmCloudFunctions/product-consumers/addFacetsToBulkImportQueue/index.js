@@ -1,5 +1,5 @@
 const createError = require('../../lib/createError');
-const { log, createLog, addErrorHandling, addLoggingToMain, passDownAnyMessageErrors } = require('../utils');
+const { log, createLog, addErrorHandling, addLoggingToMain, passDown } = require('../utils');
 const { parseFacetMessage } = require('../../lib/parseFacetMessage');
 const getCollection = require('../../lib/getCollection');
 
@@ -42,7 +42,7 @@ const main = async function (params) {
         .map(parseFacetMessageWithErrorHandling)
         .map(updateAlgoliaFacetQueueWithErrorHandling(algoliaFacetQueue))
     )
-    .then(passDownAnyMessageErrors);
+    .then(passDown({}));
 }
 
 global.main = addLoggingToMain(main);

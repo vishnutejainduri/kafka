@@ -1,6 +1,6 @@
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { createLog, addErrorHandling, log, passDownAnyMessageErrors, addLoggingToMain } = require('../../product-consumers/utils');
+const { createLog, addErrorHandling, log, addLoggingToMain, passDown } = require('../../product-consumers/utils');
 const {
   extractStyleId,
   findApplicablePriceChanges,
@@ -62,7 +62,7 @@ const main = async function (params) {
         markFailedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => failureIndexes.includes(index)), 'CT'),
     ])
 
-    return passDownAnyMessageErrors(CTUpdateResult)
+    return passDown({})(CTUpdateResult)
 };
 
 global.main = addLoggingToMain(main, messagesLogs, true);

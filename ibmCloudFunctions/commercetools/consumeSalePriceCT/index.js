@@ -14,7 +14,7 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownBatchedErrorsAndFailureIndexes,
+  passDown,
   validateParams
 } = require('../../product-consumers/utils');
 const { groupByAttribute } = require('../../lib/utils');
@@ -52,7 +52,7 @@ const main = async params => {
           await updateStyleSalePrice(ctHelpers, productTypeId, priceMessage);
         }
       }))
-  ).then(passDownBatchedErrorsAndFailureIndexes(batchedPricesToUpdate, params.messages))
+  ).then(passDown({ batches: batchedPricesToUpdate, messages: params.messages }))
    .catch(handleErrors);
 
 };

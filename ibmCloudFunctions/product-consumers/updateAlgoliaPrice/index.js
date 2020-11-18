@@ -4,7 +4,7 @@
 const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { createLog, addErrorHandling, log, passDownAnyMessageErrors, addLoggingToMain } = require('../utils');
+const { createLog, addErrorHandling, log, addLoggingToMain, passDown } = require('../utils');
 const { extractStyleId, getPriceInfo, findApplicablePriceChanges, findUnprocessedStyleIds, markProcessedChanges, markFailedChanges } = require('./utils.js');
 const messagesLogs = require('../../lib/messagesLogs');
 
@@ -109,7 +109,7 @@ const main = async function (params) {
         markFailedChanges(pricesCollection, processingDate, styleIds.filter((_, index) => failureIndexes.includes(index))),
     ])
 
-    return passDownAnyMessageErrors(updates)
+    return passDown({})(updates)
 };
 
 global.main = addLoggingToMain(main, messagesLogs, true)

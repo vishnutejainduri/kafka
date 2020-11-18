@@ -1,7 +1,7 @@
 const { parseThresholdMessage } = require('../../lib/parseThresholdMessage');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
-const { addErrorHandling, log, createLog, addLoggingToMain, passDownProcessedMessages } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain, passDown } = require('../utils');
 
 const addToAlgoliaQueue = (styleAvailabilityCheckQueue, skuData) => styleAvailabilityCheckQueue.updateOne({ _id : skuData.styleId }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: skuData.styleId, styleId: skuData.styleId } }, { upsert: true }).catch(originalError => {
                                     throw createError.consumeThresholdMessage.failedAddToAlgoliaQueue(originalError, skuData);
@@ -51,7 +51,7 @@ const main = async function (params) {
     .catch(originalError => {
       throw createError.consumeThresholdMessage.failed(originalError, paramsExcludingMessages)
     })
-    .then(passDownProcessedMessages(params.messages))
+    .then(passDown({ messages: params.messages, includeProcessedMessages: true }))
 }
 
 global.main = addLoggingToMain(main)

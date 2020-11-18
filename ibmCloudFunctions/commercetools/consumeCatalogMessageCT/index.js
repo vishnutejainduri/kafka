@@ -9,7 +9,7 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownProcessedMessages,
+  passDown,
   validateParams
 } = require('../../product-consumers/utils');
 const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
@@ -47,7 +47,7 @@ const main = params => {
         return result
       }))
     )
-    .then(passDownProcessedMessages(params.messages, batchedStylesToCreateOrUpdate))
+    .then(passDown({ messages: params.messages, batches: batchedStylesToCreateOrUpdate, includeProcessedMessages: true }))
     .catch(handleErrors);
 };
 

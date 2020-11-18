@@ -8,7 +8,7 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  passDownBatchedErrorsAndFailureIndexes,
+  passDown,
   validateParams
 } = require('../../product-consumers/utils');
 const { groupByAttribute, getMostUpToDateObject } = require('../../lib/utils');
@@ -42,7 +42,7 @@ const main = params => {
         return result
       }))
     )
-    .then(passDownBatchedErrorsAndFailureIndexes(batchedSalesOrdersToUpdate, params.messages))
+    .then(passDown({ batches: batchedSalesOrdersToUpdate, messages: params.messages }))
     .catch(handleErrors);
 };
 
