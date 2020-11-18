@@ -408,7 +408,8 @@ describe('getPriceInfo', () => {
         isSale: false,
         isOnlineSale: false,
         lowestPrice: originalPrice,
-        lowestOnlinePrice: originalPrice
+        lowestOnlinePrice: originalPrice,
+        currentPrice: originalPrice
       })
     })
   
@@ -428,7 +429,8 @@ describe('getPriceInfo', () => {
         isSale: true,
         isOnlineSale: true,
         lowestPrice: originalPrice,
-        lowestOnlinePrice: originalPrice
+        lowestOnlinePrice: originalPrice,
+        currentPrice: applicablePriceChanges['00990'].newRetailPrice
       })
     })
   
@@ -445,7 +447,8 @@ describe('getPriceInfo', () => {
         isSale: false,
         isOnlineSale: true,
         lowestPrice: originalPrice,
-        lowestOnlinePrice: originalPrice
+        lowestOnlinePrice: originalPrice,
+        currentPrice: applicablePriceChanges['00990'].newRetailPrice
       })
     })
   })
@@ -464,7 +467,8 @@ describe('getPriceInfo', () => {
         isSale: false,
         isOnlineSale: true,
         lowestPrice: applicablePriceChanges['00990'].newRetailPrice,
-        lowestOnlinePrice: applicablePriceChanges['00990'].newRetailPrice
+        lowestOnlinePrice: applicablePriceChanges['00990'].newRetailPrice,
+        currentPrice: applicablePriceChanges['00990'].newRetailPrice
       })
     })
     it('returns a mix of in-store and original sale price if only in-store sale price exists and correctly', () => {
@@ -480,7 +484,8 @@ describe('getPriceInfo', () => {
         isSale: true,
         isOnlineSale: false,
         lowestPrice: applicablePriceChanges['00011'].newRetailPrice,
-        lowestOnlinePrice: originalPrice
+        lowestOnlinePrice: originalPrice,
+        currentPrice: originalPrice
       })
     })
 
@@ -500,7 +505,8 @@ describe('getPriceInfo', () => {
         isSale: true,
         isOnlineSale: true,
         lowestPrice: applicablePriceChanges['00011'].newRetailPrice,
-        lowestOnlinePrice: applicablePriceChanges['00990'].newRetailPrice
+        lowestOnlinePrice: applicablePriceChanges['00990'].newRetailPrice,
+        currentPrice: applicablePriceChanges['00990'].newRetailPrice
       })
     })
   })
@@ -527,7 +533,8 @@ describe('getPriceInfo', () => {
       isSale: false,
       isOnlineSale: false,
       lowestPrice: 0,
-      lowestOnlinePrice: 0
+      lowestOnlinePrice: 0,
+      currentPrice: 0
     })
   })
 
