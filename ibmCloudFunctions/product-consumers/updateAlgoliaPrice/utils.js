@@ -172,7 +172,8 @@ function getPriceInfo (originalPrice, applicablePriceChanges) {
     isSale: !!inStorePriceChange,
     isOnlineSale: !!onlinePriceChange,
     lowestOnlinePrice,
-    lowestPrice: lowestPrice
+    lowestPrice: lowestPrice,
+    currentPrice: Number.isFinite(onlineSalePrice) ? onlineSalePrice : originalPrice
   }
 }
 
