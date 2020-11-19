@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "algoliasearch": "^4.6.0"
+    "algoliasearch": "^4.6.0",
+    "json2csv": "^5.0.5"
   }
 }

@@ -1,0 +1,30 @@
+index.search("", {
+ "getRankingInfo": true,
+ "analytics": false,
+ "enableABTest": false,
+ "hitsPerPage": 10,
+ "attributesToRetrieve": "*",
+ "attributesToSnippet": "*:20",
+ "snippetEllipsisText": "…",
+ "responseFields": "*",
+ "page": 0,
+ "maxValuesPerFacet": 100,
+ "facets": [
+  "*",
+  "brandName.en",
+  "brandName.fr",
+  "collar.en",
+  "collar.fr",
+  "colourGroup.en",
+  "colourGroup.fr",
+  "cuff.en",
+  "cuff.fr",
+  "currentPrice",
+  "fabric.en"
+ ],
+ "facetFilters": [
+  [
+   "brandName.en:BOSS"
+  ]
+ ]
+});
