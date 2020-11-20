@@ -1542,7 +1542,7 @@
         "affectsGlobalScope": false
       },
       "./src/middlewares/authorization.middleware.ts": {
-        "version": "0a76c7a93aae15119533371ee8d121144c32a30907da332205a6820b2d0f967e",
+        "version": "555842a347d267a8d2fd5e45d336091e215f5999f877c7b3d4d9e09be738f9fe",
         "signature": "5b888cc2b5a8d2b5a7305656f749bd85b16937c76b8ad9def48db92e386171b7",
         "affectsGlobalScope": false
       },
@@ -2067,7 +2067,7 @@
         "affectsGlobalScope": false
       },
       "./src/modules/binding/binding.service.ts": {
-        "version": "ff5fefb684e4ed8a221dcab1422c18dd51c9f1359c8a045c0d4e94ea43bf7ef2",
+        "version": "9c14b70b2006f9ef3a33698f42f9c51181e0f1c53ffdd0a84c7ed34e8d1a880e",
         "signature": "4ea5adb545bf5816f33a4b919ef44622690c1c699ac2fa9a428495660b1d4827",
         "affectsGlobalScope": false
       },

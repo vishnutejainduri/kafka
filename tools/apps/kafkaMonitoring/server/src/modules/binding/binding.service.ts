@@ -10,7 +10,7 @@ export class BindingService {
       staging: process.env.BINDING_URL_STAGING,
       production: process.env.BINDING_URL_PRODUCTION
     }
-    return this.httpService.get(`${bindingUrls[env]}/configs`, { headers: { Authorization: process.env.BINDING_AUTHORIZATION_HEADER } })
+    return this.httpService.get(`${bindingUrls[env]}/configs`, { headers: { Authorization: process.env.BINDING_AUTHORIZATION } })
       .pipe(map(({ data }) => data))
   }
 }
