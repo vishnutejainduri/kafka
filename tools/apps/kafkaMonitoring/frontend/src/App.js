@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Table, Button, Radio } from 'antd';
+import { useEffect, useMemo, useState } from 'react'
+import { Table, Button, Radio, Input } from 'antd';
 
 import './App.css';
 import 'antd/dist/antd.css';
@@ -60,16 +60,57 @@ function getTableData (data) {
   }, [])
 }
 
-function App() {
-  const [data, setData] = useState(null)
-  const [environment, setEnvironment] = useState('development')
-  useEffect(() => {
+function useFetch (fetchArgs, init = {}, jsonResult = true) {
+  const [data, setData] = useState(init.result || null)
+  const [error, setError] = useState(init.error || null)
+  const [loading, setLoading] = useState(init.loading || true)
+  const [_fetchArgs, _setFetchArgs] = useState(fetchArgs)
+  
+  useEffect(function () {
+    if (!_fetchArgs) return
+    let stale = false
+    setLoading(true)
     setData(null)
-    fetch(`/api/connectors/${environment}`).then(r => r.json()).then(setData)
-  }, [environment, setData])
+    setError(null)
+    fetch(..._fetchArgs)
+      .then(res => jsonResult ? res.json() : res.text())
+      .then(function (data) {
+        if (!stale) {
+          setData(data);
+          setLoading(false);
+        }
+      })
+      .catch(function (error) {
+        if (!stale) {
+          setError(error);
+          setLoading(false);
+        }
+      })
+    return function () { stale = true }
+  }, [_fetchArgs, jsonResult])
+
+  return [{
+    data,
+    loading,
+    error
+  }, _setFetchArgs]
+}
+
+function App() {
+  const [environment, setEnvironment] = useState('development')
+  const [authorization, setAuthorization] = useState('authorization_key')
+  const [result, setFetchArgs] = useFetch(null, { data: null })
+
+  useEffect(function () {
+    setFetchArgs([
+      `/api/connectors?environment=${environment}`,
+      { headers: { authorization } }
+    ])
+  }, [environment, authorization, setFetchArgs])
 
   return (
     <main>
+      <Input placeholder="authorization" value={authorization} onChange={({ target: { value }}) => setAuthorization(value)} />
       <Radio.Group defaultValue={environment} onChange={e => setEnvironment(e.target.value)}>
         <Radio.Button value="development">Development</Radio.Button>
         <Radio.Button value="staging">Staging</Radio.Button>
@@ -78,10 +119,10 @@ function App() {
 
       <Table
         columns={columns}
-        dataSource={getTableData(data)}
+        dataSource={getTableData(result.data)}
         scroll={{ x: 1300 }}
         pagination={{ position: ['bottomCenter'] }}
-        loading={data === null}
+        loading={!result.data}
       />
     </main>
   );
