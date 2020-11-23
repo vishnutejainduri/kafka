@@ -31,18 +31,23 @@ async function debug({
           return (await Promise.all(connectorNames.map(name => getConnector(kubeParams, name))))
             .map(({ tasks }) => tasks);
         }
+        case 'restartTask': {
+          const connectorName = options[0]
+          const taskId = options[1]
+          return restartTask(kubeParams, connectorName, taskId)
+        }
         case 'restartFailedTasks': {
-          const connectorNames = options[0] && options[0].split(',');
+          const connectorNames = (options[0] && options[0].split(',')) || await getConnectorNames(kubeParams);
           console.log("Restarting failed tasks for connectors: ", connectorNames)
-          const connectors = await Promise.all(connectorNames.map(name => getConnector(kubeParams, name)))
-          return Promise.all(connectors.map(({ name, tasks }) => {
+          const connectors = await Promise.all(connectorNames.map(connectorName => getConnector(kubeParams, connectorName)))
+          return Promise.all(connectors.map(({ name: connectorName, tasks }) => {
             const failedTasks = tasks.filter(({ state }) => state === 'FAILED')
             if (failedTasks.length) {
-              console.log(`Found failed tasks for connector ${name}: `, failedTasks.map(({ id }) => id).join(", "))
+              console.log(`Found failed tasks for connector ${connectorName}: `, failedTasks.map(({ id: taskId }) => taskId).join(", "))
             } else {
-              console.log(`Found no failed tasks for connector ${name}.`)
+              console.log(`Found no failed tasks for connector ${connectorName}.`)
             }
-            return Promise.all(failedTasks.map(({ id }) => restartTask(kubeParams, name, id)))
+            return Promise.all(failedTasks.map(({ id: taskId }) => restartTask(kubeParams, connectorName, taskId)))
           }));
         }
         case 'getAll': {

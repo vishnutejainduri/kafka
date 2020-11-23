@@ -13,8 +13,6 @@ import { BindingModule } from './modules/binding/binding.module';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(AuthorizationMiddleware)
-      .forRoutes('*');
+    consumer.apply(AuthorizationMiddleware).forRoutes('*');
   }
 }

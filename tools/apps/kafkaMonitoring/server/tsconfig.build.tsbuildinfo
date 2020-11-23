@@ -1246,19 +1246,19 @@
         "signature": "8f1241f5d9f0d3d72117768b3c974e462840fbd85026fb66685078945404cf2f",
         "affectsGlobalScope": false
       },
-      "./src/modules/connectors/connector.interface.ts": {
-        "version": "1824253ef159120612132ff57558c1ee6676800f5943e4fa859c91c389ddb640",
-        "signature": "4ea712c8ca9a68cb5b73ca54008e43ecc18c520fc99b796df2596c39723bf2fc",
+      "./src/modules/connectors/connectors.interface.ts": {
+        "version": "43bb2565dc7fb35e0ccbad66c07a72247fa97a0515146ae23d9d9e630496aea9",
+        "signature": "9967ae6b7c3053c7a0112d9a31165765292c34d9e2821da082b0650eff0e8200",
         "affectsGlobalScope": false
       },
       "./src/modules/connectors/connectors.service.ts": {
-        "version": "64a976ff3ba6a290dcf91d495369687ceede698b2f9be40925fd072ffebcb07e",
-        "signature": "397ea42ff0cbb5daef17c8cc09816535c3fde43b6c7ee1d54f08ffb2aa60458d",
+        "version": "0db02d8009619bed07d7920166eb40d80ad996e965b9b893d43c7257fda59bec",
+        "signature": "23c6289f80e33b49a91806574f04c10e7f2adb2763bf7f261d2334c45d94aa04",
         "affectsGlobalScope": false
       },
       "./src/modules/connectors/connectors.controller.ts": {
-        "version": "9b010303201c5b6d093ce06174f653254c11e3c9d2e34e1ce11dca2bf729beaa",
-        "signature": "253f68f803f907918b458dc5a18291126277860dae1f293a092ec72266c9be99",
+        "version": "ec0107fa9782396986e31871a9d4c98c736fa8d0874e221507f9705cb9c37e89",
+        "signature": "ced1b17f06be2db94f6965d253fed6f92a2d74a70317ccc5abd1ea0fac9c90f7",
         "affectsGlobalScope": false
       },
       "./src/modules/connectors/connectors.module.ts": {
@@ -2067,13 +2067,13 @@
         "affectsGlobalScope": false
       },
       "./src/modules/binding/binding.service.ts": {
-        "version": "9c14b70b2006f9ef3a33698f42f9c51181e0f1c53ffdd0a84c7ed34e8d1a880e",
-        "signature": "4ea5adb545bf5816f33a4b919ef44622690c1c699ac2fa9a428495660b1d4827",
+        "version": "17d1da8b924698a466708aa5a1883ed81373de5c13520db92f175d3757ea61df",
+        "signature": "2be93102d481fb7361087174922f9aab8426e1967b24ba9f91366a1c5438b212",
         "affectsGlobalScope": false
       },
       "./src/modules/binding/binding.controller.ts": {
-        "version": "6c3f974a7b4fe3303803b87335c860c232498589ee0739311a34251991d07945",
-        "signature": "526e017b081fb97b845d9a2fcb11436dcf71426f89d15569bcea4630c83b030f",
+        "version": "e78084ab9b6138901adb76e375fbfaf826c2ac9fc03cde1c5f9c87ed70604519",
+        "signature": "d23cf87372014e5e002f52a8b8e1ca3a72925eee9ed2976a7b3081e8a5fcc9d7",
         "affectsGlobalScope": false
       },
       "./src/modules/binding/binding.module.ts": {
@@ -2082,7 +2082,7 @@
         "affectsGlobalScope": false
       },
       "./src/app.module.ts": {
-        "version": "b40c447179f18469f165d16bd6b330c44a29ac30f6f7562332f0cb1925c17c9c",
+        "version": "1f9e9c9bd3cdfa26e87b07c3991d00ba6869cd704ae708da6f55b3cf77bc4ff5",
         "signature": "d39702f23fedac076a5bf0959fcd2fb52b098df19da2952b3f9a92c8a3c7537d",
         "affectsGlobalScope": false
       },
@@ -2267,8 +2267,8 @@
         "affectsGlobalScope": false
       },
       "./src/main.ts": {
-        "version": "e25d9bd8f80b6ffbcc8826ed1b407e747e4fbe346c5bab62cbe5837da4eeb189",
-        "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+        "version": "c45e86df34a02a78dc93dfa01067a45816e4e5a659bb3b2c98d4eb9d39de37e0",
+        "signature": "5c9cd8ba4f81982e8002c709ba0f6675b7aaf1def7f8a98a9996040a3e1c2bc0",
         "affectsGlobalScope": false
       },
       "./src/middlewares/logger.middleware.ts": {
@@ -4387,6 +4387,7 @@
       ],
       "./src/modules/connectors/connectors.controller.ts": [
         "./node_modules/@nestjs/common/index.d.ts",
+        "./src/modules/connectors/connectors.interface.ts",
         "./src/modules/connectors/connectors.service.ts"
       ],
       "./src/modules/connectors/connectors.module.ts": [
@@ -4396,7 +4397,7 @@
       ],
       "./src/modules/connectors/connectors.service.ts": [
         "./node_modules/@nestjs/common/index.d.ts",
-        "./src/modules/connectors/connector.interface.ts"
+        "./src/modules/connectors/connectors.interface.ts"
       ]
     },
     "exportedModulesMap": {
@@ -6196,17 +6197,19 @@
         "./node_modules/@types/express/index.d.ts"
       ],
       "./src/modules/binding/binding.controller.ts": [
+        "./node_modules/rxjs/index.d.ts",
         "./src/modules/binding/binding.service.ts"
       ],
       "./src/modules/binding/binding.service.ts": [
-        "./node_modules/@nestjs/common/index.d.ts"
+        "./node_modules/@nestjs/common/index.d.ts",
+        "./node_modules/rxjs/index.d.ts"
       ],
       "./src/modules/connectors/connectors.controller.ts": [
-        "./src/modules/connectors/connector.interface.ts",
+        "./src/modules/connectors/connectors.interface.ts",
         "./src/modules/connectors/connectors.service.ts"
       ],
       "./src/modules/connectors/connectors.service.ts": [
-        "./src/modules/connectors/connector.interface.ts"
+        "./src/modules/connectors/connectors.interface.ts"
       ]
     },
     "semanticDiagnosticsPerFile": [
@@ -6715,8 +6718,8 @@
       "./src/modules/binding/binding.controller.ts",
       "./src/modules/binding/binding.module.ts",
       "./src/modules/binding/binding.service.ts",
-      "./src/modules/connectors/connector.interface.ts",
       "./src/modules/connectors/connectors.controller.ts",
+      "./src/modules/connectors/connectors.interface.ts",
       "./src/modules/connectors/connectors.module.ts",
       "./src/modules/connectors/connectors.service.ts"
     ]
