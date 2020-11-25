@@ -9,10 +9,8 @@ const {
   updateCategory,
   categoryNeedsUpdating
 } = require('../styleUtils');
-const { languageKeys, entityStatus } = require('../constantsCt');
+const { languageKeys, entityStatus, MICROSITES_ROOT_CATEGORY } = require('../constantsCt');
 const { MICROSITE } = require('../../lib/constants');
-
-const MICROSITES_ROOT_CATEGORY = 'MICROSITES';
 
 const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpers) => {
   // only microsite facets generate categories

@@ -677,7 +677,14 @@ describe('getActionsFromStyle', () => {
         ...ctStyleNewer.masterData[entityStatus],
         categories: [{
           typeId: 'category',
-          id: 'cat4'
+          id: 'cat4',
+          obj: {
+            parent: {
+              obj: {
+                key: 'DPM_ROOT_CATEGORY'
+              }
+            }
+          }
         }]
       }
     },

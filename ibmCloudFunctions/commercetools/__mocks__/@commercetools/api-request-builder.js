@@ -7,7 +7,8 @@ const mockRequestBuilder = {
   },
   products: {
     byKey: () => mockRequestBuilder.products,
-    build: () => mockRequestBuilder.products
+    build: () => mockRequestBuilder.products,
+    expand: () => mockRequestBuilder.products
   },
   customObjects: {
     byKey: () => mockRequestBuilder.customObjects,

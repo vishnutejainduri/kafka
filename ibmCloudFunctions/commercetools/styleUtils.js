@@ -6,7 +6,8 @@ const {
   TAX_CATEGORY,
   PRODUCT_SHOULD_BE_PUBLISHED,
   entityStatus,
-  priceTypes
+  priceTypes,
+  MICROSITES_ROOT_CATEGORY
 } = require('./constantsCt');
 const { getAllVariantPrices, getExistingCtOriginalPrice, getExistingCtPermanentMarkdown } = require('./consumeSalePriceCT/utils');
 
@@ -259,20 +260,20 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
 
   // handle categories
   const existingCtStyleData = existingCtStyle.masterData && (existingCtStyle.masterData[entityStatus])
-  const existingCategoryIds = existingCtStyleData && existingCtStyleData.categories
-    ? existingCtStyleData.categories.map(category => category.id)
+  const existingCategories = existingCtStyleData && existingCtStyleData.categories
+    ? existingCtStyleData.categories.map(category => ({ id: category.id, parentKey: category.obj.parent.obj.key }))
     : null
   const categoryIds = getUniqueCategoryIdsFromCategories(categories);
 
   // category actions, remove only those not present in coming request
-  const categoriesRemoveAction = categoryIds && existingCategoryIds
-    ? existingCategoryIds.filter(categoryId => !categoryIds.includes(categoryId))
-        .map(categoryId => ({ action: 'removeFromCategory', category: { id: categoryId, typeId: 'category'}, staged: isStaged } ))
+  const categoriesRemoveAction = categoryIds && existingCategories
+    ? existingCategories.filter(category => !categoryIds.includes(category.id) && category.parentKey !== MICROSITES_ROOT_CATEGORY)
+        .map(category => ({ action: 'removeFromCategory', category: { id: category.id, typeId: 'category'}, staged: isStaged } ))
     : [];
 
   // category actions, add only those not present already in CT
-  const categoriesAddAction = categoryIds && existingCategoryIds
-    ? categoryIds.filter(categoryId => !existingCategoryIds.includes(categoryId))
+  const categoriesAddAction = categoryIds && existingCategories
+    ? categoryIds.filter(categoryId => !existingCategories.find(category => category.id === categoryId))
       .map(categoryId => ({ action: 'addToCategory', category: { id: categoryId, typeId: 'category' }, staged: isStaged }))
     : [];
 
@@ -467,7 +468,7 @@ const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
 
   // HR style IDs correspond to CT product keys, not CT product IDs, so we get
   // the product by key, not by ID
-  const uri = requestBuilder.products.byKey(styleId).build();
+  const uri = requestBuilder.products.byKey(styleId).expand('masterData.current.categories[*].parent').build();
 
   try {
     const response = await client.execute({ method, uri });

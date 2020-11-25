@@ -113,6 +113,8 @@ const PRODUCT_SHOULD_BE_PUBLISHED = true;
 
 const CT_ACTION_LIMIT = 500;
 
+const MICROSITES_ROOT_CATEGORY = 'MICROSITES';
+
 module.exports = {
   shipmentAttributeNames,
   SHIPMENT_NAMESPACE,
@@ -134,5 +136,6 @@ module.exports = {
   TAX_CATEGORY,
   PRODUCT_SHOULD_BE_PUBLISHED,
   CT_ACTION_LIMIT,
-  priceTypes
+  priceTypes,
+  MICROSITES_ROOT_CATEGORY
 };
