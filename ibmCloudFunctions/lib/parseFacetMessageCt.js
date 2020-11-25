@@ -29,7 +29,7 @@ function parseFacetMessageCt(msg) {
     // If the facet is marked for deletion, set the value to null (unless it's a microsite)
     facetObj[facetName] = facetObj.isMarkedForDeletion && facetName !== MICROSITE 
         ? { [languageKeys.ENGLISH]: '', [languageKeys.FRENCH]: '' }
-        : { [languageKeys.ENGLISH]: msg.value.DESC_ENG, [languageKeys.FRENCH]: msg.value.DESC_FR };
+        : { [languageKeys.ENGLISH]: msg.value.DESC_ENG || '', [languageKeys.FRENCH]: msg.value.DESC_FR || '' };
     return facetObj;
 }
 
