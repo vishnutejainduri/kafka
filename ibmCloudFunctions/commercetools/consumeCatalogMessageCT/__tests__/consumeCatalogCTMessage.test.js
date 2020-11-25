@@ -16,7 +16,7 @@ const {
   categoryKeyFromNames,
   getActionsFromStyle
 } = require('../../styleUtils');
-const { languageKeys, styleAttributeNames, isStaged, entityStatus } = require('../../constantsCt');
+const { languageKeys, styleAttributeNames, isStaged, entityStatus, MICROSITES_ROOT_CATEGORY } = require('../../constantsCt');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -690,6 +690,28 @@ describe('getActionsFromStyle', () => {
     },
     staged: isStaged
   };
+  const mockCtStyleWithMicrositeCategory = {
+    ...ctStyleNewer,
+    masterData: {
+      [entityStatus]: {
+        variants: [],
+        ...ctStyleNewer.masterData[entityStatus],
+        categories: [{
+          typeId: 'category',
+          id: 'cat_microsite',
+          obj: {
+            parent: {
+              obj: {
+                key: MICROSITES_ROOT_CATEGORY
+              }
+            }
+          }
+        }]
+      }
+    },
+    staged: isStaged
+  };
+
   const mockCtStyleWithoutOriginalPrice = {
     ...ctStyleNewerWithEmptyPrices,
     masterData: {
@@ -716,6 +738,16 @@ describe('getActionsFromStyle', () => {
     }
 
     expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithCategories)).toEqual(expect.arrayContaining([removeAction]));
+  });
+
+  it('returns the correct actions when given a style from microsite categories should not be removed', () => {
+    const removeAction = {
+        action: 'removeFromCategory',
+        category: { id: 'cat_microsite', typeId: 'category' },
+        staged: false,
+    }
+
+    expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithMicrositeCategory)).toEqual(expect.not.arrayContaining([removeAction]));
   });
 
   it('includes the correct actions when given a style that initially didnt have its original price set', () => {
