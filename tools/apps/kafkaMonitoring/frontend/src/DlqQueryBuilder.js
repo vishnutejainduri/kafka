@@ -8,7 +8,7 @@ export default function DlqQueryBuilder () {
   const [date, setDate] = useState(null)
   const [dateSelector, setDateSelector] = useState('after')
 
-  const [{value, error, noUserInteraction}, copyToClipboard] = useCopyToClipboard()
+  const [, copyToClipboard] = useCopyToClipboard()
 
   const searchByCloudFunctionNameQuery = cloudFunctionName
     ? `"metadata.activationInfo.name": "${cloudFunctionName}"`
@@ -17,17 +17,18 @@ export default function DlqQueryBuilder () {
     ? `"messages.value.${messages[0][0]}": "${messages[0][1]}"`
     : ''
   const searchByActivationStartDate = date
-    ? `"metadata.activationInfo.start": { ${dateSelector === 'after' ? '"$gt"' : "$lt" }: ${date} }`
+    ? `"metadata.activationInfo.start": { ${dateSelector === 'after' ? '"$gt"' : "$lt" }: ${date * 1000} }`
     : ''
   const query = `{ ${[
     searchByCloudFunctionNameQuery,
     searchByKeyValueQuery,
     searchByActivationStartDate
   ].filter(Boolean).join(', ')} }`
+
   return (
     <>
       <div>
-        <label>Query by Cloud Function Name e.g. <strong>consume-threshold-message</strong>:</label>
+        <label>Query by Cloud Function Name e.g. consume-threshold-message:</label>
         <Input
           placeholder="cloud function name"
           value={cloudFunctionName}
@@ -36,7 +37,7 @@ export default function DlqQueryBuilder () {
       </div>
       <br />
       <div>
-        <label>Query by Message key: value pair e.g. <strong>STYLEID: "100"</strong>:</label>
+        <label>Query by Message key: value pair e.g. STYLEID: "100":</label>
         <Input
           placeholder={`field`}
           value={messages[0][0]}
@@ -51,7 +52,7 @@ export default function DlqQueryBuilder () {
       </div>
       <br />
       <div>
-        <label>Query by Activation Start Date</label>
+        <label>Query by Activation Start Date (Browser Local Time)</label>
         <div>
           <Select style={{ width: 120 }} defaultValue={dateSelector} onChange={setDateSelector}>
             <Select.Option value="before">before</Select.Option>
@@ -62,10 +63,9 @@ export default function DlqQueryBuilder () {
       </div>
       <br />
       <div>
-        <label htmlFor="filter-query">Filter </label><button disabled={!query} onClick={() => copyToClipboard(query)}>copy</button>
-        <p id="filter-query">
-          <strong>{query}</strong>
-        </p>
+        <label htmlFor="filter-query"><strong>Filter </strong></label>
+        <button disabled={!query} onClick={() => copyToClipboard(query)}>copy</button>
+        <p id="filter-query" style={{ fontFamily: 'monospace' }} contentEditable>{query}</p>
       </div>
     </>
   )

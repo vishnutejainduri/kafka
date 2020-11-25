@@ -1,13 +1,24 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
 import { ConnectorsModule } from './modules/connectors/connectors.module';
 import { AuthorizationMiddleware } from './middlewares/authorization.middleware';
 import { BindingModule } from './modules/binding/binding.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), ConnectorsModule, BindingModule],
+  imports: [
+    ConfigModule.forRoot(),
+    ConnectorsModule,
+    BindingModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'client'),
+      exclude: ['/api*'],
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
