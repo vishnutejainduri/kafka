@@ -20,6 +20,11 @@ export class BindingService {
         },
       })
       .pipe(
+        map(({ data }) => {
+          consumerGroupIdConfigMapping: data.consumerGroupIdConfigMapping;
+        }),
+      )
+      .pipe(
         catchError(({ response, code }) => {
           const params: [any, any] =
             response && response.status >= 200 && response.status < 300
@@ -27,7 +32,6 @@ export class BindingService {
               : [code, 500];
           throw new HttpException(...params);
         }),
-      )
-      .pipe(map(({ data }) => data));
+      );
   }
 }

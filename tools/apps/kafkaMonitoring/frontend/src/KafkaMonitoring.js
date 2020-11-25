@@ -152,42 +152,45 @@ function usePrevious(value) {
   return ref.current;
 }
 
-function DlqBuilder () {
-
-}
-
 function KafkaMonitoring () {
+  const [authorization, setAuthorization] = useState('')
+  const [confirmedAuthorization, setConfirmedAuthorization] = useState([false])
   const [environment, setEnvironment] = useState('development')
-  const [authorization, setAuthorization] = useState('authorization_key')
   const [fetchConnectorsResult, setFetchConnectorsArgs] = useFetch(null)
   const [fetchBindingConfigsResult, setFetchBindingConfigsArgs] = useFetch(null)
-  const [fetchRestartFailedTasks, setFetchRestartFailedTasks] = useFetch(null)
+  const [fetchRestartFailedTasks, setFetchRestartFailedTasks] = useFetch()
   const previousRestartFailedTasksLoading = usePrevious(fetchRestartFailedTasks.loading)
 
   useEffect(function fetchConnectors() {
-    setFetchConnectorsArgs([
-      `/api/connectors?environment=${environment}`,
-      { headers: { authorization } }
-    ])
-  }, [environment, authorization, setFetchConnectorsArgs])
-
-  useEffect(function fetchConnectors() {
-    if (fetchRestartFailedTasks.loading && !previousRestartFailedTasksLoading) {
-      setFetchConnectorsArgs()
-    } else if (!fetchRestartFailedTasks.loading && previousRestartFailedTasksLoading) {
+    if (confirmedAuthorization[0]) {
       setFetchConnectorsArgs([
         `/api/connectors?environment=${environment}`,
         { headers: { authorization } }
       ])
     }
-  }, [environment, authorization, setFetchConnectorsArgs,  fetchRestartFailedTasks.loading, previousRestartFailedTasksLoading])
+  }, [environment, authorization, setFetchConnectorsArgs, confirmedAuthorization])
 
   useEffect(function fetchConnectors() {
-    setFetchBindingConfigsArgs([
-      `/api/binding/configs?environment=${environment}`,
-      { headers: { authorization } }
-    ])
-  }, [environment, authorization, setFetchBindingConfigsArgs])
+    if (confirmedAuthorization[0]) {
+      if (fetchRestartFailedTasks.loading && !previousRestartFailedTasksLoading) {
+        setFetchConnectorsArgs()
+      } else if (!fetchRestartFailedTasks.loading && previousRestartFailedTasksLoading) {
+        setFetchConnectorsArgs([
+          `/api/connectors?environment=${environment}`,
+          { headers: { authorization } }
+        ])
+      }
+    }
+  }, [environment, authorization, setFetchConnectorsArgs,  fetchRestartFailedTasks.loading, previousRestartFailedTasksLoading, confirmedAuthorization])
+
+  useEffect(function fetchConnectors() {
+    if (confirmedAuthorization[0]) {
+      setFetchBindingConfigsArgs([
+        `/api/binding/configs?environment=${environment}`,
+        { headers: { authorization } }
+      ])
+    }
+  }, [environment, authorization, setFetchBindingConfigsArgs, confirmedAuthorization])
 
   const connectorsTableData = getConnectorsTableData(fetchConnectorsResult.data)
   
@@ -195,43 +198,49 @@ function KafkaMonitoring () {
     <>
       <div>
         <Input placeholder="authorization" value={authorization} onChange={({ target: { value }}) => setAuthorization(value)} />
+        <Button onClick={() => { setConfirmedAuthorization([true]); }}>Confirm</Button>
       </div>
-      <div>
-        <Radio.Group defaultValue={environment} onChange={e => setEnvironment(e.target.value)}>
-          <Radio.Button value="development">Development</Radio.Button>
-          <Radio.Button value="staging">Staging</Radio.Button>
-          <Radio.Button value="production">Production</Radio.Button>
-        </Radio.Group> 
-      </div>
-      <div>
-        <Button
-          disabled={!connectorsTableData.find(({ taskState }) => taskState !== 'RUNNING')}
-          onClick={() => {
-            setFetchRestartFailedTasks([
-              `/api/connectors?operation=restartFailedTasks&environment=${environment}`,
-              { method: 'POST', headers: { authorization } }
-            ])
-          }}
-        >
-          Restart Failed Tasks
-        </Button>
-        <Table
-          columns={connectorColumns}
-          dataSource={connectorsTableData}
-          scroll={{ x: 1300 }}
-          pagination={{ position: ['bottomCenter'] }}
-          loading={!fetchConnectorsResult.data}
-        />
-      </div>
-      <div>
-        <Table
-          columns={bindingColumns}
-          dataSource={fetchBindingConfigsResult.data ? getBindingTableData(fetchBindingConfigsResult.data.consumerGroupIdConfigMapping) : []}
-          scroll={{ x: 1300 }}
-          pagination={{ position: ['bottomCenter'] }}
-          loading={!fetchBindingConfigsResult.data}
-        />
-      </div>
+      <br />
+      {confirmedAuthorization[0] && <div>
+        <div>
+          <Radio.Group defaultValue={environment} onChange={e => setEnvironment(e.target.value)}>
+            <Radio.Button value="development">Development</Radio.Button>
+            <Radio.Button value="staging">Staging</Radio.Button>
+            <Radio.Button value="production">Production</Radio.Button>
+          </Radio.Group> 
+        </div>
+        <br />
+        <div>
+          <Button
+            disabled={!connectorsTableData.find(({ taskState }) => taskState !== 'RUNNING')}
+            onClick={() => {
+              setFetchRestartFailedTasks([
+                `/api/connectors?operation=restartFailedTasks&environment=${environment}`,
+                { method: 'POST', headers: { authorization } }
+              ])
+            }}
+          >
+            Restart Failed Tasks
+          </Button>
+          <Table
+            columns={connectorColumns}
+            dataSource={connectorsTableData}
+            scroll={{ x: 1300 }}
+            pagination={{ position: ['bottomCenter'] }}
+            loading={fetchConnectorsResult.loading}
+          />
+        </div>
+        <br />
+        <div>
+          <Table
+            columns={bindingColumns}
+            dataSource={fetchBindingConfigsResult.data ? getBindingTableData(fetchBindingConfigsResult.data.consumerGroupIdConfigMapping) : []}
+            scroll={{ x: 1300 }}
+            pagination={{ position: ['bottomCenter'] }}
+            loading={fetchBindingConfigsResult.loading}
+          />
+        </div>
+      </div>}
     </>
   )
 }
