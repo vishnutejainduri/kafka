@@ -741,13 +741,10 @@ describe('getActionsFromStyle', () => {
   });
 
   it('returns the correct actions when given a style from microsite categories should not be removed', () => {
-    const removeAction = {
-        action: 'removeFromCategory',
-        category: { id: 'cat_microsite', typeId: 'category' },
-        staged: false,
-    }
+    const styleUpdateActions = getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithMicrositeCategory)
+    const removeCategoryAction = styleUpdateActions.find(updateAction => updateAction.action === 'removeFromCategory')
 
-    expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockCtStyleWithMicrositeCategory)).toEqual(expect.not.arrayContaining([removeAction]));
+    expect(removeCategoryAction).toEqual(undefined);
   });
 
   it('includes the correct actions when given a style that initially didnt have its original price set', () => {
