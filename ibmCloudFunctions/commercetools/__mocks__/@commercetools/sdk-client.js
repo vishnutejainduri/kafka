@@ -1,10 +1,24 @@
 const mockCategory = {
   typeId: 'category',
-  id: '5bb79326-16ea-40f5-8857-31a020800a1c'
+  id: '5bb79326-16ea-40f5-8857-31a020800a1c',
+  obj: {
+    parent: {
+      obj: {
+        key: 'DPM_ROOT_CATEGORY'
+      }
+    }
+  }
 };
 const mockMicrositeCategory = {
   typeId: 'category',
-  id: '1ea2fe42-d3fb-4329-a3f2-da6208814aeb'
+  id: '1ea2fe42-d3fb-4329-a3f2-da6208814aeb',
+  obj: {
+    parent: {
+      obj: {
+        key: 'MICROSITES' 
+      }
+    }
+  }
 };
 
 const mockPrice = {
