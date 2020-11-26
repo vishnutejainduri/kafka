@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Connector } from './connectors.interface';
-import * as getDebug from '../../../../../../kafka/debug';
-import * as getKubeEnv from '../../../../../../kafka/lib/getKubeEnv';
+import getDebug from './debug';
+import getKubeEnv from './lib/getKubeEnv';
 
 type Environment = 'development' | 'staging' | 'production';
 

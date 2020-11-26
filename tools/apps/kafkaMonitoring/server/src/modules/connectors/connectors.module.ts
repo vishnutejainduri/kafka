@@ -4,6 +4,6 @@ import { ConnectorsService } from './connectors.service';
 
 @Module({
   controllers: [ConnectorsController],
-  providers: [ConnectorsService]
+  providers: [ConnectorsService],
 })
 export class ConnectorsModule {}
