@@ -197,7 +197,7 @@ function KafkaMonitoring () {
   return (
     <>
       <div>
-        <Input placeholder="authorization" value={authorization} onChange={({ target: { value }}) => setAuthorization(value)} />
+        <Input type="password" placeholder="authorization" value={authorization} onChange={({ target: { value }}) => setAuthorization(value)} />
         <Button onClick={() => { setConfirmedAuthorization([true]); }}>Confirm</Button>
       </div>
       <br />

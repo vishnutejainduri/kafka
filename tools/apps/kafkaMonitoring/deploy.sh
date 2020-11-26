@@ -1,0 +1,1 @@
+cd frontend && npm run build && rm -rf ../server/client && cp -R ./build ../server/client && cd .. && cd server && rm tsconfig.build.tsbuildinfo && npm run build &&ibmcloud cf push

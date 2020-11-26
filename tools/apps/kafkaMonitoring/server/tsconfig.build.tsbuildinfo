@@ -1481,8 +1481,63 @@
         "signature": "9967ae6b7c3053c7a0112d9a31165765292c34d9e2821da082b0650eff0e8200",
         "affectsGlobalScope": false
       },
+      "./src/modules/connectors/lib/getsessiontoken.ts": {
+        "version": "cf159b53537df65b748993b045adb484dd040a6e9ee7e1553074964cfac41bde",
+        "signature": "a9e14d0cbc625a55fb79fde416df19e84a72bab89e5a910c2985b6e3d86a8dc7",
+        "affectsGlobalScope": false
+      },
+      "./src/modules/connectors/utils.ts": {
+        "version": "76ea89c999db4bb55b7f0fccc18dd419262ba455cb138b84ff5e479a3d9bae80",
+        "signature": "4bee10500e428fcb48b21d5ae90c4cf64e97f62cf7c2d81a34721b21c224d81e",
+        "affectsGlobalScope": false
+      },
+      "./src/modules/connectors/scripts/getinfo.ts": {
+        "version": "26c1ae375bcfe282404ac625035d80cd1ff10455745551016d02026251659a38",
+        "signature": "74204cc660867eb829ca34900157c8831e85f082f65895398d40c84e24cba763",
+        "affectsGlobalScope": false
+      },
+      "./src/modules/connectors/scripts/getconnector.ts": {
+        "version": "50928b122d230af3d3453ba0fdc44bc289cde25511b69b3b3a4746f869637b42",
+        "signature": "49d6429c6d4cba728b8039bbb54316956543c9cb76085449fa5a93d37c5e75c9",
+        "affectsGlobalScope": false
+      },
+      "./src/modules/connectors/scripts/restartconnector.ts": {
+        "version": "11b9c2511c55fdae812cafc5fb50fd0e3f1d19c71ce56c4ec6178012d1f787f6",
+        "signature": "c2b544c92c10a7d38d121fc24c82b1d8c57282b3e8c4ace0c0d2c09ffbda7713",
+        "affectsGlobalScope": false
+      },
+      "./src/modules/connectors/scripts/restarttask.ts": {
+        "version": "1e242449bd635a6231b24be12a2535a0c0feeb264a1fced4678e0a7172376a56",
+        "signature": "4aaf345a71439e927c13577f3eaba02f6f16ba6f5851d8fd10c318547df2df0c",
+        "affectsGlobalScope": false
+      },
+      "./src/modules/connectors/scripts/getconnectornames.ts": {
+        "version": "6807d4025b3093db084b67dc35099aa57833062c9c511651aaeffd01020d122f",
+        "signature": "156fd2c5b4f8f091f9990efb5968a91b9a4aac4fb4a5f251f717b9de1b55d03b",
+        "affectsGlobalScope": false
+      },
+      "./src/modules/connectors/scripts/deleteconnectors.ts": {
+        "version": "5174c24b080feba555255868dda68362eacedcec363fbd5bbab091b05f32b59a",
+        "signature": "9f0638238473d5b1069b483c31bc6a9bef0f1070a71e2ff5d31196e7ea62a0f7",
+        "affectsGlobalScope": false
+      },
+      "./src/modules/connectors/scripts/createconnectors.ts": {
+        "version": "95573098fb3676f2b370fb00d25ecce2abfc521cf4370a3dcc96190d441405d3",
+        "signature": "fc8236203b9d3bfe758b968f55bc8e45cecb7e2b85f09fa29d6ba02ff629451a",
+        "affectsGlobalScope": false
+      },
+      "./src/modules/connectors/debug.ts": {
+        "version": "fedecf670db36356773340c90e901cc6587073139e921adbbd6d45a44b9e3108",
+        "signature": "0ba4e41387e4199a15e61e0e67d537e6e89cef9d768700cf7d8cb36a7602e4d0",
+        "affectsGlobalScope": false
+      },
+      "./src/modules/connectors/lib/getkubeenv.ts": {
+        "version": "1205b40e7485c8379b035e97fe2fb7d8a6c90a796d266878cee0911936ca047a",
+        "signature": "e792a84524a55e344d090a6866450f8632bb493799f5cc219b6c407c32c98a7f",
+        "affectsGlobalScope": false
+      },
       "./src/modules/connectors/connectors.service.ts": {
-        "version": "0db02d8009619bed07d7920166eb40d80ad996e965b9b893d43c7257fda59bec",
+        "version": "4ae05550d9bfb1cb063b340f8edba3a3b4cd6ee4f5151c2cffb0b768d15b2a65",
         "signature": "23c6289f80e33b49a91806574f04c10e7f2adb2763bf7f261d2334c45d94aa04",
         "affectsGlobalScope": false
       },
@@ -2317,68 +2372,13 @@
         "affectsGlobalScope": false
       },
       "./src/main.ts": {
-        "version": "8be999d2ee8ec60160a7b0bfd2fdd45baea52c9b9ab773153105d790c123adc0",
+        "version": "846bf7c0f01a41f47b23c76852e5e51430d94f6689cd5dddcf20349ba2a5a0d3",
         "signature": "5c9cd8ba4f81982e8002c709ba0f6675b7aaf1def7f8a98a9996040a3e1c2bc0",
         "affectsGlobalScope": false
       },
       "./src/middlewares/logger.middleware.ts": {
         "version": "7a70dac0de9bd1f8118f90e9ea1bfbdbe0673829334ec4370c74803951e9b079",
         "signature": "edd4d3f28e7de4136249b998ea1ceb497bad839735e46843791de0672fae69bc",
-        "affectsGlobalScope": false
-      },
-      "./src/modules/connectors/lib/getsessiontoken.ts": {
-        "version": "cf159b53537df65b748993b045adb484dd040a6e9ee7e1553074964cfac41bde",
-        "signature": "a9e14d0cbc625a55fb79fde416df19e84a72bab89e5a910c2985b6e3d86a8dc7",
-        "affectsGlobalScope": false
-      },
-      "./src/modules/connectors/utils.ts": {
-        "version": "76ea89c999db4bb55b7f0fccc18dd419262ba455cb138b84ff5e479a3d9bae80",
-        "signature": "4bee10500e428fcb48b21d5ae90c4cf64e97f62cf7c2d81a34721b21c224d81e",
-        "affectsGlobalScope": false
-      },
-      "./src/modules/connectors/scripts/getinfo.ts": {
-        "version": "26c1ae375bcfe282404ac625035d80cd1ff10455745551016d02026251659a38",
-        "signature": "74204cc660867eb829ca34900157c8831e85f082f65895398d40c84e24cba763",
-        "affectsGlobalScope": false
-      },
-      "./src/modules/connectors/scripts/getconnector.ts": {
-        "version": "50928b122d230af3d3453ba0fdc44bc289cde25511b69b3b3a4746f869637b42",
-        "signature": "49d6429c6d4cba728b8039bbb54316956543c9cb76085449fa5a93d37c5e75c9",
-        "affectsGlobalScope": false
-      },
-      "./src/modules/connectors/scripts/restartconnector.ts": {
-        "version": "11b9c2511c55fdae812cafc5fb50fd0e3f1d19c71ce56c4ec6178012d1f787f6",
-        "signature": "c2b544c92c10a7d38d121fc24c82b1d8c57282b3e8c4ace0c0d2c09ffbda7713",
-        "affectsGlobalScope": false
-      },
-      "./src/modules/connectors/scripts/restarttask.ts": {
-        "version": "1e242449bd635a6231b24be12a2535a0c0feeb264a1fced4678e0a7172376a56",
-        "signature": "4aaf345a71439e927c13577f3eaba02f6f16ba6f5851d8fd10c318547df2df0c",
-        "affectsGlobalScope": false
-      },
-      "./src/modules/connectors/scripts/getconnectornames.ts": {
-        "version": "6807d4025b3093db084b67dc35099aa57833062c9c511651aaeffd01020d122f",
-        "signature": "156fd2c5b4f8f091f9990efb5968a91b9a4aac4fb4a5f251f717b9de1b55d03b",
-        "affectsGlobalScope": false
-      },
-      "./src/modules/connectors/scripts/deleteconnectors.ts": {
-        "version": "b989ec3ba26e26fa55b094bfd53ea39d9a1e9fb5a4fc895d5bc3502ff8b13d03",
-        "signature": "9f0638238473d5b1069b483c31bc6a9bef0f1070a71e2ff5d31196e7ea62a0f7",
-        "affectsGlobalScope": false
-      },
-      "./src/modules/connectors/scripts/createconnectors.ts": {
-        "version": "95573098fb3676f2b370fb00d25ecce2abfc521cf4370a3dcc96190d441405d3",
-        "signature": "fc8236203b9d3bfe758b968f55bc8e45cecb7e2b85f09fa29d6ba02ff629451a",
-        "affectsGlobalScope": false
-      },
-      "./src/modules/connectors/debug.ts": {
-        "version": "fedecf670db36356773340c90e901cc6587073139e921adbbd6d45a44b9e3108",
-        "signature": "0ba4e41387e4199a15e61e0e67d537e6e89cef9d768700cf7d8cb36a7602e4d0",
-        "affectsGlobalScope": false
-      },
-      "./src/modules/connectors/lib/getkubeenv.ts": {
-        "version": "1205b40e7485c8379b035e97fe2fb7d8a6c90a796d266878cee0911936ca047a",
-        "signature": "e792a84524a55e344d090a6866450f8632bb493799f5cc219b6c407c32c98a7f",
         "affectsGlobalScope": false
       },
       "./node_modules/@types/anymatch/index.d.ts": {
@@ -4549,7 +4549,9 @@
       ],
       "./src/modules/connectors/connectors.service.ts": [
         "./node_modules/@nestjs/common/index.d.ts",
-        "./src/modules/connectors/connectors.interface.ts"
+        "./src/modules/connectors/connectors.interface.ts",
+        "./src/modules/connectors/debug.ts",
+        "./src/modules/connectors/lib/getkubeenv.ts"
       ],
       "./src/modules/connectors/debug.ts": [
         "./src/modules/connectors/scripts/createconnectors.ts",
