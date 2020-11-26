@@ -48,6 +48,7 @@ const orderAttributeNames = {
 };
 const orderDetailAttributeNames = {
   ORDER_DETAIL_LAST_MODIFIED_DATE: 'orderDetailLastModifiedDate',
+  QUANTITY_CANCELLED: 'quantityCancelled'
 };
 
 /**

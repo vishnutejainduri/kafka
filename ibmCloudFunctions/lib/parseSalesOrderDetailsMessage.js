@@ -13,6 +13,7 @@ function parseSalesOrderDetailsMessage(msg) {
         id: msg.value.EXT_REF_ID,
         orderNumber: msg.value.ORDER_NUMBER,
         orderStatus: msg.value.STATUS,
+        quantityCancelled: msg.value.QTY_CANCELLED,
         orderDetailLastModifiedDate: new Date(msg.value.MODIFIED_DATE)
     };
 }

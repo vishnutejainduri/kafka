@@ -32,6 +32,7 @@ const validParams = {
         ORDER_NUMBER: '67897',
         STATUS: 'status',
         EXT_REF_ID: 'id',
+        QTY_CANCELLED: 1.0,
         MODIFIED_DATE: 1000000000000
       }
   }],
@@ -113,6 +114,12 @@ describe('getActionsFromOrderDetail', () => {
         value: new Date(1000000000000)
       },
       {
+        action: 'setLineItemCustomField',
+        lineItemId: 'id',
+        name: 'quantityCancelled',
+        value: 1
+      },
+      {
         action: 'transitionLineItemState',
         lineItemId: 'id',
         quantity: 1,
@@ -135,7 +142,7 @@ describe('formatOrderDetailBatchRequestBody', () => {
   });
 
   it('returns the correct body to update a line item status', () => {
-    const expectedBody = {"body":'{"version":1,"actions":[{"action":"setLineItemCustomField","lineItemId":"id","name":"orderDetailLastModifiedDate","value":"2001-09-09T01:46:40.000Z"},{"action":"transitionLineItemState","lineItemId":"id","quantity":1,"fromState":{"id":"stateId"},"toState":{},"force":true}]}', "error":null}
+    const expectedBody = {"body": "{\"version\":1,\"actions\":[{\"action\":\"setLineItemCustomField\",\"lineItemId\":\"id\",\"name\":\"orderDetailLastModifiedDate\",\"value\":\"2001-09-09T01:46:40.000Z\"},{\"action\":\"setLineItemCustomField\",\"lineItemId\":\"id\",\"name\":\"quantityCancelled\",\"value\":1},{\"action\":\"transitionLineItemState\",\"lineItemId\":\"id\",\"quantity\":1,\"fromState\":{\"id\":\"stateId\"},\"toState\":{},\"force\":true}]}", "error": null}
     const actualBody = formatOrderDetailBatchRequestBody(orderDetails, mockOrder, mockOrder.lineItems);
     expect(actualBody).toEqual(expectedBody);
   });
@@ -309,13 +316,13 @@ describe('getActionsFromOrderDetailss', () => {
 
   it('returns the right actions when given a batch of different line items all in the order', () => {
     const orderDetailsTest = [orderDetail1, orderDetail2, orderDetail3];
-    const expected = {"actions":[{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id2", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id2", "quantity": 1, "toState": {"key": undefined }}, {"action": "setLineItemCustomField", "lineItemId": "id3", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id3", "quantity": 1, "toState": {"key": "openLineItemStatus" }}], orderDetailUpdateError: null}
+    const expected = {"actions": [{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "setLineItemCustomField", "lineItemId": "id", "name": "quantityCancelled", "value": 1}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id2", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "setLineItemCustomField", "lineItemId": "id2", "name": "quantityCancelled", "value": 1}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id2", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id3", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "setLineItemCustomField", "lineItemId": "id3", "name": "quantityCancelled", "value": 1}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id3", "quantity": 1, "toState": {"key": "openLineItemStatus"}}], "orderDetailUpdateError": null}
     expect(getActionsFromOrderDetails(orderDetailsTest, mockOrderMultiLine.lineItems)).toEqual(expected);
   });
 
   it('returns the right actions when given both existing and line items not existing on the order', () => {
     const orderDetailsTest = [orderDetail1, orderDetail2, orderDetail3, orderDetail4];
-    const expected = {"actions":[{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id2", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id2", "quantity": 1, "toState": {"key": undefined }}, {"action": "setLineItemCustomField", "lineItemId": "id3", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id3", "quantity": 1, "toState": {"key": "openLineItemStatus"}}], orderDetailUpdateError: missingLineError}
+    const expected = {"actions": [{"action": "setLineItemCustomField", "lineItemId": "id", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "setLineItemCustomField", "lineItemId": "id", "name": "quantityCancelled", "value": 1}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id2", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "setLineItemCustomField", "lineItemId": "id2", "name": "quantityCancelled", "value": 1}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id2", "quantity": 1, "toState": {"key": undefined}}, {"action": "setLineItemCustomField", "lineItemId": "id3", "name": "orderDetailLastModifiedDate", "value": "2001-09-09T01:46:40.000Z"}, {"action": "setLineItemCustomField", "lineItemId": "id3", "name": "quantityCancelled", "value": 1}, {"action": "transitionLineItemState", "force": true, "fromState": {"id": "stateId"}, "lineItemId": "id3", "quantity": 1, "toState": {"key": "openLineItemStatus"}}], "orderDetailUpdateError": missingLineError}
     expect(getActionsFromOrderDetails(orderDetailsTest, mockOrderMultiLine.lineItems)).toEqual(expected);
   });
 
