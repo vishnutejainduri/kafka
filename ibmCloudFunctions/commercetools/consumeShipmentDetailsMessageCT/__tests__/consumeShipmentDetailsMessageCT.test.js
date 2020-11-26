@@ -147,4 +147,9 @@ describe('mergeCustomObjectDetails', () => {
     const newShipmentDetails = [{ ...shipmentDetails[0], shipmentDetailLastModifiedDate: new Date('2001-09-08T01:46:40.000Z') }];
     expect(mergeCustomObjectDetails(existingShipmentDetails, newShipmentDetails, 'shipmentDetailId', shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE)).toEqual(null)
   });
+  it('0 existing shipment details and 2 new shipment details that have the same id but one is more recent so should only insert most recent', () => {
+    const existingShipmentDetails = [];
+    const newShipmentDetails = [{ ...shipmentDetails[0], status: 'shipped', shipmentDetailLastModifiedDate: new Date('2001-09-08T01:46:50.000Z') }, { ...shipmentDetails[0], status: 'in picking', shipmentDetailLastModifiedDate: new Date('2001-09-08T01:46:40.000Z') }];
+    expect(mergeCustomObjectDetails(existingShipmentDetails, newShipmentDetails, 'shipmentDetailId', shipmentAttributeNames.SHIPMENT_DETAILS_LAST_MODIFIED_DATE)).toEqual([{"businessUnitId": "1", "carrierId": "carrierId", "line": "1", "lineItemId": "extRefId", "orderNumber": "orderNumber", "quantityShipped": 1, "shipmentDetailId": "1234-POS-1-1", "shipmentDetailLastModifiedDate": new Date('2001-09-08T01:46:50.000Z'), "shipmentId": "1234", "siteId": "POS", "status": "shipped", "trackingNumber": "trackingNumber"}])
+  });
 });

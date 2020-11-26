@@ -32,6 +32,12 @@ const getOutOfDateRecordIds = ({ existingCtRecords, records, key, ctKey, compari
 );
 
 const mergeCustomObjectDetails = (existingCtDetails, details, detailId, compareDateField) => {
+  const groupedByDetailId = groupByAttribute(detailId)(details)
+  details = groupedByDetailId.map(batchByDetailId => {
+      const latestParsedMessage = getMostUpToDateObject(compareDateField)(batchByDetailId);
+      return latestParsedMessage
+  })
+
   const unchangedExistingCtDetails = existingCtDetails.map(existingCtDetail => {
     const correspondingJestaDetail = details.find(detail => detail[detailId] === existingCtDetail[detailId]);
     if (!correspondingJestaDetail) return existingCtDetail;
