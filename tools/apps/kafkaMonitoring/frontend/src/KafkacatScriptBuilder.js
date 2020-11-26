@@ -92,7 +92,7 @@ export default function KafkacatScriptBuilder () {
           <br />
           <label htmlFor="kafkacat-script"><strong>Script </strong></label>
           <button disabled={!script} onClick={() => { copyToClipboard(script); }}>Copy</button>
-          {<p id="kafkacat-script" style={{ fontFamily: 'monospace' }} contentEditable><strong>{script || ''}</strong></p>}
+          {<p id="kafkacat-script" style={{ fontFamily: 'monospace' }} contentEditable>{script || ''}</p>}
         </div>
       </div>
     </div>
