@@ -20,9 +20,9 @@ export class BindingService {
         },
       })
       .pipe(
-        map(({ data }) => {
-          consumerGroupIdConfigMapping: data.consumerGroupIdConfigMapping;
-        }),
+        map(({ data }) => ({
+          consumerGroupIdConfigMapping: data.consumerGroupIdConfigMapping,
+        })),
       )
       .pipe(
         catchError(({ response, code }) => {

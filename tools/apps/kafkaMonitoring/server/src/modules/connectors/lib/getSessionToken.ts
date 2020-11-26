@@ -1,4 +1,4 @@
-import https from 'https';
+import * as https from 'https';
 
 export default function (kubeEnv) {
   const { tenant, username, password } = kubeEnv;
