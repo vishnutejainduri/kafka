@@ -643,7 +643,7 @@ describe('getPriceGroupFromCurrentPrice', () => {
   it('returns the correct localized string for numbers between 1000 and 2000', () => {
     expect(getPriceGroupFromCurrentPrice(1500)).toEqual({
       en: '$1,000-$1,999',
-      fr: '1000$-$1999$'
+      fr: '1000$-1999$'
     })
   })
 

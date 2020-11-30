@@ -13,7 +13,7 @@ const priceGroupsToLocalizedPriceGroupStrings = {
   },
   '1000-1999': {
     en: '$1,000-$1,999',
-    fr: '1000$-$1999$'
+    fr: '1000$-1999$'
   },
   '2000-2999': {
     en: '$2,000-$2,999',
