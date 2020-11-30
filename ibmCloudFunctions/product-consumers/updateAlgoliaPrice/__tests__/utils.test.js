@@ -1,4 +1,4 @@
-const { findApplicablePriceChanges, getPriceInfo, extractStyleId } = require('../utils')
+const { findApplicablePriceChanges, getPriceGroupFromCurrentPrice, getPriceInfo, extractStyleId } = require('../utils')
 const { siteIds, priceChangeActivityTypes } = require('../../../constants');
 
 describe('findApplicablePriceChanges', () => {
@@ -409,7 +409,11 @@ describe('getPriceInfo', () => {
         isOnlineSale: false,
         lowestPrice: originalPrice,
         lowestOnlinePrice: originalPrice,
-        currentPrice: originalPrice
+        currentPrice: originalPrice,
+        priceGroup: {
+          en: 'Under $250',
+          fr: 'Moins que 250$'
+        }
       })
     })
   
@@ -430,7 +434,11 @@ describe('getPriceInfo', () => {
         isOnlineSale: true,
         lowestPrice: originalPrice,
         lowestOnlinePrice: originalPrice,
-        currentPrice: applicablePriceChanges['00990'].newRetailPrice
+        currentPrice: applicablePriceChanges['00990'].newRetailPrice,
+        priceGroup: {
+          en: 'Under $250',
+          fr: 'Moins que 250$'
+        }
       })
     })
   
@@ -448,7 +456,11 @@ describe('getPriceInfo', () => {
         isOnlineSale: true,
         lowestPrice: originalPrice,
         lowestOnlinePrice: originalPrice,
-        currentPrice: applicablePriceChanges['00990'].newRetailPrice
+        currentPrice: applicablePriceChanges['00990'].newRetailPrice,
+        priceGroup: {
+          en: 'Under $250',
+          fr: 'Moins que 250$'
+        }
       })
     })
   })
@@ -468,7 +480,11 @@ describe('getPriceInfo', () => {
         isOnlineSale: true,
         lowestPrice: applicablePriceChanges['00990'].newRetailPrice,
         lowestOnlinePrice: applicablePriceChanges['00990'].newRetailPrice,
-        currentPrice: applicablePriceChanges['00990'].newRetailPrice
+        currentPrice: applicablePriceChanges['00990'].newRetailPrice,
+        priceGroup: {
+          en: 'Under $250',
+          fr: 'Moins que 250$'
+        }
       })
     })
     it('returns a mix of in-store and original sale price if only in-store sale price exists and correctly', () => {
@@ -485,7 +501,11 @@ describe('getPriceInfo', () => {
         isOnlineSale: false,
         lowestPrice: applicablePriceChanges['00011'].newRetailPrice,
         lowestOnlinePrice: originalPrice,
-        currentPrice: originalPrice
+        currentPrice: originalPrice,
+        priceGroup: {
+          en: 'Under $250',
+          fr: 'Moins que 250$'
+        }
       })
     })
 
@@ -506,7 +526,11 @@ describe('getPriceInfo', () => {
         isOnlineSale: true,
         lowestPrice: applicablePriceChanges['00011'].newRetailPrice,
         lowestOnlinePrice: applicablePriceChanges['00990'].newRetailPrice,
-        currentPrice: applicablePriceChanges['00990'].newRetailPrice
+        currentPrice: applicablePriceChanges['00990'].newRetailPrice,
+        priceGroup: {
+          en: 'Under $250',
+          fr: 'Moins que 250$'
+        }
       })
     })
   })
@@ -520,7 +544,8 @@ describe('getPriceInfo', () => {
       isSale: false,
       isOnlineSale: false,
       lowestPrice: null,
-      lowestOnlinePrice: null
+      lowestOnlinePrice: null,
+      priceGroup: null
     })
   })
 
@@ -534,7 +559,11 @@ describe('getPriceInfo', () => {
       isOnlineSale: false,
       lowestPrice: 0,
       lowestOnlinePrice: 0,
-      currentPrice: 0
+      currentPrice: 0,
+      priceGroup: {
+        en: 'Under $250',
+        fr: 'Moins que 250$'
+      }
     })
   })
 
@@ -551,7 +580,8 @@ describe('getPriceInfo', () => {
       isSale: true,
       isOnlineSale: false,
       lowestPrice: null,
-      lowestOnlinePrice: null
+      lowestOnlinePrice: null,
+      priceGroup: null
     })
   })
 })
@@ -592,5 +622,35 @@ describe('extractStyleId', () => {
       }
     }
     expect(() => extractStyleId(message)).toThrow()
+  })
+})
+
+describe('getPriceGroupFromCurrentPrice', () => {
+  it('returns `null` when given a non-number', () => {
+    expect(getPriceGroupFromCurrentPrice(null)).toBe(null)
+    expect(getPriceGroupFromCurrentPrice(undefined)).toBe(null)
+    expect(getPriceGroupFromCurrentPrice('foo')).toBe(null)
+    expect(getPriceGroupFromCurrentPrice(NaN)).toBe(null)
+  })
+
+  it('returns the correct localized string for numbers less than 150', () => {
+    expect(getPriceGroupFromCurrentPrice(100)).toEqual({
+      en: 'Under $250',
+      fr: 'Moins que 250$'
+    })
+  })
+
+  it('returns the correct localized string for numbers between 1000 and 2000', () => {
+    expect(getPriceGroupFromCurrentPrice(1500)).toEqual({
+      en: '$1,000-$1,999',
+      fr: '1000$-$1999$'
+    })
+  })
+
+  it('returns the correct localized string for numbers over 3000', () => {
+    expect(getPriceGroupFromCurrentPrice(3001)).toEqual({
+      en: 'Above $3,000',
+      fr: 'Plus que 3000$'
+    })
   })
 })

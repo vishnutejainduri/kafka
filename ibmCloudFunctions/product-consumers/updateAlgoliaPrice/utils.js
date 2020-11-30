@@ -1,4 +1,4 @@
-const { priceChangeActivityTypes, siteIds } = require('../../constants')
+const { priceChangeActivityTypes, siteIds, priceGroupsToLocalizedPriceGroupStrings } = require('../../constants')
 const { priceChangeProcessStatus } = require('../constants')
 const parseSalePriceMessage = require('../../lib/parseSalePriceMessage')
 const parseStyleMessage = require('../../lib/parseStyleMessage')
@@ -128,6 +128,23 @@ function findApplicablePriceChanges (parsedPriceChanges) {
   {})
 }
 
+function getPriceGroupFromCurrentPrice (currentPrice) {
+  if (Number.isNaN(currentPrice) || typeof currentPrice !== 'number') {
+    return null
+  } else if (currentPrice < 250) {
+    return priceGroupsToLocalizedPriceGroupStrings.under250
+  } else if (currentPrice < 500) {
+    return priceGroupsToLocalizedPriceGroupStrings['250-499']
+  } else if (currentPrice < 1000) {
+    return priceGroupsToLocalizedPriceGroupStrings['500-999']
+  } else if (currentPrice < 2000) {
+    return priceGroupsToLocalizedPriceGroupStrings['1000-1999']
+  } else if (currentPrice < 3000) {
+    return priceGroupsToLocalizedPriceGroupStrings['2000-2999']
+  }
+  return priceGroupsToLocalizedPriceGroupStrings.above3000
+}
+
 /**
  * @param {number} originalPrice
  * @param {ApplicablePriceChanges} applicablePriceChanges
@@ -141,6 +158,7 @@ function getPriceInfo (originalPrice, applicablePriceChanges) {
 
   const onlineSalePrice = onlinePriceChange && Number.isFinite(onlinePriceChange.newRetailPrice) ? onlinePriceChange.newRetailPrice : null
   const inStoreSalePrice = inStorePriceChange && Number.isFinite(inStorePriceChange.newRetailPrice) ? inStorePriceChange.newRetailPrice : null
+  const currentPrice = Number.isFinite(onlineSalePrice) ? onlineSalePrice : originalPrice
 
   let lowestOnlinePrice
   let lowestPrice
@@ -172,8 +190,9 @@ function getPriceInfo (originalPrice, applicablePriceChanges) {
     isSale: !!inStorePriceChange,
     isOnlineSale: !!onlinePriceChange,
     lowestOnlinePrice,
-    lowestPrice: lowestPrice,
-    currentPrice: Number.isFinite(onlineSalePrice) ? onlineSalePrice : originalPrice
+    lowestPrice,
+    currentPrice,
+    priceGroup: getPriceGroupFromCurrentPrice(currentPrice)
   }
 }
 
@@ -264,6 +283,7 @@ async function markFailedChanges (pricesCollection, processingDate, failedStyleI
 
 module.exports = {
   findApplicablePriceChanges,
+  getPriceGroupFromCurrentPrice,
   getPriceInfo,
   extractStyleId,
   findUnprocessedStyleIds,
