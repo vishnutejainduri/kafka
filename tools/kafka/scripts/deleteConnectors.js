@@ -1,6 +1,5 @@
 const https = require('https');
 
-const getKubeEnv = require('../lib/getKubeEnv');
 const getSessionToken = require('../lib/getSessionToken');
 const { retry, addErrorHandling, formatPathStart } = require('../utils');
 
@@ -55,8 +54,7 @@ function getDeleteConnector(kubeHost, token, pathStart) {
   }
 }
 
-async function deleteConnectors(platformEnv, connectorNames) {
-    const kubeParams = getKubeEnv(platformEnv);
+async function deleteConnectors(kubeParams, connectorNames) {
     const token = await getSessionToken(kubeParams);
     const deleteConnector = addErrorHandling(retry(getDeleteConnector(kubeParams.host, token, kubeParams.pathStart)));
     const results = [];

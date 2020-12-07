@@ -1,6 +1,5 @@
 const https = require('https');
 
-const getKubeEnv = require('../lib/getKubeEnv');
 const getSessionToken = require('../lib/getSessionToken');
 const {
   retry,
@@ -65,8 +64,7 @@ function getCreateConnector(kubeHost, token, pathStart) {
   }
 }
 
-async function createConnectors(platformEnv, connectorsFilenamesAndVersions, connectionUrl) {
-    const kubeParams = getKubeEnv(platformEnv);
+async function createConnectors(kubeParams, connectorsFilenamesAndVersions, connectionUrl) {
     const token = await getSessionToken(kubeParams);
     const createConnector = addErrorHandling(retry(getCreateConnector(kubeParams.host, token, kubeParams.pathStart)));
     const connectorObjects = connectorsFilenamesAndVersions.map(({ version, filename }) => {
