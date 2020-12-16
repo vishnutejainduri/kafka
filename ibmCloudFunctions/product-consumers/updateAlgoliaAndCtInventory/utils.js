@@ -1,6 +1,5 @@
 const { productApiRequest } = require('../../lib/productApi');
 const { addErrorHandling, log } = require('../utils');
-const createError = require('../../lib/createError');
 
 const getTotalAts = (sku, atsKey) => (sku[atsKey] || []).reduce((totalAvailableToSell, { availableToSell }) => (
       availableToSell > 0 ? totalAvailableToSell + availableToSell : totalAvailableToSell
@@ -81,7 +80,8 @@ const logCtAtsUpdateErrors = ctAtsUpdateResults => {
   const errorCount = errorResults.length
 
   if (errorCount > 0) {
-    createError.updateAlgoliaAndCtInventory.failedToUpdateCtAts(errorResults)
+    log.error(`Failed to update CT ATS for some styles (${errorCount} of ${ctAtsUpdateResults.length}). Errors:`)
+    errorResults.forEach(updateError => log.error(updateError))
   }
 }
 
