@@ -115,16 +115,27 @@ This directory contains OpenWhisk cloud functions and configurations for MongoDB
 - We run an update query on mongodb updating the brand id and outlet fields on the relevant style record
 
 ## consumeThresholdMessage
+- `index.js` is the main file where execution starts
+- First we filter all incoming messages, and remove any that are not from the thresholds topic
+- The kafka messages are then transformed from JESTA named fields to appropriate mongo/algolia field names
+- We fetch the relevant sku data from mongodb
+- We run an update query update the sku record in mongodb with the new threshold value from the kafka message
+- We insert a record into `styleAvailabilityCheckQueue` for processing inventory changes in algolia
 
 ## deleteCreateAlgoliaStyles
+- `index.js` is the main file where execution starts
+- This cloud function does not depend on kafka and instead runs periodically every minute
+- Every minute it picks up the more recent 200 records from `algoliaDeleteCreateQueue` 
+- The 200 records are split into what needs to be created in algolia vs what needs to be deleted
+- For each record we find the relevant style record in mongodb. If it does not exist, we ignore the record
+- We then make two calls to algolia, one to deleted the styles marked for deletion and one to create the styles marked for creation
 
 ## handleMessagesLogs
 - Documented further under `/README.md` in the repo as part of the retry mechanism 
 - It polls retryMessagesByActivationIds  every minute and then check each single message to see if it has reached it's MAX_RETRIES or not; if it has reached it, we store it into dlqMessagesByActivationIds , otherwise we use Kafka producer and requeue that message back into its topic.
 
-## monitorKafkaConnect
-
 ## removeQuantityReserved
+- Deprecated
 
 ## resolveMessagesLogs
 - Documented further under `/README.md` in the repo as part of the retry mechanism 
@@ -138,14 +149,51 @@ Note: We don't attempt to resolve stored batches of message until 10 minutes aft
 
 Note: If a message needs to be retried, we set its nextRetry  property based on RETRY_INTERVAL and the number of times that it has been retried so far to add a back-off between retries.
 
-## schemaValidation
-
 ## updateAlgoliaAndCtInventory
+- `index.js` is the main file where execution starts. `utils.js` is used as suplimentary functions
+- This cloud function does not depend on kafka and instead runs periodically every minute
+- Every minute it picks up 40 records from `styleAvailabilityCheckQueue` 
+- For each record we find the relevant style record in mongodb. If it does not exist or it outlet, we ignore the record
+- We then fetch every sku for the relevant style from mongodb
+- Using the product api and it's `/inventory/ats/` endpoint we get the full ats and online ats breakdown for the style
+- We then transform the response from the product api into a number of different fields used in search by the algolia index
+- We make a call to algolia sending these transformed fields and updating the style records in the algolia index
+- We follow the same process again for the same styles, this time building some unique inventory fields specific to commercetools
+- We make a call to commercetools sending these transformed fields and updating the product record in commercetools
 
 ## updateAlgoliaFacets
-
-## updateAlgoliaInventory
+- `index.js` is the main file where execution starts
+- This cloud function does not depend on kafka and instead runs periodically every minute
+- Every minute it picks up 750 records from `algoliaFacetBulkImportQueue` 
+- For each record we perform an aggregate, combining all records with the same style id into a single record
+- We transform the mongodb facet fields to the relevant algolia index fields
+- We do another transform from these algolia index fields into the relevant mongodb style record fields
+- We do another transform on specifically microsite facets, converting them to the expected format in the algolia index
+- We make a call to algolia sending all the transformed facet data
+- We make a query on mongodb updating all styles with the transformed facet data
+- Instead of removing processed records from `algoliaFacetBulkImportQueue` we mark them as processed for logging purposes 
+- We run a delete query on `algoliaFacetBulkImportQueue` deleting records that are very old so as to not take up too much storage in mongodb
 
 ## updateAlgoliaPrice
+- `index.js` is the main file where execution starts. `utils.js` is used as suplimentary functions
+- This cloud function does not depend on kafka and instead runs periodically every minute
+- At the start of each run we get the current date and time
+- We then either fetch any price rows from the prices collection in mongo where their start date has been flagged as unprocessed and is older or equal to current datetime OR we simply process any style messages passed to the function (this only happens when executed after consumeCatalogMessageCT)
+- We loop through all style messages, checking their price rows and determining what sale price updates need to happen for algolia
+  - For each style we start by grabbing all price rows in mongo and batching them by their site id
+  - For each batched price rows we first sort them into two seperate rows, price rows that are creations/updates and price rows that are deletions
+  - From the price rows that are creations/updates we delete any that also exist in the price rows that are marked as deletions
+  - From this list of price rows we then batch by their unique price id (priceChangeId)
+  - We go through each batch of price rows and take only the latest price row (all updates are newer than any creates or older updates so we end up retriving only the latest price row for each priceChangeId)
+  - From this final list of batched price rows we determine if there are any overlapping prices based on start date and end date. Any price row with no end date automatically is replaced by a price row with an end date. Two price rows with overlapping start and end dates cause an error since we cannot determine a current sale price. We throw an error and stop execution in that case
+- Once we've determined a current sale price, we prepare the update to algolia
+- We send the current sale prices both in store and online along with original price and other searchable attributes to algolia
+- After all messages are processed, any price rows that were successfully processed are marked as processed so that they won't be reprocessed later. If any failure occurs then they are flagged as "failure" and an alert is sent out (this is usually due to overlapping temporary markdowns that we cannot correct on our side)
 
 ## updateAlgoliaStyle
+- `index.js` is the main file where execution starts
+- First we filter all incoming messages, and remove any that are not from the styles topic and have a style id with a suffix of `-` followed by a number greater than zero (this suffix logic is only applicable for older styles where JESTA would append `-00` to each style id. Any number besides `00` meant to was not ready for display)
+- The kafka messages are then transformed from JESTA named fields to appropriate mongo/algolia field names
+- We fetch the relevant style data
+- If the existing style data is more recent or outlet we ignore the kafka message
+- We then make a single call to algolia sending all the style fields needed for search
