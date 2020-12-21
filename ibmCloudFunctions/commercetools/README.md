@@ -79,14 +79,66 @@ This directory contains OpenWhisk cloud functions and configurations for commere
   - If the activity type of the sale price message is deleted, we create an update action to remove the price row for the variant
 - We send all price row actions created for every variant to CT
 
-## consumeSalesOrderDetailsMessageCT
-- Currently decommissioned and not running/deployed
-
 ## consumeSalesOrderMessageCT
-- Currently decommissioned and not running/deployed
+- `index.js` is the main file where execution starts, `orderUtils.js` holds functions used by `index.js`
+- First kafka messages are filtered so that only sales order header topic messages are processed
+- Kafka messages are transformed from JESTA named fields to appropriate CT sales order header field names
+- Messages are batched by order number, this is to prevent concurrent updates to a single order which CT doesn't allow
+- The batched sales order header messages are sent to be processed in another function
+- The first step is we go through a batch of messages and only process the most recent one
+- We then fetch the order number from CT. If it does not exist we throw an error and end execution
+- We then compare the existing CT sales order header statuses with the batched message sales order headers to determine which (if any) are older than the ones already existing in CT
+- We then make a call for each batched sales order header message remaining updating the corresponding order in CT
+
+## consumeSalesOrderDetailsMessageCT
+- `index.js` is the main file where execution starts, `orderUtils.js` holds functions used by `index.js`
+- First kafka messages are filtered so that only sales order line item topic messages are processed
+- Kafka messages are transformed from JESTA named fields to appropriate CT sales order line item field names
+- Messages are batched by order number, this is to prevent concurrent updates to a single order which CT doesn't allow
+- The batched sales order line item messages are sent to be processed in another function
+- The first step we fetch the order by order number from CT. If it does not exist we throw an error and end execution
+- We then fetch all individual line items from the existing CT order. If a line item does not exist we throw an error and end execution
+- We then compare the existing CT sales order line item statuses with the batched message sales order line items to determine which (if any) are older than the ones already existing in CT
+- We remove any batched messages that are older than the ones in CT
+- We run a filter on the batched messages removing any duplicates
+- We then make a call for each batched sales order line item message remaining updating the corresponding order line item in CT
+
+## consumeShipmentMessageCT
+- `index.js` is the main file where execution starts, `orderUtils.js` holds functions used by `index.js`
+- First kafka messages are filtered so that only shipment header topic messages are processed
+- Kafka messages are transformed from JESTA named fields to appropriate CT shipment custom object field names
+- Messages are batched by order number, this is to prevent concurrent updates to a single order which CT doesn't allow
+- The batched shipment header messages are sent to be processed in another function
+- The first step we fetch the existing shipment custom object if it exists
+- We then compare the existing CT shipment custom objects with the batched message shipment headers to determine which (if any) are older than the ones already existing in CT
+- We remove any batched messages that are older than the ones in CT
+- We run a filter on the batched messages removing any duplicates
+- We then make a call for each batched shipment header message remaining updating/creating the corresponding shipment custom object in CT
+- In the final step we take all created/updated shipment header messages and ensure to "link" them to the order in CT by adding their CT ids to a custom field on the order CT record
 
 ## consumeShipmentDetailsMessageCT
-- Currently decommissioned and not running/deployed
+- `index.js` is the main file where execution starts, `orderUtils.js` holds functions used by `index.js`
+- First kafka messages are filtered so that only shipment line item topic messages are processed
+- Kafka messages are transformed from JESTA named fields to appropriate CT shipment custom object field names
+- Messages are batched by order number, this is to prevent concurrent updates to a single order which CT doesn't allow
+- The batched shipment line item messages are sent to be processed in another function
+- The first step we fetch the existing shipment custom object if it exists
+- We then further group the batched message by a unique shipment id
+- For this batch of batches, we run a "merge" function with the existing shipment custom object line items and either add/update/remove based on which messages shared the same shipment detail id and whether they are more recent or not
+- We then make a call for each batched shipment line item message remaining updating/creating the corresponding shipment custom object in CT
+- In the final step we take all created/updated shipment line item messages and ensure to "link" them to the order in CT by adding their CT ids to a custom field on the order CT record
+
+## consumeReturnDetailsMessageCT
+- `index.js` is the main file where execution starts, `orderUtils.js` holds functions used by `index.js`
+- First kafka messages are filtered so that only return line item topic messages are processed
+- Kafka messages are transformed from JESTA named fields to appropriate CT return custom object field names
+- Messages are batched by order number, this is to prevent concurrent updates to a single order which CT doesn't allow
+- The batched return line item messages are sent to be processed in another function
+- The first step we fetch the existing return custom object if it exists
+- We then further group the batched message by a unique return id
+- For this batch of batches, we run a "merge" function with the existing return custom object line items and either add/update/remove based on which messages shared the same return detail id and whether they are more recent or not
+- We then make a call for each batched return line item message remaining updating/creating the corresponding return custom object in CT
+- In the final step we take all created/updated return line item messages and ensure to "link" them to the order in CT by adding their CT ids to a custom field on the order CT record
 
 ## consumeSkuMessageCT
 - `index.js` is the main file where execution starts, `utils.js` holds functions used by `index.js`
