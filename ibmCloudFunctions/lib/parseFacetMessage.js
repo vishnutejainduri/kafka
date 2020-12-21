@@ -1,6 +1,5 @@
 'use strict';
-const { camelCase } = require('./utils');
-const { MICROSITE } = require('./constants');
+const { MICROSITE, PROMO_STICKER } = require('./constants');
 
 const facetMap = {
     "Category": "style",
@@ -13,12 +12,16 @@ const facetMap = {
 };
 
 const facetTypeMap = {
-  "DPM01": MICROSITE
+  "DPM01": MICROSITE,
+  "15": PROMO_STICKER
 };
 
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.
 function parseFacetMessage(msg) {
-    const facetName = facetMap[msg.value.CATEGORY] || facetTypeMap[msg.value.CHARACTERISTIC_TYPE_ID] || camelCase(msg.value.CATEGORY);
+    const facetName = facetMap[msg.value.CATEGORY] || facetTypeMap[msg.value.CHARACTERISTIC_TYPE_ID]
+    if (!facetName) {
+      throw new Error('Invalid facet id mapping')
+    }
     return {
         styleId: msg.value.STYLEID,
         typeId: msg.value.CHARACTERISTIC_TYPE_ID,

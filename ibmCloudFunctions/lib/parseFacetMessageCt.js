@@ -1,20 +1,24 @@
 'use strict';
 const { languageKeys } = require('../commercetools/constantsCt');
-const { MICROSITE } = require('./constants');
+const { MICROSITE, PROMO_STICKER } = require('./constants');
 
 const TOPIC_NAME = 'facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA';
 
 const facetIdMap = {
-    "15": "promotionalSticker",
+    "15": PROMO_STICKER,
     "DPM01": MICROSITE
 };
+
+const facetCategory = [
+  "Promotional Sticker",
+  "Micro Sites"
+]
 
 function filterFacetMessageCt(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse facet update messages');
     }
-
-    return facetIdMap[msg.value.CHARACTERISTIC_TYPE_ID];
+    return facetCategory.includes(msg.value.CATEGORY)
 }
 
 function parseFacetMessageCt(msg) {

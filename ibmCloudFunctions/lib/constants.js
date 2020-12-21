@@ -1,5 +1,7 @@
 const MICROSITE = 'microsite';
+const PROMO_STICKER = 'promotionalSticker';
 
 module.exports = {
-  MICROSITE
+  MICROSITE,
+  PROMO_STICKER
 };

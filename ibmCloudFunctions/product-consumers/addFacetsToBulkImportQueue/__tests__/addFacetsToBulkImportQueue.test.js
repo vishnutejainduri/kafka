@@ -11,7 +11,8 @@ describe('addFacetsToBulkImportQueue', function() {
         dbName: 'db-name',
         messages: [{
             value: {
-                CATEGORY: ''
+                CATEGORY: 'Category',
+                CHARACTERISTIC_TYPE_ID: null
             }
         }]
     };
@@ -22,5 +23,14 @@ describe('addFacetsToBulkImportQueue', function() {
             errors: [],
             shouldResolveOffsets: 1
         });
+    });
+
+    it('Returns failure if all invalid facet id mapping provided', async function() {
+        const invalidParams = { ...params, messages: [{ ...params.messages[0], value: { ...params.messages[0].value, CATEGORY: 'Micro Site' } }] }
+        const result = await addFacetsToBulkImportQueue(invalidParams)
+        expect(result.successCount).toEqual(0)
+        expect(result.failureIndexes).toEqual([0])
+        expect(result.shouldResolveOffsets).toEqual(1)
+        expect(result.errors.length).toEqual(1)
     });
 });

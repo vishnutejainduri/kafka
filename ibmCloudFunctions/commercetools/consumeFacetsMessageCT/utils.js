@@ -10,7 +10,7 @@ const {
   categoryNeedsUpdating
 } = require('../styleUtils');
 const { languageKeys, entityStatus, MICROSITES_ROOT_CATEGORY } = require('../constantsCt');
-const { MICROSITE } = require('../../lib/constants');
+const { MICROSITE, PROMO_STICKER } = require('../../lib/constants');
 
 const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpers) => {
   // only microsite facets generate categories
@@ -51,6 +51,9 @@ const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpe
 };
 
 const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) => {
+    if ((stylesFacetMessage[MICROSITE] || !stylesFacetMessage[PROMO_STICKER]) && (!stylesFacetMessage[MICROSITE] || stylesFacetMessage[PROMO_STICKER])) {
+      throw new Error('Invalid facet id mapping')
+    }
     const productType = await getProductType(productTypeId, ctHelpers);
     let existingCtStyle = await getExistingCtStyle(stylesFacetMessage.id, ctHelpers);
 
