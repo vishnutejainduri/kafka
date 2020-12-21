@@ -52,7 +52,7 @@ const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpe
 
 const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) => {
     if ((stylesFacetMessage[MICROSITE] || !stylesFacetMessage[PROMO_STICKER]) && (!stylesFacetMessage[MICROSITE] || stylesFacetMessage[PROMO_STICKER])) {
-      throw new Error('Invalid facet mapping')
+      throw new Error('Invalid facet id mapping')
     }
     const productType = await getProductType(productTypeId, ctHelpers);
     let existingCtStyle = await getExistingCtStyle(stylesFacetMessage.id, ctHelpers);

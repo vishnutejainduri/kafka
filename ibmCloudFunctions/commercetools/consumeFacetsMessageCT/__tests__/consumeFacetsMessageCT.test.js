@@ -182,7 +182,7 @@ describe('updateStyleFacets', () => {
         invalidMicrositeParams.messages
         .filter(addErrorHandling(filterFacetMessageCt))
         .map(addErrorHandling(parseFacetMessageCt))
-    return expect(updateStyleFacets(mockedCtHelpers, validParams.productTypeId, result[0])).rejects.toThrow('Invalid facet mapping');
+    return expect(updateStyleFacets(mockedCtHelpers, validParams.productTypeId, result[0])).rejects.toThrow('Invalid facet id mapping');
   });
 });
 

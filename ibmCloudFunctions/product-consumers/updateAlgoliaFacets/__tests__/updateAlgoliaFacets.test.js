@@ -303,7 +303,7 @@ describe('updateAlgoliaFacets', () => {
       topic: 'facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA',
       value: {
         'STYLEID': 'styleId',
-        'CATEGORY': 'category',
+        'CATEGORY': 'Category',
         'DESC_ENG': 'attributeValueDescEn',
         'DESC_FR': 'attributeValueDescFr',
         'UPD_FLG': 'F',
@@ -343,15 +343,15 @@ describe('updateAlgoliaFacets', () => {
       expect(failed).toEqual([]);
       expect(actual).toEqual([{
         objectID: 'styleId',
-        category: { en: null, fr: null }
+        style: { en: null, fr: null }
       }]);
       expect(actual2[0].updateOne.update.$set).toEqual({
         _id: "styleId",
-        category: { en: null, fr: null }
+        style: { en: null, fr: null }
       });
       expect(actual3).toEqual([{
         objectID: 'styleId',
-        category: { en: null, fr: null }
+        style: { en: null, fr: null }
       }]);
     });
 
@@ -373,15 +373,15 @@ describe('updateAlgoliaFacets', () => {
       expect(failed).toEqual([]);
       expect(actual).toEqual([{
         objectID: 'styleId',
-        category: { en: null, fr: null }
+        style: { en: null, fr: null }
       }]);
       expect(actual2[0].updateOne.update.$set).toEqual({
         _id: "styleId",
-        category: { en: null, fr: null }
+        style: { en: null, fr: null }
       });
       expect(actual3).toEqual([{
         objectID: 'styleId',
-        category: { en: null, fr: null }
+        style: { en: null, fr: null }
       }]);
     });
 
@@ -403,15 +403,15 @@ describe('updateAlgoliaFacets', () => {
       expect(failed).toEqual([]);
       expect(actual).toEqual([{
         objectID: 'styleId',
-        category: { en: null, fr: null }
+        style: { en: null, fr: null }
       }]);
       expect(actual2[0].updateOne.update.$set).toEqual({
         _id: "styleId",
-        category: { en: null, fr: null }
+        style: { en: null, fr: null }
       });
       expect(actual3).toEqual([{
         objectID: 'styleId',
-        category: { en: null, fr: null }
+        style: { en: null, fr: null }
       }]);
     });
   });
