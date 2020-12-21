@@ -20,7 +20,7 @@ const validParams = {
       topic: 'facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA',
       value: {
         'STYLEID': 'styleId',
-        'CATEGORY': 'category',
+        'CATEGORY': 'Promotional Sticker',
         'DESC_ENG': 'descEng',
         'DESC_FR': 'descFr',
         'UPD_FLG': 'updFlg',
@@ -47,7 +47,7 @@ const validMicrositeParams = { ...validParams, messages: [{
     topic: 'facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA',
     value: {
       'STYLEID': 'styleId',
-      'CATEGORY': 'category',
+      'CATEGORY': 'Micro Sites',
       'DESC_ENG': 'microsite_en',
       'DESC_FR': 'microsite_fr',
       'UPD_FLG': 'T',
@@ -174,6 +174,15 @@ describe('updateStyleFacets', () => {
         .map(addErrorHandling(parseFacetMessageCt))
     const response = await updateStyleFacets(mockedCtHelpers, validParams.productTypeId, result[0]);
     expect(response).toBeTruthy();
+  });
+
+  it('invalid message; microsite', async () => {
+     const invalidMicrositeParams = { ...validMicrositeParams, messages: [{ ...validMicrositeParams.messages, CHARACTERISTIC_TYPE_ID: null }] }
+     const result =
+        invalidMicrositeParams.messages
+        .filter(addErrorHandling(filterFacetMessageCt))
+        .map(addErrorHandling(parseFacetMessageCt))
+    return expect(updateStyleFacets(mockedCtHelpers, validParams.productTypeId, result[0])).rejects.toThrow('Invalid facet mapping');
   });
 });
 
