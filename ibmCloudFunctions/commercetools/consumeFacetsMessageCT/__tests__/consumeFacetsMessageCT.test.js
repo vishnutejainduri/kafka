@@ -245,4 +245,19 @@ describe('createOrUpdateCategoriesFromFacet', () => {
     const response = await createOrUpdateCategoriesFromFacet(result, existingCtStyle, mockedCtHelpers);
     expect(response).toEqual([{"id": "5bb79326-16ea-40f5-8857-31a020800a1c", "obj": { "parent": { "obj": { "key": "DPM_ROOT_CATEGORY" } } }, "typeId": "category"}]);
   });
+  it('microsite that does not exist flagged for deletion; message invalid throw error', async () => {
+    const invalidMicrositeDeletionMessage = {
+      topic: validMicrositeParams.messages[0].topic,
+      value: {
+        ...validMicrositeParams.messages[0].value,
+        DESC_ENG: 'updated_microsite_en',
+        DESC_FR: 'updated_microsite_fr',
+        CHARACTERISTIC_VALUE_ID: '58',
+        UPD_FLG: 'F'
+      }
+    };
+    const result = parseFacetMessageCt(invalidMicrositeDeletionMessage);
+    const existingCtStyle = await getExistingCtStyle(result.id, mockedCtHelpers);
+    return expect(createOrUpdateCategoriesFromFacet(result, existingCtStyle, mockedCtHelpers)).rejects.toThrow('Microsite that does not exist cannot be deleted')
+  });
 });

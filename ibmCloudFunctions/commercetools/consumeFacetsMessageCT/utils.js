@@ -39,6 +39,8 @@ const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpe
 
   if (!categories[1] && !facet.isMarkedForDeletion) {
     categories[1] = await createCategory(categoryKeys[1], facet[MICROSITE], categories[0], ctHelpers);
+  } else if (!categories[1] && facet.isMarkedForDeletion) {
+    throw new Error('Microsite that does not exist cannot be deleted')
   } else if (categories[1] && facet.isMarkedForDeletion) {
     // marked for deletion, remove from category array to delete on style update
     existingCategories = existingCategories.filter(existingCategory => existingCategory.id !== categories[1].id);
