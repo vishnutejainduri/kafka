@@ -25,4 +25,4 @@ db.prices.find({ $where: function () {
       })
     })
   })
-} }, { _id: 0, styleId: 1, priceChanges: 1 }).forEach(function(f){print(JSON.stringify(f)+',');});
+} }, { _id: 0, styleId: 1, priceChanges: 1 }).forEach(function(f){print(JSON.stringify(f)+',');}); // Calling toArray() and wrapping in printjson() causes Mongo to run out of memory. This works around that.
