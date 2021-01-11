@@ -1,6 +1,10 @@
 const { findApplicablePriceChanges, getPriceGroupFromCurrentPrice, getPriceInfo, extractStyleId } = require('../utils')
 const { siteIds, priceChangeActivityTypes } = require('../../../constants');
 
+const yearNumber = new Date().getUTCFullYear()
+const thisYear = new Date(yearNumber.toString())
+const nextYear = new Date((yearNumber + 1).toString())
+
 describe('findApplicablePriceChanges', () => {
   it('returns promotional price changes for different site IDs', () => {
     const mockPriceChanges = [{
@@ -236,16 +240,16 @@ describe('findApplicablePriceChanges + findCurrentPriceFromOverlappingPrices', (
     const mockPriceChanges = [{
       priceChangeId: '1',
       siteId: siteIds.ONLINE,
-      startDate: new Date('2020'),
+      startDate: thisYear,
       activityType: priceChangeActivityTypes.APPROVED,
-      processDateCreated: new Date('2020')
+      processDateCreated: thisYear
     },{
       priceChangeId: '2',
       siteId: siteIds.ONLINE,
-      startDate: new Date('2020'),
-      endDate: new Date('2021'),
+      startDate: thisYear,
+      endDate: nextYear,
       activityType: priceChangeActivityTypes.CREATED,
-      processDateCreated: new Date('2020')
+      processDateCreated: thisYear
     }]
     const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
     expect(applicablePriceChanges).toEqual({
@@ -256,29 +260,29 @@ describe('findApplicablePriceChanges + findCurrentPriceFromOverlappingPrices', (
     const mockPriceChanges = [{
       priceChangeId: '1',
       siteId: siteIds.ONLINE,
-      startDate: new Date('2020'),
+      startDate: thisYear,
       activityType: priceChangeActivityTypes.APPROVED,
-      processDateCreated: new Date('2020')
+      processDateCreated: thisYear
     },{
       priceChangeId: '2',
       siteId: siteIds.IN_STORE,
-      startDate: new Date('2020'),
+      startDate: thisYear,
       activityType: priceChangeActivityTypes.APPROVED,
-      processDateCreated: new Date('2020')
+      processDateCreated: thisYear
     },{
       priceChangeId: '2',
       siteId: siteIds.ONLINE,
-      startDate: new Date('2020'),
-      endDate: new Date('2021'),
+      startDate: thisYear,
+      endDate: nextYear,
       activityType: priceChangeActivityTypes.CREATED,
-      processDateCreated: new Date('2020')
+      processDateCreated: thisYear
     },{
       priceChangeId: '1',
       siteId: siteIds.IN_STORE,
-      startDate: new Date('2020'),
-      endDate: new Date('2021'),
+      startDate: thisYear,
+      endDate: nextYear,
       activityType: priceChangeActivityTypes.CREATED,
-      processDateCreated: new Date('2020')
+      processDateCreated: thisYear
     }]
     const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
     expect(applicablePriceChanges).toEqual({
@@ -351,8 +355,8 @@ describe('findApplicablePriceChanges + areAvailablePricesOverlapping', () => {
     },{
       priceChangeId: '3',
       siteId: siteIds.ONLINE,
-      startDate: new Date('2020'),
-      endDate: new Date('2021'),
+      startDate: thisYear,
+      endDate: nextYear,
       activityType: priceChangeActivityTypes.CREATED,
       processDateCreated: new Date('2018')
     }]
@@ -380,15 +384,15 @@ describe('findApplicablePriceChanges + areAvailablePricesOverlapping', () => {
     },{
       priceChangeId: '3',
       siteId: siteIds.ONLINE,
-      startDate: new Date('2020'),
-      endDate: new Date('2021'),
+      startDate: thisYear,
+      endDate: nextYear,
       activityType: priceChangeActivityTypes.CREATED,
       processDateCreated: new Date('2018')
     },{
       priceChangeId: '4',
       siteId: siteIds.ONLINE,
-      startDate: new Date('2020'),
-      endDate: new Date('2021'),
+      startDate: thisYear,
+      endDate: nextYear,
       activityType: priceChangeActivityTypes.CREATED,
       processDateCreated: new Date('2018')
     }]
