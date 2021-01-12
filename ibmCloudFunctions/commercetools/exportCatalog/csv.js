@@ -1,15 +1,14 @@
 const { Transform } = require('stream')
 const { headers } = require('./config')
-
-const formatProduct = locale => product => `${product.name[locale]},${product.id}\n`
+const { formatProduct } = require('./mapping')
 
 const maybeAddHeaders = (shouldAddHeaders, lines) => {
   if (!shouldAddHeaders) return lines
   return `${headers.join(',')}\n${lines}`
 }
 
-const getFormatStream = locale => {
-  const formatProductForLocale = formatProduct(locale)
+const getFormatStream = (locale, params) => {
+  const formatProductForLocale = formatProduct(locale, params)
   let isStartOfFile = true
 
   return new Transform({
@@ -19,9 +18,7 @@ const getFormatStream = locale => {
         product = JSON.parse(data.toString())
       } catch (error) {
         if (data.toString() !== '') {
-          const error = new Error('Data not valid JSON:', data.string())
-          console.error(error.message)
-          callback(error)
+          callback(new Error('Data not valid JSON:', data.string()))
         }
       }
       const productLines = formatProductForLocale(product)
