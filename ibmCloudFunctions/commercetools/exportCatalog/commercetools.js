@@ -1,22 +1,40 @@
 const fetch = require('node-fetch').default
 const ProductExporter = require('@commercetools/product-exporter') // https://commercetools.github.io/nodejs/cli/product-exporter.html
+const SdkAuth = require('@commercetools/sdk-auth').default // https://commercetools.github.io/nodejs/sdk/api/sdkAuth.html
 const { exportConfig, logger } = require('./config')
 
-const getAccessToken = async ({ ctpClientId, ctpClientSecret, ctpAuthUrl }) => {
-  const response = await fetch(`${ctpAuthUrl}/oauth/token?grant_type=client_credentials`, {
-    method: 'post',
-    headers: {
-      authorization: `Basic ${Buffer.from(`${ctpClientId}:${ctpClientSecret}`).toString('base64')}`
-    }
-  })
+let authClient
 
-  try {
-    const accessToken = (await response.json()).access_token
-    if (accessToken) return accessToken
-    throw new Error(JSON.stringify(response))
-  } catch (error) {
-    throw new Error(`Cannot get access token (ctpClientId: ${ctpClientId}; ctpAuthUrl: ${ctpAuthUrl}):`, error)
-  }
+const createAuthClient = ({
+  ctpAuthUrl,
+  ctpClientId,
+  ctpClientSecret,
+  ctpProjectKey,
+  ctpScopes
+}) => {
+  authClient = new SdkAuth({
+    host: ctpAuthUrl,
+    projectKey: ctpProjectKey,
+    disableRefreshToken: false,
+    credentials: {
+      clientId: ctpClientId,
+      clientSecret: ctpClientSecret
+    },
+    scopes: ctpScopes.split(','),
+    fetch
+  })
+}
+
+const getAccessToken = async ({
+  ctpAuthUrl,
+  ctpClientId,
+  ctpClientSecret,
+  ctpProjectKey,
+  ctpScopes
+}) => {
+  if (!authClient) createAuthClient({ ctpAuthUrl, ctpClientId, ctpClientSecret, ctpProjectKey, ctpScopes })
+  const token = await authClient.clientCredentialsFlow()
+  return token.access_token
 }
 
 const getProductExporter = async ({
@@ -24,9 +42,11 @@ const getProductExporter = async ({
   ctpAuthUrl,
   ctpClientId,
   ctpClientSecret,
-  ctpProjectKey
+  ctpProjectKey,
+  ctpScopes
 }) => {
-  const accessToken = await getAccessToken({ ctpAuthUrl, ctpClientId, ctpClientSecret })
+  const accessToken = await getAccessToken({ ctpAuthUrl, ctpClientId, ctpClientSecret, ctpProjectKey, ctpScopes })
+
   const apiConfig = {
     host: ctpAuthUrl,
     apiUrl: ctpApiUrl,
