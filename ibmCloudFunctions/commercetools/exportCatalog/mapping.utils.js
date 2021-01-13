@@ -1,10 +1,10 @@
 const { productDomain } = require('./config')
 
 const getAttributesFromVariant = variant =>
-  variant.attributes.reduce((attributes, { name, value }) => {
-    attributes[name] = value
-    return attributes
-  }, {})
+  variant.attributes.reduce((attributes, { name, value }) => ({
+    ...attributes,
+    [name]: value
+  }), {})
 
 const convertToDollars = cents => (cents / 100).toFixed(2)
 
@@ -40,8 +40,8 @@ const getProductUrl = (language, productKey) => {
 const getImageUrl = productKey => `https://i1.adis.ws/i/harryrosen/${productKey}`
 
 /*
-  "Valid" as in should be sent to GMC or FBM. Used primarily to filter out the
-  brand category, which is distinct from the main Jesta level 1 to 3 categories
+  "Valid" as in should be exported. Used primarily to filter out the brand
+  category, which is distinct from the main Jesta level 1 to 3 categories
   that should be sent to GMC and FBM. All level 1 to 3 categories in
   commercetools have the root DPM category as an ancestor.
 */
@@ -49,6 +49,9 @@ const categoryIsValid = dpmRootCategoryId => category =>
   category.obj.ancestors.some(({ id }) => id === dpmRootCategoryId)
 
 /**
+ * Used to make sure the categories C1 > C2 > C3 are formatted in the correct
+ * order. commercetools does not guarantee the order of the categories in the
+ * category array that it returns.
  * @returns Categories sorted in ascending order by number of ancestors
  */
 const sortCategories = ctCategories => ctCategories.sort((category1, category2) => {

@@ -43,5 +43,6 @@ const getFormattedVariantsFromProduct = (locale, params) => product => {
 }
 
 module.exports = {
+  formatVariant,
   getFormattedVariantsFromProduct
 }
