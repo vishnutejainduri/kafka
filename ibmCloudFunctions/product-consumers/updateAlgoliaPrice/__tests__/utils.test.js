@@ -86,7 +86,7 @@ describe('findApplicablePriceChanges', () => {
       [siteIds.ONLINE]: mockPriceChanges[1]
     })
   })
-  it('should stil delete a price change if deletion had happened before approval/creation', () => {
+  it('should NOT delete a price change if deletion had happened before approval/creation', () => {
     const mockPriceChanges = [{
       priceChangeId: '1',
       siteId: siteIds.IN_STORE,
@@ -106,7 +106,7 @@ describe('findApplicablePriceChanges', () => {
     }]
     const applicablePriceChanges = findApplicablePriceChanges(mockPriceChanges)
     expect(applicablePriceChanges).toEqual({
-      [siteIds.IN_STORE]: undefined,
+      [siteIds.IN_STORE]: mockPriceChanges[0],
       [siteIds.ONLINE]: mockPriceChanges[1]
     })
   })
