@@ -10,10 +10,33 @@ const convertToDollars = cents => (cents / 100).toFixed(2)
 
 const formatPriceValue = (cents, currency = 'CAD') => cents !== undefined ? `${convertToDollars(cents)} ${currency}` : undefined
 
-const variantIsOnSale = variant =>
-  (Boolean(variant.price && variant.price.custom && variant.price.custom.fields)) &&
-  (variant.price.custom.fields.priceType === 'permanentMarkdown' ||
-   variant.price.custom.fields.priceType === 'temporaryMarkdown')
+const getPriceCentAmount = price => {
+  if (!price) return undefined
+  if (price.centAmount) return price.centAmount
+  return price.value && price.value.centAmount
+}
+
+/**
+ * This function is unfortunately necessary because we cannot use price selection
+ * (see https://docs.commercetools.com/api/projects/products#price-selection)
+ * with the product exporter.
+ */
+const getCurrentSalePrice = prices => {
+  const today = new Date()
+
+  const applicableTemporaryMarkdown = prices.find(price => {
+    if (!price.custom.fields.priceType === 'temporaryMarkdown') return false
+    const validFrom = new Date(price.validFrom)
+    const validUntil = new Date(price.validUntil)
+    return today >= validFrom && today <= validUntil
+  })
+
+  const permanentMarkdown = prices.find(price => price.custom.fields.priceType === 'permanentMarkdown')
+
+  return applicableTemporaryMarkdown || permanentMarkdown
+}
+
+const variantIsOnSale = variant => Boolean(getCurrentSalePrice(variant.prices))
 
 const barcodeIsValid = barcode => {
   const validBarcodeSubtypes = ['UPCA', 'EAN']
@@ -65,7 +88,9 @@ module.exports = {
   formatBarcodeFromVariantBarcodes,
   formatPriceValue,
   getAttributesFromVariant,
+  getCurrentSalePrice,
   getImageUrl,
+  getPriceCentAmount,
   getProductUrl,
   sortCategories,
   variantIsOnSale

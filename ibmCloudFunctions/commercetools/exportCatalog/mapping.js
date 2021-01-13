@@ -3,37 +3,40 @@ const {
   formatBarcodeFromVariantBarcodes,
   formatPriceValue,
   getAttributesFromVariant,
-  variantIsOnSale,
-  getProductUrl,
+  getCurrentSalePrice,
   getImageUrl,
+  getPriceCentAmount,
+  getProductUrl,
+  variantIsOnSale,
   sortCategories
 } = require('./mapping.utils')
 
 const formatVariant = (locale, product, params) => variant => {
   const attributes = getAttributesFromVariant(variant)
   const language = locale.split('-')[0]
-  const validCategories = sortCategories(product.categories.filter(categoryIsValid(params.dpmRootCategoryId)))
+  const sortedValidCategories = sortCategories(product.categories.filter(categoryIsValid(params.dpmRootCategoryId)))
+  const salePrice = getCurrentSalePrice(variant.prices)
 
   return {
     title: product.name[locale],
-    id: variant.sku, // sku ID
-    price: formatPriceValue(attributes.originalPrice.centAmount),
+    id: variant.sku, // SKU ID
+    price: formatPriceValue(getPriceCentAmount(attributes.originalPrice)),
     currency: 'CAD',
-    sale_price: variantIsOnSale(variant) ? formatPriceValue(variant.prices[0].value.centAmount) : null, // TODO: confirm correctness
+    sale_price: variantIsOnSale(variant) ? formatPriceValue(getPriceCentAmount(salePrice)) : null,
     condition: 'new',
     availability: attributes.hasOnlineAts ? 'in stock' : 'out of stock',
     language,
     adult: 'no',
     age: 'adult',
-    brand: attributes.brandName[locale],
-    color: attributes.colourGroup[locale],
+    brand: attributes.brandName && attributes.brandName[locale],
+    color: attributes.colourGroup && attributes.colourGroup[locale],
     description: product.description[locale],
     gtin: formatBarcodeFromVariantBarcodes(attributes.barcodes),
     imageLink: getImageUrl(product.key),
     parent_sku: product.key, // style ID
     link: getProductUrl(language, product.key),
-    category: validCategories.map(category => category.obj.name[locale]).join(','),
-    size: attributes.size[locale]
+    category: sortedValidCategories.map(category => category.obj.name[locale]).join(','),
+    size: attributes.size && attributes.size[locale]
   }
 }
 
