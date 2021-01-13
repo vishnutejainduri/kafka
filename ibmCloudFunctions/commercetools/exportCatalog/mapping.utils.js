@@ -1,17 +1,10 @@
 const { productDomain } = require('./config')
 
-// TODO: make more robust or use CSV generation library
-const objectToLine = object => Object.values(object)
-  .map(value => (!isNaN(Number(value)) ? value : `"${value}"`)) // quote all values apart from numbers
-  .join(',')
-  .concat('\n')
-
 const getAttributesFromVariant = variant =>
   variant.attributes.reduce((attributes, { name, value }) => {
     attributes[name] = value
     return attributes
   }, {})
-
 
 const convertToDollars = cents => (cents / 100).toFixed(2)
 
@@ -71,7 +64,6 @@ module.exports = {
   getAttributesFromVariant,
   getImageUrl,
   getProductUrl,
-  objectToLine,
   sortCategories,
   variantIsOnSale
 }

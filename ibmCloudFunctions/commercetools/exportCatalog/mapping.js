@@ -3,7 +3,6 @@ const {
   formatBarcodeFromVariantBarcodes,
   formatPriceValue,
   getAttributesFromVariant,
-  objectToLine,
   variantIsOnSale,
   getProductUrl,
   getImageUrl,
@@ -15,7 +14,7 @@ const formatVariant = (locale, product, params) => variant => {
   const language = locale.split('-')[0]
   const validCategories = sortCategories(product.categories.filter(categoryIsValid(params.dpmRootCategoryId)))
 
-  return objectToLine({
+  return {
     title: product.name[locale],
     id: variant.sku,
     price: formatPriceValue(attributes.originalPrice.centAmount),
@@ -35,14 +34,14 @@ const formatVariant = (locale, product, params) => variant => {
     link: getProductUrl(language, product.key),
     category: validCategories.map(category => category.obj.name[locale]).join(','),
     size: attributes.size[locale]
-  })
+  }
 }
 
-const formatProduct = (locale, params) => product => {
-  if (!product) return ''
-  return product.variants.map(formatVariant(locale, product, params)).join('')
+const getFormattedVariantsFromProduct = (locale, params) => product => {
+  if (!product) return []
+  return product.variants.map(formatVariant(locale, product, params))
 }
 
 module.exports = {
-  formatProduct
+  getFormattedVariantsFromProduct
 }

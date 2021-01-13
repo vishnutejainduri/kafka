@@ -1,14 +1,19 @@
 const { Transform } = require('stream')
+const { parse } = require('json2csv')
 const { headers } = require('./config')
-const { formatProduct } = require('./mapping')
+const { getFormattedVariantsFromProduct } = require('./mapping')
 
 const maybeAddHeaders = (shouldAddHeaders, lines) => {
   if (!shouldAddHeaders) return lines
-  return `${headers.join(',')}\n${lines}`
+  return `${parse([], { fields: headers })}\n${lines}`
+}
+
+const getLinesFromFormattedVariants = formattedVariants => {
+  return `${parse(formattedVariants, { header: false, fields: headers })}\n`
 }
 
 const getFormatStream = (locale, params) => {
-  const formatProductForLocale = formatProduct(locale, params)
+  const getFormattedVariantsFromProductForLocale = getFormattedVariantsFromProduct(locale, params)
   let isStartOfFile = true
 
   return new Transform({
@@ -19,9 +24,11 @@ const getFormatStream = (locale, params) => {
       } catch (error) {
         if (data.toString() !== '') {
           callback(new Error('Data not valid JSON:', data.string()))
+          return
         }
       }
-      const productLines = formatProductForLocale(product)
+      const formattedVariants = getFormattedVariantsFromProductForLocale(product)
+      const productLines = getLinesFromFormattedVariants(formattedVariants)
       callback(null, maybeAddHeaders(isStartOfFile, productLines) || '')
       isStartOfFile = false
     }
