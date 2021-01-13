@@ -16,10 +16,10 @@ const formatVariant = (locale, product, params) => variant => {
 
   return {
     title: product.name[locale],
-    id: variant.sku,
+    id: variant.sku, // sku ID
     price: formatPriceValue(attributes.originalPrice.centAmount),
     currency: 'CAD',
-    sale_price: variantIsOnSale(variant) ? formatPriceValue(variant.prices[0].value.centAmount) : null,
+    sale_price: variantIsOnSale(variant) ? formatPriceValue(variant.prices[0].value.centAmount) : null, // TODO: confirm correctness
     condition: 'new',
     availability: attributes.hasOnlineAts ? 'in stock' : 'out of stock',
     language,
@@ -30,7 +30,7 @@ const formatVariant = (locale, product, params) => variant => {
     description: product.description[locale],
     gtin: formatBarcodeFromVariantBarcodes(attributes.barcodes),
     imageLink: getImageUrl(product.key),
-    parent_sku: product.key,
+    parent_sku: product.key, // style ID
     link: getProductUrl(language, product.key),
     category: validCategories.map(category => category.obj.name[locale]).join(','),
     size: attributes.size[locale]
