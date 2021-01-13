@@ -28,7 +28,7 @@ const headers = [
   'color',
   'description',
   'gtin',
-  'imageLink',
+  'image_link',
   'parent_sku',
   'link',
   'category',

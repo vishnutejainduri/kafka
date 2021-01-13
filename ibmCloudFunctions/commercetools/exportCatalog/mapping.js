@@ -32,7 +32,7 @@ const formatVariant = (locale, product, params) => variant => {
     color: attributes.colourGroup && attributes.colourGroup[locale],
     description: product.description[locale],
     gtin: formatBarcodeFromVariantBarcodes(attributes.barcodes),
-    imageLink: getImageUrl(product.key),
+    image_link: getImageUrl(product.key),
     parent_sku: product.key, // style ID
     link: getProductUrl(language, product.key),
     category: sortedValidCategories.map(category => category.obj.name[locale]).join(','),
