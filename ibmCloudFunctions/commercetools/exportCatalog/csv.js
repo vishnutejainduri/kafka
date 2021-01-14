@@ -1,15 +1,15 @@
 const { Transform } = require('stream')
 const { parse } = require('json2csv')
-const { headers } = require('./config')
+const { csvHeaders } = require('./config')
 const { getFormattedVariantsFromProduct } = require('./mapping')
 
 const maybeAddHeaders = (shouldAddHeaders, lines) => {
   if (!shouldAddHeaders) return lines
-  return `${parse([], { fields: headers })}\n${lines}`
+  return `${parse([], { fields: csvHeaders })}\n${lines}`
 }
 
 const getLinesFromFormattedVariants = formattedVariants => {
-  return `${parse(formattedVariants, { header: false, fields: headers })}\n`
+  return `${parse(formattedVariants, { header: false, fields: csvHeaders })}\n`
 }
 
 const getFormatStream = (locale, params) => {

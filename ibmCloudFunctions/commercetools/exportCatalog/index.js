@@ -1,5 +1,6 @@
 const fs = require('fs')
 const { Transform } = require('stream')
+const { languageKeys } = require('../constantsCt')
 const { getProductExporter } = require('./commercetools')
 const { getFormatStream } = require('./csv')
 
@@ -11,8 +12,8 @@ const main = async params => {
   const productExporter = await getProductExporter(params)
   const writeStreamEnglish = fs.createWriteStream('./harryrosen-en.csv')
   const writeStreamFrench = fs.createWriteStream('./harryrosen-fr.csv')
-  const formatStreamEnglish = getFormatStream('en-CA', params)
-  const formatStreamFrench = getFormatStream('fr-CA', params)
+  const formatStreamEnglish = getFormatStream(languageKeys.ENGLISH, params)
+  const formatStreamFrench = getFormatStream(languageKeys.FRENCH, params)
 
   formatStreamEnglish.pipe(writeStreamEnglish)
   formatStreamFrench.pipe(writeStreamFrench)

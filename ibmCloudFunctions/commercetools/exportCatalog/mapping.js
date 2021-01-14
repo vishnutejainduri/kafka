@@ -1,3 +1,4 @@
+const { currencyCodes } = require('../constantsCt')
 const {
   categoryIsValid,
   formatBarcodeFromVariantBarcodes,
@@ -21,7 +22,7 @@ const formatVariant = (locale, product, params) => variant => {
     title: product.name[locale],
     id: variant.sku, // SKU ID
     price: formatPriceValue(getPriceCentAmount(attributes.originalPrice)),
-    currency: 'CAD',
+    currency: currencyCodes.CAD,
     sale_price: variantIsOnSale(variant) ? formatPriceValue(getPriceCentAmount(salePrice)) : null,
     condition: 'new',
     availability: attributes.hasOnlineAts ? 'in stock' : 'out of stock',

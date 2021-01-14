@@ -1,3 +1,4 @@
+// See https://commercetools.github.io/nodejs/cli/product-exporter.html
 const exportConfig = {
   batch: 500,
   json: true,
@@ -13,7 +14,7 @@ const logger = {
   debug: console.debug
 }
 
-const headers = [
+const csvHeaders = [
   'title',
   'id',
   'price',
@@ -38,8 +39,8 @@ const headers = [
 const productDomain = 'https://harryrosen.com'
 
 module.exports = {
+  csvHeaders,
   exportConfig,
   logger,
-  headers,
   productDomain
 }
