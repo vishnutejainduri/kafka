@@ -308,13 +308,13 @@ const addLoggingToMain = (main, logger = messagesLogs, neverRetry = false) => (a
                 updateBatchWithFailureIndexesFailed,
                 updateBatchWithFailureIndexesResult,
                 storeBatchResult,
-                error,
+                errorResult: error,
                 shouldResolveOffsets
             }
             return truncateErrorsIfNecessary(hasPartialFailure ? { ...retryInfo, ...mainResult } : retryInfo)
         }
 
-        return truncateErrorsIfNecessary(mainResult instanceof Error ? {error: mainResult, shouldResolveOffsets } : { ...mainResult, shouldResolveOffsets })
+        return truncateErrorsIfNecessary(mainResult instanceof Error ? {errorResult: mainResult, shouldResolveOffsets } : { ...mainResult, shouldResolveOffsets })
     })
   )
 );
