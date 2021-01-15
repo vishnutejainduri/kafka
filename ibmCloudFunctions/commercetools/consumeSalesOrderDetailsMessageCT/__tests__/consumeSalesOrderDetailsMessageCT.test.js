@@ -56,7 +56,7 @@ const orderDetails =
 describe('consumeSalesOrderDetailsMessageCT', () => {
   it('Returns an error if given params are invalid', async () => {
     const invalidParams = {};
-    return expect((await consumeSalesOrderDetailsMessageCT(invalidParams)).error).toBeTruthy();
+    return expect((await consumeSalesOrderDetailsMessageCT(invalidParams)).errorResult).toBeTruthy();
   });
 
   it('returns success result if given valid params and a valid message', async () => {
@@ -81,7 +81,7 @@ describe('consumeSalesOrderDetailsMessageCT', () => {
 
   it('returns failed result if given valid params and a valid message but one line item doesn\'t exist; batch messages if same order number different line numbers', async () => {
     const batchParams = { ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, EXT_REF_ID: 'id-other' } }] }
-    return expect((await consumeSalesOrderDetailsMessageCT(batchParams)).error).toBeTruthy();
+    return expect((await consumeSalesOrderDetailsMessageCT(batchParams)).errorResult).toBeTruthy();
   });
 
   it('returns success result if given valid params and a valid message; don\'t batch messages if different order number same line numbers', async () => {
@@ -96,7 +96,7 @@ describe('consumeSalesOrderDetailsMessageCT', () => {
 
   it('returns failed result if given valid params and a valid message but one line item doesn\'t exist; don\'t batch messages if different order number different line numbers', async () => {
     const batchParams = { ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, ORDER_NUMBER: '11111', EXT_REF_ID: 'id-other' } }] }
-    return expect((await consumeSalesOrderDetailsMessageCT(batchParams)).error).toBeTruthy();
+    return expect((await consumeSalesOrderDetailsMessageCT(batchParams)).errorResult).toBeTruthy();
   });
 });
 

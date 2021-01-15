@@ -31,7 +31,7 @@ const params = {
 
 describe('consumeSkuInventoryMessage', () => {
     it('missing all parameters; should fail', async () => {
-        await expect((await consumeSkuInventoryMessage({})).error).toBeTruthy()
+        await expect((await consumeSkuInventoryMessage({})).errorResult).toBeTruthy()
     });
     it('correct message to update inventory', async () => {
         const response = await consumeSkuInventoryMessage(params);

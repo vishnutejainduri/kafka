@@ -53,7 +53,7 @@ const mockedCtHelpers = getCtHelpers(validParams);
 
 describe('consumeSalePriceCT', () => {
   it('missing params; throw error', async () => {
-    return expect((await consumeSalePriceCT({})).error).toBeTruthy();
+    return expect((await consumeSalePriceCT({})).errorResult).toBeTruthy();
   });
 
   it('returns expected success result for correct params and a valid message', async () => {

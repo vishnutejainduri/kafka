@@ -50,6 +50,6 @@ describe("consumeSalePrice", function() {
       });
     });
     it("invalid params -> failure", async function() {
-      return expect((await consumeSalePrice({})).error).toBeTruthy();
+      return expect((await consumeSalePrice({})).errorResult).toBeTruthy();
     });
 });

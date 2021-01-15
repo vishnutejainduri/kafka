@@ -10,7 +10,7 @@ const params = {
 describe('removeQuantityReserved', () => {
     it('returns an object that has `error` attribute when given an invalid argument', async () => {
         const invalidArgument = {};
-        expect((await removeQuantityReserved(invalidArgument)).error).toBeDefined();
+        expect((await removeQuantityReserved(invalidArgument)).errorResult).toBeDefined();
     });
 
     it('returns an object with `shouldResolveOffsets` set to 1 when given a valid argument', async () => {
