@@ -36,7 +36,7 @@ const validParams = {
 describe('consumeSkuMessageCT', () => {
   it('Returns an error if given params are invalid', async () => {
     const invalidParams = {};
-    return expect((await consumeSkuMessageCT(invalidParams)).error).toBeTruthy();
+    return expect((await consumeSkuMessageCT(invalidParams)).errorResult).toBeTruthy();
   });
 
   it('returns an object that has `ok` set to `true` if given valid params', async () => {

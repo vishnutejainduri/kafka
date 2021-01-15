@@ -28,7 +28,7 @@ describe('consumeBarcodeMessageCT', () => {
 
   it('returns an error if the given parameters are invalid', async () => {
     const invalidParams = {};
-    return expect((await consumeBarcodeMessageCT(invalidParams)).error).toBeTruthy()
+    return expect((await consumeBarcodeMessageCT(invalidParams)).errorResult).toBeTruthy()
   });
 
   it('returns success result if given valid params and a valid message', async () => {

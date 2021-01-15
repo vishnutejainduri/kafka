@@ -56,7 +56,7 @@ const shipmentDetails =
 describe('consumeShipmentDetailsMessageCT', () => {
   it('Returns an error if given params are invalid', async () => {
     const invalidParams = {};
-    return expect((await consumeShipmentDetailsMessageCT(invalidParams)).error).toBeTruthy();
+    return expect((await consumeShipmentDetailsMessageCT(invalidParams)).errorResult).toBeTruthy();
   });
 
   it('returns success result if given valid params and a valid message', async () => {

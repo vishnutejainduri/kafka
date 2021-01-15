@@ -28,7 +28,7 @@ const params = {
 
 describe('consumeSkuMessage', () => {
     it('missing all parameters; should fail', async () => {
-        expect((await consumeSkuMessage({})).error).toBeTruthy();
+        expect((await consumeSkuMessage({})).errorResult).toBeTruthy();
     });
     it('correct message to update sku', async () => {
         const response = await consumeSkuMessage(params);

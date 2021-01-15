@@ -41,7 +41,7 @@ const params = {
 
 describe('consumeStoresMessage', () => {
     it('missing all parameters; should fail', async () => {
-        await expect((await consumeStoresMessage({})).error).toBeTruthy();
+        await expect((await consumeStoresMessage({})).errorResult).toBeTruthy();
     });
     it('correct message; no bulk ats', async () => {
         const response = await consumeStoresMessage(params);

@@ -7,7 +7,7 @@ jest.mock("algoliasearch");
 
 describe('updateAlgoliaStyle', () => {
     it('returns an error if params argument is empty', async () => {
-        expect((await updateAlgoliaStyle({})).error).toBeTruthy();
+        expect((await updateAlgoliaStyle({})).errorResult).toBeTruthy();
     });
 
     it('Returns an error if invalid parmaeters are providede', async () => {
@@ -24,7 +24,7 @@ describe('updateAlgoliaStyle', () => {
                 values: [{}]
             }]
         };
-        expect((await updateAlgoliaStyle(params)).error).toBeTruthy();
+        expect((await updateAlgoliaStyle(params)).errorResult).toBeTruthy();
     });
 
     it('Successfully returns the results if all of the parmaeters and messages are provided', async () => {
