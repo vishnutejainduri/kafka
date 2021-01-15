@@ -50,7 +50,7 @@ const main = async function (params) {
             if (existingDocument.lastModifiedDate <= styleData.lastModifiedDate) {
               operations.push(upsertStyle(styles, styleData, false))
               operations = operations.concat(priceOperations);
-              
+             
               if (hasDepertmentIdChangedFrom27(existingDocument, styleData)) {
                 operations.push(addStyleToBulkATSQueue(bulkAtsRecalculateQueue, styleData));
               }

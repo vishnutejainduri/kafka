@@ -1,7 +1,11 @@
 const { filterSkuMessage, parseSkuMessage } = require('../../lib/parseSkuMessage');
-const { addErrorHandling, log, createLog, addLoggingToMain } = require('../utils');
+const { addErrorHandling, log, createLog, addLoggingToMain, passDown } = require('../utils');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
+
+const addToAlgoliaQueue = (styleAvailabilityCheckQueue, skuData) => styleAvailabilityCheckQueue.updateOne({ _id : skuData.styleId }, { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set : { _id: skuData.styleId, styleId: skuData.styleId } }, { upsert: true }).catch(originalError => {
+		throw createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
+})
 
 const main = async function (params) {
     log(createLog.params('consumeSkuMessage', params));
@@ -15,40 +19,46 @@ const main = async function (params) {
     }
 
     let skus;
+    let styleAvailabilityCheckQueue;
     try {
         skus = await getCollection(params);
+        styleAvailabilityCheckQueue = await getCollection(params, params.styleAvailabilityCheckQueue);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
+		console.log('proceeed')
 
     return Promise.all(params.messages
         .map(addErrorHandling(msg => filterSkuMessage(msg) ? msg : null))
         .map(addErrorHandling(parseSkuMessage))
         .map(addErrorHandling(async (skuData) => {
-                  const existingDocument = await skus.findOne({ _id: skuData._id })
+									console.log('TEST', skuData)
+                  const existingDocument = await skus.findOne({ _id: skuData._id }).catch(error => console.log(error))
+									console.log('existingDocument', existingDocument)
 
                   const skuUpdate = { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: skuData }
-                  if (existingDocument && existingDocument.lastModifiedDate) {
-                    return skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lte: skuData.lastModifiedDate } }, skuUpdate)
-                                    .catch(originalError => {
-                                        throw createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
-                                    })
+                  const operations = []
+									console.log('TEST2')
+                  if (existingDocument) {
+                    operations.push(skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lte: skuData.lastModifiedDate } }, skuUpdate))
+										if (existingDocument.lastModifiedDate <= skuData.lastModifiedDate && (existingDocument.size.en !== skuData.size.en || existingDocument.size.fr !== skuData.size.fr)) {
+											operations.push(addToAlgoliaQueue(styleAvailabilityCheckQueue, skuData))
+										}
                   } else {
-                    return skus.updateOne({ _id: skuData._id }, skuUpdate, { upsert: true })
+                    operations.push(skus.updateOne({ _id: skuData._id }, skuUpdate, { upsert: true })
                                     .catch(originalError => {
                                         throw createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
-                                    })
+                                    }))
                   }
+                  return Promise.all(operations)
+                            .catch(originalError => {
+                                return createError.consumeSkuMessage.failedAllUpdates(originalError, skuData);
+                            })
             })
         )
-    ).then((results) => {
-        const errors = results.filter((res) => res instanceof Error);
-        if (errors.length > 0) {
-            const e = new Error(`${errors.length} of ${results.length} updates failed. See 'failedUpdatesErrors'.`);
-            e.failedUpdatesErrors = errors;
-            e.successfulUpdatesResults = results.filter((res) => !(res instanceof Error));
-            throw e;
-        }
+    ).then(passDown({ messages: params.messages, includeProcessedMessages: true }))
+    .catch(originalError => {
+        throw createError.consumeCatalogMessage.failed(originalError, params);
     });
 }
 

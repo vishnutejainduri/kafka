@@ -60,7 +60,7 @@
           timeout: 58000
         inputs:
           collectionName: $SKUS_COLLECTION_NAME
-          stylesCollectionName: $STYLES_COLLECTION_NAME
+          styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: skus-connect-jdbc
       consume-barcode-message:
         location: ./product-consumers/consumeBarcodeMessage/dist/bundle.js
@@ -79,8 +79,8 @@
           timeout: 29000
         inputs:
           collectionName: $INVENTORY_COLLECTION_NAME
-          stylesCollectionName: $STYLES_COLLECTION_NAME
           skusCollectionName: $SKUS_COLLECTION_NAME
+          stylesCollectionName: $STYLES_COLLECTION_NAME
           storesCollectionName: $STORES_COLLECTION_NAME
           styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
           topicName: inventory-connect-jdbc-SKUINVENTORY

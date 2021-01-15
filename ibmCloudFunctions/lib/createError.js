@@ -121,10 +121,15 @@ module.exports = {
             'failed-consume-sku-message-sku-update',
             `Failure in sku update run of consume sku message; skuData: ${skuData}.`
         ),
-        failedUpdateStyleAts: (originalError, skuData) => new CustomError(
+        failedAddToAlgoliaQueue: (originalError, skuData) => new CustomError(
             originalError,
-            'failed-consume-sku-message-update-style-ats',
+            'failed-consume-sku-message-add-to-algolia-queue',
             `Failure to update style ats in run of consume sku message; skuData: ${skuData}.`
+        ),
+        failed: (originalError, params) => new CustomError(
+            originalError,
+            'failed-consume-sku-message',
+            `Failure in run of consume sku message; skuData: ${skuData}.`
         ),
     },
     consumeSkuMessageCt: {

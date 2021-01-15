@@ -56,8 +56,6 @@ const main = async function (params) {
 
           if (
               (!storeData && !atsData.isEndlessAisle) || // we don't have store data for endless aisle items
-              !skuData ||
-              !styleData ||
               storeData.isOutlet ||
               !storeData.isVisible
             ) return null;
@@ -65,11 +63,11 @@ const main = async function (params) {
           let atsUpdates = [];
 
           // Regular ats operations
-          atsUpdates.push(await handleSkuAtsUpdate(atsData, skus, false))
+          atsUpdates.push(await handleSkuAtsUpdate(atsData, skuData, styleData, skus, styles, false))
 
-          if ((storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27") || atsData.isEndlessAisle) {
+          if (!styleData || (storeData.canOnlineFulfill && styleData.departmentId !== "27") || (storeData.canFulfillDep27 && styleData.departmentId === "27") || atsData.isEndlessAisle) {
               // Online ats operations
-              atsUpdates.push(await handleSkuAtsUpdate(atsData, skus, true))
+              atsUpdates.push(await handleSkuAtsUpdate(atsData, skuData, styleData, skus, styles, true))
           }
 
           // Algolia ats operation
