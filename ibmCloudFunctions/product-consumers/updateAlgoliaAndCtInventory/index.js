@@ -74,7 +74,6 @@ global.main = async function (params) {
         const styleSkus = await skus.find({ styleId: style.styleId }).toArray();
         const styleAts = await productApiRequest(params, `/inventory/ats/${styleData._id}`)
             .catch(originalError => {
-                console.log("TEST")
                 throw createError.updateAlgoliaAndCtInventory.failedToGetApiResponse(originalError, styleData._id);
             });
         return {
