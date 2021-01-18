@@ -11,6 +11,7 @@
         inputs:
           collectionName: $STYLES_COLLECTION_NAME
           pricesCollectionName: $PRICES_COLLECTION_NAME
+          bulkAtsRecalculateQueue: $BULK_ATS_RECALCULATE_QUEUE
           topicName: styles-connect-jdbc-CATALOG
       consume-styles-basic-message:
         location: ./product-consumers/consumeStylesBasicMessage/dist/bundle.js
