@@ -1,4 +1,5 @@
 const { parseStyleMessage, filterStyleMessages } = require('../../../lib/parseStyleMessage');
+const { hasDepertmentIdChangedFrom27 } = require('../utils')
 
 const consumeCatalogMessage = require('../');
 
@@ -252,3 +253,18 @@ describe('consumeCatalogMessage', () => {
         });
     });
 });
+
+describe('hasDepertmentIdChangedFrom27', () => {
+    it('update bulk ats anytime there is no dept id and 27 is the update', () => {
+        const result = hasDepertmentIdChangedFrom27({}, { departmentId: '27' })
+        expect(result).toBe(true)
+    });
+    it('update bulk ats anytime dept id is not 27 and 27 is the update', () => {
+        const result = hasDepertmentIdChangedFrom27({ departmentId: '25' }, { departmentId: '27' })
+        expect(result).toBe(true)
+    });
+    it('do not update bulk ats anytime dept id is 27 and 27 is also the update', () => {
+        const result = hasDepertmentIdChangedFrom27({ departmentId: '27' }, { departmentId: '27' })
+        expect(result).toBe(false)
+    });
+})

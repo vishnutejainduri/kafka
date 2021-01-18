@@ -126,7 +126,7 @@ module.exports = {
             'failed-consume-sku-message-add-to-algolia-queue',
             `Failure to update style ats in run of consume sku message; skuData: ${skuData}.`
         ),
-        failed: (originalError, params) => new CustomError(
+        failed: (originalError, skuData) => new CustomError(
             originalError,
             'failed-consume-sku-message',
             `Failure in run of consume sku message; skuData: ${skuData}.`
