@@ -21,7 +21,7 @@ const handleSkuAtsUpdate = async (
           }
           if (!styleData) {
               try {
-                await styles.insert({  _id: atsData.styleId, id: atsData.styleId });
+                await styles.insert({ _id: atsData.styleId, id: atsData.styleId });
               } catch (error) {
                   // ignore, because it most possibly means that the style was inserted by another message run in parallel
               }

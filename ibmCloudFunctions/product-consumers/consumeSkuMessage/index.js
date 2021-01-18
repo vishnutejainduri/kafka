@@ -26,22 +26,18 @@ const main = async function (params) {
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
-		console.log('proceeed')
 
     return Promise.all(params.messages
         .map(addErrorHandling(msg => filterSkuMessage(msg) ? msg : null))
         .map(addErrorHandling(parseSkuMessage))
         .map(addErrorHandling(async (skuData) => {
-									console.log('TEST', skuData)
-                  const existingDocument = await skus.findOne({ _id: skuData._id }).catch(error => console.log(error))
-									console.log('existingDocument', existingDocument)
+                  const existingDocument = await skus.findOne({ _id: skuData._id })
 
                   const skuUpdate = { $currentDate: { lastModifiedInternal: { $type:"timestamp" } }, $set: skuData }
                   const operations = []
-									console.log('TEST2')
-                  if (existingDocument) {
-                    operations.push(skus.updateOne({ _id: skuData._id, lastModifiedDate: { $lte: skuData.lastModifiedDate } }, skuUpdate))
-										if (existingDocument.lastModifiedDate <= skuData.lastModifiedDate && (existingDocument.size.en !== skuData.size.en || existingDocument.size.fr !== skuData.size.fr)) {
+                  if (existingDocument && (existingDocument.lastModifiedDate <= skuData.lastModifiedDate || !existingDocument.lastModifiedDate)) {
+                    operations.push(skus.updateOne({ _id: skuData._id }, skuUpdate ))
+										if (!existingDocument.size || existingDocument.size.en !== skuData.size.en || existingDocument.size.fr !== skuData.size.fr) {
 											operations.push(addToAlgoliaQueue(styleAvailabilityCheckQueue, skuData))
 										}
                   } else {
