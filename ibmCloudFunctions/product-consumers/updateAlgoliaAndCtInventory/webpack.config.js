@@ -9,7 +9,7 @@ module.exports = {
     },
     target: 'node',
     externals: [
-        'request-promise'
+      'request-promise'
     ],
     optimization: {
         minimize: false

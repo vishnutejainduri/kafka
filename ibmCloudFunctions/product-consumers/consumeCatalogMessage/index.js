@@ -46,14 +46,12 @@ const main = async function (params) {
           let operations = [];
 
           const existingDocument = await styles.findOne({ _id: styleData._id })
-          if (existingDocument) {
-            if (existingDocument.lastModifiedDate <= styleData.lastModifiedDate) {
-              operations.push(upsertStyle(styles, styleData, false))
-              operations = operations.concat(priceOperations);
-              
-              if (hasDepertmentIdChangedFrom27(existingDocument, styleData)) {
-                operations.push(addStyleToBulkATSQueue(bulkAtsRecalculateQueue, styleData));
-              }
+          if (existingDocument && (existingDocument.lastModifiedDate <= styleData.lastModifiedDate || !existingDocument.lastModifiedDate)) {
+            operations.push(upsertStyle(styles, styleData, false))
+            operations = operations.concat(priceOperations);
+           
+            if (hasDepertmentIdChangedFrom27(existingDocument, styleData)) {
+              operations.push(addStyleToBulkATSQueue(bulkAtsRecalculateQueue, styleData));
             }
           } else {
             operations.push(upsertStyle(styles, styleData, true))

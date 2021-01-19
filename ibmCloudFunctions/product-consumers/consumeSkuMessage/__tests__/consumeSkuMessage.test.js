@@ -32,7 +32,7 @@ describe('consumeSkuMessage', () => {
     });
     it('correct message to update sku', async () => {
         const response = await consumeSkuMessage(params);
-        expect(response).toEqual({ shouldResolveOffsets: 1 });
+        expect(response).toEqual({"errors": [], "failureIndexes": [], "messages": [{"topic": "skus-connect-jdbc", "value": {"COLORID": "colorId", "DIMENSION": "dimension", "FKORGANIZATIONNO": "1", "ID": "skuId", "LASTMODIFIEDDATE": 1000000000, "SIZE": "size", "SIZEID": "sizeId", "SIZE_EN": "English size", "SIZE_FR": "French size", "STYLEID": "styleId"}}], "shouldResolveOffsets": 1, "successCount": 1});
     });
 });
 

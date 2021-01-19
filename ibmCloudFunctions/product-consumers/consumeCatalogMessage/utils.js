@@ -33,7 +33,7 @@ const upsertStyle = (styles, styleData, shouldInsert) => {
   })
 }
 
-const hasDepertmentIdChangedFrom27 = (existingStyleData, newStyleData) => existingStyleData.departmentId && existingStyleData.departmentId !== newStyleData.departmentId && (newStyleData.departmentId === '27' || existingStyleData.departmentId === '27')
+const hasDepertmentIdChangedFrom27 = (existingStyleData, newStyleData) => existingStyleData.departmentId !== newStyleData.departmentId && (newStyleData.departmentId === '27' || existingStyleData.departmentId === '27')
 
 module.exports = {
   updateOriginalPrice,
