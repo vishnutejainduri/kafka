@@ -7,6 +7,8 @@ const addToAlgoliaQueue = (styleAvailabilityCheckQueue, skuData) => styleAvailab
 		throw createError.consumeSkuMessage.failedSkuUpdate(originalError, skuData);
 })
 
+const doesAvailableSizesNeedUpdating = (existingDocument, skuData) => !existingDocument.size || existingDocument.size.en !== skuData.size.en || existingDocument.size.fr !== skuData.size.fr
+
 const main = async function (params) {
     log(createLog.params('consumeSkuMessage', params));
 
@@ -37,7 +39,7 @@ const main = async function (params) {
                   const operations = []
                   if (existingDocument && (existingDocument.lastModifiedDate <= skuData.lastModifiedDate || !existingDocument.lastModifiedDate)) {
                     operations.push(skus.updateOne({ _id: skuData._id }, skuUpdate ))
-										if (!existingDocument.size || existingDocument.size.en !== skuData.size.en || existingDocument.size.fr !== skuData.size.fr) {
+										if (doesAvailableSizesNeedUpdating(existingDocument, skuData)) {
 											operations.push(addToAlgoliaQueue(styleAvailabilityCheckQueue, skuData))
 										}
                   } else {
