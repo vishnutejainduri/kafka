@@ -1,3 +1,5 @@
+const { languageKeys } = require('../constantsCt')
+
 // See https://commercetools.github.io/nodejs/cli/product-exporter.html
 const exportConfig = {
   batch: 500,
@@ -38,9 +40,15 @@ const csvHeaders = [
 
 const productDomain = 'https://harryrosen.com'
 
+const outputFilenames = {
+  [languageKeys.ENGLISH]: './harryrosen-en.csv',
+  [languageKeys.FRENCH]: './harryrosen-fr.csv',
+}
+
 module.exports = {
   csvHeaders,
   exportConfig,
   logger,
+  outputFilenames,
   productDomain
 }

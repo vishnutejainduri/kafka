@@ -12,6 +12,11 @@ const getLinesFromFormattedVariants = formattedVariants => {
   return `${parse(formattedVariants, { header: false, fields: csvHeaders })}\n`
 }
 
+/**
+ * @param {'en-CA'|'fr-CA'} locale
+ * @param {*} params
+ * @returns a transform stream that turns JSON into CSV strings
+ */
 const getFormatStream = (locale, params) => {
   const getFormattedVariantsFromProductForLocale = getFormattedVariantsFromProduct(locale, params)
   let isStartOfFile = true
