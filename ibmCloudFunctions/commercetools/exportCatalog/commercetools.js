@@ -21,7 +21,7 @@ const getAuthClient = ({
         clientId: ctpClientId,
         clientSecret: ctpClientSecret
       },
-      scopes: ctpScopes.split(','),
+      scopes: ctpScopes.split(' '),
       fetch
     })
   }
