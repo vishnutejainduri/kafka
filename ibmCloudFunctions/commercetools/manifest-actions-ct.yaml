@@ -109,8 +109,9 @@
       export-catalog-ct:
         location: ./commercetools/exportCatalog/dist/bundle.js
         runtime: nodejs:10
-        memorySize: 2048
-        timeout: 600000
+        limits:
+          memorySize: 2048
+          timeout: 600000
         inputs:
             dpmRootCategoryId: $DPM_ROOT_CATEGORY_ID
             hrFtpHost: $HR_FTP_HOST
