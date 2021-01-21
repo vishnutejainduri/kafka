@@ -37,7 +37,7 @@ const main = async params => {
   if (errors.length === 0) {
     console.log('Uploaded all product catalogs successfully successfully')
   } else {
-    console.error(`Errors while trying to process product catalog (${errors.length} total):`, JSON.stringify(errors))
+    throw new Error(`Errors while trying to process product catalog (${errors.length} total):`, JSON.stringify(errors))
   }
 }
 
