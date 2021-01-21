@@ -1,4 +1,4 @@
-const { JESTA_LANGUAGE_NUMBERS_TO_LOCALES } = require('../narvar/constantsNarvar') 
+const { JESTA_LANGUAGE_NUMBERS_TO_LOCALES, JESTA_STATUSES_TO_NARVAR_STATUSES } = require('../narvar/constantsNarvar') 
 const { getItemImage, getItemUrl } = require('../narvar/narvarUtils') 
 const TOPIC_NAME = 'sales-order-details-connect-jdbc';
 
@@ -14,13 +14,13 @@ function parseSalesOrderDetailsMessage(msg) {
     return {
         order_info: {
           order_number: msg.value.ORDER_NUMBER,
-          order_status: msg.value.ORDER_STATUS,
+          order_status: JESTA_STATUSES_TO_NARVAR_STATUSES[msg.value.ORDER_STATUS],
           order_date: new Date(msg.value.ORDER_CREATED_DATE).toISOString(),
           checkout_locale: JESTA_LANGUAGE_NUMBERS_TO_LOCALES[msg.value.LANGUAGE_NO],
           currency_code: 'CAD',
           order_items: [{
             item_id: msg.value.EXT_REF_ID,
-            fulfillment_status: msg.value.STATUS,
+            fulfillment_status: JESTA_STATUSES_TO_NARVAR_STATUSES[msg.value.STATUS],
             is_gift: msg.value.GIFT_WRAP_IND === 'Y' ? true : false,
             item_image: getItemImage(msg.value.STYLEID),
             name: msg.value.LANGUAGE_NO === 1 ? msg.value.DESC_ENG : msg.value.DESC_FR,
