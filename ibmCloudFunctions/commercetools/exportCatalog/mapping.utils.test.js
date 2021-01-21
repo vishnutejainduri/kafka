@@ -7,17 +7,28 @@ const {
 } = require('./mapping.utils')
 
 describe('categoryIsValid', () => {
-  const dpmRootCategoryId = 'ROOT_CATEGORY_ID'
+  const dpmRootCategoryId = 'DPM_ROOT_CATEGORY_ID'
 
   it('classifies brand categories as invalid', () => {
     const brandCategory = {
       obj: {
         key: 'BRANDS-l1SAXX',
-        ancestors: [{ id: 'NOT_ROOT_CATEGORY_ID' }]
+        ancestors: [{ id: 'BRAND_ROOT_CATEGORY_ID' }]
       }
     }
 
     expect(categoryIsValid(dpmRootCategoryId)(brandCategory)).toBe(false)
+  })
+
+  it('classifies microsite categories as invalid', () => {
+    const micrositeCategory = {
+      obj: {
+        key: 'MICROSITES-l1foo',
+        ancestors: [{ id: 'MICROSITE_ROOT_CATEGORY_ID' }]
+      }
+    }
+
+    expect(categoryIsValid(dpmRootCategoryId)(micrositeCategory)).toBe(false)
   })
 
   it('classifies categories that fall under the root DPM category as valid', () => {
