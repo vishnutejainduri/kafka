@@ -1,0 +1,20 @@
+    # All the narvar actions are invoked by hr-eventstreams-cloudfunctions-binding service through REST calls
+    # Functions that are invoked by the binding service should finish in less than 60s.
+    # Functions within a sequence that is invoked by the binding service should finish in less than 60s divided by total number of steps in the sequence.
+    actions:
+      consume-shipment-details-message-narvar:
+        location: ./narvar/consumeShipmentDetailsMessageNarvar/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 58000
+        inputs:
+          topicName: shipment-details-connect-jdbc 
+      consume-sales-order-details-message-narvar:
+        location: ./narvar/consumeSalesOrderDetailsMessageNarvar/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 58000
+        inputs:
+          topicName: sales-order-details-connect-jdbc
