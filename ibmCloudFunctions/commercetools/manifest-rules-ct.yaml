@@ -2,3 +2,6 @@
       update-future-sale-price-changes-rule-ct:
         action: update-ct-sale-price-trigger
         trigger: every-minute
+      export-catalog-rule-ct:
+        action: export-catalog-ct
+        trigger: every-midnight
