@@ -41,4 +41,6 @@ const main = async params => {
   }
 }
 
-module.exports = main
+global.main = main
+
+module.exports = global.main
