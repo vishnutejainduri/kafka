@@ -17,16 +17,16 @@ function camelCase(str) {
 }
 
 const getAttributePathValue = attributePath => item => {
-  return attributePath.reduce((previous, current) => previous[current], item)
+  return Array.isArray(attributePath) ? attributePath.reduce((previous, current) => previous[current], item) : item[attributePath]
 }
 
-const getUniqueAttributeValues = attributeName => items => {
+const getUniqueAttributeValues = attributePath => items => {
     const uniqueAttributeValues = items.filter(item => item).reduce((previousUniqueValues, item) => {
         const uniqueAttribute = getAttributePathValue(attributePath)(item)
         if (uniqueAttribute !== undefined) {
             previousUniqueValues.add(uniqueAttribute)
         } else {
-            throw new Error(`Failed to get unique attribute value: attribute ${attributeName} does not exist in item ${JSON.stringify()}`)
+            throw new Error(`Failed to get unique attribute value: attribute ${attributePath} does not exist in item ${JSON.stringify(item)}`)
         }
         return previousUniqueValues
     }, new Set());

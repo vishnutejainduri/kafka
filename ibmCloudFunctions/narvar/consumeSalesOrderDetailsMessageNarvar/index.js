@@ -1,5 +1,6 @@
 const { filterSalesOrderDetailsMessages, parseSalesOrderDetailsMessage } = require('../../lib/parseSalesOrderDetailsMessageNarvar');
-//const createError = require('../../lib/createError');
+const { syncSalesOrderDetailBatchToNarvar } = require('../narvarUtils') 
+const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
 const { groupByAttribute } = require('../../lib/utils');
 const {
@@ -7,7 +8,8 @@ const {
   addLoggingToMain,
   createLog,
   log,
-  validateParams
+  validateParams,
+  passDown
 } = require('../../product-consumers/utils');
 
 const groupByOrderNumber = groupByAttribute(['order_info', 'order_number']);
@@ -20,7 +22,7 @@ const main = params => {
   if (!(params.narvarUserName && params.narvarPassword)) {
     throw new Error('Incomplete narvar credentials')
   }
-  const narvarCreds = { username: params.narvarUserName, password: params.narvarPassword }
+  const narvarCreds = { username: params.narvarUserName, password: params.narvarPassword, baseUrl: params.narvarUrl }
 
   const salesOrderDetailsToCreateOrUpdate = (
     params.messages
@@ -32,16 +34,16 @@ const main = params => {
 
   const salesOrderDetailsGroupedByOrderNumber = groupByOrderNumber(salesOrderDetailsToCreateOrUpdate);
 
-  console.log('salesOrderDetailsGroupedByOrderNumber', salesOrderDetailsGroupedByOrderNumber)
+  console.log('salesOrderDetailsGroupedByOrderNumber', JSON.stringify(salesOrderDetailsGroupedByOrderNumber))
 
-  /*const salesOrderDetailsPromises = (
+  const salesOrderDetailsPromises = (
     salesOrderDetailsGroupedByOrderNumber
-      .map(addErrorHandling(syncSalesOrderDetailBatchToCt.bind(null, ctHelpers)))
+      .map(addErrorHandling(syncSalesOrderDetailBatchToNarvar.bind(null, narvarCreds)))
   );
   
   return Promise.all(salesOrderDetailsPromises)
     .then(passDown({ batches: salesOrderDetailsGroupedByOrderNumber, messages: params.messages }))
-    .catch(handleErrors);*/
+    .catch(handleErrors);
 };
 
 global.main = addLoggingToMain(main, messagesLogs);

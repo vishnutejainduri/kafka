@@ -5,3 +5,4 @@ packages:
       messagesMongoCertificateBase64: $MESSAGES_MONGO_CERTIFICATE_BASE64
       narvarUserName: $NARVAR_USER_NAME
       narvarPassword: $NARVAR_PASSWORD
+      narvarUrl: $NARVAR_URL
