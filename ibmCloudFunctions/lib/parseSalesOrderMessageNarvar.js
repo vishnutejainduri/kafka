@@ -2,7 +2,7 @@ const { JESTA_LANGUAGE_NUMBERS_TO_LOCALES, JESTA_STATUSES_TO_NARVAR_STATUSES } =
 const { getItemImage, getItemUrl } = require('../narvar/narvarUtils') 
 const TOPIC_NAME = 'sales-order-details-connect-jdbc';
 
-function filterSalesOrderDetailsMessages(msg) {
+function filterSalesOrderMessages(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Sales Order Details update messages');
     }
@@ -10,7 +10,7 @@ function filterSalesOrderDetailsMessages(msg) {
     return true; 
 }
 
-function parseSalesOrderDetailsMessage(msg) {
+function parseSalesOrderMessage(msg) {
     return {
         order_info: {
           order_number: msg.value.ORDER_NUMBER,
@@ -51,6 +51,6 @@ function parseSalesOrderDetailsMessage(msg) {
 }
 
 module.exports = {
-    parseSalesOrderDetailsMessage,
-    filterSalesOrderDetailsMessages
+    parseSalesOrderMessage,
+    filterSalesOrderMessages
 };

@@ -217,11 +217,11 @@ module.exports = {
             `Failure in run of consume sales order details message CT; params excluding messages: ${getParamsExcludingMessages(params)}.`
         )
     },
-    consumeSalesOrderDetailsMessageNarvar: {
+    consumeSalesOrderMessageNarvar: {
         failed: (originalError, params) => new CustomError(
             originalError,
-            'failed-consume-sales-order-details-message-narvar',
-            `Failure in run of consume sales order details message Narvar; params excluding messages: ${getParamsExcludingMessages(params)}.`
+            'failed-consume-sales-order-message-narvar',
+            `Failure in run of consume sales order message Narvar; params excluding messages: ${getParamsExcludingMessages(params)}.`
         )
     },
     consumeFacetMessageCT: {

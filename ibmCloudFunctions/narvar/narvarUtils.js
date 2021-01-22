@@ -36,22 +36,29 @@ const getNarvarOrder = async (narvarCreds, orderNumber) => {
   return makeNarvarRequest(narvarCreds, `/orders/${orderNumber}`, options)
 }
 
-const mergeSalesOrderDetails = (salesOrderDetailsBatch) => {
-  const mostUpToDateOrderHeader = getMostUpToDateObject(['order_info', 'attributes', 'orderLastModifiedDate'])(salesOrderDetailsBatch)
+const mergeSalesOrderItems = (salesOrderBatch) => {
+  const allItems = salesOrderBatch.reduce((previous, current) => previous.concat(current.order_info.order_items), [])
+  return allItems
+}
+
+const mergeSalesOrders = (salesOrderBatch) => {
+  const mostUpToDateOrderHeader = getMostUpToDateObject(['order_info', 'attributes', 'orderLastModifiedDate'])(salesOrderBatch)
   console.log('mostUpToDateOrderHeader', mostUpToDateOrderHeader)
+  const mergedSalesOrderItems = mergeSalesOrderItems (salesOrderBatch)
+  console.log('mergedSalesOrderItems', mergedSalesOrderItems)
   return {}
 }
 
-const syncSalesOrderDetailBatchToNarvar = async (narvarCreds, salesOrderDetailsBatch) => {
-  const newSalesOrder = mergeSalesOrderDetails (salesOrderDetailsBatch)
+const syncSalesOrderBatchToNarvar = async (narvarCreds, salesOrderBatch) => {
+  const newSalesOrder = mergeSalesOrders (salesOrderBatch)
   console.log('newSalesOrder', newSalesOrder)
-  const existingNarvarOrder = await getNarvarOrder (narvarCreds, salesOrderDetailsBatch[0].order_info.order_number)
+  const existingNarvarOrder = await getNarvarOrder (narvarCreds, salesOrderBatch[0].order_info.order_number)
   console.log('existingNarvarOrder', existingNarvarOrder)
-  return sendOrderToNarvar (narvarCreds, salesOrderDetailsBatch[0])
+  return sendOrderToNarvar (narvarCreds, salesOrderBatch[0])
 }
 
 module.exports = {
   getItemImage,
   getItemUrl,
-  syncSalesOrderDetailBatchToNarvar
+  syncSalesOrderBatchToNarvar
 }
