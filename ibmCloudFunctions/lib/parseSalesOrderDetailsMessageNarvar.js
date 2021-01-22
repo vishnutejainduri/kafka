@@ -18,6 +18,9 @@ function parseSalesOrderDetailsMessage(msg) {
           order_date: new Date(msg.value.ORDER_CREATED_DATE).toISOString(),
           checkout_locale: JESTA_LANGUAGE_NUMBERS_TO_LOCALES[msg.value.LANGUAGE_NO],
           currency_code: 'CAD',
+          attributes: {
+            orderLastModifiedDate: new Date(msg.value.ORDER_MODIFIED_DATE).toISOString()
+          },
           order_items: [{
             item_id: msg.value.EXT_REF_ID,
             fulfillment_status: JESTA_STATUSES_TO_NARVAR_STATUSES[msg.value.STATUS],

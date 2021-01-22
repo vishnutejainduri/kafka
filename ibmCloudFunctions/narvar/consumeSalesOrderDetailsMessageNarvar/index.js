@@ -30,11 +30,7 @@ const main = params => {
       .map(addErrorHandling(parseSalesOrderDetailsMessage))
   );
 
-  console.log('salesOrderDetailsToCreateOrUpdate', JSON.stringify(salesOrderDetailsToCreateOrUpdate))
-
   const salesOrderDetailsGroupedByOrderNumber = groupByOrderNumber(salesOrderDetailsToCreateOrUpdate);
-
-  console.log('salesOrderDetailsGroupedByOrderNumber', JSON.stringify(salesOrderDetailsGroupedByOrderNumber))
 
   const salesOrderDetailsPromises = (
     salesOrderDetailsGroupedByOrderNumber

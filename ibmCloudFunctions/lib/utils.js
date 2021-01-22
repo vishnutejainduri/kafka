@@ -53,11 +53,15 @@ const groupByAttribute = attributePath => items => {
     });
 };
 
-const getMostUpToDateObject = dateName => objects => {
+const getMostUpToDateObject = datePath => objects => {
     if (objects.length === 0) return null;
-    const objectsSortedByDate = objects.sort((object1, object2) => (
-        object2[dateName] - object1[dateName]
-      ));
+    const objectsSortedByDate = objects.sort((object1, object2) => {
+        let date2 = getAttributePathValue(datePath)(object2)
+        if (!(date2 instanceof Date) && !(Number.isInteger(date2))) date2 = new Date(date2).getTime()
+        let date1 = getAttributePathValue(datePath)(object1)
+        if (!(date1 instanceof Date) && !(Number.isInteger(date1))) date1 = new Date(date1).getTime()
+        return date2 - date1
+      });
 
     return objectsSortedByDate[0];
 };
