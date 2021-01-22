@@ -23,3 +23,8 @@ packages:
       ctpApiUrl: $CTP_API_URL
       ctpScopes: $CTP_SCOPES # see https://docs.commercetools.com/http-api-scopes
       productTypeId: $PRODUCT_TYPE_ID # reference to the Product Type on CT
+      dpmRootCategoryId: $DPM_ROOT_CATEGORY_ID
+      hrFtpHost: $HR_FTP_HOST
+      hrFtpPort: $HR_FTP_PORT
+      hrFtpUser: $HR_FTP_USER
+      hrFtpPassword: $HR_FTP_PASSWORD
