@@ -106,18 +106,22 @@
           timeout: 600000
         inputs:
           collectionName: $PRICES_COLLECTION_NAME
-      export-catalog-ct:
+      export-catalog-ct-english:
         location: ./commercetools/exportCatalog/dist/bundle.js
         runtime: nodejs:10
         limits:
           memorySize: 2048
           timeout: 600000
         inputs:
-            dpmRootCategoryId: $DPM_ROOT_CATEGORY_ID
-            hrFtpHost: $HR_FTP_HOST
-            hrFtpPort: $HR_FTP_PORT
-            hrFtpUser: $HR_FTP_USER
-            hrFtpPassword: $HR_FTP_PASSWORD
+            locale: en-CA
+      export-catalog-ct-french:
+        location: ./commercetools/exportCatalog/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 600000
+        inputs:
+            locale: fr-CA
     sequences:
       update-catalog-ct-sequence:
         actions: consume-catalog-message-ct,update-ct-sale-price
