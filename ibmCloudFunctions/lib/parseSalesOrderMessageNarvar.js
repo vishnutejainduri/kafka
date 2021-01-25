@@ -33,12 +33,25 @@ function parseSalesOrderMessage(msg) {
             line_price: msg.value.EXTENSION_AMOUNT,
             final_sale_date: new Date(msg.value.ORDER_CREATED_DATE).toISOString(),
             item_url: getItemUrl(msg.value.STYLEID, JESTA_LANGUAGE_NUMBERS_TO_LOCALES[msg.value.LANGUAGE_NO]),
+            is_final_sale: false,
             line_number: msg.value.LINE,
             attributes: {
               orderDetailLastModifiedDate: new Date(msg.value.MODIFIED_DATE).toISOString()
             }
           }],
           billing: {
+            email: msg.value.EMAIL_ADDRESS,
+            first_name: msg.value.FIRST_NAME,
+            last_name: msg.value.FIRST_NAME,
+            phone: msg.value.HOME_PHONE,
+            address: {
+              street_1: msg.value.ADDRESS_1,
+              street_2: msg.value.ADDRESS_2,
+              city: msg.value.CITY,
+              state: msg.value.STATE_ID,
+              zip: msg.value.ZIP_CODE,
+              country: msg.value.COUNTRY_ID
+            },
             amount: msg.value.TRANSACTION_TOTAL,
             tax_total: msg.value.TAX_TOTAL,
             shipping_handling: msg.value.SHIPPING_CHARGES_TOTAL,
