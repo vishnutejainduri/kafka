@@ -40,6 +40,28 @@ function parseSalesOrderMessage(msg) {
             }
           }],
           billing: {
+            billed_to: {
+              email: msg.value.EMAIL_ADDRESS,
+              first_name: msg.value.FIRST_NAME,
+              last_name: msg.value.FIRST_NAME,
+              phone: msg.value.HOME_PHONE,
+              address: {
+                street_1: msg.value.ADDRESS_1,
+                street_2: msg.value.ADDRESS_2,
+                city: msg.value.CITY,
+                state: msg.value.STATE_ID,
+                zip: msg.value.ZIP_CODE,
+                country: msg.value.COUNTRY_ID
+              },
+            },
+            amount: msg.value.TRANSACTION_TOTAL,
+            tax_amount: msg.value.TAX_TOTAL,
+            shipping_handling: msg.value.SHIPPING_CHARGES_TOTAL,
+            payments: [{
+              expiration_date: msg.value.EXPDATE && msg.value.EXPDATE.substr(0,2) + '/' + msg.value.EXPDATE.substr(2,2)
+            }]
+          },
+          customer: {
             email: msg.value.EMAIL_ADDRESS,
             first_name: msg.value.FIRST_NAME,
             last_name: msg.value.FIRST_NAME,
@@ -51,13 +73,7 @@ function parseSalesOrderMessage(msg) {
               state: msg.value.STATE_ID,
               zip: msg.value.ZIP_CODE,
               country: msg.value.COUNTRY_ID
-            },
-            amount: msg.value.TRANSACTION_TOTAL,
-            tax_total: msg.value.TAX_TOTAL,
-            shipping_handling: msg.value.SHIPPING_CHARGES_TOTAL,
-            payments: [{
-              expiration_date: msg.value.EXPDATE.substr(0,2) + '/' + msg.value.EXPDATE.substr(2,2)
-            }]
+            }
           }
         }
     };

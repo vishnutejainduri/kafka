@@ -1,7 +1,7 @@
 const fetch = require('node-fetch').default
 const base64 = require('base-64')
 
-const { LOCALE_TO_PRODUCT } = require('../narvar/constantsNarvar') 
+const { LOCALE_TO_PRODUCT, MISSING_NARVAR_ORDER_STRING } = require('../narvar/constantsNarvar') 
 const { groupByAttribute, getMostUpToDateObject } = require('../lib/utils');
 
 const groupByItemId = groupByAttribute('item_id');
@@ -13,8 +13,14 @@ const compareNarvarDateAttributes = (inboundObj, narvarObj, compareDateField) =>
 
 const makeNarvarRequest = async (narvarCreds, path, options) => {
   const response = await fetch(narvarCreds.baseUrl + path, options)
-  if (response.ok) return response.json()
-  throw new Error(JSON.stringify(await response.json()))
+  const result = await response.json()
+  if (response.ok) {
+    if (result.status === 'FAILURE') {
+      throw new Error(JSON.stringify(result))
+    }
+    return result
+  }
+  throw new Error(JSON.stringify(result))
 }
 
 const sendOrderToNarvar = async (narvarCreds, order) => {
@@ -37,7 +43,14 @@ const getNarvarOrder = async (narvarCreds, orderNumber) => {
     },
     method: 'GET' 
   }
-  return makeNarvarRequest(narvarCreds, `/orders/${orderNumber}`, options)
+
+  try {
+    const response = await makeNarvarRequest(narvarCreds, `/orders/${orderNumber}`, options)
+    return response
+  } catch (error) {
+    if (error.message.includes(MISSING_NARVAR_ORDER_STRING)) return null // Narvar doesn't send a 404, only way to determine a missing order is via error message string match
+    throw error
+  }
 }
 
 const mergeNarvarItems = (mergedSalesOrderItems, existingNarvarOrderItems) => {
@@ -53,8 +66,8 @@ const mergeNarvarItems = (mergedSalesOrderItems, existingNarvarOrderItems) => {
     const correspondingNarvarItem = existingNarvarOrderItems.find(existingNarvarOrderItem => existingNarvarOrderItem.item_id === mergedSalesOrderItem.item_id)
     if (!correspondingNarvarItem) return mergedSalesOrderItem
     return (compareNarvarDateAttributes(mergedSalesOrderItem, correspondingNarvarItem, 'orderDetailLastModifiedDate'))
-      ? null
-      : mergedSalesOrderItem
+      ? mergedSalesOrderItem
+      : null
   }).filter(Boolean)
 
   if (updatedItems.length === 0) {
@@ -90,10 +103,16 @@ const mergeSalesOrders = (salesOrderBatch) => {
 }
 
 const syncSalesOrderBatchToNarvar = async (narvarCreds, salesOrderBatch) => {
-  const mergedSalesOrder = mergeSalesOrders (salesOrderBatch)
+  let finalSalesOrder = mergeSalesOrders (salesOrderBatch)
   const existingNarvarOrder = await getNarvarOrder (narvarCreds, salesOrderBatch[0].order_info.order_number)
-  const finalSalesOrder = mergeNarvarOrder (mergedSalesOrder, existingNarvarOrder)
-  return sendOrderToNarvar (narvarCreds, finalSalesOrder)
+  if (existingNarvarOrder) {
+    finalSalesOrder = mergeNarvarOrder (finalSalesOrder, existingNarvarOrder)
+  }
+  
+  if (finalSalesOrder) {
+    return sendOrderToNarvar (narvarCreds, finalSalesOrder)
+  }
+  return null
 }
 
 module.exports = {

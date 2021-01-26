@@ -36,7 +36,7 @@ const main = params => {
     salesOrdersGroupedByOrderNumber
       .map(addErrorHandling(syncSalesOrderBatchToNarvar.bind(null, narvarCreds)))
   );
-  
+
   return Promise.all(salesOrdersPromises)
     .then(passDown({ batches: salesOrdersGroupedByOrderNumber, messages: params.messages }))
     .catch(handleErrors);
