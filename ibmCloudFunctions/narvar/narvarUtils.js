@@ -118,5 +118,9 @@ const syncSalesOrderBatchToNarvar = async (narvarCreds, salesOrderBatch) => {
 module.exports = {
   getItemImage,
   getItemUrl,
-  syncSalesOrderBatchToNarvar
+  syncSalesOrderBatchToNarvar,
+  mergeNarvarItems,
+  mergeNarvarOrder,
+  mergeSalesOrderItems,
+  mergeSalesOrders
 }
