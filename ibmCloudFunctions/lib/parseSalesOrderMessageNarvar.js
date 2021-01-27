@@ -1,4 +1,9 @@
-const { JESTA_LANGUAGE_NUMBERS_TO_LOCALES, JESTA_STATUSES_TO_NARVAR_STATUSES } = require('../narvar/constantsNarvar') 
+const {
+  JESTA_LANGUAGE_NUMBERS_TO_LOCALES,
+  JESTA_STATUSES_TO_NARVAR_STATUSES,
+  NARVAR_ORDER_LAST_MODIFIED,
+  NARVAR_ORDER_ITEM_LAST_MODIFIED
+} = require('../narvar/constantsNarvar') 
 const { getItemImage, getItemUrl } = require('../narvar/narvarUtils') 
 const TOPIC_NAME = 'sales-order-details-connect-jdbc';
 
@@ -19,7 +24,7 @@ function parseSalesOrderMessage(msg) {
           checkout_locale: JESTA_LANGUAGE_NUMBERS_TO_LOCALES[msg.value.LANGUAGE_NO],
           currency_code: 'CAD',
           attributes: {
-            orderLastModifiedDate: new Date(msg.value.ORDER_MODIFIED_DATE).toISOString()
+            [NARVAR_ORDER_LAST_MODIFIED]: new Date(msg.value.ORDER_MODIFIED_DATE).toISOString()
           },
           order_items: [{
             item_id: msg.value.EXT_REF_ID,
@@ -36,7 +41,7 @@ function parseSalesOrderMessage(msg) {
             is_final_sale: false,
             line_number: msg.value.LINE,
             attributes: {
-              orderDetailLastModifiedDate: new Date(msg.value.MODIFIED_DATE).toISOString()
+              [NARVAR_ORDER_ITEM_LAST_MODIFIED]: new Date(msg.value.MODIFIED_DATE).toISOString()
             }
           }],
           billing: {
