@@ -14,7 +14,7 @@ function parseShipmentMessage(msg) {
         shipmentId: msg.value.SHIPMENT_ID.toString(),
         serviceType: msg.value.SERVICE_TYPE,
         destinationSiteId: msg.value.DEST_SITE_ID,
-        shipmentLastModifiedDate: new Date(msg.value.MODIFIED_DATE)
+        shipmentLastModifiedDate: new Date(msg.value.SHIPMENT_MODIFIED_DATE)
     };
 }
 
