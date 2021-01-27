@@ -114,7 +114,7 @@ describe('filterSalesOrderMessages', () => {
 
 describe('parseSalesOrderMessage', () => {
   it('inbound jesta message transformed correctly', async () => {
-    expect(parseSalesOrderMessage(validParams.messages[0])).toEqual({"order_info": {"attributes": {"orderLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "billing": {"amount": 100, "billed_to": {"address": {"city": "city", "country": "countryId", "state": "stateId", "street_1": "address1", "street_2": "address2", "zip": "zipCode"}, "email": "emailAddress", "first_name": "firstName", "last_name": "firstName", "phone": "homePhone"}, "payments": [{"expiration_date": "00/00"}], "shipping_handling": 100, "tax_amount": 100}, "checkout_locale": "en-CA", "currency_code": "CAD", "customer": {"address": {"city": "city", "country": "countryId", "state": "stateId", "street_1": "address1", "street_2": "address2", "zip": "zipCode"}, "email": "emailAddress", "first_name": "firstName", "last_name": "firstName", "phone": "homePhone"}, "order_date": "2001-09-09T01:46:40.000Z", "order_items": [{"attributes": {"orderDetailLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "final_sale_date": "2001-09-09T01:46:40.000Z", "fulfillment_status": undefined, "is_final_sale": false, "is_gift": false, "item_id": "id", "item_image": "https://i1.adis.ws/i/harryrosen/styleId?$prp-4col-xl$", "item_url": "https://harryrosen.com/en/product/styleId", "line_number": 1, "line_price": 100, "name": "descEng", "quantity": 1, "sku": "sku", "unit_price": 100}], "order_number": "67897", "status": undefined}})
+    expect(parseSalesOrderMessage(validParams.messages[0])).toEqual({"order_info": {"attributes": {"orderLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "billing": {"amount": 100, "billed_to": {"address": {"city": "city", "country": "countryId", "state": "stateId", "street_1": "address1", "street_2": "address2", "zip": "zipCode"}, "email": "emailAddress", "first_name": "firstName", "last_name": "firstName", "phone": "homePhone"}, "payments": [{"expiration_date": "00/00"}], "shipping_handling": 100, "tax_amount": 100}, "checkout_locale": "en-CA", "currency_code": "CAD", "customer": {"address": {"city": "city", "country": "countryId", "state": "stateId", "street_1": "address1", "street_2": "address2", "zip": "zipCode"}, "email": "emailAddress", "first_name": "firstName", "last_name": "firstName", "phone": "homePhone"}, "order_date": "2001-09-09T01:46:40.000Z", "order_items": [{"attributes": {"orderItemLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "final_sale_date": "2001-09-09T01:46:40.000Z", "fulfillment_status": undefined, "is_final_sale": false, "is_gift": false, "item_id": "id", "item_image": "https://i1.adis.ws/i/harryrosen/styleId?$prp-4col-xl$", "item_url": "https://harryrosen.com/en/product/styleId", "line_number": 1, "line_price": 100, "name": "descEng", "quantity": 1, "sku": "sku", "unit_price": 100}], "order_number": "67897", "status": undefined}})
   });
 });
 
@@ -139,35 +139,35 @@ describe('mergeNarvarItems', () => {
     expect(result).toEqual(orderItems)
   });
   it('merging two of the exact same items except the inbound item is more recent; return inbound item', () => {
-    const narvarItems = [{ ...orderItems[0], attributes: { orderDetailLastModifiedDate: '2000-09-09T01:46:40.000Z' } }]
+    const narvarItems = [{ ...orderItems[0], attributes: { orderItemLastModifiedDate: '2000-09-09T01:46:40.000Z' } }]
     const result = mergeNarvarItems(orderItems, narvarItems)
     expect(result).toEqual(orderItems)
   });
   it('merging two of the exact same items except the inbound item is older; return null since no changes required', () => {
-    const narvarItems = [{ ...orderItems[0], attributes: { orderDetailLastModifiedDate: '2002-09-09T01:46:40.000Z' } }]
+    const narvarItems = [{ ...orderItems[0], attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }]
     const result = mergeNarvarItems(orderItems, narvarItems)
     expect(result).toEqual(null)
   });
   it('merging two inbound items but only one is more recent than the narvar item', () => {
-    const narvarItems = [{ ...orderItems[0], attributes: { orderDetailLastModifiedDate: '2000-09-09T01:46:40.000Z' } }]
+    const narvarItems = [{ ...orderItems[0], attributes: { orderItemLastModifiedDate: '2000-09-09T01:46:40.000Z' } }]
     const newOrderItems = [{ ...orderItems[0] }, { ...orderItems[0], item_id: '1' }]
     const result = mergeNarvarItems(newOrderItems, narvarItems)
     expect(result).toEqual([newOrderItems[0], newOrderItems[1]])
   });
   it('merging two inbound items but only one is less recent than the narvar item', () => {
-    const narvarItems = [{ ...orderItems[0], attributes: { orderDetailLastModifiedDate: '2002-09-09T01:46:40.000Z' } }]
+    const narvarItems = [{ ...orderItems[0], attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }]
     const newOrderItems = [{ ...orderItems[0] }, { ...orderItems[0], item_id: '1' }]
     const result = mergeNarvarItems(newOrderItems, narvarItems)
     expect(result).toEqual([narvarItems[0], newOrderItems[1]])
   });
   it('merging two inbound items with two narvar items where both inbound items are more recent', () => {
-    const narvarItems = [{ ...orderItems[0], attributes: { orderDetailLastModifiedDate: '2000-09-09T01:46:40.000Z' } }, { ...orderItems[0], item_id: '1', attributes: { orderDetailLastModifiedDate: '2000-09-09T01:46:40.000Z' } }]
+    const narvarItems = [{ ...orderItems[0], attributes: { orderItemLastModifiedDate: '2000-09-09T01:46:40.000Z' } }, { ...orderItems[0], item_id: '1', attributes: { orderItemLastModifiedDate: '2000-09-09T01:46:40.000Z' } }]
     const newOrderItems = [{ ...orderItems[0] }, { ...orderItems[0], item_id: '1' }]
     const result = mergeNarvarItems(newOrderItems, narvarItems)
     expect(result).toEqual([newOrderItems[0], newOrderItems[1]])
   });
   it('merging two inbound items with two narvar items where both inbound items are less recent; return null since no changes are required', () => {
-    const narvarItems = [{ ...orderItems[0], attributes: { orderDetailLastModifiedDate: '2002-09-09T01:46:40.000Z' } }, { ...orderItems[0], item_id: '1', attributes: { orderDetailLastModifiedDate: '2002-09-09T01:46:40.000Z' } }]
+    const narvarItems = [{ ...orderItems[0], attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }, { ...orderItems[0], item_id: '1', attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }]
     const newOrderItems = [{ ...orderItems[0] }, { ...orderItems[0], item_id: '1' }]
     const result = mergeNarvarItems(newOrderItems, narvarItems)
     expect(result).toEqual(null)
@@ -207,12 +207,12 @@ describe('mergeSalesOrderItems', () => {
     expect(result).toEqual([newOrders[0].order_info.order_items[0]])
   });
   it('batch only contains 2 items that are the same but one is more recent; returns only the most recent item', () => {
-    const newOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], attributes: { orderDetailLastModifiedDate: '2002-09-09T01:46:40.000Z' } }] } }]
+    const newOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }] } }]
     const result = mergeSalesOrderItems(newOrders)
     expect(result).toEqual([newOrders[1].order_info.order_items[0]])
   });
   it('batch only contains 2 items that are the same but one is more recent and 1 item that is different; returns the most recent item and the different item', () => {
-    const newOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], attributes: { orderDetailLastModifiedDate: '2002-09-09T01:46:40.000Z' } }] } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], item_id: '1' }] } } ]
+    const newOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }] } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], item_id: '1' }] } } ]
     const result = mergeSalesOrderItems(newOrders)
     expect(result).toEqual([newOrders[1].order_info.order_items[0],newOrders[2].order_info.order_items[0]])
   });

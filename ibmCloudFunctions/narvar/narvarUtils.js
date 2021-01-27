@@ -1,7 +1,12 @@
 const fetch = require('node-fetch').default
 const base64 = require('base-64')
 
-const { LOCALE_TO_PRODUCT, MISSING_NARVAR_ORDER_STRING } = require('../narvar/constantsNarvar') 
+const {
+  LOCALE_TO_PRODUCT,
+  MISSING_NARVAR_ORDER_STRING,
+  NARVAR_ORDER_LAST_MODIFIED,
+  NARVAR_ORDER_ITEM_LAST_MODIFIED
+} = require('./constantsNarvar') 
 const { groupByAttribute, getMostUpToDateObject } = require('../lib/utils');
 
 const groupByItemId = groupByAttribute('item_id');
@@ -9,7 +14,7 @@ const groupByItemId = groupByAttribute('item_id');
 const getItemImage = (styleId) => `https://i1.adis.ws/i/harryrosen/${styleId}?$prp-4col-xl$`
 const getItemUrl = (styleId, locale) => `https://harryrosen.com/${locale.substr(0,2)}/${LOCALE_TO_PRODUCT[locale]}/${styleId}`
 
-const compareNarvarDateAttributes = (inboundObj, narvarObj, compareDateField) => (!narvarObj.attributes || new Date(inboundObj.attributes[compareDateField]).getTime() >= new Date(narvarObj.attributes[compareDateField]).getTime())
+const firstNarvarDateIsNewer = (inboundObj, narvarObj, compareDateField) => (!narvarObj.attributes || !narvarObj.attributes[compareDateField] || new Date(inboundObj.attributes[compareDateField]).getTime() >= new Date(narvarObj.attributes[compareDateField]).getTime())
 
 const makeNarvarRequest = async (narvarCreds, path, options) => {
   const response = await fetch(narvarCreds.baseUrl + path, options)
@@ -57,7 +62,7 @@ const mergeNarvarItems = (mergedSalesOrderItems, existingNarvarOrderItems) => {
   const unchangedExistingItems = existingNarvarOrderItems.map(existingNarvarOrderItem => {
     const correspondingJestaItem = mergedSalesOrderItems.find(mergedSalesOrderItem => mergedSalesOrderItem.item_id === existingNarvarOrderItem.item_id)
     if (!correspondingJestaItem) return existingNarvarOrderItem
-    return (!compareNarvarDateAttributes(correspondingJestaItem, existingNarvarOrderItem, 'orderDetailLastModifiedDate'))
+    return (!firstNarvarDateIsNewer(correspondingJestaItem, existingNarvarOrderItem, NARVAR_ORDER_ITEM_LAST_MODIFIED))
       ? existingNarvarOrderItem
       : null
   }).filter(Boolean)
@@ -65,7 +70,7 @@ const mergeNarvarItems = (mergedSalesOrderItems, existingNarvarOrderItems) => {
   const updatedItems = mergedSalesOrderItems.map(mergedSalesOrderItem => {
     const correspondingNarvarItem = existingNarvarOrderItems.find(existingNarvarOrderItem => existingNarvarOrderItem.item_id === mergedSalesOrderItem.item_id)
     if (!correspondingNarvarItem) return mergedSalesOrderItem
-    return (compareNarvarDateAttributes(mergedSalesOrderItem, correspondingNarvarItem, 'orderDetailLastModifiedDate'))
+    return (firstNarvarDateIsNewer(mergedSalesOrderItem, correspondingNarvarItem, NARVAR_ORDER_ITEM_LAST_MODIFIED))
       ? mergedSalesOrderItem
       : null
   }).filter(Boolean)
@@ -78,7 +83,7 @@ const mergeNarvarItems = (mergedSalesOrderItems, existingNarvarOrderItems) => {
 
 const mergeNarvarOrder = (mergedSalesOrder, existingNarvarOrder) => {
   let orderHeader, orderItems
-  if (compareNarvarDateAttributes(mergedSalesOrder.order_info, existingNarvarOrder.order_info, 'orderLastModifiedDate')) {
+  if (firstNarvarDateIsNewer(mergedSalesOrder.order_info, existingNarvarOrder.order_info, NARVAR_ORDER_LAST_MODIFIED)) {
     orderHeader = mergedSalesOrder.order_info
   } 
 
@@ -92,12 +97,12 @@ const mergeNarvarOrder = (mergedSalesOrder, existingNarvarOrder) => {
 const mergeSalesOrderItems = (salesOrderBatch) => {
   const allItems = salesOrderBatch.reduce((previous, current) => previous.concat(current.order_info.order_items), [])
   const allItemsGroupByItemId = groupByItemId(allItems)
-  const allItemsFiltered = allItemsGroupByItemId.reduce((previous, current) => previous.concat(getMostUpToDateObject(['attributes', 'orderDetailLastModifiedDate'])(current)), [])
+  const allItemsFiltered = allItemsGroupByItemId.reduce((previous, current) => previous.concat(getMostUpToDateObject(['attributes', NARVAR_ORDER_ITEM_LAST_MODIFIED])(current)), [])
   return allItemsFiltered
 }
 
 const mergeSalesOrders = (salesOrderBatch) => {
-  const mostUpToDateOrderHeader = getMostUpToDateObject(['order_info', 'attributes', 'orderLastModifiedDate'])(salesOrderBatch)
+  const mostUpToDateOrderHeader = getMostUpToDateObject(['order_info', 'attributes', NARVAR_ORDER_LAST_MODIFIED])(salesOrderBatch)
   const mergedSalesOrderItems = mergeSalesOrderItems (salesOrderBatch)
   return { order_info: { ...mostUpToDateOrderHeader.order_info, order_items: mergedSalesOrderItems } }
 }
