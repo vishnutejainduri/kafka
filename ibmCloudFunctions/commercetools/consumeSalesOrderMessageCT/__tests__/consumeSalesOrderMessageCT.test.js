@@ -19,7 +19,37 @@ const validParams = {
       value: {
         ORDER_NUMBER: '67897',
         STATUS: 'status',
-        MODIFIED_DATE: 1000000000000
+        EXT_REF_ID: 'id',
+        LINE: 1,
+        QTY_CANCELLED: 1.0,
+        MODIFIED_DATE: 1000000000000,
+        CREATED_DATE: 1000000000000,
+        ORDER_STATUS: 'orderStatus',
+        ORDER_CREATED_DATE: 1000000000000,
+        LANGUAGE_NO: 1,
+        ORDER_MODIFIED_DATE: 1000000000000,
+        GIFT_WRAP_IND: 'N',
+        STYLEID: 'styleId',
+        DESC_ENG: 'descEng',
+        DESC_FR: 'descFr',
+        QTY_ORDERED: 1.0,
+        SKU: 'sku',
+        UNIT_PRICE: 100.00,
+        EXTENSION_AMOUNT: 100.00,
+        TRANSACTION_TOTAL: 100.00,
+        EXPDATE: '0000',
+        TAX_TOTAL: 100.00,
+        SHIPPING_CHARGES_TOTAL: 100.00,
+        EMAIL_ADDRESS: 'emailAddress',
+        FIRST_NAME: 'firstName',
+        LAST_NAME: 'lastName',
+        ADDRESS_1: 'address1',
+        ADDRESS_2: 'address2',
+        CITY: 'city',
+        STATE_ID: 'stateId',
+        ZIP_CODE: 'zipCode',
+        COUNTRY_ID: 'countryId',
+        HOME_PHONE: 'homePhone'
       }
   }],
   mongoUri: 'mongo-uri',
@@ -75,7 +105,7 @@ describe('consumeSalesOrderMessageCT', () => {
 describe('parseSalesOrderMessageCt', () => {
   it('correct message', () => {
     const response = parseSalesOrderMessage(validParams.messages[0]);
-    expect(response).toEqual({ orderNumber: '67897', orderStatus: 'status', orderLastModifiedDate: new Date(validParams.messages[0].value.MODIFIED_DATE)  });
+    expect(response).toEqual({ orderNumber: '67897', orderStatus: 'orderStatus', orderLastModifiedDate: new Date(validParams.messages[0].value.ORDER_MODIFIED_DATE)  });
   });
 });
 

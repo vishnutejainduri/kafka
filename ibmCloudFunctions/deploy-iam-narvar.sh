@@ -1,5 +1,5 @@
 #!/bin/bash
-echo ">>> Deploying product-consumers CFs"
+echo ">>> Deploying narvar CFs"
 echo ">>> Logging into IBM Cloud…"
 DEPLOYER_API_KEY=$1
 ORG=$2" "$3
@@ -18,13 +18,7 @@ ibmcloud target -g $RESOURCE_GROUP
 ibmcloud fn property set --namespace $CLOUD_FUNCTIONS_NAMESPACE
 
 echo ">>> Contents Of Manifest File:"
-if [ $DEPLOY_TRIGGERS = "true" ]; then
-	echo ">>> Deploy with Triggers"
-  cat product-consumers/manifest-package.yaml product-consumers/manifest-actions.yaml product-consumers/manifest-triggers-iam.yaml product-consumers/manifest-rules-iam.yaml > manifest.yaml
-else
-	echo ">>> Deploy without Triggers"
-	cat product-consumers/manifest-package.yaml product-consumers/manifest-actions.yaml product-consumers/manifest-rules-iam.yaml > manifest.yaml
-fi
+cat narvar/manifest-package-ct.yaml narvar/manifest-actions-ct.yaml > manifest.yaml
 
 echo ">>> Currently Deployed Packages:"
 ibmcloud fn package list

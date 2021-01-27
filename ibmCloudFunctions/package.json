@@ -9,7 +9,7 @@
   "scripts": {
     "test": "jest",
     "test:dev": "jest --watch",
-    "pretest": "eslint './lib/**' './product-consumers/**' './commercetools/**'"
+    "pretest": "eslint './lib/**' './product-consumers/**' './commercetools/**' './narvar/**'"
   },
   "author": "",
   "license": "ISC",
@@ -31,6 +31,8 @@
     ]
   },
   "dependencies": {
-    "ajv": "^6.10.2"
+    "ajv": "^6.10.2",
+    "base-64": "^1.0.0",
+    "node-fetch": "^2.6.1"
   }
 }
