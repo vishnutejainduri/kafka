@@ -18,7 +18,7 @@ ibmcloud target -g $RESOURCE_GROUP
 ibmcloud fn property set --namespace $CLOUD_FUNCTIONS_NAMESPACE
 
 echo ">>> Contents Of Manifest File:"
-cat narvar/manifest-package-ct.yaml narvar/manifest-actions-ct.yaml > manifest.yaml
+cat narvar/manifest-package-narvar.yaml narvar/manifest-actions-narvar.yaml > manifest.yaml
 
 echo ">>> Currently Deployed Packages:"
 ibmcloud fn package list
@@ -28,6 +28,6 @@ echo ">>> Currently Deployed Triggers:"
 ibmcloud fn trigger list
 echo ">>> Currently Deployed Rules:"
 ibmcloud fn rule list
-echo ">>> Deploying Actions Using WhiskDeploy…"
+echo ">>> Deploying Narvar Actions Using WhiskDeploy…"
 ibmcloud fn deploy --project .  -d -v
-echo ">>> Successfully Deployed Actions Using WhiskDeploy."
+echo ">>> Successfully Deployed Narvar Actions Using WhiskDeploy."

@@ -34,6 +34,6 @@ echo ">>> Currently Deployed Triggers:"
 ibmcloud fn trigger list
 echo ">>> Currently Deployed Rules:"
 ibmcloud fn rule list
-echo ">>> Deploying Actions Using WhiskDeploy…"
+echo ">>> Deploying product-consumers Actions Using WhiskDeploy…"
 ibmcloud fn deploy --project .  -d -v
-echo ">>> Successfully Deployed Actions Using WhiskDeploy."
+echo ">>> Successfully Deployed producer-consumers Actions Using WhiskDeploy."
