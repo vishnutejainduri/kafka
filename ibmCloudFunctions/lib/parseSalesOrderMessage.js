@@ -11,8 +11,8 @@ function filterSalesOrderMessages(msg) {
 function parseSalesOrderMessage(msg) {
     return {
         orderNumber: msg.value.ORDER_NUMBER,
-        orderStatus: msg.value.STATUS,
-        orderLastModifiedDate: new Date(msg.value.MODIFIED_DATE)
+        orderStatus: msg.value.ORDER_STATUS,
+        orderLastModifiedDate: new Date(msg.value.ORDER_MODIFIED_DATE)
     };
 }
 
