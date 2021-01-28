@@ -1,8 +1,8 @@
 const { filterShipmentMessages, filterMissingTrackingNumberMessages, parseShipmentMessage } = require('../../lib/parseShipmentMessageNarvar');
-//const { syncSalesOrderBatchToNarvar } = require('../narvarUtils') 
+const { syncShipmentBatchToNarvar } = require('../narvarUtils') 
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
-//const { groupByAttribute } = require('../../lib/utils');
+const { groupByAttribute } = require('../../lib/utils');
 const {
   addErrorHandling,
   addLoggingToMain,
@@ -12,7 +12,7 @@ const {
   passDown
 } = require('../../product-consumers/utils');
 
-//const groupByOrderNumber = groupByAttribute(['order_info', 'order_number']);
+const groupByOrderNumber = groupByAttribute(['order_info', 'order_number']);
 
 const main = params => {
   log(createLog.params('consumeShipmentMessageNarvar', params));
@@ -32,16 +32,16 @@ const main = params => {
   );
   console.log('shipmentsToCreateOrUpdate', shipmentsToCreateOrUpdate)
 
-  /*const salesOrdersGroupedByOrderNumber = groupByOrderNumber(salesOrdersToCreateOrUpdate);
+  const shipmentsGroupedByOrderNumber = groupByOrderNumber(shipmentsToCreateOrUpdate);
 
-  const salesOrdersPromises = (
-    salesOrdersGroupedByOrderNumber
-      .map(addErrorHandling(syncSalesOrderBatchToNarvar.bind(null, narvarCreds)))
+  const shipmentsPromises = (
+    shipmentsGroupedByOrderNumber
+      .map(addErrorHandling(syncShipmentBatchToNarvar.bind(null, narvarCreds)))
   );
 
-  return Promise.all(salesOrdersPromises)
-    .then(passDown({ batches: salesOrdersGroupedByOrderNumber, messages: params.messages }))
-    .catch(handleErrors);*/
+  return Promise.all(shipmentsPromises)
+    .then(passDown({ batches: shipmentsGroupedByOrderNumber, messages: params.messages }))
+    .catch(handleErrors);
 };
 
 global.main = addLoggingToMain(main, messagesLogs);

@@ -120,10 +120,15 @@ const syncSalesOrderBatchToNarvar = async (narvarCreds, salesOrderBatch) => {
   return null
 }
 
+const syncShipmentBatchToNarvar = async (narvarCreds, salesOrderBatch) => {
+  return null
+}
+
 module.exports = {
   getItemImage,
   getItemUrl,
   syncSalesOrderBatchToNarvar,
+  syncShipmentBatchToNarvar,
   mergeNarvarItems,
   mergeNarvarOrder,
   mergeSalesOrderItems,

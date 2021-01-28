@@ -1,5 +1,8 @@
 const {
-  NARVAR_FULFILLMENT_TYPES
+  NARVAR_FULFILLMENT_TYPES,
+  JESTA_CARRIER_ID_TO_NARVAR_CARRIER_ID,
+  JESTA_SERVICE_TYPES_TO_NARVAR_SERVICE_TYPES,
+  NARVAR_SHIPMENT_LAST_MODIFIED
 } = require('../narvar/constantsNarvar') 
 const TOPIC_NAMES = ['shipment-details-connect-jdbc', 'shipments-connect-jdbc']
 
@@ -29,14 +32,17 @@ function parseShipmentMessage(msg) {
             fulfillment_type: msg.value.DEST_SITE_ID ? NARVAR_FULFILLMENT_TYPES.BOPIS : NARVAR_FULFILLMENT_TYPES.HOME_DELIVERY
           }],
           shipments: [{
+            attributes: {
+              [NARVAR_SHIPMENT_LAST_MODIFIED]: new Date(msg.value.MODIFIED_DATE).toISOString()
+            },
             items_info: [{
               item_id: msg.value.EXT_REF_ID,
               sku: msg.value.SKU,
               quantity: msg.value.QTY_SHIPPED
             }],
             ship_method: msg.value.SERVICE_TYPE,
-            carrier: msg.value.CARRIER_ID,
-            carrier_service: msg.value.SERVICE_TYPE,
+            carrier: JESTA_CARRIER_ID_TO_NARVAR_CARRIER_ID[msg.value.CARRIER_ID],
+            carrier_service: JESTA_SERVICE_TYPES_TO_NARVAR_SERVICE_TYPES[msg.value.CARRIER_ID][msg.value.SERVICE_TYPE],
             tracking_number: msg.value.TRACKING_NUMBER,
             shipped_from: {
               first_name: msg.value.FROM_STORE_NAME,
