@@ -10,6 +10,7 @@
           timeout: 58000
         inputs:
           topicName: sales-order-details-connect-jdbc
+          topicName2: sales-orders-connect-jdbc
       consume-shipment-message-narvar:
         location: ./narvar/consumeShipmentMessageNarvar/dist/bundle.js
         runtime: nodejs:10
@@ -17,4 +18,5 @@
           memorySize: 2048
           timeout: 58000
         inputs:
-          topicName: shipment-details-connect-jdbc 
+          topicName: shipment-details-connect-jdbc
+          topicName2: shipments-connect-jdbc

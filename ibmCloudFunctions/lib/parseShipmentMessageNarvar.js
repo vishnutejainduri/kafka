@@ -1,17 +1,25 @@
 const {
   NARVAR_FULFILLMENT_TYPES
 } = require('../narvar/constantsNarvar') 
-const TOPIC_NAME = 'shipment-details-connect-jdbc';
+const TOPIC_NAMES = ['shipment-details-connect-jdbc', 'shipments-connect-jdbc']
 
-function filterSalesOrderMessages(msg) {
-    if (msg.topic !== TOPIC_NAME) {
+function filterShipmentMessages(msg) {
+    if (!TOPIC_NAMES.includes(msg.topic)) {
         throw new Error('Can only parse Shipment update messages');
     }
 
     return true; 
 }
 
-function parseSalesOrderMessage(msg) {
+function filterMissingTrackingNumberMessages(msg) {
+    if (!msg.value.TRACKING_NUMBER) {
+      return false;
+    }
+
+    return true; 
+}
+
+function parseShipmentMessage(msg) {
     return {
         order_info: {
           order_number: msg.value.ORDER_NUMBER,
@@ -19,7 +27,7 @@ function parseSalesOrderMessage(msg) {
             item_id: msg.value.EXT_REF_ID,
             sku: msg.value.SKU,
             fulfillment_type: msg.value.DEST_SITE_ID ? NARVAR_FULFILLMENT_TYPES.BOPIS : NARVAR_FULFILLMENT_TYPES.HOME_DELIVERY
-          }]
+          }],
           shipments: [{
             items_info: [{
               item_id: msg.value.EXT_REF_ID,
@@ -45,7 +53,7 @@ function parseSalesOrderMessage(msg) {
             shipped_to: {
               first_name: msg.value.FIRST_NAME,
               last_name: msg.value.LAST_NAME,
-              email: null,
+              email: msg.value.EMAIL_ADDRESS,
               phone: msg.value.HOME_PHONE,
               address: {
                 street_1: msg.value.ADDRESS_1,
@@ -62,6 +70,7 @@ function parseSalesOrderMessage(msg) {
 }
 
 module.exports = {
-    parseSalesOrderMessage,
-    filterSalesOrderMessages
+    parseShipmentMessage,
+    filterShipmentMessages,
+    filterMissingTrackingNumberMessages
 };

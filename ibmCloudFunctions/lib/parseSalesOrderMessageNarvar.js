@@ -5,10 +5,10 @@ const {
   NARVAR_ORDER_ITEM_LAST_MODIFIED
 } = require('../narvar/constantsNarvar') 
 const { getItemImage, getItemUrl } = require('../narvar/narvarUtils') 
-const TOPIC_NAME = 'sales-order-details-connect-jdbc';
+const TOPIC_NAMES = ['sales-order-details-connect-jdbc', 'sales-orders-connect-jdbc']
 
 function filterSalesOrderMessages(msg) {
-    if (msg.topic !== TOPIC_NAME) {
+    if (!TOPIC_NAMES.includes(msg.topic)) {
         throw new Error('Can only parse Sales Order Details update messages');
     }
 
