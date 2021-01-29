@@ -10,10 +10,13 @@ function filterShipmentMessages(msg) {
 
 function parseShipmentMessage(msg) {
     return {
-        orderNumber: msg.value.ORDER_NUMBER,
-        shipmentId: msg.value.SHIPMENT_ID.toString(),
-        serviceType: msg.value.SERVICE_TYPE,
+        carrierId: msg.value.CARRIER_ID,
         destinationSiteId: msg.value.DEST_SITE_ID,
+        fillSiteId: msg.value.FILL_SITE_ID,
+        fromZipCode: msg.value.FROM_ZIP_CODE,
+        orderNumber: msg.value.ORDER_NUMBER,
+        serviceType: msg.value.SERVICE_TYPE,
+        shipmentId: msg.value.SHIPMENT_ID.toString(),
         shipmentLastModifiedDate: new Date(msg.value.MODIFIED_DATE)
     };
 }
