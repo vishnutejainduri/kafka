@@ -33,7 +33,7 @@ function parseShipmentMessage(msg) {
           }],
           shipments: [{
             attributes: {
-              [NARVAR_SHIPMENT_LAST_MODIFIED]: new Date(msg.value.MODIFIED_DATE).toISOString()
+              [NARVAR_SHIPMENT_LAST_MODIFIED]: new Date(msg.value.SHIPMENT_MODIFIED_DATE).toISOString()
             },
             items_info: [{
               item_id: msg.value.EXT_REF_ID,
