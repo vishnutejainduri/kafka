@@ -5,11 +5,14 @@ const {
   LOCALE_TO_PRODUCT,
   MISSING_NARVAR_ORDER_STRING,
   NARVAR_ORDER_LAST_MODIFIED,
-  NARVAR_ORDER_ITEM_LAST_MODIFIED
+  NARVAR_ORDER_ITEM_LAST_MODIFIED,
+  NARVAR_SHIPMENT_LAST_MODIFIED,
+  NARVAR_SHIPMENT_ITEM_LAST_MODIFIED
 } = require('./constantsNarvar') 
 const { groupByAttribute, getMostUpToDateObject } = require('../lib/utils');
 
 const groupByItemId = groupByAttribute('item_id');
+const groupByTrackingNumber = groupByAttribute('tracking_number');
 
 const getItemImage = (styleId) => `https://i1.adis.ws/i/harryrosen/${styleId}?$prp-4col-xl$`
 const getItemUrl = (styleId, locale) => `https://harryrosen.com/${locale.substr(0,2)}/${LOCALE_TO_PRODUCT[locale]}/${styleId}`
@@ -94,21 +97,44 @@ const mergeNarvarOrder = (mergedSalesOrder, existingNarvarOrder) => {
   return { order_info: { ...orderHeader, order_items: orderItems } }
 }
 
-const mergeSalesOrderItems = (salesOrderBatch) => {
+const mergeShipmentItems = (shipments) => {
+  const allShipmentItems = shipments.reduce((previous, current) => previous.concat(current.items_info), [])
+  const allShipmentItemsGroupByItemId = groupByItemId(allShipmentItems)
+  const allShipmentItemsFiltered = allShipmentItemsGroupByItemId.reduce((previous, current) => previous.concat((getMostUpToDateObject(['attributes', `${current[0].item_id}-${NARVAR_SHIPMENT_ITEM_LAST_MODIFIED}`])(shipments)).items_info[0]), [])
+  return allShipmentItemsFiltered
+}
+
+const mergeShipments = (salesOrderBatch) => {
+  const allShipments = salesOrderBatch.reduce((previous, current) => previous.concat(current.order_info.shipments), [])
+  const allShipmentsGroupByTrackingNumber = groupByTrackingNumber(allShipments)
+  const allShipmentsFiltered = allShipmentsGroupByTrackingNumber.map(shipmentsGroupByTrackingNumber => {
+    let mostUpToDateShipment = getMostUpToDateObject(['attributes', NARVAR_SHIPMENT_LAST_MODIFIED])(shipmentsGroupByTrackingNumber)
+    const mergedShipmentItems = mergeShipmentItems(shipmentsGroupByTrackingNumber)
+    shipmentsGroupByTrackingNumber.forEach(shipment => {
+      const compareDateField = `${shipment.items_info[0].item_id}-${NARVAR_SHIPMENT_ITEM_LAST_MODIFIED}`
+      mostUpToDateShipment['attributes'][compareDateField] = (getMostUpToDateObject(['attributes', compareDateField])(allShipments)).attributes[compareDateField]
+    })
+    return { ...mostUpToDateShipment, items_info: mergedShipmentItems }
+  })
+  return allShipmentsFiltered
+}
+
+const mergeSalesOrderItems = (salesOrderBatch, orderItemCompareDateField) => {
   const allItems = salesOrderBatch.reduce((previous, current) => previous.concat(current.order_info.order_items), [])
   const allItemsGroupByItemId = groupByItemId(allItems)
-  const allItemsFiltered = allItemsGroupByItemId.reduce((previous, current) => previous.concat(getMostUpToDateObject(['attributes', NARVAR_ORDER_ITEM_LAST_MODIFIED])(current)), [])
+  const allItemsFiltered = allItemsGroupByItemId.reduce((previous, current) => previous.concat(getMostUpToDateObject(['attributes', orderItemCompareDateField])(current)), [])
   return allItemsFiltered
 }
 
-const mergeSalesOrders = (salesOrderBatch) => {
+const mergeSalesOrders = (salesOrderBatch, orderItemCompareDateField) => {
   const mostUpToDateOrderHeader = getMostUpToDateObject(['order_info', 'attributes', NARVAR_ORDER_LAST_MODIFIED])(salesOrderBatch)
-  const mergedSalesOrderItems = mergeSalesOrderItems (salesOrderBatch)
-  return { order_info: { ...mostUpToDateOrderHeader.order_info, order_items: mergedSalesOrderItems } }
+  const mergedSalesOrderItems = mergeSalesOrderItems (salesOrderBatch, orderItemCompareDateField)
+  const mergedShipments = mergeShipments(salesOrderBatch)
+  return { order_info: { ...mostUpToDateOrderHeader.order_info, order_items: mergedSalesOrderItems, shipments: mergedShipments } }
 }
 
 const syncSalesOrderBatchToNarvar = async (narvarCreds, salesOrderBatch) => {
-  let finalSalesOrder = mergeSalesOrders (salesOrderBatch)
+  let finalSalesOrder = mergeSalesOrders (salesOrderBatch, NARVAR_ORDER_ITEM_LAST_MODIFIED)
   const existingNarvarOrder = await getNarvarOrder (narvarCreds, salesOrderBatch[0].order_info.order_number)
   if (existingNarvarOrder) {
     finalSalesOrder = mergeNarvarOrder (finalSalesOrder, existingNarvarOrder)
@@ -121,6 +147,8 @@ const syncSalesOrderBatchToNarvar = async (narvarCreds, salesOrderBatch) => {
 }
 
 const syncShipmentBatchToNarvar = async (narvarCreds, salesOrderBatch) => {
+  let finalSalesOrder = mergeSalesOrders (salesOrderBatch, NARVAR_SHIPMENT_ITEM_LAST_MODIFIED)
+  console.log('finalSalesOrder', JSON.stringify(finalSalesOrder, null, 4))
   return null
 }
 

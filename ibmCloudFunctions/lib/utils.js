@@ -58,8 +58,10 @@ const getMostUpToDateObject = datePath => objects => {
     const objectsSortedByDate = objects.sort((object1, object2) => {
         let date2 = getAttributePathValue(datePath)(object2)
         if (!(date2 instanceof Date) && !(Number.isInteger(date2))) date2 = new Date(date2).getTime()
+        if (!date2) date2 = 0
         let date1 = getAttributePathValue(datePath)(object1)
         if (!(date1 instanceof Date) && !(Number.isInteger(date1))) date1 = new Date(date1).getTime()
+        if (!date1) date1 = 0
         return date2 - date1
       });
 

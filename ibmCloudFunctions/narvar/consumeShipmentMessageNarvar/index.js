@@ -30,7 +30,7 @@ const main = params => {
       .map(addErrorHandling(msg => filterMissingTrackingNumberMessages(msg) ? msg : null))
       .map(addErrorHandling(parseShipmentMessage))
   );
-  console.log('shipmentsToCreateOrUpdate', shipmentsToCreateOrUpdate)
+  console.log('shipmentsToCreateOrUpdate', JSON.stringify(shipmentsToCreateOrUpdate))
 
   const shipmentsGroupedByOrderNumber = groupByOrderNumber(shipmentsToCreateOrUpdate);
 

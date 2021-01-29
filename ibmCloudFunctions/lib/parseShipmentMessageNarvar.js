@@ -2,7 +2,10 @@ const {
   NARVAR_FULFILLMENT_TYPES,
   JESTA_CARRIER_ID_TO_NARVAR_CARRIER_ID,
   JESTA_SERVICE_TYPES_TO_NARVAR_SERVICE_TYPES,
-  NARVAR_SHIPMENT_LAST_MODIFIED
+  NARVAR_SHIPMENT_LAST_MODIFIED,
+  NARVAR_SHIPMENT_ITEM_LAST_MODIFIED,
+  NARVAR_ORDER_LAST_MODIFIED,
+  NARVAR_ORDER_ITEM_LAST_MODIFIED
 } = require('../narvar/constantsNarvar') 
 const TOPIC_NAMES = ['shipment-details-connect-jdbc', 'shipments-connect-jdbc']
 
@@ -26,14 +29,22 @@ function parseShipmentMessage(msg) {
     return {
         order_info: {
           order_number: msg.value.ORDER_NUMBER,
+          attributes: {
+            [NARVAR_ORDER_LAST_MODIFIED]: null,
+          },
           order_items: [{
             item_id: msg.value.EXT_REF_ID,
             sku: msg.value.SKU,
-            fulfillment_type: msg.value.DEST_SITE_ID ? NARVAR_FULFILLMENT_TYPES.BOPIS : NARVAR_FULFILLMENT_TYPES.HOME_DELIVERY
+            fulfillment_type: msg.value.DEST_SITE_ID ? NARVAR_FULFILLMENT_TYPES.BOPIS : NARVAR_FULFILLMENT_TYPES.HOME_DELIVERY,
+            attributes: {
+              [NARVAR_ORDER_ITEM_LAST_MODIFIED]: null,
+              [NARVAR_SHIPMENT_ITEM_LAST_MODIFIED]: new Date(msg.value.MODIFIED_DATE).toISOString()
+            },
           }],
           shipments: [{
             attributes: {
-              [NARVAR_SHIPMENT_LAST_MODIFIED]: new Date(msg.value.SHIPMENT_MODIFIED_DATE).toISOString()
+              [NARVAR_SHIPMENT_LAST_MODIFIED]: new Date(msg.value.SHIPMENT_MODIFIED_DATE).toISOString(),
+              [`${msg.value.EXT_REF_ID}-${NARVAR_SHIPMENT_ITEM_LAST_MODIFIED}`]: new Date(msg.value.MODIFIED_DATE).toISOString()
             },
             items_info: [{
               item_id: msg.value.EXT_REF_ID,
@@ -41,6 +52,7 @@ function parseShipmentMessage(msg) {
               quantity: msg.value.QTY_SHIPPED
             }],
             ship_method: msg.value.SERVICE_TYPE,
+            ship_date: new Date(msg.value.SHIPPED_DATE).toISOString(),
             carrier: JESTA_CARRIER_ID_TO_NARVAR_CARRIER_ID[msg.value.CARRIER_ID],
             carrier_service: JESTA_SERVICE_TYPES_TO_NARVAR_SERVICE_TYPES[msg.value.CARRIER_ID][msg.value.SERVICE_TYPE],
             tracking_number: msg.value.TRACKING_NUMBER,
