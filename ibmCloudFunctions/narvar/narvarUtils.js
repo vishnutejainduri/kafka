@@ -278,5 +278,8 @@ module.exports = {
   mergeNarvarItems,
   mergeNarvarOrder,
   mergeSalesOrderItems,
-  mergeSalesOrders
+  mergeSalesOrders,
+  mergeFulfillmentType,
+  acceptMergedSalesOrderItem,
+  mergeShipmentItems
 }

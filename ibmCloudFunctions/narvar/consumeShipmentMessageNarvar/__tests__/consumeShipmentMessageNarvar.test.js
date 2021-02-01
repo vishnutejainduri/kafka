@@ -1,52 +1,57 @@
-const consumeSalesOrderMessageNarvar = require('..');
+const consumeShipmentMessageNarvar = require('..');
 const {
-  filterSalesOrderMessages,
-  parseSalesOrderMessage
-} = require('../../../lib/parseSalesOrderMessageNarvar');
+  filterShipmentMessages,
+  parseShipmentMessage,
+  filterMissingTrackingNumberMessages
+} = require('../../../lib/parseShipmentMessageNarvar');
 const {
   addErrorHandling,
 } = require('../../../product-consumers/utils');
 const {
-  NARVAR_ORDER_ITEM_LAST_MODIFIED
+  NARVAR_SHIPMENT_ITEM_LAST_MODIFIED
 } = require('../../constantsNarvar') 
 const {
-  mergeNarvarItems,
-  mergeNarvarOrder,
-  mergeSalesOrderItems,
-  mergeSalesOrders,
-  acceptMergedSalesOrderItem
-} = require('../../narvarUtils') 
+  //mergeNarvarItems,
+  //mergeNarvarOrder,
+  mergeShipmentItems,
+  //mergeSalesOrders,
+  //mergeFulfillmentType
+} = require('../../narvarUtils')
 
 jest.mock('node-fetch');
 
 const validParams = {
-  topicName: 'sales-order-details-connect-jdbc',
+  topicName: 'shipment-details-connect-jdbc',
   messages: [{
-      topic: 'sales-order-details-connect-jdbc',
+      topic: 'shipment-details-connect-jdbc',
       value: {
-        ORDER_NUMBER: '67897',
-        STATUS: 'status',
-        EXT_REF_ID: 'id',
+        SHIPMENT_ID: 'shipmentId',
+        SITE_ID: 'siteId',
         LINE: 1,
-        QTY_CANCELLED: 1.0,
+        BUSINESS_UNIT_ID: 1,
+        STATUS: 'SHIPPED',
+        ORDER_NUMBER: '67897',
+        TRACKING_NUMBER: 'trackingNumber', 
+        CARRIER_ID: 'carrierId',
+        QTY_SHIPPED: 1.0,
+        EXT_REF_ID: 'extRefId',
         MODIFIED_DATE: 1000000000000,
         CREATED_DATE: 1000000000000,
-        ORDER_STATUS: 'orderStatus',
-        ORDER_CREATED_DATE: 1000000000000,
-        LANGUAGE_NO: 1,
-        ORDER_MODIFIED_DATE: 1000000000000,
-        GIFT_WRAP_IND: 'N',
-        STYLEID: 'styleId',
-        DESC_ENG: 'descEng',
-        DESC_FR: 'descFr',
-        QTY_ORDERED: 1.0,
+        SHIPPED_DATE: 1000000000000,
+        SHIPMENT_MODIFIED_DATE: 1000000000000,
+        SHIPMENT_CREATED_DATE: 1000000000000,
         SKU: 'sku',
-        UNIT_PRICE: 100.00,
-        EXTENSION_AMOUNT: 100.00,
-        TRANSACTION_TOTAL: 100.00,
-        EXPDATE: '0000',
-        TAX_TOTAL: 100.00,
-        SHIPPING_CHARGES_TOTAL: 100.00,
+        DEST_SITE_ID: 'destSiteId',
+        SERVICE_TYPE: 'serviceType',
+        FROM_STORE_NAME: 'fromStoreName',
+        FROM_ADDRESS_1: 'fromAddress1',
+        FROM_ADDRESS_2: 'fromAddress2',
+        FROM_CITY: 'fromCity',
+        FROM_STATE_ID: 'fromStateId',
+        FROM_ZIP_CODE: 'fromZipCode',
+        FILL_SITE_ID: 'fillSiteId',
+        FROM_COUNTRY_ID: 'fromCountryId',
+        FROM_HOME_PHONE: 'fromHomePhone',
         EMAIL_ADDRESS: 'emailAddress',
         FIRST_NAME: 'firstName',
         LAST_NAME: 'lastName',
@@ -66,17 +71,18 @@ const validParams = {
 
 const orders =  
   validParams.messages
-  .filter(addErrorHandling(filterSalesOrderMessages))
-  .map(addErrorHandling(parseSalesOrderMessage))
+  .filter(addErrorHandling(filterShipmentMessages))
+  .filter(addErrorHandling(filterMissingTrackingNumberMessages))
+  .map(addErrorHandling(parseShipmentMessage))
 
-describe('consumeSalesOrderMessageNarvar', () => {
+describe('consumeShipmentMessageNarvar', () => {
   it('Returns an error if given params are invalid', async () => {
     const invalidParams = {};
-    return expect((await consumeSalesOrderMessageNarvar(invalidParams)).errorResult).toBeTruthy();
+    return expect((await consumeShipmentMessageNarvar(invalidParams)).errorResult).toBeTruthy();
   });
 
   it('returns success result if given valid params and a valid message', async () => {
-    const response = await consumeSalesOrderMessageNarvar(validParams);
+    const response = await consumeShipmentMessageNarvar(validParams);
     expect(response).toEqual({
       batchSuccessCount: 1,
       messagesCount: 1,
@@ -86,7 +92,7 @@ describe('consumeSalesOrderMessageNarvar', () => {
   });
 
   it('returns success result if given valid params and a valid message; batch messages if same order number', async () => {
-    const response = await consumeSalesOrderMessageNarvar({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0] }] });
+    const response = await consumeShipmentMessageNarvar({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0] }] });
     expect(response).toEqual({
       batchSuccessCount: 1,
       messagesCount: 2,
@@ -96,7 +102,7 @@ describe('consumeSalesOrderMessageNarvar', () => {
   });
 
   it('returns success result if given valid params and a valid message; don\'t batch messages if different order number', async () => {
-    const response = await consumeSalesOrderMessageNarvar({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, ORDER_NUMBER: '11111' } }] });
+    const response = await consumeShipmentMessageNarvar({ ...validParams, messages: [{ ...validParams.messages[0] },{ ...validParams.messages[0], value: { ...validParams.messages[0].value, ORDER_NUMBER: '11111' } }] });
     expect(response).toEqual({
       batchSuccessCount: 2,
       messagesCount: 2,
@@ -106,23 +112,33 @@ describe('consumeSalesOrderMessageNarvar', () => {
   });
 });
 
-describe('filterSalesOrderMessages', () => {
+describe('filterShipmentMessages', () => {
   it('removes messages with wrong topic', async () => {
     const invalidMessages = { ...validParams, messages: [{ ...validParams.messages[0], topic: 'some-topic' }] }
-    expect(() => filterSalesOrderMessages(invalidMessages.messages[0])).toThrow('Can only parse Sales Order Details update messages')
+    expect(() => filterShipmentMessages(invalidMessages.messages[0])).toThrow('Can only parse Shipment update messages')
   });
   it('does not remove messages with correct topic', async () => {
-    expect(filterSalesOrderMessages(validParams.messages[0])).toEqual(true)
+    expect(filterShipmentMessages(validParams.messages[0])).toEqual(true)
   });
 });
 
-describe('parseSalesOrderMessage', () => {
+describe('filterMissingTrackingNumberMessages', () => {
+  it('removes messages with no tracking number', async () => {
+    const invalidMessages = { ...validParams, messages: [{ ...validParams.messages[0], value: { ...validParams.messages[0].value, TRACKING_NUMBER: null } }] }
+    expect(filterMissingTrackingNumberMessages(invalidMessages.messages[0])).toEqual(false)
+  });
+  it('does not remove messages with tracking number', async () => {
+    expect(filterMissingTrackingNumberMessages(validParams.messages[0])).toEqual(true)
+  });
+});
+
+describe('parseShipmentMessage', () => {
   it('inbound jesta message transformed correctly', async () => {
-    expect(parseSalesOrderMessage(validParams.messages[0])).toEqual({"order_info": {"attributes": {"orderLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "billing": {"amount": 100, "billed_to": {"address": {"city": "city", "country": "countryId", "state": "stateId", "street_1": "address1", "street_2": "address2", "zip": "zipCode"}, "email": "emailAddress", "first_name": "firstName", "last_name": "firstName", "phone": "homePhone"}, "payments": [{"expiration_date": "00/00"}], "shipping_handling": 100, "tax_amount": 100}, "checkout_locale": "en-CA", "currency_code": "CAD", "customer": {"address": {"city": "city", "country": "countryId", "state": "stateId", "street_1": "address1", "street_2": "address2", "zip": "zipCode"}, "email": "emailAddress", "first_name": "firstName", "last_name": "firstName", "phone": "homePhone"}, "order_date": "2001-09-09T01:46:40.000Z", "order_items": [{"attributes": {"orderItemLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "final_sale_date": "2001-09-09T01:46:40.000Z", "fulfillment_status": undefined, "is_final_sale": false, "is_gift": false, "item_id": "id", "item_image": "https://i1.adis.ws/i/harryrosen/styleId?$prp-4col-xl$", "item_url": "https://harryrosen.com/en/product/styleId", "line_number": 1, "line_price": 100, "name": "descEng", "quantity": 1, "sku": "sku", "unit_price": 100}], "order_number": "67897", "status": undefined}})
+    expect(parseShipmentMessage(validParams.messages[0])).toEqual({"order_info": {"attributes": {"orderLastModifiedDate": null}, "order_items": [{"attributes": {"orderItemLastModifiedDate": null, "shipmentItemLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "fulfillment_type": "BOPIS", "item_id": "extRefId", "sku": "sku"}], "order_number": "67897", "shipments": [{"attributes": {"extRefId-shipmentItemLastModifiedDate": "2001-09-09T01:46:40.000Z", "shipmentLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "carrier": undefined, "carrier_service": null, "items_info": [{"item_id": "extRefId", "quantity": 1, "sku": "sku"}], "ship_date": "2001-09-09T01:46:40.000Z", "ship_method": "serviceType", "shipped_from": {"address": {"city": "fromCity", "country": "fromCountryId", "state": "fromStateId", "street_1": "fromAddress1", "street_2": "fromAddress2", "zip": "fromZipCode"}, "first_name": "fromStoreName", "phone": "fromHomePhone"}, "shipped_to": {"address": {"city": "city", "country": "countryId", "state": "stateId", "street_1": "address1", "street_2": "address2", "zip": "zipCode"}, "email": "emailAddress", "first_name": "firstName", "last_name": "lastName", "phone": "homePhone"}, "tracking_number": "trackingNumber"}]}})
   });
 });
 
-describe('mergeNarvarItems', () => {
+/*describe('mergeNarvarItems', () => {
   const orderItems = orders[0].order_info.order_items
   it('merging two empty items returns null since there are no needed changes', () => {
     const result = mergeNarvarItems({
@@ -243,48 +259,16 @@ describe('mergeNarvarOrder', () => {
     const result = mergeNarvarOrder(orders[0], narvarOrder)
     expect(result).toEqual(narvarOrder)
   });
-});
+});*/
 
-describe('mergeSalesOrderItems', () => {
-  it('batch only contains 1 item and so just returns the 1 item', () => {
-    const result = mergeSalesOrderItems(orders, NARVAR_ORDER_ITEM_LAST_MODIFIED)
-    expect(result).toEqual(orders[0].order_info.order_items)
+describe('mergeShipmentItems', () => {
+  it('batch only contains 1 shipment item and so just returns the 1 item', () => {
+    const result = mergeShipmentItems(orders[0].order_info.shipments, NARVAR_SHIPMENT_ITEM_LAST_MODIFIED)
+    expect(result).toEqual(orders[0].order_info.shipments[0].items_info)
   });
-  it('batch only contains 2 items that are different; returns both items', () => {
-    const newOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], item_id: '1' }] } }]
-    const result = mergeSalesOrderItems(newOrders, NARVAR_ORDER_ITEM_LAST_MODIFIED)
-    expect(result).toEqual([newOrders[0].order_info.order_items[0], newOrders[1].order_info.order_items[0]])
-  });
-  it('batch only contains 2 items that are the same; returns only 1 item', () => {
-    const newOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info } }]
-    const result = mergeSalesOrderItems(newOrders, NARVAR_ORDER_ITEM_LAST_MODIFIED)
-    expect(result).toEqual([newOrders[0].order_info.order_items[0]])
-  });
-  it('batch only contains 2 items that are the same but one is more recent; returns only the most recent item', () => {
-    const newOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }] } }]
-    const result = mergeSalesOrderItems(newOrders, NARVAR_ORDER_ITEM_LAST_MODIFIED)
-    expect(result).toEqual([newOrders[1].order_info.order_items[0]])
-  });
-  it('batch only contains 2 items that are the same but one is more recent and 1 item that is different; returns the most recent item and the different item', () => {
-    const newOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }] } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], item_id: '1' }] } } ]
-    const result = mergeSalesOrderItems(newOrders, NARVAR_ORDER_ITEM_LAST_MODIFIED)
-    expect(result).toEqual([newOrders[1].order_info.order_items[0],newOrders[2].order_info.order_items[0]])
-  });
-});
-
-describe('mergeSalesOrders', () => {
-  it('batch only contains 1 order and so just returns the 1 order', () => {
-    const result = mergeSalesOrders(orders)
-    expect(result).toEqual({ order_info: { ...orders[0].order_info, shipments: [] } })
-  });
-  it('merging inbound order with another matching but older inbound order; return newer order', () => {
-    const newInboundOrders = [{ order_info: { ...orders[0].order_info, attributes: { orderLastModifiedDate: '2002-09-09T01:46:40.000Z' } } }, { order_info: { ...orders[0].order_info } }]
-    const result = mergeSalesOrders(newInboundOrders)
-    expect(result).toEqual({ order_info: { ...newInboundOrders[0].order_info, shipments: [] } })
-  });
-  it('merging inbound order with another matching but newer inbound order; return newer order', () => {
-    const newInboundOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info, attributes: { orderLastModifiedDate: '2000-09-09T01:46:40.000Z' } } }]
-    const result = mergeSalesOrders(newInboundOrders)
-    expect(result).toEqual({ order_info: { ...newInboundOrders[0].order_info, shipments: [] } })
+  it('batch contains two shipments with two items; should return 2 items', () => {
+    const shipments = [{ ...orders[0].order_info.shipments[0], items_info: [{ ...orders[0].order_info.shipments[0].items_info[0] }] },{ ...orders[0].order_info.shipments[0], attributes: { [`1-${NARVAR_SHIPMENT_ITEM_LAST_MODIFIED}`]: 1000000000000 }, items_info: [{ ...orders[0].order_info.shipments[0].items_info[0], item_id: '1' }] }]
+    const result = mergeShipmentItems(shipments, NARVAR_SHIPMENT_ITEM_LAST_MODIFIED)
+    expect(result).toEqual([shipments[1].items_info[0], shipments[0].items_info[0]])
   });
 });
