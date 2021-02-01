@@ -54,7 +54,7 @@ function parseShipmentMessage(msg) {
             ship_method: msg.value.SERVICE_TYPE,
             ship_date: new Date(msg.value.SHIPPED_DATE).toISOString(),
             carrier: JESTA_CARRIER_ID_TO_NARVAR_CARRIER_ID[msg.value.CARRIER_ID],
-            carrier_service: JESTA_SERVICE_TYPES_TO_NARVAR_SERVICE_TYPES[msg.value.CARRIER_ID][msg.value.SERVICE_TYPE],
+            carrier_service: JESTA_SERVICE_TYPES_TO_NARVAR_SERVICE_TYPES[msg.value.CARRIER_ID] ? JESTA_SERVICE_TYPES_TO_NARVAR_SERVICE_TYPES[msg.value.CARRIER_ID][msg.value.SERVICE_TYPE] : null,
             tracking_number: msg.value.TRACKING_NUMBER,
             shipped_from: {
               first_name: msg.value.FROM_STORE_NAME,
