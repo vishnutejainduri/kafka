@@ -82,10 +82,14 @@ const getNarvarOrder = async (narvarCreds, orderNumber) => {
 const mergeNarvarShipmentItems = (inboundShipment, existingNarvarShipment) => {
   const shipmentItemLastModifiedDates = {}
   const unchangedExistingShipmentItems = existingNarvarShipment.items_info.map(existingNarvarShipmentItem => {
-    const correspondingJestaShipmentItem = findMatchingRecord(inboundShipment.items_info, existingNarvarShipmentItem, 'item_id')
-    if (!correspondingJestaShipmentItem) return existingNarvarShipmentItem
-  
     const lastModifiedDateKey = `${existingNarvarShipmentItem.item_id}-${NARVAR_SHIPMENT_ITEM_LAST_MODIFIED}`
+
+    const correspondingJestaShipmentItem = findMatchingRecord(inboundShipment.items_info, existingNarvarShipmentItem, 'item_id')
+    if (!correspondingJestaShipmentItem) { 
+      shipmentItemLastModifiedDates[lastModifiedDateKey] = existingNarvarShipment.attributes[lastModifiedDateKey]
+      return existingNarvarShipmentItem
+    }
+  
     if (!firstNarvarDateIsNewer(inboundShipment, existingNarvarShipment, lastModifiedDateKey)) {
       shipmentItemLastModifiedDates[lastModifiedDateKey] = existingNarvarShipment.attributes[lastModifiedDateKey]
       return existingNarvarShipmentItem
@@ -95,10 +99,13 @@ const mergeNarvarShipmentItems = (inboundShipment, existingNarvarShipment) => {
   }).filter(Boolean)
 
   const updatedShipmentItems = inboundShipment.items_info.map(inboundShipmentItem => {
-    const correspondingNarvarShipmentItem = findMatchingRecord(existingNarvarShipment.items_info, inboundShipmentItem, 'item_id')
-    if (!correspondingNarvarShipmentItem) return inboundShipmentItem
-
     const lastModifiedDateKey = `${inboundShipmentItem.item_id}-${NARVAR_SHIPMENT_ITEM_LAST_MODIFIED}`
+    const correspondingNarvarShipmentItem = findMatchingRecord(existingNarvarShipment.items_info, inboundShipmentItem, 'item_id')
+    if (!correspondingNarvarShipmentItem) {
+      shipmentItemLastModifiedDates[lastModifiedDateKey] = inboundShipment.attributes[lastModifiedDateKey]
+      return inboundShipmentItem
+    }
+
     if (firstNarvarDateIsNewer(inboundShipment, existingNarvarShipment, lastModifiedDateKey)) {
       shipmentItemLastModifiedDates[lastModifiedDateKey] = inboundShipment.attributes[lastModifiedDateKey]
       return inboundShipmentItem
@@ -281,5 +288,8 @@ module.exports = {
   mergeSalesOrders,
   mergeFulfillmentType,
   acceptMergedSalesOrderItem,
-  mergeShipmentItems
+  mergeShipmentItems,
+  mergeShipments,
+  mergeNarvarShipmentItems,
+  mergeNarvarShipments
 }
