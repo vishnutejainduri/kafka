@@ -459,6 +459,9 @@ describe('createStyle', () => {
     const styleWithNoId = {};
     return expect(createStyle(styleWithNoId, {}, null, mockedCtHelpers)).rejects.toThrow('Style lacks required key \'id\'');
   });
+  it('throws an error if the given style lacks null values', () => {
+    
+  })
 });
 
 describe('updateStyle', () => {
