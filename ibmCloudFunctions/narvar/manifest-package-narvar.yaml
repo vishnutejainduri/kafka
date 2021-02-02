@@ -3,6 +3,7 @@ packages:
     inputs:
       messagesMongoUri: $MESSAGES_MONGO_URI
       messagesMongoCertificateBase64: $MESSAGES_MONGO_CERTIFICATE_BASE64
+      dbName: $DB_NAME
       narvarUserName: $NARVAR_USER_NAME
       narvarPassword: $NARVAR_PASSWORD
       narvarUrl: $NARVAR_URL

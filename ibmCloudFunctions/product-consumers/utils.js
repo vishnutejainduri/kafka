@@ -57,6 +57,11 @@ log.warn = (msg) => {
     console.warn(msg);
 }
 
+const logAndThrowErrorMessage = errorMessage => {
+    log.error(errorMessage);
+    throw new Error(errorMessage);
+};
+
 /**
  * @param {{ index: number, error: Object, message: Object }[]}  messageFailures
  */
@@ -357,6 +362,7 @@ module.exports = {
     createLog,
     validateParams,
     addLoggingToMain,
+    logAndThrowErrorMessage,
     passDown,
     passDownProcessedMessages,
     passDownAnyMessageErrors,

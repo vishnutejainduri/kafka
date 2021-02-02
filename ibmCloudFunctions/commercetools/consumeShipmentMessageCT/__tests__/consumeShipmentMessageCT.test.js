@@ -119,7 +119,10 @@ describe('parseShipmentMessage', () => {
         shipmentId: '1234',
         serviceType: 'serviceType',
         destinationSiteId: 'destSiteId',
-        shipmentLastModifiedDate: new Date(validParams.messages[0].value.MODIFIED_DATE)
+        carrierId: 'carrierId',
+        fillSiteId: 'fillSiteId',
+        fromZipCode: 'fromZipCode',
+        shipmentLastModifiedDate: new Date(validParams.messages[0].value.SHIPMENT_MODIFIED_DATE)
     }
     expect(result).toEqual(expectedResult);
   });
