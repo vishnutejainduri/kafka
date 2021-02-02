@@ -2,7 +2,7 @@ const getConnectorNames = require('../../../tools/kafka/scripts/getConnectorName
 const getConnector = require('../../../tools/kafka/scripts/getConnector');
 const restartConnector = require('../../../tools/kafka/scripts/restartConnector');
 const restartTask = require('../../../tools/kafka/scripts/restartTask');
-const { log } = require('../utils');
+const { log, logAndThrowErrorMessage } = require('../utils');
 
 const FAILED_STATUS = 'FAILED'
 
@@ -22,11 +22,11 @@ global.main = async function main ({
     }
     const connectorNames = await getConnectorNames(kubeParams)
         .catch(({ message }) => {
-            throw new Error(`Failed to retrieve connector names: ${message}`)
+            logAndThrowErrorMessage(`Failed to retrieve connector names: ${message}`)
         })
     let connectors = await Promise.all(connectorNames.map(name => getConnector(kubeParams, name)))
         .catch(({ message }) => {
-            throw new Error(`Failed to retrieve initial status of one or more of the connectors: ${message}`)
+            logAndThrowErrorMessage(`Failed to retrieve initial status of one or more of the connectors: ${message}`)
         })
     const failedConnectors = connectors.filter(({ connector }) => connector.state === FAILED_STATUS)
     if (failedConnectors.length) {
@@ -44,7 +44,7 @@ global.main = async function main ({
     // get updated status of the connectors
     connectors = await Promise.all(connectorNames.map(name => getConnector(kubeParams, name)))
         .catch(({ message }) => {
-            throw new Error(`Failed to retrieve updated status of one or more of the connectors: ${message}`)
+            logAndThrowErrorMessage(`Failed to retrieve updated status of one or more of the connectors: ${message}`)
         })
     for (const connector of connectors) {
         const failedTasks = connector.tasks.filter(({ state }) => state === FAILED_STATUS)
