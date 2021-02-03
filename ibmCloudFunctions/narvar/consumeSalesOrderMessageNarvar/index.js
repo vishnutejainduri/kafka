@@ -29,7 +29,6 @@ const main = params => {
       .map(addErrorHandling(msg => filterSalesOrderMessages(msg) ? msg : null))
       .map(addErrorHandling(parseSalesOrderMessage))
   );
-  console.log('salesOrdersToCreateOrUpdate', JSON.stringify(salesOrdersToCreateOrUpdate, null, 4))
   const salesOrdersGroupedByOrderNumber = groupByOrderNumber(salesOrdersToCreateOrUpdate);
 
   const salesOrdersPromises = (
