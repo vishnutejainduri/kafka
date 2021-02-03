@@ -45,7 +45,6 @@ const validParams = {
         UNIT_PRICE: 100.00,
         EXTENSION_AMOUNT: 100.00,
         TRANSACTION_TOTAL: 100.00,
-        EXPDATE: '0000',
         TAX_TOTAL: 100.00,
         SHIPPING_CHARGES_TOTAL: 100.00,
         EMAIL_ADDRESS: 'emailAddress',
