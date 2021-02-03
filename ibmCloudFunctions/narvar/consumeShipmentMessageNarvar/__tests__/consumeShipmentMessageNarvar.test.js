@@ -42,6 +42,10 @@ const validParams = {
         SHIPPED_DATE: 1000000000000,
         SHIPMENT_MODIFIED_DATE: 1000000000000,
         SHIPMENT_CREATED_DATE: 1000000000000,
+        ORDER_CREATED_DATE: 1000000000000,
+        LANGUAGE_NO: 1,
+        DESC_ENG: 'descEng',
+        DESC_FR: 'descFr',
         SKU: 'sku',
         DEST_SITE_ID: 'destSiteId',
         SERVICE_TYPE: 'serviceType',
@@ -136,7 +140,7 @@ describe('filterMissingTrackingNumberMessages', () => {
 
 describe('parseShipmentMessage', () => {
   it('inbound jesta message transformed correctly', async () => {
-    expect(parseShipmentMessage(validParams.messages[0])).toEqual({"order_info": {"attributes": {"orderLastModifiedDate": null}, "order_items": [{"attributes": {"orderItemLastModifiedDate": null, "shipmentItemLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "fulfillment_type": "BOPIS", "item_id": "extRefId", "sku": "sku"}], "order_number": "67897", "shipments": [{"attributes": {"extRefId-shipmentItemLastModifiedDate": "2001-09-09T01:46:40.000Z", "shipmentLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "carrier": undefined, "carrier_service": null, "items_info": [{"item_id": "extRefId", "quantity": 1, "sku": "sku"}], "ship_date": "2001-09-09T01:46:40.000Z", "ship_method": "serviceType", "shipped_from": {"address": {"city": "fromCity", "country": "fromCountryId", "state": "fromStateId", "street_1": "fromAddress1", "street_2": "fromAddress2", "zip": "fromZipCode"}, "first_name": "fromStoreName", "phone": "fromHomePhone"}, "shipped_to": {"address": {"city": "city", "country": "countryId", "state": "stateId", "street_1": "address1", "street_2": "address2", "zip": "zipCode"}, "email": "emailAddress", "first_name": "firstName", "last_name": "lastName", "phone": "homePhone"}, "tracking_number": "trackingNumber"}]}})
+    expect(parseShipmentMessage(validParams.messages[0])).toEqual({"order_info": {"attributes": {"orderLastModifiedDate": null}, "order_date": "2001-09-09T01:46:40.000Z", "order_items": [{"attributes": {"orderItemLastModifiedDate": null, "shipmentItemLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "fulfillment_type": "BOPIS", "item_id": "extRefId", "name": "descEng", "sku": "sku"}], "order_number": "67897", "shipments": [{"attributes": {"extRefId-shipmentItemLastModifiedDate": "2001-09-09T01:46:40.000Z", "shipmentLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "carrier": undefined, "carrier_service": null, "items_info": [{"item_id": "extRefId", "quantity": 1, "sku": "sku"}], "ship_date": "2001-09-09T01:46:40.000Z", "ship_method": "serviceType", "shipped_from": {"address": {"city": "fromCity", "country": "fromCountryId", "state": "fromStateId", "street_1": "fromAddress1", "street_2": "fromAddress2", "zip": "fromZipCode"}, "first_name": "fromStoreName", "phone": "fromHomePhone"}, "shipped_to": {"address": {"city": "city", "country": "countryId", "state": "stateId", "street_1": "address1", "street_2": "address2", "zip": "zipCode"}, "email": "emailAddress", "first_name": "firstName", "last_name": "lastName", "phone": "homePhone"}, "tracking_number": "trackingNumber"}]}})
   });
 });
 

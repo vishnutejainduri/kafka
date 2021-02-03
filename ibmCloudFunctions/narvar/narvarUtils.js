@@ -25,13 +25,16 @@ const mergeFulfillmentType = (correspondingNarvarItem, mergedSalesOrderItem) => 
   ...correspondingNarvarItem,
   fulfillment_type: mergedSalesOrderItem.fulfillment_type,
   attributes: {
+    ...correspondingNarvarItem.attributes,
     [NARVAR_ORDER_ITEM_LAST_MODIFIED]: correspondingNarvarItem.attributes[NARVAR_ORDER_ITEM_LAST_MODIFIED],
     [NARVAR_SHIPMENT_ITEM_LAST_MODIFIED]: mergedSalesOrderItem.attributes[NARVAR_SHIPMENT_ITEM_LAST_MODIFIED]
   } 
 })
 const acceptMergedSalesOrderItem = (correspondingNarvarItem, mergedSalesOrderItem) => ({
   ...mergedSalesOrderItem,
+  fulfillment_type: correspondingNarvarItem.fulfillment_type,
   attributes: {
+    ...mergedSalesOrderItem.attributes,
     [NARVAR_ORDER_ITEM_LAST_MODIFIED]: mergedSalesOrderItem.attributes[NARVAR_ORDER_ITEM_LAST_MODIFIED],
     [NARVAR_SHIPMENT_ITEM_LAST_MODIFIED]: correspondingNarvarItem.attributes[NARVAR_SHIPMENT_ITEM_LAST_MODIFIED]
   }
