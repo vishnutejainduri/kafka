@@ -1,3 +1,6 @@
+const {  
+  log
+} = require('../product-consumers/utils');
 const {
   NARVAR_FULFILLMENT_TYPES,
   JESTA_CARRIER_ID_TO_NARVAR_CARRIER_ID,
@@ -19,6 +22,7 @@ function filterShipmentMessages(msg) {
 
 function filterMissingTrackingNumberMessages(msg) {
     if (!msg.value.TRACKING_NUMBER) {
+      log.error(`Shipment ${msg.value.SHIPMENT_ID} for order ${msg.value.ORDER_NUMBER} has no tracking number`)
       return false;
     }
 
