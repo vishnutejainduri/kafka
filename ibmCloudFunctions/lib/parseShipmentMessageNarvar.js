@@ -42,13 +42,13 @@ function parseShipmentMessage(msg) {
             fulfillment_type: msg.value.DEST_SITE_ID ? NARVAR_FULFILLMENT_TYPES.BOPIS : NARVAR_FULFILLMENT_TYPES.HOME_DELIVERY,
             attributes: {
               [NARVAR_ORDER_ITEM_LAST_MODIFIED]: null,
-              [NARVAR_SHIPMENT_ITEM_LAST_MODIFIED]: new Date(msg.value.MODIFIED_DATE).toISOString()
+              [NARVAR_SHIPMENT_ITEM_LAST_MODIFIED]: msg.value.MODIFIED_DATE ? new Date(msg.value.MODIFIED_DATE).toISOString() : null
             },
           }],
           shipments: [{
             attributes: {
-              [NARVAR_SHIPMENT_LAST_MODIFIED]: new Date(msg.value.SHIPMENT_MODIFIED_DATE).toISOString(),
-              [`${msg.value.EXT_REF_ID}-${NARVAR_SHIPMENT_ITEM_LAST_MODIFIED}`]: new Date(msg.value.MODIFIED_DATE).toISOString()
+              [NARVAR_SHIPMENT_LAST_MODIFIED]: msg.value.SHIPMENT_MODIFIED_DATE ? new Date(msg.value.SHIPMENT_MODIFIED_DATE).toISOString() : null,
+              [`${msg.value.EXT_REF_ID}-${NARVAR_SHIPMENT_ITEM_LAST_MODIFIED}`]: msg.value.MODIFIED_DATE ? new Date(msg.value.MODIFIED_DATE).toISOString() : null
             },
             items_info: [{
               item_id: msg.value.EXT_REF_ID,
