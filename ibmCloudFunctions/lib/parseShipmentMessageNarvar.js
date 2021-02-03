@@ -39,6 +39,7 @@ function parseShipmentMessage(msg) {
           order_items: [{
             item_id: msg.value.EXT_REF_ID,
             sku: msg.value.SKU,
+            name: msg.value.LANGUAGE_NO === 1 ? msg.value.DESC_ENG : msg.value.DESC_FR,
             fulfillment_type: msg.value.DEST_SITE_ID ? NARVAR_FULFILLMENT_TYPES.BOPIS : NARVAR_FULFILLMENT_TYPES.HOME_DELIVERY,
             attributes: {
               [NARVAR_ORDER_ITEM_LAST_MODIFIED]: null,
