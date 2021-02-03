@@ -32,6 +32,11 @@ const validParams = {
         STYLEID: 'styleId',
         DESC_ENG: 'descEng',
         DESC_FR: 'descFr',
+        CATEGORY_LEVEL_2A_EN: 'categoryL3',
+        EA_IND: 'N',
+        BRAND_NAME_ENG: 'brandNameEng',
+        RETURNABLE_IND: 'Y',
+        SIZE: 'size',
         QTY_ORDERED: 1.0,
         SKU: 'sku',
         UNIT_PRICE: 100.00,
@@ -49,7 +54,8 @@ const validParams = {
         STATE_ID: 'stateId',
         ZIP_CODE: 'zipCode',
         COUNTRY_ID: 'countryId',
-        HOME_PHONE: 'homePhone'
+        HOME_PHONE: 'homePhone',
+        LRUID: 'lrUid'
       }
   }],
   mongoUri: 'mongo-uri',

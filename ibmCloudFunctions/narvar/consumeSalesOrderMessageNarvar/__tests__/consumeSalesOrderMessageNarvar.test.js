@@ -35,6 +35,11 @@ const validParams = {
         STYLEID: 'styleId',
         DESC_ENG: 'descEng',
         DESC_FR: 'descFr',
+        CATEGORY_LEVEL_2A_EN: 'categoryL3',
+        EA_IND: 'N',
+        BRAND_NAME_ENG: 'brandNameEng',
+        RETURNABLE_IND: 'Y',
+        SIZE: 'size',
         QTY_ORDERED: 1.0,
         SKU: 'sku',
         UNIT_PRICE: 100.00,
@@ -52,7 +57,8 @@ const validParams = {
         STATE_ID: 'stateId',
         ZIP_CODE: 'zipCode',
         COUNTRY_ID: 'countryId',
-        HOME_PHONE: 'homePhone'
+        HOME_PHONE: 'homePhone',
+        LRUID: 'lrUid'
       }
   }],
   narvarUserName: 'narvar-user-name',
@@ -114,7 +120,7 @@ describe('filterSalesOrderMessages', () => {
 
 describe('parseSalesOrderMessage', () => {
   it('inbound jesta message transformed correctly', async () => {
-    expect(parseSalesOrderMessage(validParams.messages[0])).toEqual({"order_info": {"attributes": {"orderLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "billing": {"amount": 100, "billed_to": {"address": {"city": "city", "country": "countryId", "state": "stateId", "street_1": "address1", "street_2": "address2", "zip": "zipCode"}, "email": "emailAddress", "first_name": "firstName", "last_name": "firstName", "phone": "homePhone"}, "payments": [{"expiration_date": "00/00"}], "shipping_handling": 100, "tax_amount": 100}, "checkout_locale": "en-CA", "currency_code": "CAD", "customer": {"address": {"city": "city", "country": "countryId", "state": "stateId", "street_1": "address1", "street_2": "address2", "zip": "zipCode"}, "email": "emailAddress", "first_name": "firstName", "last_name": "firstName", "phone": "homePhone"}, "order_date": "2001-09-09T01:46:40.000Z", "order_items": [{"attributes": {"orderItemLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "final_sale_date": "2001-09-09T01:46:40.000Z", "fulfillment_status": undefined, "is_final_sale": false, "is_gift": false, "item_id": "id", "item_image": "https://i1.adis.ws/i/harryrosen/styleId?$prp-4col-xl$", "item_url": "https://harryrosen.com/en/product/styleId", "line_number": 1, "line_price": 100, "name": "descEng", "quantity": 1, "sku": "sku", "unit_price": 100}], "order_number": "67897", "status": undefined}})
+    expect(parseSalesOrderMessage(validParams.messages[0])).toEqual({"order_info": {"attributes": {"orderLastModifiedDate": "2001-09-09T01:46:40.000Z"}, "billing": {"amount": 100, "billed_to": {"address": {"city": "city", "country": "countryId", "state": "stateId", "street_1": "address1", "street_2": "address2", "zip": "zipCode"}, "email": "emailAddress", "first_name": "firstName", "last_name": "firstName", "phone": "homePhone"}, "shipping_handling": 100, "tax_amount": 100}, "checkout_locale": "en-CA", "currency_code": "CAD", "customer": {"address": {"city": "city", "country": "countryId", "state": "stateId", "street_1": "address1", "street_2": "address2", "zip": "zipCode"}, "customer_id": "lrUid", "email": "emailAddress", "first_name": "firstName", "last_name": "firstName", "phone": "homePhone"}, "order_date": "2001-09-09T01:46:40.000Z", "order_items": [{"attributes": {"brand_name": "brandNameEng", "orderItemLastModifiedDate": "2001-09-09T01:46:40.000Z", "size": "size"}, "categories": ["categoryL3"], "final_sale_date": "2001-09-09T01:46:40.000Z", "fulfillment_status": undefined, "is_final_sale": false, "is_gift": false, "item_id": "id", "item_image": "https://i1.adis.ws/i/harryrosen/styleId?$prp-4col-xl$", "item_url": "https://harryrosen.com/en/product/styleId", "line_number": 1, "line_price": 100, "name": "descEng", "quantity": 1, "sku": "sku", "unit_price": 100, "vendors": [{"name": "HR"}]}], "order_number": "67897", "status": undefined}})
   });
 });
 
