@@ -7,10 +7,14 @@ const {
   addErrorHandling,
 } = require('../../../product-consumers/utils');
 const {
+  NARVAR_ORDER_ITEM_LAST_MODIFIED
+} = require('../../constantsNarvar') 
+const {
   mergeNarvarItems,
   mergeNarvarOrder,
   mergeSalesOrderItems,
-  mergeSalesOrders
+  mergeSalesOrders,
+  acceptMergedSalesOrderItem
 } = require('../../narvarUtils') 
 
 jest.mock('node-fetch');
@@ -121,55 +125,105 @@ describe('parseSalesOrderMessage', () => {
 describe('mergeNarvarItems', () => {
   const orderItems = orders[0].order_info.order_items
   it('merging two empty items returns null since there are no needed changes', () => {
-    const result = mergeNarvarItems([], [])
+    const result = mergeNarvarItems({
+      mergedSalesOrderItems: [],
+      existingNarvarOrderItems: [],
+      compareDateField: NARVAR_ORDER_ITEM_LAST_MODIFIED,
+      mergeNarvarItem: acceptMergedSalesOrderItem
+    })
     expect(result).toEqual(null)
   });
   it('merging inbound items with no narvar items returns the inbound items', () => {
-    const result = mergeNarvarItems(orderItems, [])
+    const result = mergeNarvarItems({
+      mergedSalesOrderItems: orderItems,
+      existingNarvarOrderItems: [],
+      compareDateField: NARVAR_ORDER_ITEM_LAST_MODIFIED,
+      mergeNarvarItem: acceptMergedSalesOrderItem
+    })
     expect(result).toEqual(orderItems)
   });
   it('merging no inbound items and one narvar item returns null since there are no needed changes', () => {
     const narvarItems = [{ ...orderItems[0] }]
-    const result = mergeNarvarItems([], narvarItems)
+    const result = mergeNarvarItems({
+      mergedSalesOrderItems: [],
+      existingNarvarOrderItems: narvarItems,
+      compareDateField: NARVAR_ORDER_ITEM_LAST_MODIFIED,
+      mergeNarvarItem: acceptMergedSalesOrderItem
+    })
     expect(result).toEqual(null)
   });
   it('merging two of the exact same items returns the single matching item', () => {
     const narvarItems = [{ ...orderItems[0] }]
-    const result = mergeNarvarItems(orderItems, narvarItems)
+    const result = mergeNarvarItems({
+      mergedSalesOrderItems: orderItems,
+      existingNarvarOrderItems: narvarItems,
+      compareDateField: NARVAR_ORDER_ITEM_LAST_MODIFIED,
+      mergeNarvarItem: acceptMergedSalesOrderItem
+    })
     expect(result).toEqual(orderItems)
   });
   it('merging two of the exact same items except the inbound item is more recent; return inbound item', () => {
     const narvarItems = [{ ...orderItems[0], attributes: { orderItemLastModifiedDate: '2000-09-09T01:46:40.000Z' } }]
-    const result = mergeNarvarItems(orderItems, narvarItems)
+    const result = mergeNarvarItems({
+      mergedSalesOrderItems: orderItems,
+      existingNarvarOrderItems: narvarItems,
+      compareDateField: NARVAR_ORDER_ITEM_LAST_MODIFIED,
+      mergeNarvarItem: acceptMergedSalesOrderItem
+    })
     expect(result).toEqual(orderItems)
   });
   it('merging two of the exact same items except the inbound item is older; return null since no changes required', () => {
     const narvarItems = [{ ...orderItems[0], attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }]
-    const result = mergeNarvarItems(orderItems, narvarItems)
+    const result = mergeNarvarItems({
+      mergedSalesOrderItems: orderItems,
+      existingNarvarOrderItems: narvarItems,
+      compareDateField: NARVAR_ORDER_ITEM_LAST_MODIFIED,
+      mergeNarvarItem: acceptMergedSalesOrderItem
+    })
     expect(result).toEqual(null)
   });
   it('merging two inbound items but only one is more recent than the narvar item', () => {
     const narvarItems = [{ ...orderItems[0], attributes: { orderItemLastModifiedDate: '2000-09-09T01:46:40.000Z' } }]
     const newOrderItems = [{ ...orderItems[0] }, { ...orderItems[0], item_id: '1' }]
-    const result = mergeNarvarItems(newOrderItems, narvarItems)
+    const result = mergeNarvarItems({
+      mergedSalesOrderItems: newOrderItems,
+      existingNarvarOrderItems: narvarItems,
+      compareDateField: NARVAR_ORDER_ITEM_LAST_MODIFIED,
+      mergeNarvarItem: acceptMergedSalesOrderItem
+    })
     expect(result).toEqual([newOrderItems[0], newOrderItems[1]])
   });
   it('merging two inbound items but only one is less recent than the narvar item', () => {
     const narvarItems = [{ ...orderItems[0], attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }]
     const newOrderItems = [{ ...orderItems[0] }, { ...orderItems[0], item_id: '1' }]
-    const result = mergeNarvarItems(newOrderItems, narvarItems)
+    const result = mergeNarvarItems({
+      mergedSalesOrderItems: newOrderItems,
+      existingNarvarOrderItems: narvarItems,
+      compareDateField: NARVAR_ORDER_ITEM_LAST_MODIFIED,
+      mergeNarvarItem: acceptMergedSalesOrderItem
+    })
     expect(result).toEqual([narvarItems[0], newOrderItems[1]])
   });
   it('merging two inbound items with two narvar items where both inbound items are more recent', () => {
     const narvarItems = [{ ...orderItems[0], attributes: { orderItemLastModifiedDate: '2000-09-09T01:46:40.000Z' } }, { ...orderItems[0], item_id: '1', attributes: { orderItemLastModifiedDate: '2000-09-09T01:46:40.000Z' } }]
     const newOrderItems = [{ ...orderItems[0] }, { ...orderItems[0], item_id: '1' }]
-    const result = mergeNarvarItems(newOrderItems, narvarItems)
+    const result = mergeNarvarItems({
+      mergedSalesOrderItems: newOrderItems,
+      existingNarvarOrderItems: narvarItems,
+      compareDateField: NARVAR_ORDER_ITEM_LAST_MODIFIED,
+      mergeNarvarItem: acceptMergedSalesOrderItem
+    })
     expect(result).toEqual([newOrderItems[0], newOrderItems[1]])
   });
   it('merging two inbound items with two narvar items where both inbound items are less recent; return null since no changes are required', () => {
     const narvarItems = [{ ...orderItems[0], attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }, { ...orderItems[0], item_id: '1', attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }]
     const newOrderItems = [{ ...orderItems[0] }, { ...orderItems[0], item_id: '1' }]
-    const result = mergeNarvarItems(newOrderItems, narvarItems)
+    const result = mergeNarvarItems({
+      mergedSalesOrderItems: newOrderItems,
+      existingNarvarOrderItems: narvarItems,
+      compareDateField: NARVAR_ORDER_ITEM_LAST_MODIFIED,
+      mergeNarvarItem: acceptMergedSalesOrderItem
+    })
     expect(result).toEqual(null)
   });
 });
@@ -193,27 +247,27 @@ describe('mergeNarvarOrder', () => {
 
 describe('mergeSalesOrderItems', () => {
   it('batch only contains 1 item and so just returns the 1 item', () => {
-    const result = mergeSalesOrderItems(orders)
+    const result = mergeSalesOrderItems(orders, NARVAR_ORDER_ITEM_LAST_MODIFIED)
     expect(result).toEqual(orders[0].order_info.order_items)
   });
   it('batch only contains 2 items that are different; returns both items', () => {
     const newOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], item_id: '1' }] } }]
-    const result = mergeSalesOrderItems(newOrders)
+    const result = mergeSalesOrderItems(newOrders, NARVAR_ORDER_ITEM_LAST_MODIFIED)
     expect(result).toEqual([newOrders[0].order_info.order_items[0], newOrders[1].order_info.order_items[0]])
   });
   it('batch only contains 2 items that are the same; returns only 1 item', () => {
     const newOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info } }]
-    const result = mergeSalesOrderItems(newOrders)
+    const result = mergeSalesOrderItems(newOrders, NARVAR_ORDER_ITEM_LAST_MODIFIED)
     expect(result).toEqual([newOrders[0].order_info.order_items[0]])
   });
   it('batch only contains 2 items that are the same but one is more recent; returns only the most recent item', () => {
     const newOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }] } }]
-    const result = mergeSalesOrderItems(newOrders)
+    const result = mergeSalesOrderItems(newOrders, NARVAR_ORDER_ITEM_LAST_MODIFIED)
     expect(result).toEqual([newOrders[1].order_info.order_items[0]])
   });
   it('batch only contains 2 items that are the same but one is more recent and 1 item that is different; returns the most recent item and the different item', () => {
     const newOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], attributes: { orderItemLastModifiedDate: '2002-09-09T01:46:40.000Z' } }] } }, { order_info: { ...orders[0].order_info, order_items: [{ ...orders[0].order_info.order_items[0], item_id: '1' }] } } ]
-    const result = mergeSalesOrderItems(newOrders)
+    const result = mergeSalesOrderItems(newOrders, NARVAR_ORDER_ITEM_LAST_MODIFIED)
     expect(result).toEqual([newOrders[1].order_info.order_items[0],newOrders[2].order_info.order_items[0]])
   });
 });
@@ -221,16 +275,16 @@ describe('mergeSalesOrderItems', () => {
 describe('mergeSalesOrders', () => {
   it('batch only contains 1 order and so just returns the 1 order', () => {
     const result = mergeSalesOrders(orders)
-    expect(result).toEqual(orders[0])
+    expect(result).toEqual({ order_info: { ...orders[0].order_info, shipments: [] } })
   });
   it('merging inbound order with another matching but older inbound order; return newer order', () => {
     const newInboundOrders = [{ order_info: { ...orders[0].order_info, attributes: { orderLastModifiedDate: '2002-09-09T01:46:40.000Z' } } }, { order_info: { ...orders[0].order_info } }]
     const result = mergeSalesOrders(newInboundOrders)
-    expect(result).toEqual(newInboundOrders[0])
+    expect(result).toEqual({ order_info: { ...newInboundOrders[0].order_info, shipments: [] } })
   });
   it('merging inbound order with another matching but newer inbound order; return newer order', () => {
     const newInboundOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info, attributes: { orderLastModifiedDate: '2000-09-09T01:46:40.000Z' } } }]
     const result = mergeSalesOrders(newInboundOrders)
-    expect(result).toEqual(newInboundOrders[0])
+    expect(result).toEqual({ order_info: { ...newInboundOrders[0].order_info, shipments: [] } })
   });
 });

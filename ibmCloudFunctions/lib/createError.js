@@ -196,11 +196,11 @@ module.exports = {
             `Failure in run of consume shipment details message CT; params excluding messages: ${getParamsExcludingMessages(params)}.`
         )
     },
-    consumeShipmentDetailsMessageNarvar: {
+    consumeShipmentMessageNarvar: {
         failed: (originalError, params) => new CustomError(
             originalError,
-            'failed-consume-shipment-details-message-narvar',
-            `Failure in run of consume shipment details message Narvar; params excluding messages: ${getParamsExcludingMessages(params)}.`
+            'failed-consume-shipment-message-narvar',
+            `Failure in run of consume shipment message Narvar; params excluding messages: ${getParamsExcludingMessages(params)}.`
         )
     },
     consumeReturnDetailsMessageCT: {

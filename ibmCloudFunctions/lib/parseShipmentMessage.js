@@ -11,13 +11,13 @@ function filterShipmentMessages(msg) {
 function parseShipmentMessage(msg) {
     return {
         carrierId: msg.value.CARRIER_ID,
-        destinationSiteId: msg.value.DEST_SITE_ID,
         fillSiteId: msg.value.FILL_SITE_ID,
         fromZipCode: msg.value.FROM_ZIP_CODE,
         orderNumber: msg.value.ORDER_NUMBER,
         serviceType: msg.value.SERVICE_TYPE,
+        destinationSiteId: msg.value.DEST_SITE_ID,
+        shipmentLastModifiedDate: new Date(msg.value.SHIPMENT_MODIFIED_DATE),
         shipmentId: msg.value.SHIPMENT_ID.toString(),
-        shipmentLastModifiedDate: new Date(msg.value.MODIFIED_DATE)
     };
 }
 
