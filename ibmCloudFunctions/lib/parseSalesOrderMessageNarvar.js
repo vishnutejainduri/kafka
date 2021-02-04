@@ -24,7 +24,9 @@ function parseSalesOrderMessage(msg) {
           checkout_locale: JESTA_LANGUAGE_NUMBERS_TO_LOCALES[msg.value.LANGUAGE_NO],
           currency_code: 'CAD',
           attributes: {
-            [NARVAR_ORDER_LAST_MODIFIED]: msg.value.ORDER_MODIFIED_DATE ? new Date(msg.value.ORDER_MODIFIED_DATE).toISOString() : null
+            [NARVAR_ORDER_LAST_MODIFIED]: msg.value.ORDER_MODIFIED_DATE ? new Date(msg.value.ORDER_MODIFIED_DATE).toISOString() : null,
+            shipping_tax1: msg.value.SHIPPING_TAX1,
+            shipping_tax2: msg.value.SHIPPING_TAX2
           },
           order_items: [{
             item_id: msg.value.EXT_REF_ID,

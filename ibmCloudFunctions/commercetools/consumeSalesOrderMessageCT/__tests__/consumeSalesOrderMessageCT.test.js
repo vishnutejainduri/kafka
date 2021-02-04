@@ -55,7 +55,9 @@ const validParams = {
         ZIP_CODE: 'zipCode',
         COUNTRY_ID: 'countryId',
         HOME_PHONE: 'homePhone',
-        LRUID: 'lrUid'
+        LRUID: 'lrUid',
+        SHIPPING_TAX1: 1.0,
+        SHIPPING_TAX2: 2.0
       }
   }],
   mongoUri: 'mongo-uri',
