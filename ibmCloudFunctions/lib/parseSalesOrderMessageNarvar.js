@@ -24,10 +24,14 @@ function parseSalesOrderMessage(msg) {
           checkout_locale: JESTA_LANGUAGE_NUMBERS_TO_LOCALES[msg.value.LANGUAGE_NO],
           currency_code: 'CAD',
           attributes: {
-            [NARVAR_ORDER_LAST_MODIFIED]: new Date(msg.value.ORDER_MODIFIED_DATE).toISOString()
+            [NARVAR_ORDER_LAST_MODIFIED]: msg.value.ORDER_MODIFIED_DATE ? new Date(msg.value.ORDER_MODIFIED_DATE).toISOString() : null
           },
           order_items: [{
             item_id: msg.value.EXT_REF_ID,
+            categories: [msg.value.CATEGORY_LEVEL_2A_EN],
+            vendors: [{
+              name: msg.value.EA_IND === 'Y' ? 'EA' : 'HR'
+            }],
             fulfillment_status: JESTA_STATUSES_TO_NARVAR_STATUSES[msg.value.STATUS],
             is_gift: msg.value.GIFT_WRAP_IND === 'Y' ? true : false,
             item_image: getItemImage(msg.value.STYLEID),
@@ -36,12 +40,14 @@ function parseSalesOrderMessage(msg) {
             sku: msg.value.SKU,
             unit_price: msg.value.UNIT_PRICE,
             line_price: msg.value.EXTENSION_AMOUNT,
-            final_sale_date: new Date(msg.value.ORDER_CREATED_DATE).toISOString(),
+            final_sale_date: msg.value.ORDER_CREATED_DATE ? new Date(msg.value.ORDER_CREATED_DATE).toISOString() : null,
             item_url: getItemUrl(msg.value.STYLEID, JESTA_LANGUAGE_NUMBERS_TO_LOCALES[msg.value.LANGUAGE_NO]),
-            is_final_sale: false,
+            is_final_sale: msg.value.RETURNABLE_IND === 'Y' ? false : true,
             line_number: msg.value.LINE,
             attributes: {
-              [NARVAR_ORDER_ITEM_LAST_MODIFIED]: new Date(msg.value.MODIFIED_DATE).toISOString()
+              [NARVAR_ORDER_ITEM_LAST_MODIFIED]: msg.value.MODIFIED_DATE ? new Date(msg.value.MODIFIED_DATE).toISOString() : null,
+              brand_name: msg.value.BRAND_NAME_ENG,
+              size: msg.value.SIZE
             }
           }],
           billing: {
@@ -61,12 +67,10 @@ function parseSalesOrderMessage(msg) {
             },
             amount: msg.value.TRANSACTION_TOTAL,
             tax_amount: msg.value.TAX_TOTAL,
-            shipping_handling: msg.value.SHIPPING_CHARGES_TOTAL,
-            payments: [{
-              expiration_date: msg.value.EXPDATE && msg.value.EXPDATE.substr(0,2) + '/' + msg.value.EXPDATE.substr(2,2)
-            }]
+            shipping_handling: msg.value.SHIPPING_CHARGES_TOTAL
           },
           customer: {
+            customer_id: msg.value.LRUID,
             email: msg.value.EMAIL_ADDRESS,
             first_name: msg.value.FIRST_NAME,
             last_name: msg.value.FIRST_NAME,
