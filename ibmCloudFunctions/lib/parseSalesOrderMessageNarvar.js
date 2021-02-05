@@ -56,7 +56,7 @@ function parseSalesOrderMessage(msg) {
             billed_to: {
               email: msg.value.EMAIL_ADDRESS,
               first_name: msg.value.FIRST_NAME,
-              last_name: msg.value.FIRST_NAME,
+              last_name: msg.value.LAST_NAME,
               phone: msg.value.HOME_PHONE,
               address: {
                 street_1: msg.value.ADDRESS_1,
@@ -75,7 +75,7 @@ function parseSalesOrderMessage(msg) {
             customer_id: msg.value.LRUID,
             email: msg.value.EMAIL_ADDRESS,
             first_name: msg.value.FIRST_NAME,
-            last_name: msg.value.FIRST_NAME,
+            last_name: msg.value.LAST_NAME,
             phone: msg.value.HOME_PHONE,
             address: {
               street_1: msg.value.ADDRESS_1,
