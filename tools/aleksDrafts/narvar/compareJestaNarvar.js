@@ -68,13 +68,14 @@ fs.readFile('./export.csv', 'utf-8', async (err, data) => {
         console.log('comparing with narvar order...', orderNumber)
         if (!narvarOrder) {
           wstreamOutput.write(`${orderNumber},,,ORDER_MISSING\n`);
-        }
-        if (narvarOrder.order_info.order_items.length !== lineItemCount) {
-          wstreamOutput.write(`${orderNumber},${lineItemCount},${narvarOrder.order_info.order_items.length},LINE_ITEM_MISMATCH\n`);
-        }
-        const narvarShipmentItemCount = getNarvarShipmentItemCount (narvarOrder)
-        if (narvarShipmentItemCount !== shipmentItemCount) {
-          wstreamOutput.write(`${orderNumber},${shipmentItemCount},${narvarShipmentItemCount},SHIPMENT_ITEM_MISMATCH\n`);
+        } else {
+          if (narvarOrder.order_info.order_items.length !== lineItemCount) {
+            wstreamOutput.write(`${orderNumber},${lineItemCount},${narvarOrder.order_info.order_items.length},LINE_ITEM_MISMATCH\n`);
+          }
+          const narvarShipmentItemCount = getNarvarShipmentItemCount (narvarOrder)
+          if (narvarShipmentItemCount !== shipmentItemCount) {
+            wstreamOutput.write(`${orderNumber},${shipmentItemCount},${narvarShipmentItemCount},SHIPMENT_ITEM_MISMATCH\n`);
+          }
         }
       } catch (error) {
         console.error(error);
