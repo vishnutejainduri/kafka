@@ -2,7 +2,8 @@ const consumeShipmentMessageNarvar = require('..');
 const {
   filterShipmentMessages,
   parseShipmentMessage,
-  filterMissingTrackingNumberMessages
+  filterMissingTrackingNumberMessages,
+  checkShipmentItemIdForNull
 } = require('../../../lib/parseShipmentMessageNarvar');
 const {
   addErrorHandling,
@@ -79,6 +80,7 @@ const orders =
   validParams.messages
   .filter(addErrorHandling(filterShipmentMessages))
   .filter(addErrorHandling(filterMissingTrackingNumberMessages))
+  .filter(addErrorHandling(checkShipmentItemIdForNull))
   .map(addErrorHandling(parseShipmentMessage))
 
 describe('consumeShipmentMessageNarvar', () => {
@@ -135,6 +137,16 @@ describe('filterMissingTrackingNumberMessages', () => {
   });
   it('does not remove messages with tracking number', async () => {
     expect(filterMissingTrackingNumberMessages(validParams.messages[0])).toEqual(true)
+  });
+});
+
+describe('checkShipmentItemIdForNull', () => {
+  it('removes messages with null item id', async () => {
+    const invalidMessages = { ...validParams, messages: [{ ...validParams.messages[0], value: { ...validParams.messages[0].value, EXT_REF_ID: null } }] }
+    expect(checkShipmentItemIdForNull(invalidMessages.messages[0])).toEqual(false)
+  });
+  it('does not remove messages with valid item id', async () => {
+    expect(checkShipmentItemIdForNull(validParams.messages[0])).toEqual(true)
   });
 });
 
