@@ -44,7 +44,7 @@ const attributeMap = {
     'SIZE_CHART': 'sizeChart',
     'RANKINGUNITSSOLD': 'rankingUnitsSold',
     'EA_IND': 'isEndlessAisle',
-    'ISRETURNABLE': 'isReturnable'
+    'RETURNABLE_IND': 'isReturnable'
 };
 
 const transforms = {
@@ -94,7 +94,8 @@ function parseStyleMessage(msg) {
         styleData.promotionalSticker = endlessAislePromotionalSticker;
     }
     styleData.webStatus = styleData.webStatus === APPROVED_STATUS ? true : false;
-    styleData.isReturnable = styleData.isReturnable === 't' ? true : false
+    styleData.isReturnable = styleData.isReturnable === 'Y' ? true : false
+
 
     // Add _id for mongo
     styleData._id = styleData.id;
