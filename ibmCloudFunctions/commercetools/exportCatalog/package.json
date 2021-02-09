@@ -13,9 +13,9 @@
   "dependencies": {
     "@commercetools/product-exporter": "^3.1.9",
     "@commercetools/sdk-auth": "^3.0.10",
-    "ftp": "^0.3.10",
     "json2csv": "^5.0.5",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "ssh2-sftp-client": "^6.0.1"
   },
   "devDependencies": {
     "webpack": "^5.13.0",

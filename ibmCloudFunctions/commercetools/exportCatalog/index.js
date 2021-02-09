@@ -1,27 +1,41 @@
-const { getFormatStream } = require('./csv')
-const { getFtpClient, pipeStreamToServer } = require('./ftp')
-const { outputFilenames } = require('./config')
+const path = require('path')
+const SftpClient = require('ssh2-sftp-client')
+const { logAndThrowErrorMessage } = require('../../product-consumers/utils')
 const { getProductExporter } = require('./commercetools')
+const { outputFilenames } = require('./config')
+const { getFormatStream } = require('./csv')
+
+const sftpClient = new SftpClient()
 
 const main = async params => {
-  const ftpClient = await getFtpClient(params)
   const productExporter = await getProductExporter(params)
   const locale = params.locale
   const stream = getFormatStream(locale, params)
   const outputFilename = outputFilenames[locale]
-  
-  productExporter.run(stream)
-  console.log(`Starting to process ${outputFilename} (${locale})`)
+  const outputPath = path.join(params.hrSftpFolder, outputFilename)
+
   try {
-    await pipeStreamToServer({ ftpClient, readStream: stream, outputFilename })
-    console.log(`Successfully uploaded ${outputFilename}`)
+    await sftpClient.connect({
+      host: params.hrSftpHost,
+      port: params.hrSftpPort,
+      username: params.hrSftpUser,
+      password: params.hrSftpPassword
+    })
+    console.log('Connected to SFTP server')
   } catch (error) {
-    console.error(`Unable to upload ${outputFilename}:`, error.message)
+    logAndThrowErrorMessage(`Unable to connect to SFTP server: ${error.message}`)
+  }
+
+  productExporter.run(stream)
+  console.log(`Starting to process ${outputPath} (${locale})`)
+  try {
+    await sftpClient.put(stream, outputPath)
+    console.log(`Successfully uploaded ${outputPath}`)
+  } catch (error) {
+    logAndThrowErrorMessage(`Unable to upload ${outputPath}: ${error.message}`)
   } finally {
-    ftpClient.end()
+    await sftpClient.end()
   }
 }
 
 global.main = main
-
-module.exports = global.main
