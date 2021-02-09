@@ -29,6 +29,16 @@ function filterMissingTrackingNumberMessages(msg) {
     return true; 
 }
 
+function checkShipmentItemIdForNull(msg) {
+    if (!msg.value.EXT_REF_ID) {
+        // we want to skip messages with no line item id but not fail them since there's no point retrying. We log out a message here for alerting purposes
+        log.error(`Cannot process messages with no line item id. Order number: ${msg.value.ORDER_NUMBER}`)
+        return false;
+    }
+
+    return true; 
+}
+
 function parseShipmentMessage(msg) {
     return {
         order_info: {
@@ -96,5 +106,6 @@ function parseShipmentMessage(msg) {
 module.exports = {
     parseShipmentMessage,
     filterShipmentMessages,
-    filterMissingTrackingNumberMessages
+    filterMissingTrackingNumberMessages,
+    checkShipmentItemIdForNull
 };

@@ -39,7 +39,7 @@ const JESTA_SERVICE_TYPES_TO_NARVAR_SERVICE_TYPES = {
   FDX: {
     EXPRESS: 'E1AM',
     GROUND: 'FG',
-    ECONOMY: 'IE',
+    ECONOMY: 'E3',
     STANDARD_OVERNIGHT: 'E1'
   },
   CP: {

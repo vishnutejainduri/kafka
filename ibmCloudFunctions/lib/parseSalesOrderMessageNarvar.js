@@ -1,3 +1,6 @@
+const {  
+  log
+} = require('../product-consumers/utils');
 const {
   JESTA_LANGUAGE_NUMBERS_TO_LOCALES,
   JESTA_STATUSES_TO_NARVAR_STATUSES,
@@ -10,6 +13,16 @@ const TOPIC_NAMES = ['sales-order-details-connect-jdbc', 'sales-orders-connect-j
 function filterSalesOrderMessages(msg) {
     if (!TOPIC_NAMES.includes(msg.topic)) {
         throw new Error('Can only parse Sales Order Details update messages');
+    }
+
+    return true; 
+}
+
+function checkSalesOrderItemIdForNull(msg) {
+    if (!msg.value.EXT_REF_ID) {
+        // we want to skip messages with no line item id but not fail them since there's no point retrying. We log out a message here for alerting purposes
+        log.error(`Cannot process messages with no line item id. Order number: ${msg.value.ORDER_NUMBER}`)
+        return false;
     }
 
     return true; 
@@ -92,5 +105,6 @@ function parseSalesOrderMessage(msg) {
 
 module.exports = {
     parseSalesOrderMessage,
-    filterSalesOrderMessages
+    filterSalesOrderMessages,
+    checkSalesOrderItemIdForNull
 };

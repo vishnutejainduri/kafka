@@ -1,7 +1,8 @@
 const consumeSalesOrderMessageNarvar = require('..');
 const {
   filterSalesOrderMessages,
-  parseSalesOrderMessage
+  parseSalesOrderMessage,
+  checkSalesOrderItemIdForNull
 } = require('../../../lib/parseSalesOrderMessageNarvar');
 const {
   addErrorHandling,
@@ -74,6 +75,7 @@ const validParams = {
 const orders =  
   validParams.messages
   .filter(addErrorHandling(filterSalesOrderMessages))
+  .filter(addErrorHandling(checkSalesOrderItemIdForNull))
   .map(addErrorHandling(parseSalesOrderMessage))
 
 describe('consumeSalesOrderMessageNarvar', () => {
@@ -120,6 +122,16 @@ describe('filterSalesOrderMessages', () => {
   });
   it('does not remove messages with correct topic', async () => {
     expect(filterSalesOrderMessages(validParams.messages[0])).toEqual(true)
+  });
+});
+
+describe('checkSalesOrderItemIdForNull', () => {
+  it('removes messages with null item id', async () => {
+    const invalidMessages = { ...validParams, messages: [{ ...validParams.messages[0], value: { ...validParams.messages[0].value, EXT_REF_ID: null } }] }
+    expect(checkSalesOrderItemIdForNull(invalidMessages.messages[0])).toEqual(false)
+  });
+  it('does not remove messages with valid item id', async () => {
+    expect(checkSalesOrderItemIdForNull(validParams.messages[0])).toEqual(true)
   });
 });
 

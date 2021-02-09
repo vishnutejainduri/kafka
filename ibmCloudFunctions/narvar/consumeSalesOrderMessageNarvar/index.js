@@ -1,4 +1,4 @@
-const { filterSalesOrderMessages, parseSalesOrderMessage } = require('../../lib/parseSalesOrderMessageNarvar');
+const { filterSalesOrderMessages, parseSalesOrderMessage, checkSalesOrderItemIdForNull } = require('../../lib/parseSalesOrderMessageNarvar');
 const { syncSalesOrderBatchToNarvar } = require('../narvarUtils') 
 const createError = require('../../lib/createError');
 const messagesLogs = require('../../lib/messagesLogs');
@@ -27,6 +27,7 @@ const main = params => {
   const salesOrdersToCreateOrUpdate = (
     params.messages
       .map(addErrorHandling(msg => filterSalesOrderMessages(msg) ? msg : null))
+      .map(addErrorHandling(msg => checkSalesOrderItemIdForNull(msg) ? msg : null))
       .map(addErrorHandling(parseSalesOrderMessage))
   );
   const salesOrdersGroupedByOrderNumber = groupByOrderNumber(salesOrdersToCreateOrUpdate);
