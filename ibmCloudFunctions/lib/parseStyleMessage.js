@@ -94,7 +94,7 @@ function parseStyleMessage(msg) {
         styleData.promotionalSticker = endlessAislePromotionalSticker;
     }
     styleData.webStatus = styleData.webStatus === APPROVED_STATUS ? true : false;
-    styleData.isReturnable = styleData.isReturnable === 'Y' ? true : false
+    styleData.isReturnable = styleData.isReturnable === JESTA_TRUE ? true : false
 
 
     // Add _id for mongo
