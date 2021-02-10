@@ -1,0 +1,300 @@
+packages:
+  product-consumers:
+    inputs:
+      nameSpace: $SPACE
+      cloudFunctionsNamespace: $CLOUD_FUNCTIONS_NAMESPACE
+      mongoUri: $MONGO_URI
+      mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+      dbName: $DB_NAME
+      algoliaApiKey: $ALGOLIA_API_KEY
+      algoliaIndexName: $ALGOLIA_INDEX_NAME
+      algoliaAppId: $ALGOLIA_APP_ID
+      productApiClientId: $PRODUCT_API_CLIENT_ID
+      productApiHost: $PRODUCT_API_HOST
+      kafkaBrokers: $KAFKA_BROKERS
+      kafkaUsername: $KAFKA_USERNAME
+      kafkaPassword: $KAFKA_PASSWORD
+      kafkaInvalidMessagesDlqTopicName: $KAFKA_INVALID_MESSAGES_DLQ_TOPIC_NAME
+      messagesMongoUri: $MESSAGES_MONGO_URI
+      messagesMongoCertificateBase64: $MESSAGES_MONGO_CERTIFICATE_BASE64
+      cloudFunctionsRestEndpoint: $CLOUD_FUNCTIONS_REST_ENDPOINT
+      cloudFunctionsRestUsername: $CLOUD_FUNCTIONS_REST_USERNAME
+      cloudFunctionsRestPassword: $CLOUD_FUNCTIONS_REST_PASSWORD
+      cloudFunctionsIsIam: $CLOUD_FUNCTIONS_IS_IAM
+      cloudFunctionsApiKey: $CLOUD_FUNCTIONS_API_KEY
+      identityTokenRestEndpoint: $IDENTITY_TOKEN_REST_ENDPOINT
+      cloudFunctionsNamespaceGuid: $CLOUD_FUNCTIONS_NAMESPACE_GUID
+      messagesLogsPersistenceDays: $MESSAGES_LOGS_PERSISTENCE_DAYS
+      ctpProjectKey: $CTP_PROJECT_KEY
+      ctpClientId: $CTP_CLIENT_ID
+      ctpClientSecret: $CTP_CLIENT_SECRET
+      ctpAuthUrl: $CTP_AUTH_URL
+      ctpApiUrl: $CTP_API_URL
+      ctpScopes: $CTP_SCOPES
+    # Functions that are invoked by the binding service i.e. those which are not associated with the rules define in manifest-rules-iam, should finish in less than 60s.
+    # Functions within a sequence that is invoked by the binding service should finish in less than 60s divided by total number of steps in the sequence.
+    # Functions that are invoked by both the binding service and openwhisk triggers, e.g. update-algolia-price, have two versions where one ends with '-binding-service' and has a reduced runtime.
+    actions:
+      consume-catalog-message:
+        location: ./product-consumers/consumeCatalogMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 29000
+        inputs:
+          collectionName: $STYLES_COLLECTION_NAME
+          pricesCollectionName: $PRICES_COLLECTION_NAME
+          bulkAtsRecalculateQueue: $BULK_ATS_RECALCULATE_QUEUE
+          topicName: styles-connect-jdbc-CATALOG
+      consume-styles-basic-message:
+        location: ./product-consumers/consumeStylesBasicMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 58000
+        inputs:
+          collectionName: $STYLES_COLLECTION_NAME
+          algoliaDeleteCreateQueue: $ALGOLIA_DELETE_CREATE_QUEUE
+          topicName: styles-basic-connect-jdbc
+      consume-threshold-message:
+        location: ./product-consumers/consumeThresholdMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 58000
+        inputs:
+          collectionName: $SKUS_COLLECTION_NAME
+          styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
+          topicName: thresholds-connect-jdbc
+      consume-sale-price:
+        location: ./product-consumers/consumeSalePrice/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 29000
+        inputs:
+          collectionName: $PRICES_COLLECTION_NAME
+          topicName: sale-prices-connect-jdbc
+      consume-stores-message:
+        location: ./product-consumers/consumeStoresMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 58000
+        inputs:
+          collectionName: $STORES_COLLECTION_NAME
+          inventoryCollectionName: $INVENTORY_COLLECTION_NAME
+          bulkAtsRecalculateQueue: $BULK_ATS_RECALCULATE_QUEUE
+          topicName: stores-connect-jdbc
+      consume-sku-message:
+        location: ./product-consumers/consumeSkuMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 58000
+        inputs:
+          collectionName: $SKUS_COLLECTION_NAME
+          styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
+          topicName: skus-connect-jdbc
+      consume-barcode-message:
+        location: ./product-consumers/consumeBarcodeMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 58000
+        inputs:
+          collectionName: $BARCODES_COLLECTION_NAME
+          topicName: barcodes-connect-jdbc
+      consume-sku-inventory-message:
+        location: ./product-consumers/consumeSkuInventoryMessage/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 29000
+        inputs:
+          collectionName: $INVENTORY_COLLECTION_NAME
+          skusCollectionName: $SKUS_COLLECTION_NAME
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          storesCollectionName: $STORES_COLLECTION_NAME
+          styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
+          topicName: inventory-connect-jdbc-SKUINVENTORY
+      calculate-available-to-sell:
+        location: ./product-consumers/calculateAvailableToSell/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 29000
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          collectionName: $INVENTORY_COLLECTION_NAME
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          skusCollectionName: $SKUS_COLLECTION_NAME
+          storesCollectionName: $STORES_COLLECTION_NAME
+          styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
+          bulkAtsRecalculateQueue: $BULK_ATS_RECALCULATE_QUEUE
+          topicName: inventory-connect-jdbc-SKUINVENTORY
+      update-algolia-style:
+        location: ./product-consumers/updateAlgoliaStyle/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 58000
+        inputs:
+          collectionName: $STYLES_COLLECTION_NAME
+          topicName: styles-connect-jdbc-CATALOG
+      delete-create-algolia-styles:
+        location: ./product-consumers/deleteCreateAlgoliaStyles/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 600000
+        inputs:
+          topicName: styles-basic-connect-jdbc
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          collectionName: $ALGOLIA_DELETE_CREATE_QUEUE
+      update-algolia-price-binding-service:
+        location: ./product-consumers/updateAlgoliaPrice/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 29000
+        inputs:
+          collectionName: $STYLES_COLLECTION_NAME
+          pricesCollectionName: $PRICES_COLLECTION_NAME
+      update-algolia-price:
+        location: ./product-consumers/updateAlgoliaPrice/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 600000
+        inputs:
+          collectionName: $STYLES_COLLECTION_NAME
+          pricesCollectionName: $PRICES_COLLECTION_NAME
+      bulk-calculate-available-to-sell:
+        location: ./product-consumers/bulkCalculateAvailableToSell/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 600000
+        inputs:
+          collectionName: $BULK_ATS_RECALCULATE_QUEUE
+          styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          skusCollectionName: $SKUS_COLLECTION_NAME
+          storesCollectionName: $STORES_COLLECTION_NAME
+          inventoryCollectionName: $INVENTORY_COLLECTION_NAME
+      update-algolia-inventory:
+        location: ./product-consumers/updateAlgoliaAndCtInventory/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 600000
+        inputs:
+          mongoUri: $MONGO_URI
+          mongoCertificateBase64: $MONGO_CERTIFICATE_BASE64
+          dbName: $DB_NAME
+          topicName: inventory-connect-jdbc-SKUINVENTORY
+          algoliaApiKey: $ALGOLIA_API_KEY
+          algoliaIndexName: $ALGOLIA_INDEX_NAME
+          algoliaAppId: $ALGOLIA_APP_ID
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          skusCollectionName: $SKUS_COLLECTION_NAME
+          collectionName: $STYLE_AVAILABILITY_CHECK_QUEUE
+      update-algolia-facets:
+        location: ./product-consumers/updateAlgoliaFacets/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 600000
+        inputs:
+          stylesCollectionName: $STYLES_COLLECTION_NAME
+          collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
+      add-facets-to-bulk-import-queue:
+        location: ./product-consumers/addFacetsToBulkImportQueue/dist/bundle.js
+        runtime: nodejs:10
+        limits:
+          memorySize: 2048
+          timeout: 58000
+        inputs:
+          collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
+          topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
+      schema-validation:
+        location: ./product-consumers/schemaValidation/dist/bundle.js
+      resolve-messages-logs:
+        location: ./product-consumers/resolveMessagesLogs/dist/bundle.js
+        inputs:
+          maxRetries: $MAX_RETRIES
+        limits:
+          memorySize: 2048
+          timeout: 600000
+      handle-messages-logs:
+        location: ./product-consumers/handleMessagesLogs/dist/bundle.js
+        limits:
+          memorySize: 2048
+          timeout: 600000
+      cleanup-messages-logs:
+        location: ./product-consumers/cleanupMessagesLogs/dist/bundle.js
+        inputs:
+          messagesLogsPersistenceDays: $MESSAGES_LOGS_PERSISTENCE_DAYS
+        limits:
+          memorySize: 2048
+          timeout: 600000
+      remove-quantity-reserved:
+        location: ./product-consumers/removeQuantityReserved/dist/bundle.js
+        inputs:
+          collectionName: $SKUS_COLLECTION_NAME
+          styleAvailabilityCheckQueue: $STYLE_AVAILABILITY_CHECK_QUEUE
+        limits:
+          memorySize: 2048
+          timeout: 600000
+      monitor-kafka-connect:
+        location: ./product-consumers/monitorKafkaConnect/dist/bundle.js
+        inputs:
+          kubeUsername: $KUBE_USERNAME
+          kubePassword: $KUBE_PASSWORD
+          kubeTenant: $KUBE_TENANT
+          kubeHost: $KUBE_HOST
+          kafkaConnectKubePathStart: $KAFKA_CONNECT_KUBE_PATH_START
+        limits:
+          memorySize: 256
+          timeout: 600000
+    sequences:
+      update-pricing-sequence:
+        actions: consume-sale-price,update-algolia-price-binding-service
+      update-catalog-sequence:
+        actions: consume-catalog-message,update-algolia-price-binding-service
+      update-inventory-sequence:
+        actions: consume-sku-inventory-message,calculate-available-to-sell
+    rules:
+      algolia-inventory-rule:
+        action: update-algolia-inventory
+        trigger: every-minute
+      bulk-ats-rule:
+        action: bulk-calculate-available-to-sell
+        trigger: every-minute
+      algolia-delete-create-rule:
+        action: delete-create-algolia-styles
+        trigger: every-minute
+      algolia-facets-rule:
+        action: update-algolia-facets
+        trigger: every-minute
+      resolve-messages-logs-rule:
+        action: resolve-messages-logs
+        trigger: every-ten-minutes
+      handle-messages-logs-rule:
+        action: handle-messages-logs
+        trigger: every-ten-minutes
+      monitor-kafka-connect-rule:
+        action: monitor-kafka-connect
+        trigger: every-ten-minutes
+      cleanup-messages-logs-rule:
+        action: cleanup-messages-logs
+        trigger: every-midnight
+      remove-quantity-reserved-rule:
+        action: remove-quantity-reserved
+        trigger: every-minute
+      update-future-sale-price-changes-rule:
+        action: update-algolia-price
+        trigger: every-minute
