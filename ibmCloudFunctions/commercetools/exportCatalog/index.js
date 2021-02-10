@@ -1,27 +1,20 @@
-const { getFormatStream } = require('./csv')
-const { getFtpClient, pipeStreamToServer } = require('./ftp')
-const { outputFilenames } = require('./config')
-const { getProductExporter } = require('./commercetools')
+const fetch = require('node-fetch').default
+const { logAndThrowErrorMessage } = require('../../product-consumers/utils')
 
 const main = async params => {
-  const ftpClient = await getFtpClient(params)
-  const productExporter = await getProductExporter(params)
-  const locale = params.locale
-  const stream = getFormatStream(locale, params)
-  const outputFilename = outputFilenames[locale]
-  
-  productExporter.run(stream)
-  console.log(`Starting to process ${outputFilename} (${locale})`)
+  const { ctpApiExtensionsAuthorization, productExportTriggerUrl } = params
+
   try {
-    await pipeStreamToServer({ ftpClient, readStream: stream, outputFilename })
-    console.log(`Successfully uploaded ${outputFilename}`)
+    const response = await fetch(productExportTriggerUrl, {
+      method: 'post',
+      headers: { authorization: ctpApiExtensionsAuthorization }
+    })
+    if (!(response.status === 202)) throw new Error(`Received non-202 response from product API: ${response.status} ${await response.text()}`)
   } catch (error) {
-    console.error(`Unable to upload ${outputFilename}:`, error.message)
-  } finally {
-    ftpClient.end()
+    logAndThrowErrorMessage(error.message)
   }
+
+  console.log('Successfully triggered catalog export')
 }
 
 global.main = main
-
-module.exports = global.main

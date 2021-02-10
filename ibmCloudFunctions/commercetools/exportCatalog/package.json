@@ -11,10 +11,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@commercetools/product-exporter": "^3.1.9",
-    "@commercetools/sdk-auth": "^3.0.10",
-    "ftp": "^0.3.10",
-    "json2csv": "^5.0.5",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {

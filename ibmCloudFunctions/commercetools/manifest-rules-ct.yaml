@@ -2,9 +2,6 @@
       update-future-sale-price-changes-rule-ct:
         action: update-ct-sale-price-trigger
         trigger: every-minute
-      export-catalog-rule-ct-english:
-        action: export-catalog-ct-english
-        trigger: every-midnight
-      export-catalog-rule-ct-french:
-        action: export-catalog-ct-french
+      export-catalog-rule-ct:
+        action: export-catalog-ct
         trigger: every-midnight
