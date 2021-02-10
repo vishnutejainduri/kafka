@@ -28,6 +28,11 @@ const endlessAislePromotionalSticker = {
     fr: 'En ligne seulement'
 };
 
+const clearancePromotionalSticker = {
+    en: 'Final Sale',
+    fr: 'Final Sale'
+}
+
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
     [styleIdKey]: 'id',
@@ -94,7 +99,13 @@ function parseStyleMessage(msg) {
         styleData.promotionalSticker = endlessAislePromotionalSticker;
     }
     styleData.webStatus = styleData.webStatus === APPROVED_STATUS ? true : false;
-    styleData.isReturnable = styleData.isReturnable === JESTA_TRUE ? true : false
+
+    if (styleData.isReturnable === JESTA_TRUE) {
+        styleData.isReturnable = true
+        styleData.promotionalSticker = clearancePromotionalSticker
+    } else {
+        styleData.isReturnable = false
+    }
 
 
     // Add _id for mongo

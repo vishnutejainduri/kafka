@@ -1,1 +1,0 @@
-docker run -d --rm -p 9005:9000 -e KAFKA_PROPERTIES=$(cat development.env | base64) obsidiandynamics/kafdrop
