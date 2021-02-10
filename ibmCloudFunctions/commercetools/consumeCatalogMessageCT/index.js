@@ -36,7 +36,6 @@ const main = params => {
       .map(addErrorHandling(msg => filterStyleMessages(msg) ? msg : null))
       .map(addErrorHandling(parseStyleMessageCt))
   );
-  console.log('stylesToCreateOrUpdate', stylesToCreateOrUpdate)
 
   const batchedStylesToCreateOrUpdate = groupByAttribute('id')(stylesToCreateOrUpdate)
 
@@ -45,7 +44,6 @@ const main = params => {
       .map(addErrorHandling(async batchedParsedMessages => {
         const latestParsedMessage = getMostUpToDateObject('lastModifiedDate')(batchedParsedMessages);
         const result = await createOrUpdateStyle(ctHelpers, productTypeId, latestParsedMessage);
-        console.log('result', result)
         return result
       }))
     )
