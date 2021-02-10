@@ -47,18 +47,12 @@ const attributeMap = {
     'RETURNABLE_IND': 'isReturnable'
 };
 
-const transforms = {
-    'id': (id) => id.match(/\d+/)[0] // strip "-00" if it exists
-};
-
 function filterStyleMessages(msg) {
     if (msg.topic !== TOPIC_NAME) {
         throw new Error('Can only parse Catalog update messages');
     }
 
-    // We want to filter out any "pseudo styles" until a later release. That is, any style with a suffix greater than -00. eg. -10 or -05
-    const hasStyleSuffixGreaterThan00 = /^\d+-(1\d|0[1-9])$/;
-    return !msg.value.STYLEID.match(hasStyleSuffixGreaterThan00);
+    return true
 }
 
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.
@@ -77,10 +71,6 @@ function parseStyleMessage(msg) {
     }
     for (let sourceAttributeName in attributeMap) {
         styleData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
-    }
-
-    for (let transformField in transforms) {
-        styleData[transformField] = transforms[transformField](styleData[transformField]);
     }
 
     // VSNs are actually supposed to be compounded with two other fields for uniqueness
