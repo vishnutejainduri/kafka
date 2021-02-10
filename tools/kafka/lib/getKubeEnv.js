@@ -1,21 +1,19 @@
 module.exports = function (platformEnv) {
-    if (platformEnv === "production") {
+    if (platformEnv === "prod") {
         return {
-            username: process.env.KUBE_PRODUCTION_USERNAME,
-            password: process.env.KUBE_PRODUCTION_PASSWORD,
-            tenant: process.env.KUBE_PRODUCTION_TENANT,
-            host: process.env.KUBE_PRODUCTION_HOST,
-            pathStart: process.env.KUBE_PRODUCTION_PATH_START
+            username: process.env.KUBE_PROD_USERNAME,
+            password: process.env.KUBE_PROD_PASSWORD,
+            tenant: process.env.KUBE_PROD_TENANT,
+            host: process.env.KUBE_PROD_HOST
         }
     }
 
-    if (platformEnv === "staging") {
+    if (platformEnv === "dev") {
         return {
-            username: process.env.KUBE_STAGING_USERNAME,
-            password: process.env.KUBE_STAGING_PASSWORD,
-            tenant: process.env.KUBE_STAGING_TENANT,
-            host: process.env.KUBE_STAGING_HOST,
-            pathStart: process.env.KUBE_STAGING_PATH_START
+            username: process.env.KUBE_DEV_USERNAME,
+            password: process.env.KUBE_DEV_PASSWORD,
+            tenant: process.env.KUBE_DEV_TENANT,
+            host: process.env.KUBE_DEV_HOST            
         }
     }
 
@@ -24,8 +22,7 @@ module.exports = function (platformEnv) {
             username: process.env.KUBE_DEVELOPMENT_USERNAME,
             password: process.env.KUBE_DEVELOPMENT_PASSWORD,
             tenant: process.env.KUBE_DEVELOPMENT_TENANT,
-            host: process.env.KUBE_DEVELOPMENT_HOST,
-            pathStart: process.env.KUBE_DEVELOPMENT_PATH_START
+            host: process.env.KUBE_DEVELOPMENT_HOST            
         }
     }
 

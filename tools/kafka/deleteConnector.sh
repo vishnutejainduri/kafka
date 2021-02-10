@@ -2,7 +2,9 @@
 . ./lib/getSessionToken.sh $1 
 
 connectors=()
-connectors+=("skuinventory-jdbc-source-v21")
+connectors+=("elcat-stylecolours-update-jdbc-source-v2")
+connectors+=("elcat-catalog-update-jdbc-source-v6")
+connectors+=("elcat-catalog-create-jdbc-source-v2")
 
 for connector in "${connectors[@]}"
 do

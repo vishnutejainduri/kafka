@@ -1,16 +1,6 @@
 const NoResponse = Symbol.for("no-response");
 
-async function sleep (tries) {
-  const sleepTime = tries * 120000
-  console.log(`Call failed. Waiting for ${sleepTime/1000}s before next retry...`)
-  return new Promise(function (resolve) {
-    setTimeout(function () {
-      resolve()
-    }, sleepTime)
-  })
-}
-
-function retry(fn, retries = 5) {
+function retry(fn, retries = 3) {
     return async function(...args){
         let tries = 0;
         let error = null;
@@ -20,9 +10,6 @@ function retry(fn, retries = 5) {
             error = null;
             response = NoResponse;
             try {
-                if (tries > 1) {
-                  await sleep(tries)
-                }
                 response = await fn(...args);
             } catch (err) {
                 error = err;
@@ -103,13 +90,10 @@ const log = (msg, level = 'log') => {
     else {  console.log(msg); }
 }
 
-const formatPathStart = pathStart => pathStart ? `/${pathStart}` : ''
-
 module.exports = {
     retry,
     addErrorHandling,
     extractFilenameAndVersion,
-    formatPathStart,
     getConnectorBaseObject,
     createConnectorObject,
     log
