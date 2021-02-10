@@ -21,7 +21,8 @@ const styleAttributeNames = {
   COLOUR_GROUP: 'colourGroup',
   SIZE_CHART: 'sizeChart',
   ORIGINAL_PRICE: 'originalPrice',
-  IS_ENDLESS_AISLE: 'isEndlessAisle'
+  IS_ENDLESS_AISLE: 'isEndlessAisle',
+  IS_RETURNABLE: 'isReturnable'
 };
 
 /**
