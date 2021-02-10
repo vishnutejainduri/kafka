@@ -156,11 +156,6 @@ describe('parseStyleMessage', () => {
         expect(actual.construction).toEqual({ en: null, fr: null });
     });
 
-    it('should remove the dashes from style IDs', () => {
-        const actual = parseStyleMessage(testData);
-        expect(actual.id).toMatch((/^\d+$/));
-    });
-
     it('should pick the highest last modified date', () => {
         const actual = parseStyleMessage(testData);
         expect(actual.lastModifiedDate).toEqual(testData.value.LASTMODIFIEDDATE)
@@ -174,13 +169,13 @@ describe('parseStyleMessage', () => {
 });
 
 describe('filterStyleMessages', () => {
-    it('should filter out "pseudo styles"', () => {
+    it('should NOT filter out "pseudo styles"', () => {
         const actual1 = [{ topic: 'styles-connect-jdbc-CATALOG', value: { STYLEID: '1234-01' } }].filter(filterStyleMessages);
         const actual2 = [{ topic: 'styles-connect-jdbc-CATALOG', value: { STYLEID: '1234-11' } }].filter(filterStyleMessages);
         const actual3 = [{ topic: 'styles-connect-jdbc-CATALOG', value: { STYLEID: '1234-00' } }].filter(filterStyleMessages);
 
-        expect(actual1.length).toBe(0);
-        expect(actual2.length).toBe(0);
+        expect(actual1.length).toBe(1);
+        expect(actual2.length).toBe(1);
         expect(actual3.length).toBe(1);
     });
 })
