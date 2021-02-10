@@ -114,14 +114,9 @@
           timeout: 600000
         inputs:
             locale: en-CA
-      export-catalog-ct-french:
+      export-catalog-ct:
         location: ./commercetools/exportCatalog/dist/bundle.js
         runtime: nodejs:10
         limits:
           memorySize: 2048
           timeout: 600000
-        inputs:
-            locale: fr-CA
-    sequences:
-      update-catalog-ct-sequence:
-        actions: consume-catalog-message-ct,update-ct-sale-price
