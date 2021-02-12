@@ -120,3 +120,6 @@
         limits:
           memorySize: 2048
           timeout: 600000
+    sequences:
+      update-catalog-ct-sequence:
+        actions: consume-catalog-message-ct,update-ct-sale-price
