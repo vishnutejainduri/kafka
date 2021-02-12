@@ -2,7 +2,7 @@
 . ./lib/getSessionToken.sh $1 
 
 connectors=()
-connectors+=("inventory-fast-load-jdbc-v16")
+connectors+=("connector-name-with-version")
 
 for connector in "${connectors[@]}"
 do
