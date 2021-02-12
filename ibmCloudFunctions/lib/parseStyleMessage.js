@@ -83,7 +83,6 @@ function parseStyleMessage(msg) {
     if (styleData.isEndlessAisle) {
         styleData.promotionalSticker = endlessAislePromotionalSticker;
     }
-    styleData.webStatus = styleData.webStatus === APPROVED_STATUS ? true : false;
     styleData.isReturnable = styleData.isReturnable === JESTA_TRUE ? true : false
 
 
