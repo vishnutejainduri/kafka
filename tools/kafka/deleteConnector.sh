@@ -2,7 +2,7 @@
 . ./lib/getSessionToken.sh $1 
 
 connectors=()
-connectors+=("skuinventory-jdbc-source-v21")
+connectors+=("connector-name-with-version")
 
 for connector in "${connectors[@]}"
 do

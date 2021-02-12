@@ -2,7 +2,7 @@
 . ./lib/getSessionToken.sh $1 
 
 connectors=()
-connectors+=("media-containers-jdbc-source")
+connectors+=("connector-name-with-version")
 
 for connector in "${connectors[@]}"
 do
