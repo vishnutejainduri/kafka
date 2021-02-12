@@ -166,6 +166,11 @@ describe('parseStyleMessage', () => {
         const actual = parseStyleMessage(newTestDate);
         expect(actual.lastModifiedDate).toEqual(newTestDate.value.LASTMODIFIEDDATE_COLOURS)
     });
+
+    it('maps webstatus to true if it is approved', () => {
+        const messageWithTrueWebStatus = { ...testData, value: { ...testData.value, WEBSTATUS: 'Approved' } }
+        expect(parseStyleMessage(messageWithTrueWebStatus).webStatus).toBe(true)
+    });
 });
 
 describe('filterStyleMessages', () => {
