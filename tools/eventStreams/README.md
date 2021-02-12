@@ -1,16 +1,20 @@
 ## Setup
 Populate .env with the following variables:
 
-* KAFKA_BROKERS_DEV
-* KAFKA_USER_DEV
-* KAFKA_PASSWORD_DEV
+* KAFKA_BROKERS_DEVELOPMENT
+* KAFKA_USER_DEVELOPMENT
+* KAFKA_PASSWORD_DEVELOPMENT
+
+* KAFKA_BROKERS_STAGE
+* KAFKA_USER_STAGE
+* KAFKA_PASSWORD_STAGE
 
 * KAFKA_BROKERS_PROD
 * KAFKA_USER_PROD
 * KAFKA_PASSWORD_PROD
 
 ## Examples
-* `./getEventStreamTopicLogs_INV.sh dev`
+* `./getEventStreamTopicLogs.sh development inv`
 
 ## Steps to recreate a Kafka topic
 
