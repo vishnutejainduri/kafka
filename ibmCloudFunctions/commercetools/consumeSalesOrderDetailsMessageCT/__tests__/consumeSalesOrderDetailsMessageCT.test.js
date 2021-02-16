@@ -69,7 +69,8 @@ const validParams = {
         HOME_PHONE: 'homePhone',
         LRUID: 'lrUid',
         SHIPPING_TAX1: 1.0,
-        SHIPPING_TAX2: 2.0
+        SHIPPING_TAX2: 2.0,
+        REASON_CODE: 'reasonCode'
       }
   }],
   mongoUri: 'mongo-uri',

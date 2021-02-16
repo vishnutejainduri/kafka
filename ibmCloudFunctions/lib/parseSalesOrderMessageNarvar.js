@@ -62,7 +62,8 @@ function parseSalesOrderMessage(msg) {
             attributes: {
               [NARVAR_ORDER_ITEM_LAST_MODIFIED]: msg.value.MODIFIED_DATE ? new Date(msg.value.MODIFIED_DATE).toISOString() : null,
               brand_name: msg.value.BRAND_NAME_ENG,
-              size: msg.value.SIZE
+              size: msg.value.SIZE,
+              reasonCode: msg.value.REASON_CODE
             }
           }],
           billing: {
