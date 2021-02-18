@@ -26,11 +26,11 @@ const main = async function (params) {
     let prices;
     let bulkAtsRecalculateQueue;
     try {
-        styles = await getCollection(params);
-        prices = await getCollection(params, params.pricesCollectionName);
-        bulkAtsRecalculateQueue = await getCollection(params, params.bulkAtsRecalculateQueue);
+      styles = await getCollection(params);
+      prices = await getCollection(params, params.pricesCollectionName);
+      bulkAtsRecalculateQueue = await getCollection(params, params.bulkAtsRecalculateQueue);
     } catch (originalError) {
-        throw createError.failedDbConnection(originalError);
+      throw createError.failedDbConnection(originalError);
     }
 
     return Promise.all(params.messages

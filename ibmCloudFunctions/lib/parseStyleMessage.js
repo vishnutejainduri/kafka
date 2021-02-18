@@ -92,15 +92,14 @@ function parseStyleMessage(msg) {
 
     if (styleData.isReturnable === JESTA_TRUE) {
         styleData.isReturnable = true
-        styleData.promotionalSticker = clearancePromotionalSticker
     } else {
         styleData.isReturnable = false
+        styleData.promotionalSticker = clearancePromotionalSticker
     }
 
 
     // Add _id for mongo
     styleData._id = styleData.id;
-
     return styleData;
 }
 
@@ -108,5 +107,6 @@ module.exports = {
     topicName: TOPIC_NAME,
     styleIdKey,
     parseStyleMessage,
-    filterStyleMessages
+    filterStyleMessages,
+    clearancePromotionalSticker
 };

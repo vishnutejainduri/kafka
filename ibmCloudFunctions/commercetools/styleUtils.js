@@ -7,7 +7,8 @@ const {
   PRODUCT_SHOULD_BE_PUBLISHED,
   entityStatus,
   priceTypes,
-  MICROSITES_ROOT_CATEGORY
+  MICROSITES_ROOT_CATEGORY,
+  clearancePromotionalSticker
 } = require('./constantsCt');
 const { getAllVariantPrices, getExistingCtOriginalPrice, getExistingCtPermanentMarkdown } = require('./consumeSalePriceCT/utils');
 
@@ -204,6 +205,32 @@ const getProductType = async (productTypeId, { client, requestBuilder }) => {
   }
 };
 
+/**
+ * Returns the value of the attribute in the given CT style. The value is taken
+ * from the master variant. Returns `undefined` if the attribute does not exist.
+ * @param {Object} ctStyle The product as stored in CT.
+ * @param {String} attributeName Name of the attribute whose value should be returned.
+ */
+const getCtStyleAttributeValue = (ctStyle, attributeName) => {
+  const foundAttribute =  (
+    ctStyle
+    .masterData[entityStatus]
+    .masterVariant
+    .attributes
+    .find(attribute => attribute.name === attributeName)
+  );
+
+  if (!foundAttribute) return undefined;
+  return foundAttribute.value;
+};
+
+const getCtStyleAttribute = (ctStyle, attributeName) => {
+  const attribute = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, attributeName) : null;
+
+  if (!attribute) return null;
+  return attribute;
+};
+
 const formatAttributeValue = (style, actionObj, attribute, attributeType) => {
   if (attributeType === 'money') {
     actionObj.value = {
@@ -231,21 +258,33 @@ const getUniqueCategoryIdsFromCategories = categories => {
 // Returns an array of actions, each of which tells CT to update a different
 // attribute of the given style
 const getActionsFromStyle = (style, productType, categories, existingCtStyle) => {
-  const customAttributesToUpdate = Object.keys(style).filter(isCustomAttribute);
+  let customAttributesToUpdate = Object.keys(style).filter(isCustomAttribute);
+
+  // dont update promo sticker if isReturnable = false and promoSticker = Final Sale
+  customAttributesToUpdate = customAttributesToUpdate.filter(attribute => {
+    const isReturnable = getCtStyleAttributeValue(existingCtStyle, 'isReturnable')
+    const promotionalSticker = getCtStyleAttributeValue(existingCtStyle, 'promotionalSticker')
+
+    const isPromotionalSticker = attribute === styleAttributeNames.PROMOTIONAL_STICKER
+    const isClearencePromotionalSticker = promotionalSticker[languageKeys.ENGLISH] === clearancePromotionalSticker[languageKeys.ENGLISH] && promotionalSticker[languageKeys.FRENCH] === clearancePromotionalSticker[languageKeys.FRENCH]
+    const isFinalSale = !isReturnable && isClearencePromotionalSticker
+
+    return !isPromotionalSticker || (isPromotionalSticker && !isFinalSale)
+  })
 
   const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => {
-      const attributeTypeOj = productType.attributes.find((attributeType) => attributeType.name === attribute)
-      const attributeType = attributeTypeOj ? attributeTypeOj.type.name : null;
-      let actionObj = {
-        action: 'setAttributeInAllVariants',
-        name: attribute,
-        value: style[attribute],
-        staged: isStaged
-      };
+    const attributeTypeOj = productType.attributes.find((attributeType) => attributeType.name === attribute)
+    const attributeType = attributeTypeOj ? attributeTypeOj.type.name : null;
+    let actionObj = {
+      action: 'setAttributeInAllVariants',
+      name: attribute,
+      value: style[attribute],
+      staged: isStaged
+    };
 
-      actionObj = formatAttributeValue(style, actionObj, attribute, attributeType);
+    actionObj = formatAttributeValue(style, actionObj, attribute, attributeType);
 
-      return actionObj;
+    return actionObj;
   })
 
   // `name` and `description` aren't custom attributes of products in CT, so
@@ -418,32 +457,6 @@ const publishStyle = async (style, { requestBuilder, client}) => {
 const createAndPublishStyle = async (styleToCreate, productType, categories, ctHelpers) => {
   const newStyle = (await createStyle(styleToCreate, productType, categories, ctHelpers)).body;
   return publishStyle(newStyle, ctHelpers)
-};
-
-/**
- * Returns the value of the attribute in the given CT style. The value is taken
- * from the master variant. Returns `undefined` if the attribute does not exist.
- * @param {Object} ctStyle The product as stored in CT.
- * @param {String} attributeName Name of the attribute whose value should be returned.
- */
-const getCtStyleAttributeValue = (ctStyle, attributeName) => {
-  const foundAttribute =  (
-    ctStyle
-    .masterData[entityStatus]
-    .masterVariant
-    .attributes
-    .find(attribute => attribute.name === attributeName)
-  );
-
-  if (!foundAttribute) return undefined;
-  return foundAttribute.value;
-};
-
-const getCtStyleAttribute = (ctStyle, attributeName) => {
-  const attribute = ctStyle.masterData.current ? getCtStyleAttributeValue(ctStyle, attributeName) : null;
-
-  if (!attribute) return null;
-  return attribute;
 };
 
 // Used to determine whether we should update the style in CT. Deals with race
