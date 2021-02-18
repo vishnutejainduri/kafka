@@ -387,8 +387,8 @@ describe('parseStyleMessageCt', () => {
     });
   });
 
-  it('returns a message that has no promo sticker if the style is not endless aisle', () => {
-    const nonEaMessage = { ...message, value: { ...message.value, EA_IND: 'N' } };
+  it('returns a message that has no promo sticker if the style is not endless aisle and is returnable', () => {
+    const nonEaMessage = { ...message, value: { ...message.value, EA_IND: 'N', RETURNABLE_IND: 'Y' } };
     const parsedNonEaMessage = parseStyleMessageCt(nonEaMessage);
     expect(parsedNonEaMessage.promotionalSticker).toBeUndefined();
   });
