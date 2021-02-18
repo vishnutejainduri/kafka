@@ -95,6 +95,11 @@ const languageKeys = {
   FRENCH: 'fr-CA'
 };
 
+const clearancePromotionalSticker = {
+  [languageKeys.ENGLISH]: 'Final Sale',
+  [languageKeys.FRENCH]: 'Final Sale'
+}
+
 const orderStates = {
   CANCELLED: 'canceledOrderStatus',
   OPEN: 'openOrderStatus',
@@ -139,5 +144,6 @@ module.exports = {
   PRODUCT_SHOULD_BE_PUBLISHED,
   CT_ACTION_LIMIT,
   priceTypes,
-  MICROSITES_ROOT_CATEGORY
+  MICROSITES_ROOT_CATEGORY,
+  clearancePromotionalSticker
 };
