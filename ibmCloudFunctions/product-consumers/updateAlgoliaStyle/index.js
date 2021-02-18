@@ -53,8 +53,6 @@ const main = async function (params) {
         throw createError.failedDbConnection(originalError);
     }
 
-    console.log("MESSAGES", params.messages)
-
     let records = await Promise.all(params.messages
         .map(addErrorHandling(msg => filterStyleMessages(msg) ? msg : null))
         .map(addErrorHandling(parseStyleMessage))
