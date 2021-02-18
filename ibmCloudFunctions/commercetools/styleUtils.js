@@ -266,7 +266,7 @@ const getActionsFromStyle = (style, productType, categories, existingCtStyle) =>
     const promotionalSticker = getCtStyleAttributeValue(existingCtStyle, 'promotionalSticker')
 
     const isPromotionalSticker = attribute === styleAttributeNames.PROMOTIONAL_STICKER
-    const isClearencePromotionalSticker = promotionalSticker[languageKeys.ENGLISH] === clearancePromotionalSticker[languageKeys.ENGLISH] && promotionalSticker[languageKeys.FRENCH] === clearancePromotionalSticker[languageKeys.FRENCH]
+    const isClearencePromotionalSticker = promotionalSticker && promotionalSticker[languageKeys.ENGLISH] === clearancePromotionalSticker[languageKeys.ENGLISH] && promotionalSticker[languageKeys.FRENCH] === clearancePromotionalSticker[languageKeys.FRENCH]
     const isFinalSale = !isReturnable && isClearencePromotionalSticker
 
     return !isPromotionalSticker || (isPromotionalSticker && !isFinalSale)
