@@ -97,7 +97,7 @@ global.main = async function (params) {
     }));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
-      throw new Error('Requires Algolia configuration. See manifest.yml');
+        throw new Error('Requires Algolia configuration. See manifest.yml');
     }
 
     if (index === null) {
@@ -123,8 +123,8 @@ global.main = async function (params) {
     const facetUpdatesByStyle = await algoliaFacetBulkImportQueue.aggregate([
         { $match: { processed: { $ne: true } } },
         { $group: {
-          _id: "$styleId",
-          facets: { $push: { id: "$_id", name: "$facetName", value: "$facetValue", type: "$typeId", isMarkedForDeletion: "$isMarkedForDeletion", facetId: "$facetId" } }
+            _id: "$styleId",
+            facets: { $push: { id: "$_id", name: "$facetName", value: "$facetValue", type: "$typeId", isMarkedForDeletion: "$isMarkedForDeletion", facetId: "$facetId" } }
         }},
         { $limit: 750 }
     ],
@@ -171,8 +171,8 @@ global.main = async function (params) {
         ]))
         .then(() => updateAlgoliaFacetsCount.insert({ batchSize: transformedAlgoliaUpdates.length }))
         .then(() => {
-            log(`updated styles: ${updatedStyleIds}`)
-            log(`ignored styles: ${ignoredStyleIds}`)
+          log(`updated styles: ${updatedStyleIds}`)
+          log(`ignored styles: ${ignoredStyleIds}`)
         });
 
     if (failures.length) {
