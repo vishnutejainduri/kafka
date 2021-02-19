@@ -168,7 +168,7 @@ describe('parseStyleMessage', () => {
     });
 
     it('maps webstatus to true if it is approved', () => {
-        const messageWithTrueWebStatus = { ...testData, value: { ...testData.value, WEBSTATUS: 'Approved' } }
+        const messageWithTrueWebStatus = { ...testData, value: { ...testData.value, WEBSTATUS: 'Y' } }
         expect(parseStyleMessage(messageWithTrueWebStatus).webStatus).toBe(true)
     });
 });
