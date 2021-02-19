@@ -92,8 +92,8 @@ const transformMicrositeAlgoliaRequests = (algoliaUpdatesWithoutOutlet) => {
 
 global.main = async function (params) {
     log(JSON.stringify({
-      cfName: 'updateAlgoliaFacets',
-      params
+        cfName: 'updateAlgoliaFacets',
+        params
     }));
 
     if (!params.algoliaIndexName || !params.algoliaApiKey || !params.algoliaAppId) {
@@ -101,38 +101,38 @@ global.main = async function (params) {
     }
 
     if (index === null) {
-      client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
-      client.setTimeouts({
-        connect: 600000,
-        read: 600000,
-        write: 600000
-      });
-      index = client.initIndex(params.algoliaIndexName);
+        client = algoliasearch(params.algoliaAppId, params.algoliaApiKey);
+        client.setTimeouts({
+            connect: 600000,
+            read: 600000,
+            write: 600000
+        });
+        index = client.initIndex(params.algoliaIndexName);
     }
     let algoliaFacetBulkImportQueue;
     let styles;
     let updateAlgoliaFacetsCount;
     try {
-      algoliaFacetBulkImportQueue = await getCollection(params);
-      styles = await getCollection(params, params.stylesCollectionName);
-      updateAlgoliaFacetsCount = await getCollection(params, 'updateAlgoliaFacetsCount');
+        algoliaFacetBulkImportQueue = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName);
+        updateAlgoliaFacetsCount = await getCollection(params, 'updateAlgoliaFacetsCount');
     } catch (originalError) {
-      throw createError.failedDbConnection(originalError);
+        throw createError.failedDbConnection(originalError);
     }
 
     const facetUpdatesByStyle = await algoliaFacetBulkImportQueue.aggregate([
-      { $match: { processed: { $ne: true } } },
-      { $group: {
-        _id: "$styleId",
-        facets: { $push: { id: "$_id", name: "$facetName", value: "$facetValue", type: "$typeId", isMarkedForDeletion: "$isMarkedForDeletion", facetId: "$facetId" } }
-      }},
-      { $limit: 750 }
+        { $match: { processed: { $ne: true } } },
+        { $group: {
+          _id: "$styleId",
+          facets: { $push: { id: "$_id", name: "$facetName", value: "$facetValue", type: "$typeId", isMarkedForDeletion: "$isMarkedForDeletion", facetId: "$facetId" } }
+        }},
+        { $limit: 750 }
     ],
     { allowDiskUse: true }
     ).toArray();
 
     if (!facetUpdatesByStyle.length) {
-      return;
+        return;
     }
 
     const [failures, algoliaUpdatesWithoutOutlet, ignoredStyleIds] = await transformUpdateQueueRequestToAlgoliaUpdates(facetUpdatesByStyle, styles);
@@ -150,30 +150,30 @@ global.main = async function (params) {
       .reduce(( ids, { facets }) => ids.concat(facets.map(({ id }) => id)), []);
 
     await index.partialUpdateObjects(transformedAlgoliaUpdates, true)
-      // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't mark as processed from the queue and it gets stuck
-      .then(() => styleUpdates.length > 0 ? styles.bulkWrite(styleUpdates, { ordered : false }) : null) 
-      .then(() => Promise.all([
-        algoliaFacetBulkImportQueue.updateMany({
-          _id: { $in:  processedFacetUpdateIds }
-        }, {
-          $set: {
-            processed: true
-          }
-        }),
-        algoliaFacetBulkImportQueue.updateMany({
-          _id: { $in:  ignoredFacetUpdateIds }
-        }, {
-          $set: {
-            processed: true,
-            ignored: true
-          }
-        })
-      ]))
-      .then(() => updateAlgoliaFacetsCount.insert({ batchSize: transformedAlgoliaUpdates.length }))
-      .then(() => {
-        log(`updated styles: ${updatedStyleIds}`)
-        log(`ignored styles: ${ignoredStyleIds}`)
-      });
+        // mongo will throw an error on bulkWrite if styleUpdates is empty, and then we don't mark as processed from the queue and it gets stuck
+        .then(() => styleUpdates.length > 0 ? styles.bulkWrite(styleUpdates, { ordered : false }) : null) 
+        .then(() => Promise.all([
+          algoliaFacetBulkImportQueue.updateMany({
+            _id: { $in:  processedFacetUpdateIds }
+          }, {
+            $set: {
+              processed: true
+            }
+          }),
+          algoliaFacetBulkImportQueue.updateMany({
+            _id: { $in:  ignoredFacetUpdateIds }
+          }, {
+            $set: {
+              processed: true,
+              ignored: true
+            }
+          })
+        ]))
+        .then(() => updateAlgoliaFacetsCount.insert({ batchSize: transformedAlgoliaUpdates.length }))
+        .then(() => {
+            log(`updated styles: ${updatedStyleIds}`)
+            log(`ignored styles: ${ignoredStyleIds}`)
+        });
 
     if (failures.length) {
       throw createError.updateAlgoliaFacets.failedTransforms(failures);
