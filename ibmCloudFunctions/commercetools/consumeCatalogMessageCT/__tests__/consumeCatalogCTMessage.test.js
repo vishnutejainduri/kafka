@@ -256,6 +256,15 @@ const styleActions = [
   },
   {
     action: 'setAttributeInAllVariants',
+    name: 'promotionalSticker',
+    staged: false,
+    value: {
+      "en-CA": "Final Sale",
+      "fr-CA": "Final Sale"
+    }
+  },
+  {
+    action: 'setAttributeInAllVariants',
     name: 'styleLastModifiedInternal',
     staged: false,
     value: new Date('2016-08-05T10:03:59.002Z'),
