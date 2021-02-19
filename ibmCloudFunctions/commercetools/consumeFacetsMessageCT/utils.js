@@ -53,18 +53,18 @@ const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpe
 };
 
 const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) => {
-  if ((stylesFacetMessage[MICROSITE] || !stylesFacetMessage[PROMO_STICKER]) && (!stylesFacetMessage[MICROSITE] || stylesFacetMessage[PROMO_STICKER])) {
-    throw new Error('Invalid facet id mapping')
-  }
-  const productType = await getProductType(productTypeId, ctHelpers);
-  let existingCtStyle = await getExistingCtStyle(stylesFacetMessage.id, ctHelpers);
+    if ((stylesFacetMessage[MICROSITE] || !stylesFacetMessage[PROMO_STICKER]) && (!stylesFacetMessage[MICROSITE] || stylesFacetMessage[PROMO_STICKER])) {
+      throw new Error('Invalid facet id mapping')
+    }
+    const productType = await getProductType(productTypeId, ctHelpers);
+    let existingCtStyle = await getExistingCtStyle(stylesFacetMessage.id, ctHelpers);
 
-  if (!existingCtStyle) {
-    existingCtStyle = (await createAndPublishStyle ({ id: stylesFacetMessage.id, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
-  }
+    if (!existingCtStyle) {
+      existingCtStyle = (await createAndPublishStyle ({ id: stylesFacetMessage.id, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
+    }
 
-  const micrositeCategories = await createOrUpdateCategoriesFromFacet(stylesFacetMessage, existingCtStyle, ctHelpers);
-  return updateStyle({ style: stylesFacetMessage, existingCtStyle, productType, categories: micrositeCategories, ctHelpers});
+    const micrositeCategories = await createOrUpdateCategoriesFromFacet(stylesFacetMessage, existingCtStyle, ctHelpers);
+    return updateStyle({ style: stylesFacetMessage, existingCtStyle, productType, categories: micrositeCategories, ctHelpers});
 };
 
 module.exports = {
