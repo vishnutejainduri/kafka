@@ -81,7 +81,6 @@ function parseStyleMessage(msg) {
     // VSNs are actually supposed to be compounded with two other fields for uniqueness
     styleData.relatedProductId = styleData.vsn + msg.value.SUBCLASS + styleData.brandName.en;
 
-    styleData.webStatus = styleData.webStatus === APPROVED_STATUS;
     styleData.isEndlessAisle = styleData.isEndlessAisle === JESTA_TRUE;
     styleData.lastModifiedDate = (styleData.lastModifiedDateColours > styleData.lastModifiedDate || !styleData.lastModifiedDate) ? styleData.lastModifiedDateColours : styleData.lastModifiedDate
 
