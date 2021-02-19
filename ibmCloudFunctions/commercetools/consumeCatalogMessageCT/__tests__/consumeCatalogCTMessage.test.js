@@ -250,6 +250,12 @@ const styleActions = [
   },
   {
     action: 'setAttributeInAllVariants',
+    name: 'relatedProductId',
+    staged: false,
+    value: 'vsn341brandNameEng',
+  },
+  {
+    action: 'setAttributeInAllVariants',
     name: 'promotionalSticker',
     staged: false,
     value: {
