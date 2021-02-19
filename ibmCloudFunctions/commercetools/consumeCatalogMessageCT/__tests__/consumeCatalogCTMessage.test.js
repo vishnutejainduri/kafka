@@ -27,54 +27,54 @@ jest.mock('node-fetch');
 const validMessage = {
   topic: 'styles-connect-jdbc-CATALOG',
   value: {
-      STYLEID: '20000000',
-      SUBDEPT: 'subDept',
-      BRAND_NAME_ENG: 'brandNameEng',
-      BRAND_NAME_FR: 'brandNameFr',
-      DESC_ENG: 'descEng',
-      DESC_FR: 'descFr',
-      MARKET_DESC_ENG: 'marketDescEng',
-      MARKET_DESC_ENG2: 'marketDescEng2',
-      MARKET_DESC_FR: 'marketDescFr',
-      MARKET_DESC_FR2: 'marketDescFr2',
-      DETAIL_DESC3_ENG: 'detailDescEng',
-      DETAIL_DESC3_FR: 'detailDescFr',
-      FABRICANDMATERIAL_EN: 'fabricAndMaterialEn',
-      FABRICANDMATERIAL_FR: 'fabricAndMaterialFr',
-      SIZE_DESC_ENG: 'sizeDescEng',
-      SIZE_DESC_FR: 'sizeDescFr',
-      CAREINSTRUCTIONS_EN: 'careInstructionsEn',
-      CAREINSTRUCTIONS_FR: 'careInstructionsFr',
-      ADVICE_EN: 'adviceEn',
-      ADVICE_FR: 'adviceFr',
-      COLOUR_DESC_ENG: 'colourDescEng',
-      COLOUR_DESC_FR: 'colourDescFr',
-      CATEGORY_EN: 'category_en',
-      CATEGORY_FR: 'category_fr',
-      CATEGORY_LEVEL_1A_EN: 'categoryLevel1A_en',
-      CATEGORY_LEVEL_1A_FR: 'categoryLevel1A_fr',
-      CATEGORY_LEVEL_2A_EN: 'categoryLevel2A_en',
-      CATEGORY_LEVEL_2A_FR: 'categoryLevel2A_fr',
-      WEBSTATUS: 'webStatus',
-      SEASON_CD: 'seasonCd',
-      COLORID: 'colorId',
-      UNIT_PRICE: 1.0,
-      VSN: 'vsn',
-      SUBCLASS: 341,
-      UPD_TIMESTAMP: 1000000000000,
-      EFFECTIVE_DATE: 1000000000000,
-      TRUE_COLOURGROUP_EN: 'trueColourGroupEn',
-      TRUE_COLOURGROUP_FR: 'trueColourGroupFr',
-      LASTMODIFIEDDATE: 1470391439002, // circa 2016,
-      LASTMODIFIEDDATE_COLOURS: 1470391439001,
-      SIZE_CHART: 16
+    STYLEID: '20000000',
+    SUBDEPT: 'subDept',
+    BRAND_NAME_ENG: 'brandNameEng',
+    BRAND_NAME_FR: 'brandNameFr',
+    DESC_ENG: 'descEng',
+    DESC_FR: 'descFr',
+    MARKET_DESC_ENG: 'marketDescEng',
+    MARKET_DESC_ENG2: 'marketDescEng2',
+    MARKET_DESC_FR: 'marketDescFr',
+    MARKET_DESC_FR2: 'marketDescFr2',
+    DETAIL_DESC3_ENG: 'detailDescEng',
+    DETAIL_DESC3_FR: 'detailDescFr',
+    FABRICANDMATERIAL_EN: 'fabricAndMaterialEn',
+    FABRICANDMATERIAL_FR: 'fabricAndMaterialFr',
+    SIZE_DESC_ENG: 'sizeDescEng',
+    SIZE_DESC_FR: 'sizeDescFr',
+    CAREINSTRUCTIONS_EN: 'careInstructionsEn',
+    CAREINSTRUCTIONS_FR: 'careInstructionsFr',
+    ADVICE_EN: 'adviceEn',
+    ADVICE_FR: 'adviceFr',
+    COLOUR_DESC_ENG: 'colourDescEng',
+    COLOUR_DESC_FR: 'colourDescFr',
+    CATEGORY_EN: 'category_en',
+    CATEGORY_FR: 'category_fr',
+    CATEGORY_LEVEL_1A_EN: 'categoryLevel1A_en',
+    CATEGORY_LEVEL_1A_FR: 'categoryLevel1A_fr',
+    CATEGORY_LEVEL_2A_EN: 'categoryLevel2A_en',
+    CATEGORY_LEVEL_2A_FR: 'categoryLevel2A_fr',
+    WEBSTATUS: 'webStatus',
+    SEASON_CD: 'seasonCd',
+    COLORID: 'colorId',
+    UNIT_PRICE: 1.0,
+    VSN: 'vsn',
+    SUBCLASS: 341,
+    UPD_TIMESTAMP: 1000000000000,
+    EFFECTIVE_DATE: 1000000000000,
+    TRUE_COLOURGROUP_EN: 'trueColourGroupEn',
+    TRUE_COLOURGROUP_FR: 'trueColourGroupFr',
+    LASTMODIFIEDDATE: 1470391439002, // circa 2016,
+    LASTMODIFIEDDATE_COLOURS: 1470391439001,
+    SIZE_CHART: 16
   }
 };
 
 const invalidMessage = {
   topic: 'styles-connect-jdbc-CATALOG',
   value: {
-      STYLEID: '20000000'
+    STYLEID: '20000000'
   }
 };
 
@@ -247,6 +247,15 @@ const styleActions = [
     name: 'isReturnable',
     staged: false,
     value: false
+  },
+  {
+    action: 'setAttributeInAllVariants',
+    name: 'promotionalSticker',
+    staged: false,
+    value: {
+      "en-CA": "Final Sale",
+      "fr-CA": "Final Sale"
+    }
   },
   {
     action: 'setAttributeInAllVariants',
