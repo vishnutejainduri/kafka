@@ -250,6 +250,15 @@ const styleActions = [
   },
   {
     action: 'setAttributeInAllVariants',
+    name: 'promotionalSticker',
+    staged: false,
+    value: {
+      "en-CA": "Final Sale",
+      "fr-CA": "Final Sale"
+    }
+  },
+  {
+    action: 'setAttributeInAllVariants',
     name: 'relatedProductId',
     staged: false,
     value: 'vsn341brandNameEng',
