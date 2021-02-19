@@ -2,7 +2,7 @@
 . ./lib/getSessionToken.sh $1
 
 connectors=()
-connectors+=("elcat-catalog-update-jdbc-source-v3")
+connectors+=("connector-name-with-version")
 
 for connector in "${connectors[@]}"
 do

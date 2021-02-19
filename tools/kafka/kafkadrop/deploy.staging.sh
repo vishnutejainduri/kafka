@@ -1,0 +1,1 @@
+docker run -d --rm -p 9006:9000 -e KAFKA_PROPERTIES=$(cat staging.env | base64) obsidiandynamics/kafdrop

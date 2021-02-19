@@ -3,11 +3,11 @@ const https = require('https');
 const getSessionToken = require('../lib/getSessionToken');
 const { formatPathStart, retry } = require('../utils');
 
-async function callGetConnectorNames(kubeHost, token, pathStart) {
+async function callGetConnector(kubeHost, token, connectorName, pathStart) {
     const options = {
         hostname: kubeHost.replace('https://', ''),
         port: 443,
-        path: `${formatPathStart(pathStart)}/connectors`,
+        path: `${formatPathStart(pathStart)}/connectors/${connectorName}/status`,
         method: 'GET',
         headers: {
             Authorization: `${token.token_type} ${token.access_token}`
@@ -35,33 +35,31 @@ async function callGetConnectorNames(kubeHost, token, pathStart) {
     });
 }
 
-async function getConnectorNames(kubeParams) {
+async function getConnector(kubeParams, connectorName) {
     const token = await retry(getSessionToken)(kubeParams);
-    const { body, statusCode } = await retry(callGetConnectorNames)(kubeParams.host, token, kubeParams.pathStart);
+    const { body, statusCode } = await retry(callGetConnector)(kubeParams.host, token, connectorName, kubeParams.pathStart);
     //here we have the full response, html or json object
-    let connectorNames = null;
-    let parsingError = false;
+    let info = null;
     let error = null;
 
     if (statusCode < 200 || statusCode >= 300) {
       error = new Error(`Server call not successful with status code: ${statusCode}`);
       error.debugInfo = { body };
-    } else if (parsingError) {
-      error = parsingError;
-      error.debugInfo = { body };
-    }
 
-    try {
-      connectorNames = JSON.parse(body);
-    } catch (error) {
-      parsingError = true;
+    } else {
+      try {
+        info = JSON.parse(body);
+      } catch (parsingError) {
+        error = parsingError;
+        error.debugInfo = { body };
+      }
     }
 
     if (error) {
       throw error;
     }
 
-    return connectorNames;
+    return info;
 }
 
-module.exports = getConnectorNames;
+module.exports = getConnector;
