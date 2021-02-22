@@ -3,7 +3,6 @@
 const TOPIC_NAME = 'styles-connect-jdbc-CATALOG';
 const APPROVED_STATUS = 'Approved';
 const JESTA_TRUE = 'Y';
-
 // Map of source attribute names to mapped name. Translatable attributes are suffixed with _EN, _ENG, or _FR.
 const translatableAttributeMap = {
     'BRAND_NAME': 'brandName',
@@ -20,6 +19,10 @@ const translatableAttributeMap = {
     'CATEGORY_LEVEL_1A': 'level2Category',
     'CATEGORY_LEVEL_2A': 'level3Category'
 };
+const {
+    clearancePromotionalSticker: inboundClearancePromotionalSticker,
+    languageKeys
+} = require('../commercetools/constantsCt')
 
 const styleIdKey = 'STYLEID'
 
@@ -29,8 +32,8 @@ const endlessAislePromotionalSticker = {
 };
 
 const clearancePromotionalSticker = {
-    en: 'Final Sale',
-    fr: 'Final Sale'
+    en: inboundClearancePromotionalSticker[[languageKeys.ENGLISH]],
+    fr: inboundClearancePromotionalSticker[[languageKeys.FRENCH]]
 }
 
 // Map of source attribute names to mapped name. Non-translatable attribute names
@@ -89,13 +92,11 @@ function parseStyleMessage(msg) {
     }
     styleData.webStatus = styleData.webStatus === APPROVED_STATUS
 
-    if (styleData.isReturnable === JESTA_TRUE) {
-        styleData.isReturnable = true
-    } else {
-        styleData.isReturnable = false
+    styleData.isReturnable = styleData.isReturnable === JESTA_TRUE
+
+    if (!styleData.isReturnable) {
         styleData.promotionalSticker = clearancePromotionalSticker
     }
-
 
     // Add _id for mongo
     styleData._id = styleData.id;
