@@ -1,6 +1,10 @@
 {
   "name": "sales-order-details-update-jdbc-source",
   "config": {
+    "id": 9,
+    "versionDevelopment": 12,
+    "versionStaging": 1,
+    "versionProduction": 1,
     "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": 1,
     "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",

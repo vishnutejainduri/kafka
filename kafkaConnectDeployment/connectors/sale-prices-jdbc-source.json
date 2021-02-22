@@ -1,6 +1,10 @@
 {
   "name": "sale-prices-jdbc-source",
   "config": {
+    "id": 7,
+    "versionDevelopment": 402,
+    "versionStaging": 402,
+    "versionProduction": 3,
     "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": 1,
     "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",

@@ -1,5 +1,7 @@
 const NoResponse = Symbol.for("no-response");
 
+const getConnectorFullName = (name, version) => `${name}-v${version}`
+
 async function sleep (tries) {
   const sleepTime = tries * 120000
   console.log(`Call failed. Waiting for ${sleepTime/1000}s before next retry...`)
@@ -15,7 +17,7 @@ function retry(fn, retries = 5) {
         let tries = 0;
         let error = null;
         let response = NoResponse;
-        while (response === NoResponse && tries < retries) {
+        while ((response === NoResponse || response.statusCode === 404) && tries < retries) {
             tries++;
             error = null;
             response = NoResponse;
@@ -81,7 +83,7 @@ function createConnectorObject(
   { filename, version, connectionUrl
 }) {
   return {
-    name: version ? `${filename}-v${version}` : filename,
+    name: version ? getConnectorFullName(filename, version) : filename,
     config: {
       ...baseConfig,
       "connection.url": connectionUrl
@@ -112,5 +114,6 @@ module.exports = {
     formatPathStart,
     getConnectorBaseObject,
     createConnectorObject,
-    log
+    log,
+    getConnectorFullName
 }
