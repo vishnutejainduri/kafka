@@ -7,9 +7,10 @@ const {
   getCategory,
   createCategory,
   updateCategory,
-  categoryNeedsUpdating
+  categoryNeedsUpdating,
+  getCtStyleAttributeValue
 } = require('../styleUtils');
-const { languageKeys, entityStatus, MICROSITES_ROOT_CATEGORY } = require('../constantsCt');
+const { languageKeys, entityStatus, MICROSITES_ROOT_CATEGORY, styleAttributeNames, clearancePromotionalSticker } = require('../constantsCt');
 const { MICROSITE, PROMO_STICKER } = require('../../lib/constants');
 
 const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpers) => {
@@ -63,8 +64,19 @@ const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) =
       existingCtStyle = (await createAndPublishStyle ({ id: stylesFacetMessage.id, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
     }
 
+    // dont update promo sticker if isReturnable = false and promoSticker = Final Sale
+    const isReturnable = getCtStyleAttributeValue(existingCtStyle, 'isReturnable')
+    const promotionalSticker = getCtStyleAttributeValue(existingCtStyle, 'promotionalSticker')
+    
+    const isPromotionalSticker = Object.keys(stylesFacetMessage).find((attribute) => attribute === styleAttributeNames.PROMOTIONAL_STICKER)
+    const isClearencePromotionalSticker = promotionalSticker && promotionalSticker[languageKeys.ENGLISH] === clearancePromotionalSticker[languageKeys.ENGLISH] && promotionalSticker[languageKeys.FRENCH] === clearancePromotionalSticker[languageKeys.FRENCH]
+    const isFinalSale = !isReturnable && isClearencePromotionalSticker
+    
     const micrositeCategories = await createOrUpdateCategoriesFromFacet(stylesFacetMessage, existingCtStyle, ctHelpers);
-    return updateStyle({ style: stylesFacetMessage, existingCtStyle, productType, categories: micrositeCategories, ctHelpers});
+
+    if (!isPromotionalSticker || (isPromotionalSticker && !isFinalSale)) {
+      return updateStyle({ style: stylesFacetMessage, existingCtStyle, productType, categories: micrositeCategories, ctHelpers});
+    }
 };
 
 module.exports = {

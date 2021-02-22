@@ -260,18 +260,6 @@ const getUniqueCategoryIdsFromCategories = categories => {
 const getActionsFromStyle = (style, productType, categories, existingCtStyle) => {
   let customAttributesToUpdate = Object.keys(style).filter(isCustomAttribute);
 
-  // dont update promo sticker if isReturnable = false and promoSticker = Final Sale
-  customAttributesToUpdate = customAttributesToUpdate.filter(attribute => {
-    const isReturnable = getCtStyleAttributeValue(existingCtStyle, 'isReturnable')
-    const promotionalSticker = getCtStyleAttributeValue(existingCtStyle, 'promotionalSticker')
-
-    const isPromotionalSticker = attribute === styleAttributeNames.PROMOTIONAL_STICKER
-    const isClearencePromotionalSticker = promotionalSticker && promotionalSticker[languageKeys.ENGLISH] === clearancePromotionalSticker[languageKeys.ENGLISH] && promotionalSticker[languageKeys.FRENCH] === clearancePromotionalSticker[languageKeys.FRENCH]
-    const isFinalSale = !isReturnable && isClearencePromotionalSticker
-
-    return !isPromotionalSticker || (isPromotionalSticker && !isFinalSale)
-  })
-
   const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => {
     const attributeTypeOj = productType.attributes.find((attributeType) => attributeType.name === attribute)
     const attributeType = attributeTypeOj ? attributeTypeOj.type.name : null;
