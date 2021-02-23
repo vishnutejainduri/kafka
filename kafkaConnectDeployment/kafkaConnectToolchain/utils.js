@@ -32,7 +32,7 @@ const getConnectorDeploymentDiff = (connectors, runningConnectors, versionKey) =
   connectors.forEach(connector => {
     const existingRunningConnector = runningConnectors.find(runningConnector => parseInt(runningConnector.config.id) === connector.config.id)
     if (existingRunningConnector && parseInt(existingRunningConnector.config[versionKey]) && parseInt(existingRunningConnector.config[versionKey]) > connector.config[versionKey]) {
-      console.warn(`Not deploying ${connector.name} version ${connector.config[versionKey]}, running connector ${existingRunningConnector.name} version ${existingRunningConnector.config[versionKey]} is more up to date`)
+      console.error(`Not deploying ${connector.name} version ${connector.config[versionKey]}, running connector ${existingRunningConnector.name} version ${existingRunningConnector.config[versionKey]} is more up to date`)
     } else {
       if (existingRunningConnector && (!parseInt(existingRunningConnector.config[versionKey]) || parseInt(existingRunningConnector.config[versionKey]) <= connector.config[versionKey])) {
         connectorDeletions.push(existingRunningConnector)
