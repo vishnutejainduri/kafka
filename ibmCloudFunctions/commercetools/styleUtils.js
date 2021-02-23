@@ -420,7 +420,6 @@ const createAndPublishStyle = async (styleToCreate, productType, categories, ctH
   return publishStyle(newStyle, ctHelpers)
 };
 
-
 /**
  * Returns the value of the attribute in the given CT style. The value is taken
  * from the master variant. Returns `undefined` if the attribute does not exist.

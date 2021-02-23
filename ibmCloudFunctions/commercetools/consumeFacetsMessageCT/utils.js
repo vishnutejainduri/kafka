@@ -55,7 +55,7 @@ const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpe
 
 const checkFinalSale = (existingCtStyle, stylesFacetMessage) => {
   const isReturnable = getCtStyleAttributeValue(existingCtStyle, 'isReturnable')
-  console.warn(isReturnable, stylesFacetMessage[styleAttributeNames.PROMOTIONAL_STICKER])
+  // using === false because other test cases rely on making a request based on styleid which might return undefined
   if (isReturnable === false && stylesFacetMessage[styleAttributeNames.PROMOTIONAL_STICKER]) {
     throw new Error('Cannot update promo sticker on non-returnable items')
   }
