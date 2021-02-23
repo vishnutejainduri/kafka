@@ -67,8 +67,7 @@ const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) =
     // dont update promo sticker if isReturnable = false and promoSticker = Final Sale
     const isReturnable = getCtStyleAttributeValue(existingCtStyle, 'isReturnable')
     const promotionalSticker = getCtStyleAttributeValue(existingCtStyle, 'promotionalSticker')
-    
-    const isPromotionalSticker = Object.keys(stylesFacetMessage).find((attribute) => attribute === styleAttributeNames.PROMOTIONAL_STICKER)
+    const isPromotionalSticker = Object.keys(stylesFacetMessage).findIndex((attribute) => attribute === styleAttributeNames.PROMOTIONAL_STICKER) !== -1
     const isClearencePromotionalSticker = promotionalSticker && promotionalSticker[languageKeys.ENGLISH] === clearancePromotionalSticker[languageKeys.ENGLISH] && promotionalSticker[languageKeys.FRENCH] === clearancePromotionalSticker[languageKeys.FRENCH]
     const isFinalSale = !isReturnable && isClearencePromotionalSticker
     
