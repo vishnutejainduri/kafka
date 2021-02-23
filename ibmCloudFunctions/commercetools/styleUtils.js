@@ -7,8 +7,7 @@ const {
   PRODUCT_SHOULD_BE_PUBLISHED,
   entityStatus,
   priceTypes,
-  MICROSITES_ROOT_CATEGORY,
-  clearancePromotionalSticker
+  MICROSITES_ROOT_CATEGORY
 } = require('./constantsCt');
 const { getAllVariantPrices, getExistingCtOriginalPrice, getExistingCtPermanentMarkdown } = require('./consumeSalePriceCT/utils');
 
