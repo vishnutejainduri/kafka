@@ -10,7 +10,7 @@ const {
   categoryNeedsUpdating,
   getCtStyleAttributeValue
 } = require('../styleUtils');
-const { languageKeys, entityStatus, MICROSITES_ROOT_CATEGORY, styleAttributeNames, clearancePromotionalSticker } = require('../constantsCt');
+const { languageKeys, entityStatus, MICROSITES_ROOT_CATEGORY, styleAttributeNames } = require('../constantsCt');
 const { MICROSITE, PROMO_STICKER } = require('../../lib/constants');
 
 const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpers) => {
@@ -53,6 +53,14 @@ const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpe
   return [...categories.slice(1, categories.length), ...existingCategories].filter(Boolean)
 };
 
+const checkFinalSale = (existingCtStyle, stylesFacetMessage) => {
+  const isReturnable = getCtStyleAttributeValue(existingCtStyle, 'isReturnable')
+  console.warn(isReturnable, stylesFacetMessage[styleAttributeNames.PROMOTIONAL_STICKER])
+  if (isReturnable === false && stylesFacetMessage[styleAttributeNames.PROMOTIONAL_STICKER]) {
+    throw new Error('Cannot update promo sticker on non-returnable items')
+  }
+}
+
 const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) => {
     if ((stylesFacetMessage[MICROSITE] || !stylesFacetMessage[PROMO_STICKER]) && (!stylesFacetMessage[MICROSITE] || stylesFacetMessage[PROMO_STICKER])) {
       throw new Error('Invalid facet id mapping')
@@ -64,21 +72,14 @@ const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) =
       existingCtStyle = (await createAndPublishStyle ({ id: stylesFacetMessage.id, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
     }
 
-    // dont update promo sticker if isReturnable = false and promoSticker = Final Sale
-    const isReturnable = getCtStyleAttributeValue(existingCtStyle, 'isReturnable')
-    const promotionalSticker = getCtStyleAttributeValue(existingCtStyle, 'promotionalSticker')
-    const isPromotionalSticker = Object.keys(stylesFacetMessage).findIndex((attribute) => attribute === styleAttributeNames.PROMOTIONAL_STICKER) !== -1
-    const isClearencePromotionalSticker = promotionalSticker && promotionalSticker[languageKeys.ENGLISH] === clearancePromotionalSticker[languageKeys.ENGLISH] && promotionalSticker[languageKeys.FRENCH] === clearancePromotionalSticker[languageKeys.FRENCH]
-    const isFinalSale = !isReturnable && isClearencePromotionalSticker
-    
     const micrositeCategories = await createOrUpdateCategoriesFromFacet(stylesFacetMessage, existingCtStyle, ctHelpers);
 
-    if (!isPromotionalSticker || (isPromotionalSticker && !isFinalSale)) {
-      return updateStyle({ style: stylesFacetMessage, existingCtStyle, productType, categories: micrositeCategories, ctHelpers});
-    }
+    checkFinalSale(existingCtStyle, stylesFacetMessage)
+    return updateStyle({ style: stylesFacetMessage, existingCtStyle, productType, categories: micrositeCategories, ctHelpers});
 };
 
 module.exports = {
   updateStyleFacets,
+  checkFinalSale,
   createOrUpdateCategoriesFromFacet
 };

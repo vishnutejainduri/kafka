@@ -1,5 +1,5 @@
 const consumeFacetsMessageCT = require('..');
-const { updateStyleFacets, createOrUpdateCategoriesFromFacet } = require('../utils');
+const { checkFinalSale, updateStyleFacets, createOrUpdateCategoriesFromFacet } = require('../utils');
 const { getExistingCtStyle } = require('../../styleUtils');
 const { parseFacetMessageCt, filterFacetMessageCt } = require('../../../lib/parseFacetMessageCt');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
@@ -184,6 +184,16 @@ describe('updateStyleFacets', () => {
         .map(addErrorHandling(parseFacetMessageCt))
     return expect(updateStyleFacets(mockedCtHelpers, validParams.productTypeId, result[0])).rejects.toThrow('Invalid facet id mapping');
   });
+
+  it('rejects the message if trying to change promo sticker and existing style is not returnable', async () => {
+    const result =
+      validParams.messages
+      .filter(addErrorHandling(filterFacetMessageCt))
+      .map(addErrorHandling(parseFacetMessageCt))
+    const existingStyle = { masterData: {current: { masterVariant: { attributes: [{ name: 'isReturnable', value: false }] } } }}
+
+    expect(() => checkFinalSale(existingStyle, result[0])).toThrow('Cannot update promo sticker on non-returnable items')
+  })
 });
 
 describe('createOrUpdateCategoriesFromFacet', () => {
