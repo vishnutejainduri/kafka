@@ -231,7 +231,7 @@ const getUniqueCategoryIdsFromCategories = categories => {
 // Returns an array of actions, each of which tells CT to update a different
 // attribute of the given style
 const getActionsFromStyle = (style, productType, categories, existingCtStyle) => {
-  let customAttributesToUpdate = Object.keys(style).filter(isCustomAttribute);
+  const customAttributesToUpdate = Object.keys(style).filter(isCustomAttribute);
 
   const customAttributeUpdateActions = customAttributesToUpdate.map(attribute => {
       const attributeTypeOj = productType.attributes.find((attributeType) => attributeType.name === attribute)

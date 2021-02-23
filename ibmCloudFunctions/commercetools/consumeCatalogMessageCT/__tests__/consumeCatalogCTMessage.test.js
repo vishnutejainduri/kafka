@@ -16,7 +16,7 @@ const {
   categoryKeyFromNames,
   getActionsFromStyle
 } = require('../../styleUtils');
-const { languageKeys, styleAttributeNames, isStaged, entityStatus, MICROSITES_ROOT_CATEGORY, clearancePromotionalSticker } = require('../../constantsCt');
+const { languageKeys, styleAttributeNames, isStaged, entityStatus, MICROSITES_ROOT_CATEGORY } = require('../../constantsCt');
 
 jest.mock('@commercetools/sdk-client');
 jest.mock('@commercetools/api-request-builder');
@@ -258,7 +258,10 @@ const styleActions = [
     action: 'setAttributeInAllVariants',
     name: 'promotionalSticker',
     staged: false,
-    value: clearancePromotionalSticker
+    value: {
+      "en-CA": "Final Sale",
+      "fr-CA": "Final Sale"
+    }
   },
   {
     action: 'setAttributeInAllVariants',
@@ -402,13 +405,19 @@ describe('parseStyleMessageCt', () => {
   it('returns a message that has the final sale promo sticker if the style is endless aisle and is not returnable', () => {
     const finalSaleMessage = { ...message, value: { ...message.value, EA_IND: 'Y', RETURNABLE_IND: 'N' } }
     const parsedFinalSaleMessage = parseStyleMessageCt(finalSaleMessage)
-    expect(parsedFinalSaleMessage.promotionalSticker).toEqual(clearancePromotionalSticker)
+    expect(parsedFinalSaleMessage.promotionalSticker).toEqual({
+      "en-CA": "Final Sale",
+      "fr-CA": "Final Sale"
+    })
   })
 
   it('returns a message that has the final sale promo sticker if the style is not endless aisle and is not returnable', () => {
     const noEndlessAisleNoReturnableMessage = { ...message, value: { ...message.value, EA_IND: 'N', RETURNABLE_IND: 'N' } }
     const parsedNoEndlessAisleNoReturnableMessage = parseStyleMessageCt(noEndlessAisleNoReturnableMessage)
-    expect(parsedNoEndlessAisleNoReturnableMessage.promotionalSticker).toEqual(clearancePromotionalSticker)
+    expect(parsedNoEndlessAisleNoReturnableMessage.promotionalSticker).toEqual({
+      "en-CA": "Final Sale",
+      "fr-CA": "Final Sale"
+    })
   })
 });
 
