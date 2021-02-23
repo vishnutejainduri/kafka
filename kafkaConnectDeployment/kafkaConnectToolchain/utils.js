@@ -6,7 +6,7 @@ const getConnectorNames = require('../../tools/kafka/scripts/getConnectorNames')
 const getConnectorConfig = require('../../tools/kafka/scripts/getConnectorConfig')
 const getConnector = require('../../tools/kafka/scripts/getConnector')
 
-const MANDATORY_TOPICS = ['hr-eventstreams-cloudfunctions-binding-beacon','kafka-connect-offsets','kafka-connect-config','kafka-connect-status']
+const MANDATORY_TOPICS = ['hr-eventstreams-cloudfunctions-binding-beacon','kafka-connect-offsets','kafka-connect-config','kafka-connect-status','platform-connect-config','platform-connect-offsets','platform-connect-status']
 const FAILED_STATUS = 'FAILED'
 
 const getConnectorsFromFilenames = async (connectorFilenames) => {
