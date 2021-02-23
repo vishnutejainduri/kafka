@@ -31,7 +31,7 @@
     "restartFailedTasks:production": "node debugConnectors restartFailedTasks production",
     "getTasks:development": "node debugConnectors getTasks development",
     "getTasks:staging": "node debugConnectors getTasks staging",
-    "getTasks:production": "node debugConnectors getTasks production",    
+    "getTasks:production": "node debugConnectors getTasks production",
     "getAll:development": "node debugConnectors getAll development",
     "getAll:staging": "node debugConnectors getAll staging",
     "getAll:production": "node debugConnectors getAll production",
