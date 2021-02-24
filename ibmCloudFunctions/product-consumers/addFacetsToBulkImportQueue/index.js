@@ -46,7 +46,7 @@ const main = async function (params) {
         throw createError.failedDbConnection(originalError);
     }
 
-    let existingStyles = getCollection({...params, collectionName: "styles"})
+    let existingStyles = await getCollection({...params, collectionName: "styles"})
 
     return Promise.all(params.messages
         .map(parseFacetMessageWithErrorHandling)
