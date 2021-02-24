@@ -2,13 +2,21 @@ const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling, addLoggingToMain, passDown } = require('../utils');
 const { parseFacetMessage } = require('../../lib/parseFacetMessage');
 const getCollection = require('../../lib/getCollection');
+const { PROMO_STICKER } = require('../../lib/constants');
 
 const parseFacetMessageWithErrorHandling = addErrorHandling(
     parseFacetMessage,
     createError.addFacetsToBulkImportQueue.failedParseMessage
 );
 
-const updateAlgoliaFacetQueue = algoliaFacetQueue => async (facetData) => {
+const updateAlgoliaFacetQueue = (algoliaFacetQueue, existingStyles) => async (facetData) => {
+    const currStyle = existingStyles.findOne({ id: facetData.styleId })
+
+    // === false because not all styles have isReturnable set so may return undefined
+    if (currStyle.isReturnable === false && facetData.facetName === PROMO_STICKER) {
+        throw new Error("Cannot update promo sticker on non returnable items")
+    }
+    
     return algoliaFacetQueue.insertOne({
         facetValue: {
           en: facetData.facetValue.en,
@@ -38,9 +46,11 @@ const main = async function (params) {
         throw createError.failedDbConnection(originalError);
     }
 
+    let existingStyles = getCollection({...params, collectionName: "styles"})
+
     return Promise.all(params.messages
         .map(parseFacetMessageWithErrorHandling)
-        .map(updateAlgoliaFacetQueueWithErrorHandling(algoliaFacetQueue))
+        .map(updateAlgoliaFacetQueueWithErrorHandling(algoliaFacetQueue, existingStyles))
     )
     .then(passDown({}));
 }
