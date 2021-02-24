@@ -94,12 +94,14 @@ const getCollection = (collectionName) => {
             }; 
         case 'styles':
             return {
-                updateOne: async ({ _id }) => ({ _id }),
+                updateOne: async ({ _id }) => ({ _id}),
                 findOne: async ({ _id }) => {
                   if (_id === 'style-id-no-original-price') return { _id: 'style-id-no-original-price', styleId: 'style-id-no-original-price' }
+                  if (_id === 'style-id-is-returnable-true') return { _id: 'style-id-is-returnable-true', styleId: 'style-id-is-returnable-true', isReturnable: true }
+                  if (_id === 'style-id-is-returnable-false') return { _id: 'style-id-is-returnable-false', styleId: 'style-id-is-returnable-false', isReturnable: false }
                   return { _id: 'success', styleId: 'success', ats: [], originalPrice: 100 }
                 }
-            }; 
+            };
         case 'prices':
             return {
                 find: () => ({

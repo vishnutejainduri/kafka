@@ -10,7 +10,7 @@ const {
   categoryNeedsUpdating,
   getCtStyleAttributeValue
 } = require('../styleUtils');
-const { languageKeys, entityStatus, MICROSITES_ROOT_CATEGORY, styleAttributeNames } = require('../constantsCt');
+const { languageKeys, entityStatus, MICROSITES_ROOT_CATEGORY } = require('../constantsCt');
 const { MICROSITE, PROMO_STICKER } = require('../../lib/constants');
 
 const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpers) => {
@@ -53,12 +53,10 @@ const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpe
   return [...categories.slice(1, categories.length), ...existingCategories].filter(Boolean)
 };
 
-const checkFinalSale = (existingCtStyle, stylesFacetMessage) => {
+const isNotReturnableSticker = (existingCtStyle, stylesFacetMessage) => {
   const isReturnable = getCtStyleAttributeValue(existingCtStyle, 'isReturnable')
   // using === false because other test cases rely on making a request based on styleid which might return undefined
-  if (isReturnable === false && stylesFacetMessage[styleAttributeNames.PROMOTIONAL_STICKER]) {
-    throw new Error('Cannot update promo sticker on non-returnable items')
-  }
+  return !!(isReturnable === false && stylesFacetMessage[PROMO_STICKER])
 }
 
 const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) => {
@@ -74,12 +72,14 @@ const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) =
 
     const micrositeCategories = await createOrUpdateCategoriesFromFacet(stylesFacetMessage, existingCtStyle, ctHelpers);
 
-    checkFinalSale(existingCtStyle, stylesFacetMessage)
+    if (isNotReturnableSticker(existingCtStyle, stylesFacetMessage)) {
+      throw new Error('Cannot update promo sticker on non-returnable items')
+    }
     return updateStyle({ style: stylesFacetMessage, existingCtStyle, productType, categories: micrositeCategories, ctHelpers});
 };
 
 module.exports = {
   updateStyleFacets,
-  checkFinalSale,
+  isNotReturnableSticker,
   createOrUpdateCategoriesFromFacet
 };

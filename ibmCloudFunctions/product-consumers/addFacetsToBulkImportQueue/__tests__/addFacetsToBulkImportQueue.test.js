@@ -1,6 +1,9 @@
 const addFacetsToBulkImportQueue = require('../index');
+const { removeNotReturnablePromoStickerMessage } = require('../utils')
+const getCollection = require('../../../lib/getCollection')
 
 jest.mock('../../../lib/messagesLogs');
+jest.mock("mongodb")
 
 describe('addFacetsToBulkImportQueue', function() {
     const params = {
@@ -33,4 +36,29 @@ describe('addFacetsToBulkImportQueue', function() {
         expect(result.shouldResolveOffsets).toEqual(1)
         expect(result.errors.length).toEqual(1)
     });
+
+    it('Returns true if not promo sticker and is returnable', async function() {
+        const styles = await getCollection('styles')
+        const facetData = { styleId: 'style-id-is-returnable-true', facetName: null, facetValue: { en: "Hello", fr: "There" } }
+        const response = await removeNotReturnablePromoStickerMessage(styles)(facetData)
+        
+        expect(response).toBeTruthy()
+    })
+
+    it('Returns true if promo sticker and is returnable', async function() {
+        const styles = await getCollection('styles')
+        const facetData = { styleId: 'style-id-is-returnable-true', facetName: "promotionalSticker", facetValue: { en: "Hello", fr: "There" } }
+        const response = await removeNotReturnablePromoStickerMessage(styles)(facetData)
+        
+        expect(response).toBeTruthy()
+    })
+
+    it('Returns true if not promo sticker and is not returnable', async function() {
+        const styles = await getCollection('styles')
+        const facetData = { styleId: 'style-id-is-returnable-false', facetName: null, facetValue: { en: "Hello", fr: "There" } }
+        const response = await removeNotReturnablePromoStickerMessage(styles)(facetData)
+        
+        expect(response).toBeTruthy()
+    })
+
 });

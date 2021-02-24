@@ -186,6 +186,7 @@
           timeout: 58000
         inputs:
           collectionName: $ALGOLIA_FACET_BULK_IMPORT_QUEUE
+          stylesCollectionName: $STYLES_COLLECTION_NAME
           topicName: facets-connect-jdbc-STYLE_ITEM_CHARACTERISTICS_ECA
       schema-validation:
         location: ./product-consumers/schemaValidation/dist/bundle.js

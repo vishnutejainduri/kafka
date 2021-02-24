@@ -1,22 +1,10 @@
 const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling, addLoggingToMain, passDown } = require('../utils');
 const { parseFacetMessage } = require('../../lib/parseFacetMessage');
+const { removeNotReturnablePromoStickerMessage } = require('./utils')
 const getCollection = require('../../lib/getCollection');
-const { PROMO_STICKER } = require('../../lib/constants');
 
-const parseFacetMessageWithErrorHandling = addErrorHandling(
-    parseFacetMessage,
-    createError.addFacetsToBulkImportQueue.failedParseMessage
-);
-
-const updateAlgoliaFacetQueue = (algoliaFacetQueue, existingStyles) => async (facetData) => {
-    const currStyle = existingStyles.findOne({ id: facetData.styleId })
-
-    // === false because not all styles have isReturnable set so may return undefined
-    if (currStyle.isReturnable === false && facetData.facetName === PROMO_STICKER) {
-        throw new Error("Cannot update promo sticker on non returnable items")
-    }
-    
+const updateAlgoliaFacetQueue = algoliaFacetQueue => async (facetData) => {
     return algoliaFacetQueue.insertOne({
         facetValue: {
           en: facetData.facetValue.en,
@@ -31,26 +19,22 @@ const updateAlgoliaFacetQueue = (algoliaFacetQueue, existingStyles) => async (fa
       });
 };
 
-const updateAlgoliaFacetQueueWithErrorHandling = algoliaFacetQueue => addErrorHandling(
-    updateAlgoliaFacetQueue(algoliaFacetQueue),
-    createError.addFacetsToBulkImportQueue.failedUpdateFacetQueue
-);
-
 const main = async function (params) {
     log(createLog.params("addFacetsToBulkImportQueue", params));
 
     let algoliaFacetQueue;
+    let styles
     try {
         algoliaFacetQueue = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName)
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
 
-    let existingStyles = await getCollection({...params, collectionName: "styles"})
-
     return Promise.all(params.messages
-        .map(parseFacetMessageWithErrorHandling)
-        .map(updateAlgoliaFacetQueueWithErrorHandling(algoliaFacetQueue, existingStyles))
+        .map(addErrorHandling(parseFacetMessage))
+        .filter(addErrorHandling(removeNotReturnablePromoStickerMessage(styles)))
+        .map(addErrorHandling(updateAlgoliaFacetQueue(algoliaFacetQueue)))
     )
     .then(passDown({}));
 }
