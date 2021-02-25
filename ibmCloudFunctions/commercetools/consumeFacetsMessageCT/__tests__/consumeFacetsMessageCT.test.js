@@ -192,7 +192,7 @@ describe('updateStyleFacets', () => {
       .map(addErrorHandling(parseFacetMessageCt))
     const existingStyle = { masterData: {current: { masterVariant: { attributes: [{ name: 'isReturnable', value: false }] } } }}
 
-    expect(isNotReturnableSticker(existingStyle, result[0])).toBeTruthy()
+    expect(isNotReturnableSticker(existingStyle, result[0])).toBe(true)
   })
 });
 
