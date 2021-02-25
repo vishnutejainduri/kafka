@@ -40,7 +40,6 @@ describe('addFacetsToBulkImportQueue', function() {
 });
 
 describe('removeNotReturnablePromoStickerMessage', () => {
-    // T T
     it('Returns true if not promo sticker and is returnable', async function() {
         const styles = await getCollection(params, 'styles')
         const facetData = { styleId: 'style-id-is-returnable-true', facetName: null, facetValue: { en: "Hello", fr: "There" } }
@@ -49,7 +48,6 @@ describe('removeNotReturnablePromoStickerMessage', () => {
         expect(response).toBe(true)
     })
 
-    // T F
     it('Returns true if not promo sticker and is not returnable', async function() {
         const styles = await getCollection(params, 'styles')
         const facetData = { styleId: 'style-id-is-returnable-false', facetName: null, facetValue: { en: "Hello", fr: "There" } }
@@ -58,7 +56,6 @@ describe('removeNotReturnablePromoStickerMessage', () => {
         expect(response).toBe(true)
     })
 
-    // F T
     it('Returns true if promo sticker and is returnable', async function() {
         const styles = await getCollection(params, 'styles')
         const facetData = { styleId: 'style-id-is-returnable-true', facetName: "promotionalSticker", facetValue: { en: "Hello", fr: "There" } }
@@ -67,7 +64,6 @@ describe('removeNotReturnablePromoStickerMessage', () => {
         expect(response).toBe(true)
     })
 
-    // F F
     it('Returns false if promo sticker and is not returnable', async function() {
         const styles = await getCollection(params, 'styles')
         const facetData = { styleId: 'style-id-is-returnable-false', facetName: "promotionalSticker", facetValue: { en: "Hello", fr: "There" } }
