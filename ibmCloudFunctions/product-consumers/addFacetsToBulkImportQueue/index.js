@@ -1,7 +1,7 @@
 const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling, addLoggingToMain, passDown } = require('../utils');
 const { parseFacetMessage } = require('../../lib/parseFacetMessage');
-const { removeNotReturnablePromoStickerMessage } = require('./utils')
+const { messageIncludesStickerForNonReturnableStyle } = require('./utils')
 const getCollection = require('../../lib/getCollection');
 
 const updateAlgoliaFacetQueue = algoliaFacetQueue => async (facetData) => {
@@ -33,7 +33,7 @@ const main = async function (params) {
 
     return Promise.all(params.messages
         .map(addErrorHandling(parseFacetMessage))
-        .filter(addErrorHandling(removeNotReturnablePromoStickerMessage(styles)))
+        .filter(addErrorHandling(messageIncludesStickerForNonReturnableStyle(styles)))
         .map(addErrorHandling(updateAlgoliaFacetQueue(algoliaFacetQueue)))
     )
     .then(passDown({}));
