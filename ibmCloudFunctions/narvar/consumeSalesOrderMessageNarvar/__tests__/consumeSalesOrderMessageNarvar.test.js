@@ -295,16 +295,16 @@ describe('mergeSalesOrderItems', () => {
 describe('mergeSalesOrders', () => {
   it('batch only contains 1 order and so just returns the 1 order', () => {
     const result = mergeSalesOrders(orders)
-    expect(result).toEqual({ order_info: { ...orders[0].order_info, shipments: [] } })
+    expect(result).toEqual({ order_info: { ...orders[0].order_info, shipments: [], pickups: [] } })
   });
   it('merging inbound order with another matching but older inbound order; return newer order', () => {
     const newInboundOrders = [{ order_info: { ...orders[0].order_info, attributes: { orderLastModifiedDate: '2002-09-09T01:46:40.000Z' } } }, { order_info: { ...orders[0].order_info } }]
     const result = mergeSalesOrders(newInboundOrders)
-    expect(result).toEqual({ order_info: { ...newInboundOrders[0].order_info, shipments: [] } })
+    expect(result).toEqual({ order_info: { ...newInboundOrders[0].order_info, shipments: [], pickups: [] } })
   });
   it('merging inbound order with another matching but newer inbound order; return newer order', () => {
     const newInboundOrders = [{ order_info: { ...orders[0].order_info } }, { order_info: { ...orders[0].order_info, attributes: { orderLastModifiedDate: '2000-09-09T01:46:40.000Z' } } }]
     const result = mergeSalesOrders(newInboundOrders)
-    expect(result).toEqual({ order_info: { ...newInboundOrders[0].order_info, shipments: [] } })
+    expect(result).toEqual({ order_info: { ...newInboundOrders[0].order_info, shipments: [], pickups: [] } })
   });
 });

@@ -6,13 +6,14 @@ const {
   MISSING_NARVAR_ORDER_STRING,
   NARVAR_ORDER_LAST_MODIFIED,
   NARVAR_ORDER_ITEM_LAST_MODIFIED,
-  NARVAR_SHIPMENT_LAST_MODIFIED,
-  NARVAR_SHIPMENT_ITEM_LAST_MODIFIED
+  NARVAR_DELIVERY_LAST_MODIFIED,
+  NARVAR_DELIVERY_ITEM_LAST_MODIFIED
 } = require('./constantsNarvar') 
 const { groupByAttribute, getMostUpToDateObject } = require('../lib/utils');
 
 const groupByItemId = groupByAttribute('item_id');
 const groupByTrackingNumber = groupByAttribute('tracking_number');
+const groupById = groupByAttribute('id');
 
 const getItemImage = (styleId) => `https://i1.adis.ws/i/harryrosen/${styleId}?$prp-4col-xl$`
 const getItemUrl = (styleId, locale) => `https://harryrosen.com/${locale.substr(0,2)}/${LOCALE_TO_PRODUCT[locale]}/${styleId}`
@@ -27,7 +28,7 @@ const mergeFulfillmentType = (correspondingNarvarItem, mergedSalesOrderItem) => 
   attributes: {
     ...correspondingNarvarItem.attributes,
     [NARVAR_ORDER_ITEM_LAST_MODIFIED]: correspondingNarvarItem.attributes[NARVAR_ORDER_ITEM_LAST_MODIFIED],
-    [NARVAR_SHIPMENT_ITEM_LAST_MODIFIED]: mergedSalesOrderItem.attributes[NARVAR_SHIPMENT_ITEM_LAST_MODIFIED]
+    [NARVAR_DELIVERY_ITEM_LAST_MODIFIED]: mergedSalesOrderItem.attributes[NARVAR_DELIVERY_ITEM_LAST_MODIFIED]
   } 
 })
 const acceptMergedSalesOrderItem = (correspondingNarvarItem, mergedSalesOrderItem) => ({
@@ -36,7 +37,7 @@ const acceptMergedSalesOrderItem = (correspondingNarvarItem, mergedSalesOrderIte
   attributes: {
     ...mergedSalesOrderItem.attributes,
     [NARVAR_ORDER_ITEM_LAST_MODIFIED]: mergedSalesOrderItem.attributes[NARVAR_ORDER_ITEM_LAST_MODIFIED],
-    [NARVAR_SHIPMENT_ITEM_LAST_MODIFIED]: correspondingNarvarItem.attributes[NARVAR_SHIPMENT_ITEM_LAST_MODIFIED]
+    [NARVAR_DELIVERY_ITEM_LAST_MODIFIED]: correspondingNarvarItem.attributes[NARVAR_DELIVERY_ITEM_LAST_MODIFIED]
   }
 })
 
@@ -82,83 +83,83 @@ const getNarvarOrder = async (narvarCreds, orderNumber) => {
   }
 }
 
-const mergeNarvarShipmentItems = (inboundShipment, existingNarvarShipment) => {
-  const shipmentItemLastModifiedDates = {}
-  const unchangedExistingShipmentItems = existingNarvarShipment.items_info.map(existingNarvarShipmentItem => {
-    const lastModifiedDateKey = `${existingNarvarShipmentItem.item_id}-${NARVAR_SHIPMENT_ITEM_LAST_MODIFIED}`
+const mergeNarvarDeliveryItems = (inboundDelivery, existingNarvarDelivery) => {
+  const deliveryItemLastModifiedDates = {}
+  const unchangedExistingDeliveryItems = existingNarvarDelivery.items_info.map(existingNarvarDeliveryItem => {
+    const lastModifiedDateKey = `${existingNarvarDeliveryItem.item_id}-${NARVAR_DELIVERY_ITEM_LAST_MODIFIED}`
 
-    const correspondingJestaShipmentItem = findMatchingRecord(inboundShipment.items_info, existingNarvarShipmentItem, 'item_id')
-    if (!correspondingJestaShipmentItem) { 
-      shipmentItemLastModifiedDates[lastModifiedDateKey] = existingNarvarShipment.attributes[lastModifiedDateKey]
-      return existingNarvarShipmentItem
+    const correspondingJestaDeliveryItem = findMatchingRecord(inboundDelivery.items_info, existingNarvarDeliveryItem, 'item_id')
+    if (!correspondingJestaDeliveryItem) { 
+      deliveryItemLastModifiedDates[lastModifiedDateKey] = existingNarvarDelivery.attributes[lastModifiedDateKey]
+      return existingNarvarDeliveryItem
     }
   
-    if (!firstNarvarDateIsNewer(inboundShipment, existingNarvarShipment, lastModifiedDateKey)) {
-      shipmentItemLastModifiedDates[lastModifiedDateKey] = existingNarvarShipment.attributes[lastModifiedDateKey]
-      return existingNarvarShipmentItem
+    if (!firstNarvarDateIsNewer(inboundDelivery, existingNarvarDelivery, lastModifiedDateKey)) {
+      deliveryItemLastModifiedDates[lastModifiedDateKey] = existingNarvarDelivery.attributes[lastModifiedDateKey]
+      return existingNarvarDeliveryItem
     } else {
       return null
     }
   }).filter(Boolean)
 
-  const updatedShipmentItems = inboundShipment.items_info.map(inboundShipmentItem => {
-    const lastModifiedDateKey = `${inboundShipmentItem.item_id}-${NARVAR_SHIPMENT_ITEM_LAST_MODIFIED}`
-    const correspondingNarvarShipmentItem = findMatchingRecord(existingNarvarShipment.items_info, inboundShipmentItem, 'item_id')
-    if (!correspondingNarvarShipmentItem) {
-      shipmentItemLastModifiedDates[lastModifiedDateKey] = inboundShipment.attributes[lastModifiedDateKey]
-      return inboundShipmentItem
+  const updatedDeliveryItems = inboundDelivery.items_info.map(inboundDeliveryItem => {
+    const lastModifiedDateKey = `${inboundDeliveryItem.item_id}-${NARVAR_DELIVERY_ITEM_LAST_MODIFIED}`
+    const correspondingNarvarDeliveryItem = findMatchingRecord(existingNarvarDelivery.items_info, inboundDeliveryItem, 'item_id')
+    if (!correspondingNarvarDeliveryItem) {
+      deliveryItemLastModifiedDates[lastModifiedDateKey] = inboundDelivery.attributes[lastModifiedDateKey]
+      return inboundDeliveryItem
     }
 
-    if (firstNarvarDateIsNewer(inboundShipment, existingNarvarShipment, lastModifiedDateKey)) {
-      shipmentItemLastModifiedDates[lastModifiedDateKey] = inboundShipment.attributes[lastModifiedDateKey]
-      return inboundShipmentItem
+    if (firstNarvarDateIsNewer(inboundDelivery, existingNarvarDelivery, lastModifiedDateKey)) {
+      deliveryItemLastModifiedDates[lastModifiedDateKey] = inboundDelivery.attributes[lastModifiedDateKey]
+      return inboundDeliveryItem
     } else {
       return null
     }
   }).filter(Boolean)
 
-  if (updatedShipmentItems.length === 0) {
+  if (updatedDeliveryItems.length === 0) {
     return null
   }
 
-  return { shipmentItems: [...unchangedExistingShipmentItems, ...updatedShipmentItems], shipmentItemLastModifiedDates }
+  return { deliveryItems: [...unchangedExistingDeliveryItems, ...updatedDeliveryItems], deliveryItemLastModifiedDates }
 }
 
-const mergeNarvarShipments = (mergedShipments, existingNarvarShipments) => {
-  const unchangedExistingShipments = existingNarvarShipments.map(existingNarvarShipment => {
-    const correspondingJestaShipment = findMatchingRecord(mergedShipments, existingNarvarShipment, 'tracking_number')
-    if (!correspondingJestaShipment) return existingNarvarShipment
+const mergeNarvarDeliveries = (mergedDeliveries, existingNarvarDeliveries, uniqueId) => {
+  const unchangedExistingDeliveries = existingNarvarDeliveries.map(existingNarvarDelivery => {
+    const correspondingJestaDelivery = findMatchingRecord(mergedDeliveries, existingNarvarDelivery, uniqueId)
+    if (!correspondingJestaDelivery) return existingNarvarDelivery
 
-    const mergedItemsInfo = mergeNarvarShipmentItems(correspondingJestaShipment, existingNarvarShipment)
-    const isJestaShipmentNewer = firstNarvarDateIsNewer(correspondingJestaShipment, existingNarvarShipment, NARVAR_SHIPMENT_LAST_MODIFIED)
-    if (!isJestaShipmentNewer && !mergedItemsInfo) {
-      return existingNarvarShipment
+    const mergedItemsInfo = mergeNarvarDeliveryItems(correspondingJestaDelivery, existingNarvarDelivery)
+    const isJestaDeliveryNewer = firstNarvarDateIsNewer(correspondingJestaDelivery, existingNarvarDelivery, NARVAR_DELIVERY_LAST_MODIFIED)
+    if (!isJestaDeliveryNewer && !mergedItemsInfo) {
+      return existingNarvarDelivery
     } else {
       return null
     }
   }).filter(Boolean)
 
-  const updatedShipments = mergedShipments.map(mergedShipment => {
-    const correspondingNarvarShipment = findMatchingRecord(existingNarvarShipments, mergedShipment, 'tracking_number')
-    if (!correspondingNarvarShipment) return mergedShipment
+  const updatedDeliveries = mergedDeliveries.map(mergedDelivery => {
+    const correspondingNarvarDelivery = findMatchingRecord(existingNarvarDeliveries, mergedDelivery, uniqueId)
+    if (!correspondingNarvarDelivery) return mergedDelivery
 
-    const mergedItemsInfo = mergeNarvarShipmentItems(mergedShipment, correspondingNarvarShipment)
-    const isJestaShipmentNewer = firstNarvarDateIsNewer(mergedShipment, correspondingNarvarShipment, NARVAR_SHIPMENT_LAST_MODIFIED)
-    if (isJestaShipmentNewer && mergedItemsInfo) {
-      return { ...mergedShipment, items_info: mergedItemsInfo.shipmentItems, attributes: { ...mergedShipment.attributes, ...mergedItemsInfo.shipmentItemLastModifiedDates } }
-    } else if (isJestaShipmentNewer && !mergedItemsInfo) {
-      return { ...mergedShipment, items_info: correspondingNarvarShipment.items_info, attributes: { ...correspondingNarvarShipment.attributes, [NARVAR_SHIPMENT_LAST_MODIFIED]: mergedShipment.attributes[NARVAR_SHIPMENT_LAST_MODIFIED] } }
-    } else if (!isJestaShipmentNewer && mergedItemsInfo) {
-      return { ...correspondingNarvarShipment, items_info: mergedItemsInfo.shipmentItems, attributes: { ...correspondingNarvarShipment.attributes, ...mergedItemsInfo.shipmentItemLastModifiedDates } }
+    const mergedItemsInfo = mergeNarvarDeliveryItems(mergedDelivery, correspondingNarvarDelivery)
+    const isJestaDeliveryNewer = firstNarvarDateIsNewer(mergedDelivery, correspondingNarvarDelivery, NARVAR_DELIVERY_LAST_MODIFIED)
+    if (isJestaDeliveryNewer && mergedItemsInfo) {
+      return { ...mergedDelivery, items_info: mergedItemsInfo.deliveryItems, attributes: { ...mergedDelivery.attributes, ...mergedItemsInfo.deliveryItemLastModifiedDates } }
+    } else if (isJestaDeliveryNewer && !mergedItemsInfo) {
+      return { ...mergedDelivery, items_info: correspondingNarvarDelivery.items_info, attributes: { ...correspondingNarvarDelivery.attributes, [NARVAR_DELIVERY_LAST_MODIFIED]: mergedDelivery.attributes[NARVAR_DELIVERY_LAST_MODIFIED] } }
+    } else if (!isJestaDeliveryNewer && mergedItemsInfo) {
+      return { ...correspondingNarvarDelivery, items_info: mergedItemsInfo.deliveryItems, attributes: { ...correspondingNarvarDelivery.attributes, ...mergedItemsInfo.deliveryItemLastModifiedDates } }
     } else {
       return null
     }
   }).filter(Boolean)
 
-  if (updatedShipments.length === 0) {
+  if (updatedDeliveries.length === 0) {
     return null
   }
-  return [...unchangedExistingShipments, ...updatedShipments]
+  return [...unchangedExistingDeliveries, ...updatedDeliveries]
 }
 
 const mergeNarvarItems = ({ mergedSalesOrderItems, existingNarvarOrderItems, compareDateField, mergeNarvarItem }) => {
@@ -184,21 +185,23 @@ const mergeNarvarItems = ({ mergedSalesOrderItems, existingNarvarOrderItems, com
   return [...unchangedExistingItems, ...updatedItems]
 }
 
-const mergeNarvarOrderWithShipments = (mergedSalesOrder, existingNarvarOrder) => {
-  let orderItems, orderShipments
+const mergeNarvarOrderWithDeliveries = (mergedSalesOrder, existingNarvarOrder) => {
+  let orderItems, orderShipments, orderPickups
   const orderHeader = existingNarvarOrder.order_info
 
   orderItems = mergeNarvarItems({
     mergedSalesOrderItems: mergedSalesOrder.order_info.order_items,
     existingNarvarOrderItems: existingNarvarOrder.order_info.order_items,
-    compareDateField: NARVAR_SHIPMENT_ITEM_LAST_MODIFIED,
+    compareDateField: NARVAR_DELIVERY_ITEM_LAST_MODIFIED,
     mergeNarvarItem: mergeFulfillmentType
   })
-  orderShipments = mergeNarvarShipments(mergedSalesOrder.order_info.shipments, existingNarvarOrder.order_info.shipments || [])
-  if (!orderShipments && !orderItems) return null
+  orderShipments = mergeNarvarDeliveries(mergedSalesOrder.order_info.shipments || [], existingNarvarOrder.order_info.shipments || [], 'tracking_number')
+  orderPickups = mergeNarvarDeliveries(mergedSalesOrder.order_info.pickups || [], existingNarvarOrder.order_info.pickups || [], 'id')
+  if (!orderShipments && !orderPickups && !orderItems) return null
   if (!orderItems) orderItems = existingNarvarOrder.order_info.order_items
-  if (!orderShipments) orderItems = existingNarvarOrder.order_info.shipments
-  return { order_info: { ...orderHeader, order_items: orderItems, shipments: orderShipments } }
+  if (!orderShipments) orderShipments = existingNarvarOrder.order_info.shipments
+  if (!orderPickups) orderPickups = existingNarvarOrder.order_info.pickups
+  return { order_info: { ...orderHeader, order_items: orderItems, shipments: orderShipments, pickups: orderPickups } }
 }
 
 const mergeNarvarOrder = (mergedSalesOrder, existingNarvarOrder) => {
@@ -218,11 +221,11 @@ const mergeNarvarOrder = (mergedSalesOrder, existingNarvarOrder) => {
   return { order_info: { ...orderHeader, order_items: orderItems } }
 }
 
-const mergeShipmentItems = (shipments) => {
-  const allShipmentItems = shipments.reduce((previous, current) => previous.concat(current.items_info), [])
-  const allShipmentItemsGroupByItemId = groupByItemId(allShipmentItems)
-  const allShipmentItemsFiltered = allShipmentItemsGroupByItemId.reduce((previous, current) => previous.concat((getMostUpToDateObject(['attributes', `${current[0].item_id}-${NARVAR_SHIPMENT_ITEM_LAST_MODIFIED}`])(shipments)).items_info[0]), [])
-  return allShipmentItemsFiltered
+const mergeDeliveryItems = (deliveries) => {
+  const allDeliveryItems = deliveries.reduce((previous, current) => previous.concat(current.items_info), [])
+  const allDeliveryItemsGroupByItemId = groupByItemId(allDeliveryItems)
+  const allDeliveryItemsFiltered = allDeliveryItemsGroupByItemId.reduce((previous, current) => previous.concat((getMostUpToDateObject(['attributes', `${current[0].item_id}-${NARVAR_DELIVERY_ITEM_LAST_MODIFIED}`])(deliveries)).items_info[0]), [])
+  return allDeliveryItemsFiltered
 }
 
 const mergeSalesOrderItems = (salesOrderBatch, orderItemCompareDateField) => {
@@ -232,26 +235,27 @@ const mergeSalesOrderItems = (salesOrderBatch, orderItemCompareDateField) => {
   return allItemsFiltered
 }
 
-const mergeShipments = (salesOrderBatch) => {
-  const allShipments = salesOrderBatch.reduce((previous, current) => previous.concat(current.order_info.shipments), [])
-  const allShipmentsGroupByTrackingNumber = groupByTrackingNumber(allShipments)
-  const allShipmentsFiltered = allShipmentsGroupByTrackingNumber.map(shipmentsGroupByTrackingNumber => {
-    let mostUpToDateShipment = getMostUpToDateObject(['attributes', NARVAR_SHIPMENT_LAST_MODIFIED])(shipmentsGroupByTrackingNumber)
-    const mergedShipmentItems = mergeShipmentItems(shipmentsGroupByTrackingNumber)
-    shipmentsGroupByTrackingNumber.forEach(shipment => {
-      const compareDateField = `${shipment.items_info[0].item_id}-${NARVAR_SHIPMENT_ITEM_LAST_MODIFIED}`
-      mostUpToDateShipment['attributes'][compareDateField] = (getMostUpToDateObject(['attributes', compareDateField])(allShipments)).attributes[compareDateField]
+const mergeDeliveries = (salesOrderBatch, deliveryName, groupByFunction) => {
+  const allDeliveries = salesOrderBatch.reduce((previous, current) => previous.concat(current.order_info[deliveryName]), [])
+  const allDeliveriesGroupByUniqueId = groupByFunction(allDeliveries)
+  const allDeliveriesFiltered = allDeliveriesGroupByUniqueId.map(deliveriesGroupByUniqueId => {
+    let mostUpToDateDelivery = getMostUpToDateObject(['attributes', NARVAR_DELIVERY_LAST_MODIFIED])(deliveriesGroupByUniqueId)
+    const mergedDeliveryItems = mergeDeliveryItems(deliveriesGroupByUniqueId)
+    deliveriesGroupByUniqueId.forEach(delivery => {
+      const compareDateField = `${delivery.items_info[0].item_id}-${NARVAR_DELIVERY_ITEM_LAST_MODIFIED}`
+      mostUpToDateDelivery['attributes'][compareDateField] = (getMostUpToDateObject(['attributes', compareDateField])(allDeliveries)).attributes[compareDateField]
     })
-    return { ...mostUpToDateShipment, items_info: mergedShipmentItems }
+    return { ...mostUpToDateDelivery, items_info: mergedDeliveryItems }
   })
-  return allShipmentsFiltered
+  return allDeliveriesFiltered
 }
 
 const mergeSalesOrders = (salesOrderBatch, orderItemCompareDateField) => {
   const mostUpToDateOrderHeader = getMostUpToDateObject(['order_info', 'attributes', NARVAR_ORDER_LAST_MODIFIED])(salesOrderBatch)
   const mergedSalesOrderItems = mergeSalesOrderItems (salesOrderBatch, orderItemCompareDateField)
-  const mergedShipments = mergeShipments(salesOrderBatch)
-  return { order_info: { ...mostUpToDateOrderHeader.order_info, order_items: mergedSalesOrderItems, shipments: mergedShipments } }
+  const mergedShipments = mergeDeliveries(salesOrderBatch, 'shipments', groupByTrackingNumber)
+  const mergedPickups = mergeDeliveries(salesOrderBatch, 'pickups', groupById)
+  return { order_info: { ...mostUpToDateOrderHeader.order_info, order_items: mergedSalesOrderItems, shipments: mergedShipments, pickups: mergedPickups } }
 }
 
 const syncSalesOrderBatchToNarvar = async (narvarCreds, salesOrderBatch) => {
@@ -268,12 +272,11 @@ const syncSalesOrderBatchToNarvar = async (narvarCreds, salesOrderBatch) => {
 }
 
 const syncShipmentBatchToNarvar = async (narvarCreds, salesOrderBatch) => {
-  let finalSalesOrder = mergeSalesOrders (salesOrderBatch, NARVAR_SHIPMENT_ITEM_LAST_MODIFIED)
+  let finalSalesOrder = mergeSalesOrders (salesOrderBatch, NARVAR_DELIVERY_ITEM_LAST_MODIFIED)
   const existingNarvarOrder = await getNarvarOrder (narvarCreds, salesOrderBatch[0].order_info.order_number)
   if (existingNarvarOrder) {
-    finalSalesOrder = mergeNarvarOrderWithShipments(finalSalesOrder, existingNarvarOrder)
+    finalSalesOrder = mergeNarvarOrderWithDeliveries(finalSalesOrder, existingNarvarOrder)
   }
-  
   if (finalSalesOrder) {
     return sendOrderToNarvar (narvarCreds, finalSalesOrder)
   }
@@ -291,8 +294,9 @@ module.exports = {
   mergeSalesOrders,
   mergeFulfillmentType,
   acceptMergedSalesOrderItem,
-  mergeShipmentItems,
-  mergeShipments,
-  mergeNarvarShipmentItems,
-  mergeNarvarShipments
+  mergeDeliveryItems,
+  mergeDeliveries,
+  mergeNarvarDeliveryItems,
+  mergeNarvarDeliveries,
+  mergeNarvarOrderWithDeliveries
 }
