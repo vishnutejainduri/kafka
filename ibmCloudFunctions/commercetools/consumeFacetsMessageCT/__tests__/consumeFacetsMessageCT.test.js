@@ -184,7 +184,9 @@ describe('updateStyleFacets', () => {
         .map(addErrorHandling(parseFacetMessageCt))
     return expect(updateStyleFacets(mockedCtHelpers, validParams.productTypeId, result[0])).rejects.toThrow('Invalid facet id mapping');
   });
+});
 
+describe('messageIncludesStickerForNonReturnableStyle', () => {
   it('returns true if the message trying to change promo sticker and existing style is not returnable', async () => {
     const result =
       validParams.messages
@@ -194,7 +196,7 @@ describe('updateStyleFacets', () => {
 
     expect(messageIncludesStickerForNonReturnableStyle(existingStyle, result[0])).toBe(true)
   })
-});
+})
 
 describe('createOrUpdateCategoriesFromFacet', () => {
   it('new facet not a microsite; don\'t affect cateogires return null', async () => {
