@@ -26,11 +26,6 @@ const {
 
 const styleIdKey = 'STYLEID'
 
-const endlessAislePromotionalSticker = {
-    en: 'Online Only',
-    fr: 'En ligne seulement'
-};
-
 const clearancePromotionalSticker = {
     en: inboundClearancePromotionalSticker[[languageKeys.ENGLISH]],
     fr: inboundClearancePromotionalSticker[[languageKeys.FRENCH]]
@@ -86,12 +81,7 @@ function parseStyleMessage(msg) {
 
     styleData.isEndlessAisle = styleData.isEndlessAisle === JESTA_TRUE;
     styleData.lastModifiedDate = (styleData.lastModifiedDateColours > styleData.lastModifiedDate || !styleData.lastModifiedDate) ? styleData.lastModifiedDateColours : styleData.lastModifiedDate
-
-    if (styleData.isEndlessAisle) {
-        styleData.promotionalSticker = endlessAislePromotionalSticker;
-    }
     styleData.webStatus = styleData.webStatus === APPROVED_STATUS
-
     styleData.isReturnable = styleData.isReturnable === JESTA_TRUE
 
     if (!styleData.isReturnable) {

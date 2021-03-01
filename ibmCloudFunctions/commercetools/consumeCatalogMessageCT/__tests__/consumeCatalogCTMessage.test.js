@@ -387,13 +387,10 @@ describe('parseStyleMessageCt', () => {
     expect(parsedMessage.styleLastModifiedInternal).toEqual(new Date(messageWithMoreRecentLastModifiedDateColours.value.LASTMODIFIEDDATE_COLOURS))
   });
 
-  it('returns a message that has a promo sticker if the style is endless aisle and is returnable', () => {
+  it('does NOT return a message that has a promo sticker if the style is endless aisle and is returnable', () => {
     const eaMessage = { ...message, value: { ...message.value, EA_IND: 'Y', RETURNABLE_IND: 'Y' } };
     const parsedEaMessage = parseStyleMessageCt(eaMessage);
-    expect(parsedEaMessage.promotionalSticker).toEqual({
-      'en-CA': 'Online Only',
-      'fr-CA': 'En ligne seulement'
-    });
+    expect(parsedEaMessage.promotionalSticker).toBeUndefined();
   });
 
   it('returns a message that has no promo sticker if the style is not endless aisle and is returnable', () => {
