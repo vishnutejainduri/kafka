@@ -1,12 +1,8 @@
 const createError = require('../../lib/createError');
 const { log, createLog, addErrorHandling, addLoggingToMain, passDown } = require('../utils');
 const { parseFacetMessage } = require('../../lib/parseFacetMessage');
+const { isNotReturnablePromoStickerMessage } = require('./utils')
 const getCollection = require('../../lib/getCollection');
-
-const parseFacetMessageWithErrorHandling = addErrorHandling(
-    parseFacetMessage,
-    createError.addFacetsToBulkImportQueue.failedParseMessage
-);
 
 const updateAlgoliaFacetQueue = algoliaFacetQueue => async (facetData) => {
     return algoliaFacetQueue.insertOne({
@@ -23,24 +19,22 @@ const updateAlgoliaFacetQueue = algoliaFacetQueue => async (facetData) => {
       });
 };
 
-const updateAlgoliaFacetQueueWithErrorHandling = algoliaFacetQueue => addErrorHandling(
-    updateAlgoliaFacetQueue(algoliaFacetQueue),
-    createError.addFacetsToBulkImportQueue.failedUpdateFacetQueue
-);
-
 const main = async function (params) {
     log(createLog.params("addFacetsToBulkImportQueue", params));
 
     let algoliaFacetQueue;
+    let styles
     try {
         algoliaFacetQueue = await getCollection(params);
+        styles = await getCollection(params, params.stylesCollectionName)
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
 
     return Promise.all(params.messages
-        .map(parseFacetMessageWithErrorHandling)
-        .map(updateAlgoliaFacetQueueWithErrorHandling(algoliaFacetQueue))
+        .map(addErrorHandling(parseFacetMessage))
+        .filter(addErrorHandling(isNotReturnablePromoStickerMessage(styles)))
+        .map(addErrorHandling(updateAlgoliaFacetQueue(algoliaFacetQueue)))
     )
     .then(passDown({}));
 }

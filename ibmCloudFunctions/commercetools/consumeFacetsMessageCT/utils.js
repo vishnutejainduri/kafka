@@ -7,7 +7,8 @@ const {
   getCategory,
   createCategory,
   updateCategory,
-  categoryNeedsUpdating
+  categoryNeedsUpdating,
+  getCtStyleAttributeValue
 } = require('../styleUtils');
 const { languageKeys, entityStatus, MICROSITES_ROOT_CATEGORY } = require('../constantsCt');
 const { MICROSITE, PROMO_STICKER } = require('../../lib/constants');
@@ -52,6 +53,12 @@ const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpe
   return [...categories.slice(1, categories.length), ...existingCategories].filter(Boolean)
 };
 
+const messageIncludesStickerForNonReturnableStyle = (existingCtStyle, stylesFacetMessage) => {
+  const isReturnable = getCtStyleAttributeValue(existingCtStyle, 'isReturnable')
+  // using === false because other test cases rely on making a request based on styleid which might return undefined
+  return !!(isReturnable === false && stylesFacetMessage[PROMO_STICKER])
+}
+
 const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) => {
     if ((stylesFacetMessage[MICROSITE] || !stylesFacetMessage[PROMO_STICKER]) && (!stylesFacetMessage[MICROSITE] || stylesFacetMessage[PROMO_STICKER])) {
       throw new Error('Invalid facet id mapping')
@@ -62,12 +69,17 @@ const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) =
     if (!existingCtStyle) {
       existingCtStyle = (await createAndPublishStyle ({ id: stylesFacetMessage.id, name: { 'en-CA': '', 'fr-CA': '' } }, { id: productTypeId }, null, ctHelpers)).body;
     }
-    
+
     const micrositeCategories = await createOrUpdateCategoriesFromFacet(stylesFacetMessage, existingCtStyle, ctHelpers);
+
+    if (messageIncludesStickerForNonReturnableStyle(existingCtStyle, stylesFacetMessage)) {
+      throw new Error('Cannot update promo sticker on non-returnable items')
+    }
     return updateStyle({ style: stylesFacetMessage, existingCtStyle, productType, categories: micrositeCategories, ctHelpers});
 };
 
 module.exports = {
   updateStyleFacets,
+  messageIncludesStickerForNonReturnableStyle,
   createOrUpdateCategoriesFromFacet
 };

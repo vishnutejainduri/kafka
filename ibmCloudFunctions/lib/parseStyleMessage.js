@@ -3,7 +3,6 @@
 const TOPIC_NAME = 'styles-connect-jdbc-CATALOG';
 const APPROVED_STATUS = 'Approved';
 const JESTA_TRUE = 'Y';
-
 // Map of source attribute names to mapped name. Translatable attributes are suffixed with _EN, _ENG, or _FR.
 const translatableAttributeMap = {
     'BRAND_NAME': 'brandName',
@@ -20,6 +19,10 @@ const translatableAttributeMap = {
     'CATEGORY_LEVEL_1A': 'level2Category',
     'CATEGORY_LEVEL_2A': 'level3Category'
 };
+const {
+    clearancePromotionalSticker: inboundClearancePromotionalSticker,
+    languageKeys
+} = require('../commercetools/constantsCt')
 
 const styleIdKey = 'STYLEID'
 
@@ -27,6 +30,11 @@ const endlessAislePromotionalSticker = {
     en: 'Online Only',
     fr: 'En ligne seulement'
 };
+
+const clearancePromotionalSticker = {
+    en: inboundClearancePromotionalSticker[[languageKeys.ENGLISH]],
+    fr: inboundClearancePromotionalSticker[[languageKeys.FRENCH]]
+}
 
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
@@ -76,19 +84,22 @@ function parseStyleMessage(msg) {
     // VSNs are actually supposed to be compounded with two other fields for uniqueness
     styleData.relatedProductId = styleData.vsn + msg.value.SUBCLASS + styleData.brandName.en;
 
-    styleData.webStatus = styleData.webStatus === APPROVED_STATUS;
     styleData.isEndlessAisle = styleData.isEndlessAisle === JESTA_TRUE;
     styleData.lastModifiedDate = (styleData.lastModifiedDateColours > styleData.lastModifiedDate || !styleData.lastModifiedDate) ? styleData.lastModifiedDateColours : styleData.lastModifiedDate
 
     if (styleData.isEndlessAisle) {
         styleData.promotionalSticker = endlessAislePromotionalSticker;
     }
-    styleData.isReturnable = styleData.isReturnable === JESTA_TRUE ? true : false
+    styleData.webStatus = styleData.webStatus === APPROVED_STATUS
 
+    styleData.isReturnable = styleData.isReturnable === JESTA_TRUE
+
+    if (!styleData.isReturnable) {
+        styleData.promotionalSticker = clearancePromotionalSticker
+    }
 
     // Add _id for mongo
     styleData._id = styleData.id;
-
     return styleData;
 }
 
@@ -96,5 +107,6 @@ module.exports = {
     topicName: TOPIC_NAME,
     styleIdKey,
     parseStyleMessage,
-    filterStyleMessages
+    filterStyleMessages,
+    clearancePromotionalSticker
 };

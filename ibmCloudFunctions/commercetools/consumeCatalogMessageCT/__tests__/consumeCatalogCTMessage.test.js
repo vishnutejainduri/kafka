@@ -256,6 +256,15 @@ const styleActions = [
   },
   {
     action: 'setAttributeInAllVariants',
+    name: 'promotionalSticker',
+    staged: false,
+    value: {
+      "en-CA": "Final Sale",
+      "fr-CA": "Final Sale"
+    }
+  },
+  {
+    action: 'setAttributeInAllVariants',
     name: 'styleLastModifiedInternal',
     staged: false,
     value: new Date('2016-08-05T10:03:59.002Z'),
@@ -378,8 +387,8 @@ describe('parseStyleMessageCt', () => {
     expect(parsedMessage.styleLastModifiedInternal).toEqual(new Date(messageWithMoreRecentLastModifiedDateColours.value.LASTMODIFIEDDATE_COLOURS))
   });
 
-  it('returns a message that has a promo sticker if the style is endless aisle', () => {
-    const eaMessage = { ...message, value: { ...message.value, EA_IND: 'Y' } };
+  it('returns a message that has a promo sticker if the style is endless aisle and is returnable', () => {
+    const eaMessage = { ...message, value: { ...message.value, EA_IND: 'Y', RETURNABLE_IND: 'Y' } };
     const parsedEaMessage = parseStyleMessageCt(eaMessage);
     expect(parsedEaMessage.promotionalSticker).toEqual({
       'en-CA': 'Online Only',
@@ -387,11 +396,29 @@ describe('parseStyleMessageCt', () => {
     });
   });
 
-  it('returns a message that has no promo sticker if the style is not endless aisle', () => {
-    const nonEaMessage = { ...message, value: { ...message.value, EA_IND: 'N' } };
+  it('returns a message that has no promo sticker if the style is not endless aisle and is returnable', () => {
+    const nonEaMessage = { ...message, value: { ...message.value, EA_IND: 'N', RETURNABLE_IND: 'Y' } };
     const parsedNonEaMessage = parseStyleMessageCt(nonEaMessage);
     expect(parsedNonEaMessage.promotionalSticker).toBeUndefined();
   });
+
+  it('returns a message that has the final sale promo sticker if the style is endless aisle and is not returnable', () => {
+    const finalSaleMessage = { ...message, value: { ...message.value, EA_IND: 'Y', RETURNABLE_IND: 'N' } }
+    const parsedFinalSaleMessage = parseStyleMessageCt(finalSaleMessage)
+    expect(parsedFinalSaleMessage.promotionalSticker).toEqual({
+      "en-CA": "Final Sale",
+      "fr-CA": "Final Sale"
+    })
+  })
+
+  it('returns a message that has the final sale promo sticker if the style is not endless aisle and is not returnable', () => {
+    const noEndlessAisleNoReturnableMessage = { ...message, value: { ...message.value, EA_IND: 'N', RETURNABLE_IND: 'N' } }
+    const parsedNoEndlessAisleNoReturnableMessage = parseStyleMessageCt(noEndlessAisleNoReturnableMessage)
+    expect(parsedNoEndlessAisleNoReturnableMessage.promotionalSticker).toEqual({
+      "en-CA": "Final Sale",
+      "fr-CA": "Final Sale"
+    })
+  })
 });
 
 describe('categoryKeyFromNames', () => {
