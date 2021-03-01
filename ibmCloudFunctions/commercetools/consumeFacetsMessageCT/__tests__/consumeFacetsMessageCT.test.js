@@ -1,5 +1,5 @@
 const consumeFacetsMessageCT = require('..');
-const { isNotReturnableSticker, updateStyleFacets, createOrUpdateCategoriesFromFacet } = require('../utils');
+const { messageIncludesStickerForNonReturnableStyle, updateStyleFacets, createOrUpdateCategoriesFromFacet } = require('../utils');
 const { getExistingCtStyle } = require('../../styleUtils');
 const { parseFacetMessageCt, filterFacetMessageCt } = require('../../../lib/parseFacetMessageCt');
 const getCtHelpers = require('../../../lib/commercetoolsSdk');
@@ -192,7 +192,7 @@ describe('updateStyleFacets', () => {
       .map(addErrorHandling(parseFacetMessageCt))
     const existingStyle = { masterData: {current: { masterVariant: { attributes: [{ name: 'isReturnable', value: false }] } } }}
 
-    expect(isNotReturnableSticker(existingStyle, result[0])).toBe(true)
+    expect(messageIncludesStickerForNonReturnableStyle(existingStyle, result[0])).toBe(true)
   })
 });
 

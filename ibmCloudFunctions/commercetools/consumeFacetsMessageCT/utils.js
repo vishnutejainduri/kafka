@@ -53,7 +53,7 @@ const createOrUpdateCategoriesFromFacet = async (facet, existingCtStyle, ctHelpe
   return [...categories.slice(1, categories.length), ...existingCategories].filter(Boolean)
 };
 
-const isNotReturnableSticker = (existingCtStyle, stylesFacetMessage) => {
+const messageIncludesStickerForNonReturnableStyle = (existingCtStyle, stylesFacetMessage) => {
   const isReturnable = getCtStyleAttributeValue(existingCtStyle, 'isReturnable')
   // using === false because other test cases rely on making a request based on styleid which might return undefined
   return !!(isReturnable === false && stylesFacetMessage[PROMO_STICKER])
@@ -72,7 +72,7 @@ const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) =
 
     const micrositeCategories = await createOrUpdateCategoriesFromFacet(stylesFacetMessage, existingCtStyle, ctHelpers);
 
-    if (isNotReturnableSticker(existingCtStyle, stylesFacetMessage)) {
+    if (messageIncludesStickerForNonReturnableStyle(existingCtStyle, stylesFacetMessage)) {
       throw new Error('Cannot update promo sticker on non-returnable items')
     }
     return updateStyle({ style: stylesFacetMessage, existingCtStyle, productType, categories: micrositeCategories, ctHelpers});
@@ -80,6 +80,6 @@ const updateStyleFacets = async (ctHelpers, productTypeId, stylesFacetMessage) =
 
 module.exports = {
   updateStyleFacets,
-  isNotReturnableSticker,
+  messageIncludesStickerForNonReturnableStyle,
   createOrUpdateCategoriesFromFacet
 };
