@@ -105,10 +105,50 @@ const getBarcodeObjectFromBarcodeNumber = async barcodeNumber =>
 const getBarcodeObjectsFromBarcodeNumbers = async barcodeNumbers => {
   const barcodeObjects = []
   for (const barcodeNumber of barcodeNumbers) {
-    barcodeObjects.push(await getBarcodeObjectFromBarcodeNumber(barcodeNumber))
+    try {
+      barcodeObjects.push(await getBarcodeObjectFromBarcodeNumber(barcodeNumber))
+    } catch (error)  {
+      console.warn(`Could not get barcode ${barcodeNumber}`)
+    }
     await sleep(50)
   }
   return barcodeObjects
+}
+
+const getStyleByStyleId = async styleId =>
+  (await client.execute({
+    uri: requestBuilder.productProjections.byKey(styleId).build(),
+    method: 'GET'
+  })).body
+
+const removePromoStickerFromStyleByStyleId = async styleId => {
+  const style = await getStyleByStyleId(styleId)
+
+  return client.execute({
+    uri: requestBuilder.products.byKey(styleId).build(),
+    method: 'POST',
+    body: JSON.stringify({
+      version: style.version,
+      actions: [{
+        action: 'setAttributeInAllVariants',
+        name: 'promotionalSticker',
+        staged: false
+      }]
+    })
+  })
+}
+
+const removePromoStickerFromStylesByStyleId = async styleIds => {
+  for (const styleId of styleIds) {
+    try {
+      await removePromoStickerFromStyleByStyleId(styleId)
+      console.log(`Removed promo sticker from style ${styleId}`)
+    }
+    catch (error) {
+      console.error(`Unable to remove promo sticker from ${styleId}: ${error.message}`)
+    }
+  }
+  return true
 }
 
 module.exports = {
