@@ -143,12 +143,19 @@ describe('filterShipmentMessages', () => {
 });
 
 describe('filterMissingTrackingNumberMessages', () => {
-  it('removes messages with no tracking number', async () => {
+  it('removes non-BOPIS messages with no tracking number', async () => {
     const invalidMessages = { ...validParams, messages: [{ ...validParams.messages[0], value: { ...validParams.messages[0].value, TRACKING_NUMBER: null } }] }
     expect(filterMissingTrackingNumberMessages(invalidMessages.messages[0])).toEqual(false)
   });
   it('does not remove messages with tracking number', async () => {
     expect(filterMissingTrackingNumberMessages(validParams.messages[0])).toEqual(true)
+  });
+  it('does not remove BOPIS messages that lack tracking numbers', () => {
+    expect(filterMissingTrackingNumberMessages({
+      ...validParams.messages[0],
+      DEST_SITE_ID: '1',
+      TRACKING_NUMBER: null
+    })).toBe(true);
   });
 });
 
