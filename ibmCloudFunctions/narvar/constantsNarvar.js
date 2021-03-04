@@ -6,8 +6,8 @@ const NARVAR_DELIVERY_LAST_MODIFIED = 'deliveryLastModifiedDate'
 const NARVAR_DELIVERY_ITEM_LAST_MODIFIED = 'deliveryItemLastModifiedDate'
 
 const JESTA_LANGUAGE_NUMBERS_TO_LOCALES = {
-  '1': 'en-CA',
-  '3': 'fr-CA'
+  '1': 'en_CA',
+  '3': 'fr_CA'
 }
 
 const JESTA_STATUSES_TO_NARVAR_STATUSES = {
@@ -29,8 +29,8 @@ const JESTA_STATUSES_TO_NARVAR_PICKUP_STATUSES = {
 }
 
 const LOCALE_TO_PRODUCT = {
-  'en-CA': 'product',
-  'fr-CA': 'produit'
+  'en_CA': 'product',
+  'fr_CA': 'produit'
 }
 
 const NARVAR_FULFILLMENT_TYPES = {
