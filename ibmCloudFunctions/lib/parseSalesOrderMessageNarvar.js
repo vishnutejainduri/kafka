@@ -4,6 +4,7 @@ const {
 const {
   JESTA_LANGUAGE_NUMBERS_TO_LOCALES,
   JESTA_STATUSES_TO_NARVAR_STATUSES,
+  NARVAR_BARCODE,
   NARVAR_ORDER_LAST_MODIFIED,
   NARVAR_ORDER_ITEM_LAST_MODIFIED
 } = require('../narvar/constantsNarvar') 
@@ -63,7 +64,8 @@ function parseSalesOrderMessage(msg) {
               [NARVAR_ORDER_ITEM_LAST_MODIFIED]: msg.value.MODIFIED_DATE ? new Date(msg.value.MODIFIED_DATE).toISOString() : null,
               brand_name: msg.value.BRAND_NAME_ENG,
               size: msg.value.SIZE,
-              reasonCode: msg.value.REASON_CODE
+              reasonCode: msg.value.REASON_CODE,
+              [NARVAR_BARCODE]: msg.value.BAR_CODE_ID
             }
           }],
           billing: {
