@@ -22,12 +22,12 @@ function filterShipmentMessages(msg) {
 }
 
 function filterMissingTrackingNumberMessages(msg) {
-    if (!msg.value.TRACKING_NUMBER) {
-      log.error(`Shipment ${msg.value.SHIPMENT_ID} for order ${msg.value.ORDER_NUMBER} has no tracking number`)
-      return false;
-    }
-
-    return true; 
+  const isBopis = !!msg.value.DEST_SITE_ID
+  if (!msg.value.TRACKING_NUMBER && !isBopis) {
+    log.error(`Shipment ${msg.value.SHIPMENT_ID} for non-BOPIS order ${msg.value.ORDER_NUMBER} has no tracking number`)
+    return false;
+  }
+  return true;
 }
 
 function checkShipmentItemIdForNull(msg) {
