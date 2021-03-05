@@ -6,6 +6,7 @@ const {
   JESTA_CARRIER_ID_TO_NARVAR_CARRIER_ID,
   JESTA_SERVICE_TYPES_TO_NARVAR_SERVICE_TYPES,
   JESTA_STATUSES_TO_NARVAR_PICKUP_STATUSES,
+  NARVAR_BARCODE,
   NARVAR_DELIVERY_LAST_MODIFIED,
   NARVAR_DELIVERY_ITEM_LAST_MODIFIED,
   NARVAR_ORDER_LAST_MODIFIED,
@@ -56,7 +57,8 @@ function parseShipmentMessage(msg) {
             fulfillment_type: isBopis ? NARVAR_FULFILLMENT_TYPES.BOPIS : NARVAR_FULFILLMENT_TYPES.HOME_DELIVERY,
             attributes: {
               [NARVAR_ORDER_ITEM_LAST_MODIFIED]: null,
-              [NARVAR_DELIVERY_ITEM_LAST_MODIFIED]: msg.value.MODIFIED_DATE ? new Date(msg.value.MODIFIED_DATE).toISOString() : null
+              [NARVAR_DELIVERY_ITEM_LAST_MODIFIED]: msg.value.MODIFIED_DATE ? new Date(msg.value.MODIFIED_DATE).toISOString() : null,
+              [NARVAR_BARCODE]: msg.value.BAR_CODE_ID
             },
           }],
           [isBopis ? 'pickups' : 'shipments']: [{
