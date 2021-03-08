@@ -3,7 +3,7 @@
   "config": {
     "id": 3,
     "versionDevelopment": 8,
-    "versionStaging": 8,
+    "versionStaging": 9,
     "versionProduction": 5,
     "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": 1,
