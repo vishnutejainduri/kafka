@@ -260,7 +260,7 @@ const styleActions = [
     staged: false,
     value: {
       "en-CA": "Final Sale",
-      "fr-CA": "Final Sale"
+      "fr-CA": "Vente ferme"
     }
   },
   {
@@ -404,7 +404,7 @@ describe('parseStyleMessageCt', () => {
     const parsedFinalSaleMessage = parseStyleMessageCt(finalSaleMessage)
     expect(parsedFinalSaleMessage.promotionalSticker).toEqual({
       "en-CA": "Final Sale",
-      "fr-CA": "Final Sale"
+      "fr-CA": "Vente ferme"
     })
   })
 
@@ -413,7 +413,7 @@ describe('parseStyleMessageCt', () => {
     const parsedNoEndlessAisleNoReturnableMessage = parseStyleMessageCt(noEndlessAisleNoReturnableMessage)
     expect(parsedNoEndlessAisleNoReturnableMessage.promotionalSticker).toEqual({
       "en-CA": "Final Sale",
-      "fr-CA": "Final Sale"
+      "fr-CA": "Vente ferme"
     })
   })
 });
