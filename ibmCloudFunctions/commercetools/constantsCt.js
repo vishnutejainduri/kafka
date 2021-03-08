@@ -97,7 +97,7 @@ const languageKeys = {
 
 const clearancePromotionalSticker = {
   [languageKeys.ENGLISH]: 'Final Sale',
-  [languageKeys.FRENCH]: 'Final Sale'
+  [languageKeys.FRENCH]: 'Vente ferme'
 }
 
 const orderStates = {
