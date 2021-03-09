@@ -2,7 +2,7 @@
   "name": "shipment-details-create-jdbc-source",
   "config": {
     "id": 12,
-    "versionDevelopment": 11,
+    "versionDevelopment": 12,
     "versionStaging": 1,
     "versionProduction": 1,
     "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
