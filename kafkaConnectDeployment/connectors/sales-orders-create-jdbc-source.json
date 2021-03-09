@@ -2,7 +2,7 @@
   "name": "sales-orders-create-jdbc-source",
   "config": {
     "id": 10,
-    "versionDevelopment": 10,
+    "versionDevelopment": 11,
     "versionStaging": 1,
     "versionProduction": 1,
     "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",

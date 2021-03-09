@@ -2,7 +2,7 @@
   "name": "sales-orders-update-jdbc-source",
   "config": {
     "id": 11,
-    "versionDevelopment": 10,
+    "versionDevelopment": 11,
     "versionStaging": 1,
     "versionProduction": 1,
     "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
