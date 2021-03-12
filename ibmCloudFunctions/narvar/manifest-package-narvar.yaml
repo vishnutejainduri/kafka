@@ -7,3 +7,4 @@ packages:
       narvarUserName: $NARVAR_USER_NAME
       narvarPassword: $NARVAR_PASSWORD
       narvarUrl: $NARVAR_URL
+      cloudFunctionsIsIam: $CLOUD_FUNCTIONS_IS_IAM
