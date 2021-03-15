@@ -68,9 +68,16 @@ const getMostUpToDateObject = datePath => objects => {
     return objectsSortedByDate[0];
 };
 
+const safeGetDate = (rawDate, defaultDate) => {
+    const date = new Date(rawDate)
+    if (isNaN(date)) return defaultDate
+    return date
+}
+
 module.exports = {
     camelCase,
     groupByAttribute,
+    safeGetDate,
     getMostUpToDateObject,
     removeDuplicateIds
 };

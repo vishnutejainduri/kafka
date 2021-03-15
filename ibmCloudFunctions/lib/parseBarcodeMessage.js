@@ -1,5 +1,7 @@
 'use strict';
 
+const { safeGetDate } = require("./utils");
+
 const TOPIC_NAME = 'barcodes-connect-jdbc';
 
 const attributeMap = {
@@ -24,6 +26,8 @@ function parseBarcodeMessage(msg) {
         barcodeData[attributeMap[sourceAttributeName]] = msg.value[sourceAttributeName];
     }
 
+    barcodeData.effectiveAt = safeGetDate(msg.value.EFFECTIVEDATETIME, null)
+    barcodeData.expiresAt = safeGetDate(msg.value.EXPIRYDATETIME, null)
     barcodeData._id = barcodeData.barcode;
 
     return barcodeData;

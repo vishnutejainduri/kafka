@@ -13,7 +13,7 @@
     "table.poll.interval.ms": 3600000,
     "mode": "timestamp",
     "timestamp.column.name": "LASTMODIFIEDDATE",
-    "query": "SELECT sx.LASTMODIFIEDDATE, sx.PKPRODUCTNO as barcode, sx.SUBTYPE, s.PKSKU AS SKU_ID, sc.IMAGE_STYLEID as styleId, sx.FKORGANIZATIONNO FROM VSTORE.SKUXREF sx INNER JOIN (SELECT PKSKU, SKUCOLOR, FKSTYLENO FROM VSTORE.SKU) s ON sx.FKSKU = s.PKSKU INNER JOIN ELCAT.STYLE_COLOURS sc ON SUBSTR(sc.STYLEID,1,8) = s.fkstyleno AND sc.COLOUR_ID = s.skucolor AND styleId IS NOT NULL AND sx.FKORGANIZATIONNO = 1",
+    "query": "SELECT sx.LASTMODIFIEDDATE, sx.PKPRODUCTNO as barcode, sx.SUBTYPE, s.PKSKU AS SKU_ID, sc.IMAGE_STYLEID as styleId, sx.FKORGANIZATIONNO, sx.EFFECTIVEDATETIME, sx.EXPIRYDATETIME FROM VSTORE.SKUXREF sx INNER JOIN (SELECT PKSKU, SKUCOLOR, FKSTYLENO FROM VSTORE.SKU) s ON sx.FKSKU = s.PKSKU INNER JOIN ELCAT.STYLE_COLOURS sc ON SUBSTR(sc.STYLEID,1,8) = s.fkstyleno AND sc.COLOUR_ID = s.skucolor AND styleId IS NOT NULL AND sx.FKORGANIZATIONNO = 1",
     "topic.prefix": "barcodes-connect-jdbc",
     "validate.non.null": "false",
     "numeric.mapping": "best_fit",
