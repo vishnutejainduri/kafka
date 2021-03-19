@@ -14,7 +14,9 @@ const {
   getUniqueCategoryIdsFromCategories,
   createCategory,
   categoryKeyFromNames,
-  getActionsFromStyle
+  getActionsFromStyle,
+  removePromoStickerFromStyleIfNecessary,
+  shouldRemovePromoStickerFromStyle
 } = require('../../styleUtils');
 const { languageKeys, styleAttributeNames, isStaged, entityStatus, MICROSITES_ROOT_CATEGORY } = require('../../constantsCt');
 
@@ -823,3 +825,70 @@ describe('getActionsFromStyle', () => {
     expect(getActionsFromStyle(jestaStyle, mockProductType, mockCategories, mockStyleThatHasATaxCategory)).toEqual(expect.not.arrayContaining([taxCategoryUpdateAction]));
   })
 });
+
+const getCtStyleWithAttributes = attributes => ({
+    masterData: {
+      [entityStatus]: {
+        masterVariant: { attributes: Object.entries(attributes).map(([name, value]) => ({ name, value }))}
+      }
+    }
+  })
+
+describe('shouldRemovePromoStickerFromStyle', () => {
+  it('returns true when given a new style that is returnable and old style that is non-returnable and has a clearance promotional sticker', () => {
+      const nonReturnableStyleWithClearancePromoSticker = getCtStyleWithAttributes({
+        isReturnable: false,
+        promotionalSticker: { 'en-CA': 'Final Sale', 'fr-CA': 'Vente ferme' }
+      })
+      const returnableStyle = { isReturnable: true }
+      expect(shouldRemovePromoStickerFromStyle({ newStyle: returnableStyle, oldStyle: nonReturnableStyleWithClearancePromoSticker })).toBe(true)
+  })
+
+  it('returns false when given any new style that is non-returnable', () => {
+      const nonReturnableStyle = { isReturnable: false }
+      const otherStyle = getCtStyleWithAttributes({ isReturnable: true })
+      expect(shouldRemovePromoStickerFromStyle({ newStyle: nonReturnableStyle, oldStyle: otherStyle })).toBe(false)
+  })
+
+  it('returns false when given a new style that is returnable and old style that is non-returnable and has no promotional sticker', () => {
+      const returnableStyle = { isReturnable: true }
+      const nonReturnableStyleWithNoPromoSticker = getCtStyleWithAttributes({ isReturnable: false, promotionalSticker: { 'en-CA': '', 'fr-CA': '' } })
+      expect(shouldRemovePromoStickerFromStyle({ newStyle: returnableStyle, oldStyle: nonReturnableStyleWithNoPromoSticker })).toBe(false)
+  })
+
+  it('returns false when given a new style that is returnable and old style that is non-returnable and has a non-clearance promotional sticker', () => {
+      const returnableStyle = { isReturnable: true }
+      const nonReturnableStyleWithANonClearancePromoSticker = getCtStyleWithAttributes({ isReturnable: false, promotionalSticker: { 'en-CA': 'promo', 'fr-CA': 'le promo' } })
+      expect(shouldRemovePromoStickerFromStyle({ newStyle: returnableStyle, oldStyle: nonReturnableStyleWithANonClearancePromoSticker })).toBe(false)
+  })
+
+  it('returns false when given an old style that is null', () => {
+      const newStyle = { isReturnable: true }
+      const oldStyle = null
+      expect(shouldRemovePromoStickerFromStyle({ newStyle, oldStyle })).toBe(false)
+  })
+})
+
+describe('removePromoStickerFromStyleIfNecessary', () => {
+  describe('should remove promo sticker', () => {
+      it('it returns the new style with the promo sticker set to blank', () => {
+          const newStyle = { isReturnable: true }
+          const oldStyle = getCtStyleWithAttributes({
+              isReturnable: false,
+              promotionalSticker: { 'en-CA': 'Final Sale', 'fr-CA': 'Vente ferme' }
+          })
+          expect(removePromoStickerFromStyleIfNecessary({ newStyle, oldStyle })).toEqual({
+              isReturnable: true,
+              promotionalSticker: { 'en-CA': '', 'fr-CA': '' }
+          })
+      })
+  })
+
+  describe('should NOT remove promo sticker', () => {
+      it('returns the new style unchanged', () => {
+          const newStyle = { isReturnable: true, someOtherAttribute: true, promotionalSticker: { 'en-CA': 'promo', 'fr-CA': 'le promo' } }
+          const oldStyle = getCtStyleWithAttributes({})
+          expect(removePromoStickerFromStyleIfNecessary({ newStyle, oldStyle })).toEqual(newStyle)
+      })
+  })
+})

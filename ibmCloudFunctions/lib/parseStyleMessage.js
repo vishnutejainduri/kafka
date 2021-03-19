@@ -31,6 +31,11 @@ const clearancePromotionalSticker = {
     fr: inboundClearancePromotionalSticker[[languageKeys.FRENCH]]
 }
 
+const blankPromotionalSticker = {
+    en: null,
+    fr: null
+}
+
 // Map of source attribute names to mapped name. Non-translatable attribute names
 const attributeMap = {
     [styleIdKey]: 'id',
@@ -98,5 +103,6 @@ module.exports = {
     styleIdKey,
     parseStyleMessage,
     filterStyleMessages,
+    blankPromotionalSticker,
     clearancePromotionalSticker
 };

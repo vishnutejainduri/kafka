@@ -1,4 +1,5 @@
-const { parseStyleMessage, filterStyleMessages } = require('../../lib/parseStyleMessage');
+const { parseStyleMessage, filterStyleMessages, clearancePromotionalSticker } = require('../../lib/parseStyleMessage');
+const { PROMO_STICKER, PROMO_STICKER_CHARACTERISTIC_TYPE_ID } = require('../../lib/constants');
 const { addErrorHandling, log, createLog, addLoggingToMain, passDown } = require('../utils');
 const createError = require('../../lib/createError');
 const getCollection = require('../../lib/getCollection');
@@ -8,7 +9,9 @@ const {
   updateOriginalPriceProcessedFlagCT,
   upsertStyle,
   hasDepertmentIdChangedFrom27,
-  addStyleToBulkATSQueue
+  addStyleToBulkATSQueue,
+  removePromoStickerFromStyleIfNecessary,
+  shouldRemovePromoStickerFromStyle
 } = require('./utils');
 
 const main = async function (params) {
@@ -25,9 +28,11 @@ const main = async function (params) {
     let styles;
     let prices;
     let bulkAtsRecalculateQueue;
+    let algoliaFacetsQueue;
     try {
         styles = await getCollection(params);
         prices = await getCollection(params, params.pricesCollectionName);
+        algoliaFacetsQueue = await getCollection(params, params.algoliaFacetBulkImportQueue)
         bulkAtsRecalculateQueue = await getCollection(params, params.bulkAtsRecalculateQueue);
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
@@ -46,15 +51,29 @@ const main = async function (params) {
           let operations = [];
 
           const existingDocument = await styles.findOne({ _id: styleData._id })
-          if (existingDocument && (existingDocument.lastModifiedDate <= styleData.lastModifiedDate || !existingDocument.lastModifiedDate)) {
-            operations.push(upsertStyle(styles, styleData, false))
+          const styleToUpsert = removePromoStickerFromStyleIfNecessary({ oldStyle: existingDocument, newStyle: styleData })
+
+          if (shouldRemovePromoStickerFromStyle({ oldStyle: existingDocument, newStyle: styleData })) {
+            operations.push(algoliaFacetsQueue.insertOne({
+                facetValue: clearancePromotionalSticker,
+                facetName: PROMO_STICKER,
+                styleId: styleData._id,
+                typeId: PROMO_STICKER_CHARACTERISTIC_TYPE_ID,
+                facetId: null,
+                isMarkedForDeletion: true,
+                lastModifiedInternal: new Date()
+            }))
+          }
+
+          if (existingDocument && (existingDocument.lastModifiedDate <= styleToUpsert.lastModifiedDate || !existingDocument.lastModifiedDate)) {
+            operations.push(upsertStyle(styles, styleToUpsert, false))
             operations = operations.concat(priceOperations);
            
-            if (hasDepertmentIdChangedFrom27(existingDocument, styleData)) {
-              operations.push(addStyleToBulkATSQueue(bulkAtsRecalculateQueue, styleData));
+            if (hasDepertmentIdChangedFrom27(existingDocument, styleToUpsert)) {
+              operations.push(addStyleToBulkATSQueue(bulkAtsRecalculateQueue, styleToUpsert));
             }
           } else {
-            operations.push(upsertStyle(styles, styleData, true))
+            operations.push(upsertStyle(styles, styleToUpsert, true))
             operations = operations.concat(priceOperations);
           }
 

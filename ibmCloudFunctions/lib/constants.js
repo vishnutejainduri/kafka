@@ -1,7 +1,9 @@
 const MICROSITE = 'microsite';
 const PROMO_STICKER = 'promotionalSticker';
+const PROMO_STICKER_CHARACTERISTIC_TYPE_ID = '15'
 
 module.exports = {
   MICROSITE,
-  PROMO_STICKER
+  PROMO_STICKER,
+  PROMO_STICKER_CHARACTERISTIC_TYPE_ID
 };

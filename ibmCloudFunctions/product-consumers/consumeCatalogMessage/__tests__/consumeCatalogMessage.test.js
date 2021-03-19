@@ -1,5 +1,5 @@
 const { parseStyleMessage, filterStyleMessages } = require('../../../lib/parseStyleMessage');
-const { hasDepertmentIdChangedFrom27 } = require('../utils')
+const { hasDepertmentIdChangedFrom27, shouldRemovePromoStickerFromStyle, removePromoStickerFromStyleIfNecessary } = require('../utils')
 
 const consumeCatalogMessage = require('../');
 
@@ -267,4 +267,64 @@ describe('hasDepertmentIdChangedFrom27', () => {
         const result = hasDepertmentIdChangedFrom27({ departmentId: '27' }, { departmentId: '27' })
         expect(result).toBe(false)
     });
+})
+
+describe('shouldRemovePromoStickerFromStyle', () => {
+    it('returns true when given a new style that is returnable and old style that is non-returnable and has a clearance promotional sticker', () => {
+        const nonReturnableStyleWithClearancePromoSticker = {
+            isReturnable: false,
+            promotionalSticker: { en: 'Final Sale', fr: 'Vente ferme' }
+        }
+        const returnableStyle = { isReturnable: true }
+        expect(shouldRemovePromoStickerFromStyle({ newStyle: returnableStyle, oldStyle: nonReturnableStyleWithClearancePromoSticker})).toBe(true)
+    })
+
+    it('returns false when given any new style that is non-returnable', () => {
+        const nonReturnableStyle = { isReturnable: false }
+        const otherStyle = { isReturnable: true }
+        expect(shouldRemovePromoStickerFromStyle({ newStyle: nonReturnableStyle, oldStyle: otherStyle })).toBe(false)
+    })
+
+    it('returns false when given a new style that is returnable and old style that is non-returnable and has no promotional sticker', () => {
+        const returnableStyle = { isReturnable: true }
+        const nonReturnableStyleWithNoPromoSticker = { isReturnable: false, promotionalSticker: { en: null, fr: null } }
+        expect(shouldRemovePromoStickerFromStyle({ newStyle: returnableStyle, oldStyle: nonReturnableStyleWithNoPromoSticker })).toBe(false)
+    })
+
+    it('returns false when given a new style that is returnable and old style that is non-returnable and has a non-clearance promotional sticker', () => {
+        const returnableStyle = { isReturnable: true }
+        const nonReturnableStyleWithANonClearancePromoSticker = { isReturnable: false, promotionalSticker: { en: 'promo', fr: 'le promo' } }
+        expect(shouldRemovePromoStickerFromStyle({ newStyle: returnableStyle, oldStyle: nonReturnableStyleWithANonClearancePromoSticker })).toBe(false)
+    })
+
+    it('returns false when given an old style that is null', () => {
+        const newStyle = { isReturnable: true }
+        const oldStyle = null
+        expect(shouldRemovePromoStickerFromStyle({ newStyle, oldStyle })).toBe(false)
+    })
+})
+
+describe('removePromoStickerFromStyleIfNecessary', () => {
+    describe('should remove promo sticker', () => {
+        it('it returns the new style with the promo sticker set to blank', () => {
+            const newStyle = { isReturnable: true }
+            const oldStyle = {
+                isReturnable: false,
+                promotionalSticker: { en: 'Final Sale', fr: 'Vente ferme' }
+            }
+            expect(removePromoStickerFromStyleIfNecessary({ newStyle, oldStyle })).toEqual({
+                isReturnable: true,
+                promotionalSticker: { en: null, fr: null }
+            })
+
+        })
+    })
+
+    describe('should NOT remove promo sticker', () => {
+        it('returns the new style unchanged', () => {
+            const newStyle = { isReturnable: true, someOtherAttribute: true, promotionalSticker: { en: 'promo', fr: 'le promo' } }
+            const oldStyle = {}
+            expect(removePromoStickerFromStyleIfNecessary({ newStyle, oldStyle })).toEqual(newStyle)
+        })
+    })
 })

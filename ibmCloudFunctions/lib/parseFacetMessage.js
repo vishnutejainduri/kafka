@@ -1,5 +1,5 @@
 'use strict';
-const { MICROSITE, PROMO_STICKER } = require('./constants');
+const { MICROSITE, PROMO_STICKER, PROMO_STICKER_CHARACTERISTIC_TYPE_ID } = require('./constants');
 
 const facetMap = {
     "Category": "style",
@@ -13,7 +13,7 @@ const facetMap = {
 
 const facetTypeMap = {
   "DPM01": MICROSITE,
-  "15": PROMO_STICKER
+  [PROMO_STICKER_CHARACTERISTIC_TYPE_ID]: PROMO_STICKER
 };
 
 // Parse a message from the ELCAT.CATALOG table and return a new object with filtered and re-mapped attributes.

@@ -1,5 +1,6 @@
 const createError = require('../../lib/createError');
 const { priceChangeProcessStatus } = require('../constants')
+const { clearancePromotionalSticker, blankPromotionalSticker } = require('../../lib/parseStyleMessage')
 
 const updateOriginalPrice = (prices, styleData) => prices.updateOne({ _id: styleData._id }, { $currentDate: { lastModifiedInternalOriginalPrice: { $type:"timestamp" } }, $set: { _id: styleData._id, styleId: styleData._id, originalPrice: styleData.originalPrice } }, { upsert: true }).catch(originalError => {
     throw createError.consumeCatalogMessage.failedPriceUpdates(originalError, styleData);
@@ -35,11 +36,25 @@ const upsertStyle = (styles, styleData, shouldInsert) => {
 
 const hasDepertmentIdChangedFrom27 = (existingStyleData, newStyleData) => existingStyleData.departmentId !== newStyleData.departmentId && (newStyleData.departmentId === '27' || existingStyleData.departmentId === '27')
 
+const shouldRemovePromoStickerFromStyle = ({ oldStyle, newStyle }) =>
+  newStyle.isReturnable &&
+  Boolean(oldStyle && oldStyle.promotionalSticker && oldStyle.promotionalSticker.en === clearancePromotionalSticker.en)
+
+const removePromoStickerFromStyleIfNecessary = ({ oldStyle, newStyle }) => {
+  if (!shouldRemovePromoStickerFromStyle({ oldStyle, newStyle })) return newStyle
+  return {
+    ...newStyle,
+    promotionalSticker: blankPromotionalSticker
+  }
+}
+
 module.exports = {
   updateOriginalPrice,
   updateOriginalPriceProcessedFlag,
   updateOriginalPriceProcessedFlagCT,
   upsertStyle,
   hasDepertmentIdChangedFrom27,
-  addStyleToBulkATSQueue
+  addStyleToBulkATSQueue,
+  shouldRemovePromoStickerFromStyle,
+  removePromoStickerFromStyleIfNecessary
 }

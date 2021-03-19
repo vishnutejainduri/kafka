@@ -7,7 +7,8 @@ const {
   PRODUCT_SHOULD_BE_PUBLISHED,
   entityStatus,
   priceTypes,
-  MICROSITES_ROOT_CATEGORY
+  MICROSITES_ROOT_CATEGORY,
+  clearancePromotionalSticker
 } = require('./constantsCt');
 const { getAllVariantPrices, getExistingCtOriginalPrice, getExistingCtPermanentMarkdown } = require('./consumeSalePriceCT/utils');
 
@@ -483,24 +484,43 @@ const getExistingCtStyle = async (styleId, { client, requestBuilder }) => {
   }
 };
 
+
+const shouldRemovePromoStickerFromStyle = ({ oldStyle, newStyle }) => {
+  if (!newStyle.isReturnable || !oldStyle) return false
+  const existingPromoSticker = getCtStyleAttributeValue(oldStyle, styleAttributeNames.PROMOTIONAL_STICKER)
+  return Boolean(existingPromoSticker && existingPromoSticker[languageKeys.ENGLISH] === clearancePromotionalSticker[languageKeys.ENGLISH])
+}
+
+const removePromoStickerFromStyleIfNecessary = ({ oldStyle, newStyle }) => {
+  if (!shouldRemovePromoStickerFromStyle({ oldStyle, newStyle })) return newStyle
+  return {
+    ...newStyle,
+    promotionalSticker: {
+      [languageKeys.ENGLISH]: '',
+      [languageKeys.FRENCH]: ''
+    }
+  }
+}
+
 const createOrUpdateStyle = async (ctHelpers, productTypeId, style) => {
     const productType = await getProductType(productTypeId, ctHelpers);
     let existingCtStyle = await getExistingCtStyle(style.id, ctHelpers);
+    const styleToUpsert = removePromoStickerFromStyleIfNecessary({ oldStyle: existingCtStyle, newStyle: style })
 
     if (!existingCtStyle) {
       // the given style isn't currently stored in CT, so we create a new one
-      const categories = await createOrUpdateCategoriesFromStyle(style, ctHelpers);
-      return createAndPublishStyle(style, productType, categories, ctHelpers);
+      const categories = await createOrUpdateCategoriesFromStyle(styleToUpsert, ctHelpers);
+      return createAndPublishStyle(styleToUpsert, productType, categories, ctHelpers);
     }
 
-    if (existingCtStyleIsNewer(existingCtStyle, style, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)) {
+    if (existingCtStyleIsNewer(existingCtStyle, styleToUpsert, styleAttributeNames.STYLE_LAST_MODIFIED_INTERNAL)) {
       // the given style is out of date, so we don't add it to CT
       return null;
     }
     // the given style is up-to-date and an earlier version of it is already
     // stored in CT, so we just need to update its attributes
-    const categories = await createOrUpdateCategoriesFromStyle(style, ctHelpers);
-    return updateStyle({ style, existingCtStyle, productType, categories, ctHelpers });
+    const categories = await createOrUpdateCategoriesFromStyle(styleToUpsert, ctHelpers);
+    return updateStyle({ style: styleToUpsert, existingCtStyle, productType, categories, ctHelpers });
 };
 
 module.exports = {
@@ -521,5 +541,7 @@ module.exports = {
   createCategory,
   categoryKeyFromNames,
   createPriceUpdate,
-  categoryNeedsUpdating
+  categoryNeedsUpdating,
+  removePromoStickerFromStyleIfNecessary,
+  shouldRemovePromoStickerFromStyle
 };
