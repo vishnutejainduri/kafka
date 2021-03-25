@@ -91,9 +91,9 @@ global.main = async function (params) {
 
     const recordsWithError = styleAvailabilitiesToBeSynced.filter(rec => rec instanceof Error);
     if (recordsWithError.length > 0) {
-        log(createError.updateAlgoliaAndCtInventory.failedRecords(null, recordsWithError.length, styleAvailabilitiesToBeSynced.length), "ERROR");
+        log(createError.updateAlgoliaAndCtInventory.failedRecords(null, recordsWithError.length, styleAvailabilitiesToBeSynced.length, recordsWithError), 'ERROR');
         recordsWithError.forEach(originalError => {
-            log(createError.updateAlgoliaAndCtInventory.failedRecord(originalError), "ERROR");
+            log(createError.updateAlgoliaAndCtInventory.failedRecord(originalError), 'ERROR');
         });
     }
 
@@ -108,15 +108,15 @@ global.main = async function (params) {
     if (recordsToUpdate.length) {
         try {
             await algoliaIndex.partialUpdateObjects(recordsToUpdate, true);
-            log(`Updated availability for styles: ${stylesIdsToUpdate}`);
+            log(`Updated Algolia availability for styles: ${stylesIdsToUpdate}`);
         } catch (error) {
-            log('Error: Failed to send styles to Algolia.');
+            log(`Error: Failed to send styles to Algolia (${stylesIdsToUpdate}): ${error.message}`, 'ERROR');
             throw error;
         }
         await updateAlgoliaAndCtInventoryCount
             .insert({ batchSize: styleAvailabilitiesToBeSynced.length })
             .catch (() => {
-                log('Error: failed to update algolia inventory count.');
+                log('Error: failed to update Algolia inventory count.');
             });
     }
 

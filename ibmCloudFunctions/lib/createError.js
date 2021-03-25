@@ -410,10 +410,10 @@ module.exports = {
             'failed-record',
             'Failed to update Algolia and CT ats'
         ),
-        failedRecords: (_, failed, total) => new CustomError(
+        failedRecords: (_, failed, total, styleIds) => new CustomError(
             null,
             'failed-prepare-styles-for-algolia',
-            `Failed to prepare ${failed} of ${total} styles for Algolia and CT.`
+            `Failed to prepare ${failed} of ${total} styles for Algolia and CT: ${styleIds}.`
         ),
         failedToGetStylesToCheck: (originalError) => new CustomError(
             originalError,
