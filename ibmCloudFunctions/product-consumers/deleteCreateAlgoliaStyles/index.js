@@ -3,6 +3,7 @@ const algoliasearch = require('algoliasearch');
 const getCollection = require('../../lib/getCollection');
 const createError = require('../../lib/createError');
 const { createLog, addErrorHandling, log } = require('../utils');
+const { addStyleToAlgoliaAvailabilityCheckQueue } = require('./utils');
 
 let client = null;
 let index = null;
@@ -28,11 +29,13 @@ global.main = async function (params) {
     let styles;
     let createAlgoliaStylesCount;
     let deleteAlgoliaStylesCount;
+    let styleAvailabilityCheckQueue;
     try {
         algoliaDeleteCreateQueue = await getCollection(params);
         styles = await getCollection(params, params.stylesCollectionName);
         createAlgoliaStylesCount = await getCollection(params, 'createAlgoliaStylesCount');
         deleteAlgoliaStylesCount = await getCollection(params, 'deleteAlgoliaStylesCount')
+        styleAvailabilityCheckQueue = await getCollection(params, 'styleAvailabilityCheckQueue');
     } catch (originalError) {
         throw createError.failedDbConnection(originalError);
     }
@@ -70,6 +73,7 @@ global.main = async function (params) {
         algoliaOperations.push(index.addObjects(stylesToBeCreated, true)
             .then(() => algoliaDeleteCreateQueue.deleteMany({ _id: { $in: creationRecordsToDelete } }))
             .then(() => createAlgoliaStylesCount.insert({ batchSize: stylesToBeCreated.length }))
+            .then(() => Promise.all(stylesToBeCreated.map(styleData => addStyleToAlgoliaAvailabilityCheckQueue(styleAvailabilityCheckQueue, styleData.id))))
             .then(() => console.log('Inserted for styles ', algoliaStylesToInsert))
         );
     } else {
