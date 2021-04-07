@@ -75,6 +75,7 @@ function parseShipmentMessage(msg) {
             carrier: JESTA_CARRIER_ID_TO_NARVAR_CARRIER_ID[msg.value.CARRIER_ID],
             tracking_number: msg.value.TRACKING_NUMBER,
             [isBopis ? 'store' : 'shipped_from']: {
+              id: isBopis ? msg.value.DEST_SITE_ID : null,
               [isBopis ? 'name': 'first_name']: msg.value.FROM_STORE_NAME,
               [isBopis ? 'phone_number': 'phone']: msg.value.FROM_HOME_PHONE,
               address: {
