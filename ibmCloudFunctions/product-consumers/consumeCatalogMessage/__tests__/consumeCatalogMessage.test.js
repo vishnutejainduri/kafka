@@ -171,6 +171,38 @@ describe('parseStyleMessage', () => {
         const messageWithTrueWebStatus = { ...testData, value: { ...testData.value, WEBSTATUS: 'Approved' } }
         expect(parseStyleMessage(messageWithTrueWebStatus).webStatus).toBe(true)
     });
+
+    it('maps RANK0-RANK10 to a "ranks" object when all ranking data is populated', () => {
+        const messageWithRanks = { ...testData, value: { ...testData.value, RANK0: 0, RANK1: 10, RANK2: 20, RANK3: 30, RANK4: 40, RANK5: 50, RANK6: 60, RANK7: 70, RANK8: 80, RANK9: 90  } }
+        expect(parseStyleMessage(messageWithRanks).ranks).toEqual({
+            0: 0,
+            1: 10,
+            2: 20,
+            3: 30,
+            4: 40,
+            5: 50,
+            6: 60,
+            7: 70,
+            8: 80,
+            9: 90
+        })
+    });
+
+    it('maps creates a "ranks" object with null data when given null ranks', () => {
+        const messageWithSomeRanksAndSomeMissing = { ...testData, value: { ...testData.value, RANK0: null, RANK1: null, RANK2: null, RANK3: 30, RANK4: 40, RANK5: null, RANK6: 60, RANK7: 70, RANK8: 80, RANK9: null } }
+        expect(parseStyleMessage(messageWithSomeRanksAndSomeMissing).ranks).toEqual({
+            0: null,
+            1: null,
+            2: null,
+            3: 30,
+            4: 40,
+            5: null,
+            6: 60,
+            7: 70,
+            8: 80,
+            9: null
+        })
+    });
 });
 
 describe('filterStyleMessages', () => {

@@ -93,6 +93,20 @@ function parseStyleMessage(msg) {
         styleData.promotionalSticker = clearancePromotionalSticker
     }
 
+    // Sales ranking data
+    styleData.ranks = {
+        0: msg.value.RANK0,
+        1: msg.value.RANK1,
+        2: msg.value.RANK2,
+        3: msg.value.RANK3,
+        4: msg.value.RANK4,
+        5: msg.value.RANK5,
+        6: msg.value.RANK6,
+        7: msg.value.RANK7,
+        8: msg.value.RANK8,
+        9: msg.value.RANK9
+    }
+
     // Add _id for mongo
     styleData._id = styleData.id;
     return styleData;
