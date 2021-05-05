@@ -6,7 +6,7 @@ connectors+=("connector-name-with-version")
 
 for connector in "${connectors[@]}"
 do
-  curl -H "Authorization: Bearer $SESSION_TOKEN" -X PUT $KUBE_HOST/connectors/$connector/resume
+  curl -H "Authorization: Bearer $SESSION_TOKEN" -X PUT $KUBE_HOST/kafka-connect/connectors/$connector/resume
   echo "Resuming $connector"
   printf "\n"
 done

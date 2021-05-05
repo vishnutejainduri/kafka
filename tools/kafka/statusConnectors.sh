@@ -4,6 +4,6 @@
 
 for connector in "${connectors[@]}"
 do
-  curl -H "Authorization: Bearer $SESSION_TOKEN" -X GET $KUBE_HOST/connectors/$connector/status
+  curl -H "Authorization: Bearer $SESSION_TOKEN" -X GET $KUBE_HOST/kafka-connect/connectors/$connector/status
   printf "\n"
 done

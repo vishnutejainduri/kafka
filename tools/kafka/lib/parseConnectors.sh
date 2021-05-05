@@ -1,5 +1,5 @@
 
-output=$(curl -s -H "Authorization: Bearer $SESSION_TOKEN" -X GET $KUBE_HOST/connectors)
+output=$(curl -s -H "Authorization: Bearer $SESSION_TOKEN" -X GET $KUBE_HOST/kafka-connect/connectors)
 
 outputNoLeftBracket="${output//[/}"
 outputNoRightBracket="${outputNoLeftBracket//]/}"
