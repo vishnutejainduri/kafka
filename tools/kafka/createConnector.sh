@@ -13,7 +13,7 @@ do
   echo $CONNECTOR_PATH
   echo "Creating $connector"
   printf "\n"
-  curl -H "Content-Type: application/json" -H "Authorization: Bearer $SESSION_TOKEN" -X POST --data @$CONNECTOR_PATH $KUBE_HOST/connectors
+  curl -H "Content-Type: application/json" -H "Authorization: Bearer $SESSION_TOKEN" -X POST --data @$CONNECTOR_PATH $KUBE_HOST/kafka-connect/connectors
   printf "\n"
   printf "\n"
 done

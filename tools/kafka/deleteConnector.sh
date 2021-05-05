@@ -6,7 +6,7 @@ connectors+=("connector-name-with-version")
 
 for connector in "${connectors[@]}"
 do
-  curl -H "Authorization: Bearer $SESSION_TOKEN" -X DELETE $KUBE_HOST/connectors/$connector
+  curl -H "Authorization: Bearer $SESSION_TOKEN" -X DELETE $KUBE_HOST/kafka-connect/connectors/$connector
   echo "Deleting $connector"
   printf "\n"
 done

@@ -2,9 +2,9 @@
   "name": "sales-orders-create-jdbc-source",
   "config": {
     "id": 10,
-    "versionDevelopment": 12,
-    "versionStaging": 1,
-    "versionProduction": 1,
+    "versionDevelopment": 13,
+    "versionStaging": 2,
+    "versionProduction": 2,
     "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": 1,
     "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
@@ -13,7 +13,11 @@
     "timestamp.column.name": "ORDER_CREATED_DATE",
     "table.poll.interval.ms": 3600000,
     "mode": "timestamp",
+<<<<<<< HEAD
     "query": "SELECT * FROM (SELECT eso.WFE_TRANS_ID AS ORDER_NUMBER, esod.STATUS, esod.EXT_REF_ID, esod.LINE, esod.QTY_CANCELLED, GREATEST(COALESCE(line_cancel_reason.CREATED_DATE, eso.MODIFIED_DATE, eso.CREATED_DATE), COALESCE(eso.MODIFIED_DATE, eso.CREATED_DATE)) AS MODIFIED_DATE, esod.CREATED_DATE, eso.STATUS AS ORDER_STATUS, eso.CREATED_DATE AS ORDER_CREATED_DATE, eso.LANGUAGE_NO, COALESCE(eso.MODIFIED_DATE, eso.CREATED_DATE) AS ORDER_MODIFIED_DATE, esod.GIFT_WRAP_IND, sc.IMAGE_STYLEID AS STYLEID, catalog.DESC_ENG, catalog.DESC_FR, NVL(L3I.VALUE_EN, catalog.CATAGORY_LEVEL_2A) AS CATEGORY_LEVEL_2A_EN, catalog.EA_IND, catalog.BRAND_NAME_ENG, catalog.RETURNABLE_IND, s.skusize AS \"SIZE\", esod.QTY_ORDERED, s.PKSKU AS SKU, esod.BAR_CODE_ID, esod.UNIT_PRICE, esod.EXTENSION_AMOUNT, eso.TRANSACTION_TOTAL, eso.TAX_TOTAL, eso.SHIPPING_CHARGES_TOTAL, ec.EMAIL_ADDRESS, ec.FIRST_NAME, ec.LAST_NAME, ec.ADDRESS_1, ec.ADDRESS_2, ec.CITY, ec.STATE_ID, ec.ZIP_CODE, ec.COUNTRY_ID, ec.HOME_PHONE, eso.ADDITIONAL_METADATA AS LRUID, eso.SHIPPING_TAX1, eso.SHIPPING_TAX2, NVL(line_cancel_reason.REASON_CODE, header_cancel_reason.REASON_CODE) AS HEADER_REASON_CODE FROM EDOM.e_sales_order_details esod INNER JOIN EDOM.e_sales_orders eso ON eso.SALES_ORDER_ID = esod.SALES_ORDER_ID INNER JOIN EDOM.e_customers ec ON eso.CUSTOMER_ID = ec.CUSTOMER_ID INNER JOIN ELCAT.catalog ON esod.STYLE_ID = SUBSTR(catalog.STYLEID, 1, 8) INNER JOIN ELCAT.style_colours sc ON sc.STYLEID = catalog.STYLEID AND sc.COLOUR_ID = esod.COLOR_ID LEFT JOIN edom.order_reasons line_cancel_reason ON line_cancel_reason.SALES_ORDER_ID = esod.SALES_ORDER_ID AND line_cancel_reason.LINE = esod.LINE LEFT JOIN edom.order_reasons header_cancel_reason ON header_cancel_reason.SALES_ORDER_ID = esod.SALES_ORDER_ID AND header_cancel_reason.LINE = 0 LEFT JOIN ELCAT.dictionaryitem L3I ON Lower(L3I.CODE) = Lower(catalog.CATAGORY_LEVEL_2A) AND L3I.DICTIONARYID = 3 INNER JOIN VSTORE.skuxref sx ON sx.PKPRODUCTNO = esod.BAR_CODE_ID INNER JOIN VSTORE.sku s ON sx.FKSKU = s.PKSKU WHERE eso.SITE_ID = '00990' AND esod.EXT_REF_ID IS NOT NULL)",
+=======
+    "query": "SELECT * FROM ( SELECT eso.WFE_TRANS_ID AS ORDER_NUMBER, esod.STATUS, esod.EXT_REF_ID, esod.LINE, esod.QTY_CANCELLED, GREATEST(COALESCE(or2_line.CREATED_DATE, or2_header.CREATED_DATE, eso.MODIFIED_DATE, eso.CREATED_DATE), COALESCE(eso.MODIFIED_DATE, eso.CREATED_DATE)) AS MODIFIED_DATE, esod.CREATED_DATE, eso.STATUS AS ORDER_STATUS, eso.CREATED_DATE AS ORDER_CREATED_DATE, eso.LANGUAGE_NO, COALESCE(eso.MODIFIED_DATE, eso.CREATED_DATE) AS ORDER_MODIFIED_DATE, esod.GIFT_WRAP_IND, sc.IMAGE_STYLEID AS STYLEID, catalog.DESC_ENG, catalog.DESC_FR, NVL(L3I.VALUE_EN, catalog.CATAGORY_LEVEL_2A) AS CATEGORY_LEVEL_2A_EN, catalog.EA_IND, catalog.BRAND_NAME_ENG, catalog.RETURNABLE_IND, s.skusize AS \"SIZE\", esod.QTY_ORDERED, s.PKSKU AS SKU, esod.BAR_CODE_ID, esod.UNIT_PRICE, esod.EXTENSION_AMOUNT, eso.TRANSACTION_TOTAL, eso.TAX_TOTAL, eso.SHIPPING_CHARGES_TOTAL, ec.EMAIL_ADDRESS, ec.FIRST_NAME, ec.LAST_NAME, ec.ADDRESS_1, ec.ADDRESS_2, ec.CITY, ec.STATE_ID, ec.ZIP_CODE, ec.COUNTRY_ID, ec.HOME_PHONE, eso.ADDITIONAL_METADATA AS LRUID, eso.SHIPPING_TAX1, eso.SHIPPING_TAX2, nvl(or2_line.REASON_CODE, or2_header.REASON_CODE) AS REASON_CODE FROM EDOM.e_sales_order_details esod INNER JOIN EDOM.e_sales_orders eso ON eso.SALES_ORDER_ID = esod.SALES_ORDER_ID INNER JOIN EDOM.e_customers ec ON eso.CUSTOMER_ID = ec.CUSTOMER_ID INNER JOIN ELCAT.catalog ON esod.STYLE_ID = SUBSTR(catalog.STYLEID, 1, 8) INNER JOIN ELCAT.style_colours sc ON sc.STYLEID = catalog.STYLEID AND sc.COLOUR_ID = esod.COLOR_ID LEFT JOIN edom.order_reasons or2_line ON or2_line.SALES_ORDER_ID = esod.SALES_ORDER_ID AND or2_line.LINE = esod.LINE LEFT JOIN edom.order_reasons or2_header ON or2_header.SALES_ORDER_ID = esod.SALES_ORDER_ID AND or2_header.LINE = 0 LEFT JOIN ELCAT.dictionaryitem L3I ON Lower(L3I.CODE) = Lower(catalog.CATAGORY_LEVEL_2A) AND L3I.DICTIONARYID = 3 INNER JOIN VSTORE.skuxref sx ON sx.PKPRODUCTNO = esod.BAR_CODE_ID INNER JOIN VSTORE.sku s ON sx.FKSKU = s.PKSKU WHERE eso.SITE_ID = '00990' AND esod.EXT_REF_ID IS NOT NULL)",
+>>>>>>> d17c0423 (HRC-4282: Change the way we send OMS Cancellation reason code to Narvar and updating kafka scripts)
     "topic.prefix": "sales-orders-connect-jdbc",
     "validate.non.null": "false",
     "numeric.mapping": "best_fit",
