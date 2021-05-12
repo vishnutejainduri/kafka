@@ -76,15 +76,15 @@ function parseShipmentMessage(msg) {
             tracking_number: msg.value.TRACKING_NUMBER,
             [isBopis ? 'store' : 'shipped_from']: {
               id: isBopis ? msg.value.DEST_SITE_ID : null,
-              [isBopis ? 'name': 'first_name']: msg.value.FROM_STORE_NAME,
-              [isBopis ? 'phone_number': 'phone']: msg.value.FROM_HOME_PHONE,
+              [isBopis ? 'name': 'first_name']: isBopis ? '' : msg.value.FROM_STORE_NAME,
+              [isBopis ? 'phone_number': 'phone']: isBopis ? msg.value.HOME_PHONE : msg.value.FROM_HOME_PHONE,
               address: {
-                street_1: msg.value.FROM_ADDRESS_1,
-                street_2: msg.value.FROM_ADDRESS_2,
-                city: msg.value.FROM_CITY,
-                state: msg.value.FROM_STATE_ID,
-                zip: msg.value.FROM_ZIP_CODE,
-                country: msg.value.FROM_COUNTRY_ID
+                street_1: isBopis ? msg.value.ADDRESS_1 : msg.value.FROM_ADDRESS_1,
+                street_2: isBopis ? msg.value.ADDRESS_2 : msg.value.FROM_ADDRESS_2,
+                city: isBopis ? msg.value.CITY : msg.value.FROM_CITY,
+                state: isBopis ? msg.value.STATE_ID : msg.value.FROM_STATE_ID,
+                zip: isBopis ? msg.value.ZIP_CODE : msg.value.FROM_ZIP_CODE,
+                country: isBopis? msg.value.COUNTRY_ID : msg.value.FROM_COUNTRY_ID
               }
             }
           }]
