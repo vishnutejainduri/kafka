@@ -13,7 +13,9 @@ const getAtsUpdateActionsFromAtsBySku = atsBySku =>
 
 const updateSkuAtsForSingleCtProduct = ctHelpers => async atsBySku => {
   const { client, requestBuilder } = ctHelpers
-
+  if(!atsBySku[0]) {
+    return null;
+  }
   const atsUpdateActions = getAtsUpdateActionsFromAtsBySku(atsBySku)
   const styleId = atsBySku[0].styleId
   const uri = requestBuilder.products.byKey(styleId).build();
@@ -32,9 +34,10 @@ const updateSkuAtsForSingleCtProduct = ctHelpers => async atsBySku => {
   return { styleId, ok: true }
 }
 
-const updateSkuAtsForManyCtProductsBatchedByStyleId = (skuAtsBatchedByStyleId, ctHelpers) =>
+const updateSkuAtsForManyCtProductsBatchedByStyleId = (skuAtsBatchedByStyleId, ctHelpers) => 
   Promise.all(skuAtsBatchedByStyleId.map(addErrorHandling(updateSkuAtsForSingleCtProduct(ctHelpers))))
 
+  
 module.exports = {
   getAtsUpdateActionsFromAtsBySku,
   updateSkuAtsForManyCtProductsBatchedByStyleId,

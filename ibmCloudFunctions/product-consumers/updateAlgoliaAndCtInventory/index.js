@@ -121,18 +121,28 @@ global.main = async function (params) {
     }
 
     const skuInventoryBatchedByStyleId = await getSkuInventoryBatchedByStyleId({ styleIds: styleIdsForAvailabilitiesToBeSynced, skuCollection: skus, params });
-    const ctAtsUpdateResults = await updateSkuAtsForManyCtProductsBatchedByStyleId(skuInventoryBatchedByStyleId, ctHelpers);
+    const permanentFailuresStyleIds = skuInventoryBatchedByStyleId.filter(skuBatch => skuBatch && (skuBatch.skus.length === 0 || !skuBatch.skus)); //Styles with no SKUs should be removed form the queue.
+    
+    const skuInventoryBatchedByStyleIdReduced = skuInventoryBatchedByStyleId.reduce((previous, current) => previous.concat(current ? current.skus : null), [])
+    const ctAtsUpdateResults = await updateSkuAtsForManyCtProductsBatchedByStyleId(skuInventoryBatchedByStyleIdReduced, ctHelpers);
+   
     const idsOfSuccessfullyUpdatedCtStyles = ctAtsUpdateResults
         .filter(styleUpdateResult => styleUpdateResult && styleUpdateResult.ok)
         .map(({ styleId }) => styleId);
+    
+    const idsOfPermanentFailuresStyleIds = permanentFailuresStyleIds.map(({ styleId }) => styleId);
+    log(`Found Permanent Failures for these styleIds: ${JSON.stringify(idsOfPermanentFailuresStyleIds)} and they will be removed from the queue.`)
 
     logCtAtsUpdateErrors(ctAtsUpdateResults);
     logCtAtsUpdateSuccesses(ctAtsUpdateResults);
 
+    console
+
     const styleIdsToCleanup = styleIdsForAvailabilitiesToBeSynced
         .filter((_, index) => !(styleAvailabilitiesToBeSynced[index] instanceof Error)) // Algolia successes
-        .filter(styleId => idsOfSuccessfullyUpdatedCtStyles.includes(styleId)); // CT successes
-
+        .filter(styleId => idsOfSuccessfullyUpdatedCtStyles.includes(styleId) || idsOfPermanentFailuresStyleIds.includes(styleId)); // CT successes or Permanent Failures
+        
+    
     try {
         await styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIdsToCleanup } });
     } catch (originalError) {
