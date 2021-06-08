@@ -121,7 +121,7 @@ global.main = async function (params) {
     }
 
     const skuInventoryBatchedByStyleId = await getSkuInventoryBatchedByStyleId({ styleIds: styleIdsForAvailabilitiesToBeSynced, skuCollection: skus, params });
-    const permanentFailuresStyleIds = skuInventoryBatchedByStyleId.filter(skuBatch => skuBatch && (skuBatch.skus.length === 0 || !skuBatch.skus)); //Styles with no SKUs should be removed form the queue.
+    const permanentFailuresStyleIds = skuInventoryBatchedByStyleId.filter(skuBatch => skuBatch && (!skuBatch.skus || skuBatch.skus.length === 0)); //Styles with no SKUs should be removed form the queue.
     
     const skuInventoryBatchedByStyleIdReduced = skuInventoryBatchedByStyleId.reduce((previous, current) => previous.concat(current ? current.skus : null), [])
     const ctAtsUpdateResults = await updateSkuAtsForManyCtProductsBatchedByStyleId(skuInventoryBatchedByStyleIdReduced, ctHelpers);
