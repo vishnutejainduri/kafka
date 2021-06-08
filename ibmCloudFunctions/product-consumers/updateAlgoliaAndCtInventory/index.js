@@ -136,8 +136,6 @@ global.main = async function (params) {
     logCtAtsUpdateErrors(ctAtsUpdateResults);
     logCtAtsUpdateSuccesses(ctAtsUpdateResults);
 
-    console
-
     const styleIdsToCleanup = styleIdsForAvailabilitiesToBeSynced
         .filter((_, index) => !(styleAvailabilitiesToBeSynced[index] instanceof Error)) // Algolia successes
         .filter(styleId => idsOfSuccessfullyUpdatedCtStyles.includes(styleId) || idsOfPermanentFailuresStyleIds.includes(styleId)); // CT successes or Permanent Failures
