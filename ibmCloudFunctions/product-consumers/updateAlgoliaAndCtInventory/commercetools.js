@@ -11,12 +11,16 @@ const getAtsUpdateActionsFromAtsBySku = atsBySku =>
     staged: isStaged
   }))
 
-const updateSkuAtsForSingleCtProduct = ctHelpers => async atsBySku => {
+const updateSkuAtsForSingleCtProduct = ctHelpers => async styleAts => {
   const { client, requestBuilder } = ctHelpers
-
-  const atsUpdateActions = getAtsUpdateActionsFromAtsBySku(atsBySku)
-  const styleId = atsBySku[0].styleId
-  const uri = requestBuilder.products.byKey(styleId).build();
+  
+  if(!styleAts || !styleAts.skus || styleAts.skus.length === 0) {
+    return null;
+  }
+  
+  const atsUpdateActions = getAtsUpdateActionsFromAtsBySku(styleAts.skus)
+  
+  const uri = requestBuilder.products.byKey(styleAts.styleId).build();
   const currentCtProduct = (await client.execute({ method: 'GET', uri })).body
 
   const body = JSON.stringify({
@@ -29,10 +33,10 @@ const updateSkuAtsForSingleCtProduct = ctHelpers => async atsBySku => {
     method: 'POST',
     uri
   })
-  return { styleId, ok: true }
+  return { styleId: styleAts.styleId, ok: true }
 }
 
-const updateSkuAtsForManyCtProductsBatchedByStyleId = (skuAtsBatchedByStyleId, ctHelpers) =>
+const updateSkuAtsForManyCtProductsBatchedByStyleId = (skuAtsBatchedByStyleId, ctHelpers) => 
   Promise.all(skuAtsBatchedByStyleId.map(addErrorHandling(updateSkuAtsForSingleCtProduct(ctHelpers))))
 
 module.exports = {

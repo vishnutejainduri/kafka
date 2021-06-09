@@ -21,7 +21,7 @@ const sku2Ats = {
   onlineAts: 1
 }
 
-const atsBySkuForStyle1 = [sku1Ats, sku2Ats]
+const atsBySkuForStyle1 = { styleId: '20036681', skus: [sku1Ats, sku2Ats]}
 
 const MockRequestBuilder = function () {
   this.key = null
@@ -52,7 +52,7 @@ const mockCtHelpers = {
 
 describe('getAtsUpdateActionsFromAtsBySku', () => {
   it('returns an array of actions to update `hasOnlineAts` when given an array of SKU ATS data', () => {
-    expect(getAtsUpdateActionsFromAtsBySku(atsBySkuForStyle1)).toEqual([
+    expect(getAtsUpdateActionsFromAtsBySku(atsBySkuForStyle1.skus)).toEqual([
       {
         action: 'setAttribute',
         sku: '-2678929',
@@ -103,7 +103,7 @@ describe('updateSkuAtsForManyCtProductsBatchedByStyleId', () => {
       onlineAts: 1
     }
   
-    const atsBySkuForStyle2 = [sku3Ats]
+    const atsBySkuForStyle2 = { styleId: '21036361', skus : [sku3Ats] }
   
     const atsUpdatesBatchedByStyleId = [
       atsBySkuForStyle1,
@@ -124,7 +124,7 @@ describe('updateSkuAtsForManyCtProductsBatchedByStyleId', () => {
   })
 
   it('returns an array with a failure object when given a style whose ATS update fails', async () => {
-    const atsUpdatesBatchedByStyleId = [[atsForSkuThatCannotBeUpdated]]
+    const atsUpdatesBatchedByStyleId = [{styleId: 'MOCK_FAILURE', skus: [atsForSkuThatCannotBeUpdated]}]
     const updateResults = await updateSkuAtsForManyCtProductsBatchedByStyleId(atsUpdatesBatchedByStyleId, mockCtHelpers)
     expect(updateResults).toEqual([
       expect.any(Error)
@@ -133,7 +133,7 @@ describe('updateSkuAtsForManyCtProductsBatchedByStyleId', () => {
 
   it('returns an array with one failure object and one success result when given one style whose ATS update succeeds and one style whose ATS update fails', async () => {
     const atsUpdatesBatchedByStyleId = [
-      [atsForSkuThatCannotBeUpdated],
+      {styleId: 'MOCK_FAILURE', skus: [atsForSkuThatCannotBeUpdated]},
       atsBySkuForStyle1
     ]
     const updateResults = await updateSkuAtsForManyCtProductsBatchedByStyleId(atsUpdatesBatchedByStyleId, mockCtHelpers)

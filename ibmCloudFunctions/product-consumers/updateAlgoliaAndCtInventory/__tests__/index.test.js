@@ -20,6 +20,7 @@ describe('updateAlgoliaAndCtInventory', () => {
             mongoCertificateBase64: 'mong-certificate',
             collectionName: 'styleAvailabilityCheckQueue',
             stylesCollectionName: 'styles',
+            skusCollectionName: 'skus',
             styleAvailabilityCheckQueue: 'styleAvailabilityCheckQueue',
             ctpProjectKey: 'harryrosen-dev',
             ctpClientId: 'ctClientId',
@@ -29,6 +30,6 @@ describe('updateAlgoliaAndCtInventory', () => {
             ctpScopes: 'ctpScopes' 
         }
         const response = await updateAlgoliaAndCtInventory(params);
-        expect(response).toEqual({ failureCount: 0, successCount: 0 });
+        expect(response).toEqual({ failureCount: 0, successCount: 1 });
     });
 });

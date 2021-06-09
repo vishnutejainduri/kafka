@@ -121,17 +121,31 @@ global.main = async function (params) {
     }
 
     const skuInventoryBatchedByStyleId = await getSkuInventoryBatchedByStyleId({ styleIds: styleIdsForAvailabilitiesToBeSynced, skuCollection: skus, params });
-    const ctAtsUpdateResults = await updateSkuAtsForManyCtProductsBatchedByStyleId(skuInventoryBatchedByStyleId, ctHelpers);
+    
+    //Styles with no SKUs should be removed form the queue.
+    const permanentFailuresStyleIds = skuInventoryBatchedByStyleId
+        .filter(skuBatch => skuBatch && (!skuBatch.skus || skuBatch.skus.length === 0))
+        .map(({ styleId }) => styleId); 
+    
+    const skuInventoryBatchedByStyleIdFiltered = skuInventoryBatchedByStyleId.filter(skuInventory => skuInventory !== null)
+
+    const ctAtsUpdateResults = await updateSkuAtsForManyCtProductsBatchedByStyleId(skuInventoryBatchedByStyleIdFiltered, ctHelpers);
+
     const idsOfSuccessfullyUpdatedCtStyles = ctAtsUpdateResults
         .filter(styleUpdateResult => styleUpdateResult && styleUpdateResult.ok)
         .map(({ styleId }) => styleId);
-
+    
+    if(permanentFailuresStyleIds.length > 0) {
+        log(`Found Permanent Failures for these styleIds: ${permanentFailuresStyleIds} and they will be removed from the queue.`)
+    }
+    
     logCtAtsUpdateErrors(ctAtsUpdateResults);
     logCtAtsUpdateSuccesses(ctAtsUpdateResults);
 
     const styleIdsToCleanup = styleIdsForAvailabilitiesToBeSynced
         .filter((_, index) => !(styleAvailabilitiesToBeSynced[index] instanceof Error)) // Algolia successes
-        .filter(styleId => idsOfSuccessfullyUpdatedCtStyles.includes(styleId)); // CT successes
+        .filter(styleId => idsOfSuccessfullyUpdatedCtStyles.includes(styleId) || permanentFailuresStyleIds.includes(styleId)); // CT successes or Permanent Failures
+        
 
     try {
         await styleAvailabilityCheckQueue.deleteMany({ _id: { $in: styleIdsToCleanup } });
@@ -140,8 +154,8 @@ global.main = async function (params) {
     }
 
     return {
-        successCount: styleIdsToCleanup.length,
-        failureCount: stylesIdsToUpdate.length - styleIdsToCleanup.length
+        successCount: styleIdsToCleanup.length - permanentFailuresStyleIds.length,
+        failureCount: stylesIdsToUpdate.length - styleIdsToCleanup.length + permanentFailuresStyleIds.length
     };
 }
 
