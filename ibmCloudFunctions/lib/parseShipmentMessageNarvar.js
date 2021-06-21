@@ -46,7 +46,7 @@ function parseShipmentMessage(msg) {
     const narvarOrder = {
         order_info: {
           order_number: msg.value.ORDER_NUMBER,
-          order_date: new Date(msg.value.ORDER_CREATED_DATE).toISOString(),
+          order_date: new Date(msg.value.ORDER_DATE).toISOString(),
           attributes: {
             [NARVAR_ORDER_LAST_MODIFIED]: null,
           },

@@ -34,7 +34,7 @@ function parseSalesOrderMessage(msg) {
         order_info: {
           order_number: msg.value.ORDER_NUMBER,
           status: JESTA_STATUSES_TO_NARVAR_STATUSES[msg.value.ORDER_STATUS],
-          order_date: new Date(msg.value.ORDER_CREATED_DATE).toISOString(),
+          order_date: new Date(msg.value.ORDER_DATE).toISOString(),
           checkout_locale: JESTA_LANGUAGE_NUMBERS_TO_LOCALES[msg.value.LANGUAGE_NO],
           currency_code: 'CAD',
           attributes: {
