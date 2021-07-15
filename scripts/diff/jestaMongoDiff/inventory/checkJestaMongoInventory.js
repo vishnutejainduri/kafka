@@ -31,14 +31,13 @@ fs.readFile('./skuinventory.csv', 'utf-8', async (err, data) => {
     let existingCount = 0;
     await Promise.all(dataRows.map(async (result) => {
         
-        resultArray = result.split(",");
+        const resultArray = result.split(",");
         const inventoryId = `${resultArray[1]}-${resultArray[0]}-${resultArray[2]}`
 
         const invData = await inventory.findOne({"_id": inventoryId });
         if(invData && invData.quantityOnHandSellable == resultArray[5]) {
             existingCount++;
         } else {
-            console.log(inventoryId);
             wstreamOutput.write(inventoryId + '\n')
         }
     }));
