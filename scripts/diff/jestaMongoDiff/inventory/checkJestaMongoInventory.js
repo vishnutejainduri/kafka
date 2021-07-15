@@ -38,7 +38,6 @@ fs.readFile('./skuinventory.csv', 'utf-8', async (err, data) => {
         if(invData && invData.quantityOnHandSellable == resultArray[5]) {
             existingCount++;
         } else {
-            console.log(`found diff for ${inventoryId}: ${invData.quantityOnHandSellable} vs ${resultArray[5]}`);
             wstreamOutput.write(inventoryId + '\n')
         }
     }));
