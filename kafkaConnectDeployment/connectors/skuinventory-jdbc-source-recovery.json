@@ -3,7 +3,7 @@
   "config": {
     "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": 10,
-    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "connection.url": "jdbc:oracle:thin:myplanet/tSvuuSlG@//10.210.32.11:1521/mtst_pdb1.snhrtestdata.vcnhrtest.oraclevcn.com",
     "db.timezone":"America/New_York",
     "mode": "bulk",
     "batch.max.rows": 100,
@@ -11,7 +11,7 @@
     "numeric.mapping": "best_fit",
     "topic.prefix": "inventory-connect-jdbc-SKUINVENTORY",
     "validate.non.null": "false",
-    "poll.interval.ms": 60000,
+    "poll.interval.ms": 86400000,
     "offset.flush.timeout.ms": 60000
   }
 }
