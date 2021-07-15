@@ -11,7 +11,7 @@
     "numeric.mapping": "best_fit",
     "topic.prefix": "inventory-connect-jdbc-SKUINVENTORY",
     "validate.non.null": "false",
-    "poll.interval.ms": 60000,
+    "poll.interval.ms": 86400000,
     "offset.flush.timeout.ms": 60000
   }
 }
