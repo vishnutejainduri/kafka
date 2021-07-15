@@ -3,7 +3,7 @@
   "config": {
     "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": 10,
-    "connection.url": "jdbc:oracle:thin:myplanet/tSvuuSlG@//10.210.32.11:1521/mtst_pdb1.snhrtestdata.vcnhrtest.oraclevcn.com",
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
     "db.timezone":"America/New_York",
     "mode": "bulk",
     "batch.max.rows": 100,
