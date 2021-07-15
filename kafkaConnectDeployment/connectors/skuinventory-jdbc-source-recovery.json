@@ -1,0 +1,17 @@
+{
+  "name": "skuinventory-jdbc-source-recovery",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": 10,
+    "connection.url": "jdbc:oracle:thin:<DB_USERNAME>/<DB_PASSWORD>@//<DB_HOST_IP>:1521/<DB_SERVICE_NAME>",
+    "db.timezone":"America/New_York",
+    "mode": "bulk",
+    "batch.max.rows": 100,
+    "query":"WITH s_row AS(SELECT DISTINCT m_row$$ FROM vstore.MLOG$_SKUINVENTORY), s_res AS( SELECT i.FKSKU as SKU_ID, sc.IMAGE_STYLEID as STYLE_ID, i.FKSTORENO AS STORE_ID, i.CHECKIND, i.QOH, i.QOHSELLABLE, i.QOHNOTSELLABLE, i.QOO, i.QBO, i.QIT, i.QIP, i.LASTMODIFIEDDATE, i.INV_FKORGANIZATIONNO FROM s_row JOIN VSTORE.SKUINVENTORY i on s_row.m_row$$ = i.rowid INNER JOIN (SELECT SKUCOLOR, PKSKU FROM VSTORE.SKU) s ON i.FKSKU = s.PKSKU INNER JOIN ELCAT.STYLE_COLOURS sc ON SUBSTR(sc.STYLEID, 1, 8) = i.INV_FKSTYLENO AND sc.COLOUR_ID = s.SKUCOLOR WHERE i.LASTMODIFIEDDATE >= DATE '2020-09-17') SELECT * FROM s_res",
+    "numeric.mapping": "best_fit",
+    "topic.prefix": "inventory-connect-jdbc-SKUINVENTORY",
+    "validate.non.null": "false",
+    "poll.interval.ms": 86400000,
+    "offset.flush.timeout.ms": 60000
+  }
+}
