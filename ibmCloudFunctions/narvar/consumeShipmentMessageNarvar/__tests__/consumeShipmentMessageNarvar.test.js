@@ -3,7 +3,8 @@ const {
   filterShipmentMessages,
   parseShipmentMessage,
   filterMissingTrackingNumberMessages,
-  checkShipmentItemIdForNull
+  checkShipmentItemIdForNull,
+  checkShippedQuantity
 } = require('../../../lib/parseShipmentMessageNarvar');
 const { groupByAttribute } = require('../../../lib/utils');
 const {
@@ -168,6 +169,16 @@ describe('checkShipmentItemIdForNull', () => {
   });
   it('does not remove messages with valid item id', async () => {
     expect(checkShipmentItemIdForNull(validParams.messages[0])).toEqual(true)
+  });
+});
+
+describe('checkShippedQuantity', () => {
+  it('removes messages with 0 qty_shipped', async () => {
+    const invalidMessages = { ...validParams, messages: [{ ...validParams.messages[0], value: { ...validParams.messages[0].value, QTY_SHIPPED: 0.0 } }] }
+    expect(checkShippedQuantity(invalidMessages.messages[0])).toEqual(false)
+  });
+  it('does not remove messages with nonzero qty_shipped', async () => {
+    expect(checkShippedQuantity(validParams.messages[0])).toEqual(true)
   });
 });
 
