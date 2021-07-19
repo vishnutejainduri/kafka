@@ -37,8 +37,16 @@ function checkShipmentItemIdForNull(msg) {
         log.error(`Cannot process messages with no line item id. Order number: ${msg.value.ORDER_NUMBER}`)
         return false;
     }
-
     return true; 
+}
+
+function checkShippedQuantity(msg) {
+  if (!msg.value.QTY_SHIPPED) {
+    // we also want to skip messages with quantity = 0. We log out a message here for alerting purposes
+    log.error(`Cannot process messages with quantity shipped = 0. Order number: ${msg.value.ORDER_NUMBER}`)
+    return false;
+}
+  return true; 
 }
 
 function parseShipmentMessage(msg) {
@@ -124,5 +132,6 @@ module.exports = {
     parseShipmentMessage,
     filterShipmentMessages,
     filterMissingTrackingNumberMessages,
-    checkShipmentItemIdForNull
+    checkShipmentItemIdForNull,
+    checkShippedQuantity
 };

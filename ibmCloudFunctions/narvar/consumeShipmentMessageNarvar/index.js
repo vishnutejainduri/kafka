@@ -2,7 +2,8 @@ const {
   filterShipmentMessages,
   filterMissingTrackingNumberMessages,
   parseShipmentMessage,
-  checkShipmentItemIdForNull
+  checkShipmentItemIdForNull,
+  checkShippedQuantity
 } = require('../../lib/parseShipmentMessageNarvar');
 const { syncShipmentBatchToNarvar } = require('../narvarUtils') 
 const createError = require('../../lib/createError');
@@ -34,6 +35,7 @@ const main = params => {
       .map(addErrorHandling(msg => filterShipmentMessages(msg) ? msg : null))
       .map(addErrorHandling(msg => filterMissingTrackingNumberMessages(msg) ? msg : null))
       .map(addErrorHandling(msg => checkShipmentItemIdForNull(msg) ? msg : null))
+      .map(addErrorHandling(msg => checkShippedQuantity(msg) ? msg : null))
       .map(addErrorHandling(parseShipmentMessage))
   );
 
